@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Floor Planner SaaS — Phase 1–4 Visual QA & Constraint Validation</title>
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --panel: #111827;
+      --card-bg: #1f2937;
+      --card-border: #374151;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --accent: #3b82f6;
+      --accent-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --info: #06b6d4;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--card-border);
+    }
+    .header-title h1 {
+      margin: 0 0 6px 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+    .header-title p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .system-status {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .status-pill {
+      background: #064e3b;
+      color: #34d399;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 13px;
+      font-weight: 600;
+      border: 1px solid #059669;
+    }
+    .tabs-nav {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+    }
+    .tab-btn {
+      background: var(--panel);
+      color: var(--muted);
+      border: 1px solid var(--card-border);
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s ease;
+    }
+    .tab-btn:hover {
+      background: var(--card-bg);
+      color: var(--text);
+    }
+    .tab-btn.active {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .layout-container {
+      display: grid;
+      grid-template-columns: 1.2fr 1fr;
+      gap: 24px;
+    }
+    @media (max-width: 1024px) {
+      .layout-container {
+        grid-template-columns: 1fr;
+      }
+    }
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .panel-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .svg-viewer {
+      background: #ffffff;
+      border-radius: 8px;
+      min-height: 480px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+    }
+    .svg-viewer svg {
+      width: 100%;
+      height: 100%;
+      max-height: 520px;
+    }
+    .score-summary {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .score-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      padding: 14px;
+      border-radius: 8px;
+    }
+    .score-label {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .score-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-top: 4px;
+    }
+    .valid-tag {
+      color: var(--success);
+    }
+    .invalid-tag {
+      color: var(--danger);
+    }
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .cat-item {
+      background: var(--card-bg);
+      padding: 10px 12px;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 13px;
+      border: 1px solid var(--card-border);
+    }
+    .cat-name {
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+    .cat-score {
+      font-weight: 600;
+    }
+    .results-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 340px;
+      overflow-y: auto;
+    }
+    .result-item {
+      background: var(--card-bg);
+      border-left: 4px solid var(--card-border);
+      padding: 12px;
+      border-radius: 4px 8px 8px 4px;
+      font-size: 13px;
+    }
+    .result-item.hard-fail {
+      border-left-color: var(--danger);
+      background: rgba(239, 68, 68, 0.1);
+    }
+    .result-item.soft-warn {
+      border-left-color: var(--warning);
+      background: rgba(245, 158, 11, 0.08);
+    }
+    .result-item.passed {
+      border-left-color: var(--success);
+    }
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+    .result-msg {
+      color: var(--text);
+    }
+    .result-explanation {
+      color: var(--muted);
+      margin-top: 4px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-title">
+      <h1>AI Floor Planner SaaS — Phase 1–4 QA Dashboard</h1>
+      <p>Domain Model • Geometry Engine • Deterministic Constraint Engine • SVG Visualizer</p>
+    </div>
+    <div class="system-status">
+      <span class="status-pill">● Phase 1–4 Active</span>
+    </div>
+  </header>
+
+  <div class="tabs-nav" id="tabs">
+    <button class="tab-btn active" data-scenario="30x50-valid">1. Canonical 30×50ft Plan (Valid)</button>
+    <button class="tab-btn" data-scenario="negative-overlap">2. Negative: Room Overlap (HC-003)</button>
+    <button class="tab-btn" data-scenario="negative-outside">3. Negative: Outside Plot (HC-001)</button>
+    <button class="tab-btn" data-scenario="negative-missing">4. Negative: Missing Room (HC-020)</button>
+    <button class="tab-btn" data-scenario="soft-distant-kitchen">5. Soft: Distant Kitchen Flow</button>
+    <button class="tab-btn" data-scenario="fixture-2bhk">6. Fixture: 30×50 2BHK</button>
+    <button class="tab-btn" data-scenario="phase6-editor" style="border-color: #3b82f6; color: #60a5fa;">⚡ 7. Interactive Editor (Phase 6A)</button>
+  </div>
+
+  <div class="layout-container">
+    <div class="panel">
+      <div class="panel-title">
+        <span id="plan-title">Canonical 30×50ft Test Building</span>
+        <span id="plan-status-badge" class="status-pill">Evaluating...</span>
+      </div>
+      <div class="svg-viewer" id="svg-container">
+        <!-- SVG rendered here -->
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">
+        <span>Constraint Engine Diagnostics</span>
+        <span style="font-size: 13px; color: var(--muted);" id="engine-summary">Phase 4 Engine</span>
+      </div>
+
+      <div class="score-summary">
+        <div class="score-card">
+          <div class="score-label">Plan Status</div>
+          <div class="score-value" id="stat-validity">—</div>
+        </div>
+        <div class="score-card">
+          <div class="score-label">Quality Score</div>
+          <div class="score-value" id="stat-score">—</div>
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600;">CATEGORY BREAKDOWN</div>
+        <div class="categories-grid" id="categories-container">
+          <!-- Categories filled via JS -->
+        </div>
+      </div>
+
+      <div>
+        <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600;">EVALUATION LOG & EXPLANATIONS</div>
+        <div class="results-list" id="results-log">
+          <!-- Results filled via JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script type="module">
+    import { renderBuilding } from './dist/index.js';
+    import { validatePlan, ConstraintCategory } from '../constraint-engine/dist/index.js';
+    import { deserializeBuilding, serializeBuilding } from '../core/dist/index.js';
+
+    // ─── Scenario Generators ────────────────────────────────────────────────
+    function getCanonical30x50Plan() {
+      return {
+        id: "bldg-test-30x50",
+        projectId: "proj-phase4-qa",
+        name: "30x50 Canonical Test Plan",
+        version: 1,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        metadata: { projectId: "proj-phase4-qa", clientName: "End-to-End QA" },
+        site: {
+          id: "site-30x50",
+          plotBoundary: {
+            points: [
+              { x: 0, y: 0 },
+              { x: 9144, y: 0 },
+              { x: 9144, y: 15240 },
+              { x: 0, y: 15240 }
+            ]
+          },
+          plotWidth: 9144,
+          plotDepth: 15240,
+          plotArea: 139354560,
+          plotShape: "rectangular",
+          orientation: 0,
+          setbacks: { front: 1500, rear: 1000, left: 900, right: 900 },
+          accessPoints: [],
+          roadFacing: "north"
+        },
+        floors: [
+          {
+            id: "floor-gf-001",
+            buildingId: "bldg-test-30x50",
+            level: 0,
+            name: "Ground Floor",
+            floorHeight: 3000,
+            boundary: {
+              points: [
+                { x: 900, y: 1500 },
+                { x: 8244, y: 1500 },
+                { x: 8244, y: 14240 },
+                { x: 900, y: 14240 }
+              ]
+            },
+            rooms: [
+              {
+                id: "r-living",
+                floorId: "floor-gf-001",
+                type: "living",
+                name: "Living Room (12x14ft)",
+                x: 900,
+                y: 1500,
+                width: 3658,
+                height: 4267,
+                rotation: 0,
+                area: 15608686,
+                priority: 8,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "high",
+                privacyRequirement: "none",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 900, y: 1500 },
+                    { x: 4558, y: 1500 },
+                    { x: 4558, y: 5767 },
+                    { x: 900, y: 5767 }
+                  ]
+                }
+              },
+              {
+                id: "r-stair",
+                floorId: "floor-gf-001",
+                type: "staircase",
+                name: "Staircase (7x12ft)",
+                x: 4658,
+                y: 1500,
+                width: 2134,
+                height: 3658,
+                rotation: 0,
+                area: 7806172,
+                priority: 6,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "low",
+                privacyRequirement: "low",
+                ventilationRequired: false,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 4658, y: 1500 },
+                    { x: 6792, y: 1500 },
+                    { x: 6792, y: 5158 },
+                    { x: 4658, y: 5158 }
+                  ]
+                }
+              },
+              {
+                id: "r-dining",
+                floorId: "floor-gf-001",
+                type: "dining",
+                name: "Dining Room (10x10ft)",
+                x: 900,
+                y: 5767,
+                width: 3048,
+                height: 3048,
+                rotation: 0,
+                area: 9290304,
+                priority: 7,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "medium",
+                privacyRequirement: "none",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 900, y: 5767 },
+                    { x: 3948, y: 5767 },
+                    { x: 3948, y: 8815 },
+                    { x: 900, y: 8815 }
+                  ]
+                }
+              },
+              {
+                id: "r-kitchen",
+                floorId: "floor-gf-001",
+                type: "kitchen",
+                name: "Kitchen (9x10ft)",
+                x: 3948,
+                y: 5767,
+                width: 2743,
+                height: 3048,
+                rotation: 0,
+                area: 8360664,
+                priority: 8,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "medium",
+                privacyRequirement: "low",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 3948, y: 5767 },
+                    { x: 6691, y: 5767 },
+                    { x: 6691, y: 8815 },
+                    { x: 3948, y: 8815 }
+                  ]
+                }
+              },
+              {
+                id: "r-bath",
+                floorId: "floor-gf-001",
+                type: "bathroom",
+                name: "Bathroom (5x7ft)",
+                x: 6691,
+                y: 5767,
+                width: 1524,
+                height: 2134,
+                rotation: 0,
+                area: 3252216,
+                priority: 6,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "low",
+                privacyRequirement: "high",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 6691, y: 5767 },
+                    { x: 8215, y: 5767 },
+                    { x: 8215, y: 7901 },
+                    { x: 6691, y: 7901 }
+                  ]
+                }
+              },
+              {
+                id: "r-bed1",
+                floorId: "floor-gf-001",
+                type: "bedroom",
+                name: "Bedroom 1 (11x12ft)",
+                x: 900,
+                y: 8815,
+                width: 3353,
+                height: 3658,
+                rotation: 0,
+                area: 12265274,
+                priority: 8,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "high",
+                privacyRequirement: "high",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 900, y: 8815 },
+                    { x: 4253, y: 8815 },
+                    { x: 4253, y: 12473 },
+                    { x: 900, y: 12473 }
+                  ]
+                }
+              },
+              {
+                id: "r-bed2",
+                floorId: "floor-gf-001",
+                type: "bedroom",
+                name: "Bedroom 2 (11x12ft)",
+                x: 4353,
+                y: 8815,
+                width: 3353,
+                height: 3658,
+                rotation: 0,
+                area: 12265274,
+                priority: 8,
+                tags: [],
+                adjacencyRequirements: [],
+                daylightRequirement: "high",
+                privacyRequirement: "high",
+                ventilationRequired: true,
+                isFixed: false,
+                boundary: {
+                  points: [
+                    { x: 4353, y: 8815 },
+                    { x: 7706, y: 8815 },
+                    { x: 7706, y: 12473 },
+                    { x: 4353, y: 12473 }
+                  ]
+                }
+              }
+            ],
+            walls: [
+              {
+                id: "w-ext-front",
+                floorId: "floor-gf-001",
+                startPoint: { x: 900, y: 1500 },
+                endPoint: { x: 8244, y: 1500 },
+                thickness: 200,
+                type: "external",
+                roomIds: ["r-living"],
+                hasOpening: true,
+                loadBearing: true
+              },
+              {
+                id: "w-liv-din",
+                floorId: "floor-gf-001",
+                startPoint: { x: 900, y: 5767 },
+                endPoint: { x: 4558, y: 5767 },
+                thickness: 100,
+                type: "internal",
+                roomIds: ["r-living", "r-dining"],
+                hasOpening: true,
+                loadBearing: false
+              },
+              {
+                id: "w-din-kit",
+                floorId: "floor-gf-001",
+                startPoint: { x: 3948, y: 5767 },
+                endPoint: { x: 3948, y: 8815 },
+                thickness: 100,
+                type: "internal",
+                roomIds: ["r-dining", "r-kitchen"],
+                hasOpening: true,
+                loadBearing: false
+              }
+            ],
+            doors: [
+              {
+                id: "d-entrance",
+                floorId: "floor-gf-001",
+                wallId: "w-ext-front",
+                position: { x: 1500, y: 1500 },
+                width: 1000,
+                height: 2100,
+                type: "single",
+                swingDirection: "inward",
+                connectsRooms: ["", "r-living"]
+              },
+              {
+                id: "d-liv-din",
+                floorId: "floor-gf-001",
+                wallId: "w-liv-din",
+                position: { x: 2000, y: 5767 },
+                width: 900,
+                height: 2100,
+                type: "single",
+                swingDirection: "inward",
+                connectsRooms: ["r-living", "r-dining"]
+              },
+              {
+                id: "d-din-kit",
+                floorId: "floor-gf-001",
+                wallId: "w-din-kit",
+                position: { x: 3948, y: 6500 },
+                width: 900,
+                height: 2100,
+                type: "single",
+                swingDirection: "inward",
+                connectsRooms: ["r-dining", "r-kitchen"]
+              }
+            ],
+            windows: [],
+            columns: [],
+            stairs: []
+          }
+        ]
+      };
+    }
+
+    function setupInteractiveEditor() {
+      const canonicalBuilding = getCanonical30x50Plan();
+      activeEditor = new EditorEngine(canonicalBuilding);
+
+      // Render Editor UI Shell
+      const container = document.querySelector(".layout-container");
+      container.innerHTML = `
+        <div class="panel" style="grid-column: span 2; display: flex; flex-direction: column; gap: 12px;">
+          <!-- TOP: Project & Floor Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--card-border); padding-bottom: 12px;">
+            <div style="display: flex; gap: 12px; align-items: center;">
+              <span style="font-size: 16px; font-weight: 700; color: #60a5fa;">📐 CAD Architectural Editor</span>
+              <span style="font-size: 13px; color: var(--muted);" id="editor-project-name">${canonicalBuilding.name}</span>
+              <span class="status-pill" id="editor-active-floor">Ground Floor</span>
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center;">
+              <button id="btn-undo" class="tab-btn" style="padding: 6px 14px;" title="Undo (Ctrl+Z)" disabled>↶ Undo</button>
+              <button id="btn-redo" class="tab-btn" style="padding: 6px 14px;" title="Redo (Ctrl+Y)" disabled>↷ Redo</button>
+              <button id="btn-test-move" class="tab-btn" style="padding: 6px 14px; background: #1e3a8a; color: #bfdbfe; border-color: #3b82f6;">+ Test Mutation</button>
+              <span id="editor-validation-badge" class="status-pill">VALIDATING</span>
+            </div>
+          </div>
+
+          <!-- 3-Column CAD Workspace -->
+          <div style="display: grid; grid-template-columns: 80px 1.4fr 1fr; gap: 16px;">
+            <!-- LEFT: CAD Tool Palette -->
+            <div style="display: flex; flex-direction: column; gap: 8px; background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 8px;" id="tool-palette">
+              <button class="tab-btn active" data-tool="select" style="padding: 8px; font-size: 11px; text-align: center;">Select</button>
+              <button class="tab-btn" data-tool="pan" style="padding: 8px; font-size: 11px; text-align: center;">Pan</button>
+              <button class="tab-btn" data-tool="add_room" style="padding: 8px; font-size: 11px; text-align: center;">Room</button>
+              <button class="tab-btn" data-tool="add_wall" style="padding: 8px; font-size: 11px; text-align: center;">Wall</button>
+              <button class="tab-btn" data-tool="add_door" style="padding: 8px; font-size: 11px; text-align: center;">Door</button>
+              <button class="tab-btn" data-tool="add_window" style="padding: 8px; font-size: 11px; text-align: center;">Window</button>
+              <button class="tab-btn" data-tool="add_column" style="padding: 8px; font-size: 11px; text-align: center;">Column</button>
+              <button class="tab-btn" data-tool="measure" style="padding: 8px; font-size: 11px; text-align: center;">Measure</button>
+            </div>
+
+            <!-- CENTER: Architectural Canvas -->
+            <div style="background: #ffffff; border-radius: 8px; min-height: 480px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid var(--card-border);" id="editor-canvas-container">
+              <div id="editor-svg-mount" style="width: 100%; height: 100%;"></div>
+            </div>
+
+            <!-- RIGHT: Property Inspector Placeholder -->
+            <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; display: flex; flex-direction: column; gap: 12px;" id="property-inspector">
+              <div style="font-weight: 700; font-size: 14px; border-bottom: 1px solid var(--card-border); padding-bottom: 8px;">PROPERTY INSPECTOR</div>
+              <div id="inspector-content" style="font-size: 13px; color: var(--muted); line-height: 1.6;">
+                Click any entity on the canvas to inspect its domain properties.
+              </div>
+            </div>
+          </div>
+
+          <!-- BOTTOM: Status & Validation HUD -->
+          <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: 8px; padding: 12px; display: flex; justify-content: space-between; align-items: center; font-size: 12px;">
+            <div style="display: flex; gap: 16px;">
+              <span id="editor-status-text">Ready • Single Source of Truth: Building Model</span>
+              <span style="color: var(--muted);" id="editor-selection-info">No entity selected</span>
+            </div>
+            <div style="display: flex; gap: 16px; color: var(--muted);">
+              <span>Snapping: <strong style="color: #34d399;">ON (100mm)</strong></span>
+              <span id="editor-history-count">History: 0 actions</span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      function refreshEditorView() {
+        const building = activeEditor.getBuilding();
+        const state = activeEditor.getState();
+
+        // 1. Re-render SVG purely from Building model
+        const svg = renderBuilding(building, 0, 720, 480);
+        const mount = document.getElementById("editor-svg-mount");
+        if (mount) {
+          mount.innerHTML = svg;
+
+          // Attach hit testing to interactive SVG entities
+          mount.querySelectorAll("[data-entity-id]").forEach(el => {
+            const entityId = el.getAttribute("data-entity-id");
+            const entityType = el.getAttribute("data-entity-type");
+
+            if (state.selection?.entityId === entityId) {
+              el.setAttribute("stroke", "#00E5FF");
+              el.setAttribute("stroke-width", "3");
+              el.setAttribute("stroke-dasharray", "4,2");
+            }
+
+            el.style.cursor = "pointer";
+            el.addEventListener("click", (e) => {
+              e.stopPropagation();
+              activeEditor.selectEntity({ entityType, entityId });
+            });
+          });
+
+          // Canvas background click deselects
+          mount.querySelector("svg")?.addEventListener("click", () => {
+            activeEditor.selectEntity(null);
+          });
+        }
+
+        // 2. Update Property Inspector
+        const inspector = document.getElementById("inspector-content");
+        if (inspector) {
+          if (state.selection) {
+            const floor = activeEditor.getActiveFloor();
+            const room = floor?.rooms.find(r => r.id === state.selection.entityId);
+            const door = floor?.doors.find(d => d.id === state.selection.entityId);
+            const win = floor?.windows.find(w => w.id === state.selection.entityId);
+
+            if (room) {
+              inspector.innerHTML = `
+                <div style="color: #60a5fa; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Room: ${room.name}</div>
+                <div><strong>ID:</strong> <code style="color: #cbd5e1;">${room.id}</code></div>
+                <div><strong>Type:</strong> ${room.type}</div>
+                <div><strong>Dimensions:</strong> ${Math.round(room.width)} × ${Math.round(room.height)} mm</div>
+                <div><strong>Area:</strong> ${(room.area / 1_000_000).toFixed(2)} m²</div>
+                <div><strong>Origin:</strong> (${Math.round(room.x)}, ${Math.round(room.y)})</div>
+                <div><strong>Daylight:</strong> ${room.daylightRequirement}</div>
+                <div><strong>Privacy:</strong> ${room.privacyRequirement}</div>
+              `;
+            } else if (door) {
+              inspector.innerHTML = `
+                <div style="color: #60a5fa; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Door</div>
+                <div><strong>ID:</strong> <code style="color: #cbd5e1;">${door.id}</code></div>
+                <div><strong>Width:</strong> ${door.width} mm</div>
+                <div><strong>Type:</strong> ${door.type}</div>
+                <div><strong>Swing:</strong> ${door.swingDirection}</div>
+              `;
+            } else if (win) {
+              inspector.innerHTML = `
+                <div style="color: #60a5fa; font-weight: 600; font-size: 14px; margin-bottom: 8px;">Window</div>
+                <div><strong>ID:</strong> <code style="color: #cbd5e1;">${win.id}</code></div>
+                <div><strong>Width:</strong> ${win.width} mm</div>
+                <div><strong>Sill Height:</strong> ${win.sillHeight} mm</div>
+              `;
+            } else {
+              inspector.innerHTML = `<div>Selected ${state.selection.entityType}: <code>${state.selection.entityId}</code></div>`;
+            }
+          } else {
+            inspector.innerHTML = `<span style="color: var(--muted);">Click any entity on the canvas to inspect its domain properties.</span>`;
+          }
+        }
+
+        // 3. Update Validation HUD
+        const validation = validatePlan(building);
+        const badge = document.getElementById("editor-validation-badge");
+        if (badge) {
+          if (validation.valid) {
+            badge.textContent = `● VALID (${Math.round(validation.softScore)}/100)`;
+            badge.style.background = "#064e3b";
+            badge.style.color = "#34d399";
+          } else {
+            badge.textContent = `▲ ${validation.hardFailures.length} ERRORS`;
+            badge.style.background = "#7f1d1d";
+            badge.style.color = "#f87171";
+          }
+        }
+
+        // 4. Update Undo/Redo Buttons & History Status
+        const btnUndo = document.getElementById("btn-undo");
+        const btnRedo = document.getElementById("btn-redo");
+        const histCount = document.getElementById("editor-history-count");
+        if (btnUndo) btnUndo.disabled = !state.historySummary.canUndo;
+        if (btnRedo) btnRedo.disabled = !state.historySummary.canRedo;
+        if (histCount) histCount.textContent = `History: ${state.historySummary.undoCount} action(s)`;
+
+        const selInfo = document.getElementById("editor-selection-info");
+        if (selInfo) {
+          selInfo.textContent = state.selection ? `Selected: ${state.selection.entityType} [${state.selection.entityId.slice(0, 10)}]` : 'No entity selected';
+        }
+      }
+
+      // Subscribe to editor events
+      activeEditor.subscribe(() => {
+        refreshEditorView();
+      });
+
+      // Attach button listeners
+      document.getElementById("btn-undo")?.addEventListener("click", () => activeEditor.undo());
+      document.getElementById("btn-redo")?.addEventListener("click", () => activeEditor.redo());
+
+      // Test mutation command: moves Master Bedroom
+      document.getElementById("btn-test-move")?.addEventListener("click", () => {
+        const floor = activeEditor.getActiveFloor();
+        const bed = floor?.rooms.find(r => r.id === "room-bed1");
+        if (bed) {
+          const newX = bed.x === 1000 ? 1500 : 1000;
+          activeEditor.execute(new MoveRoomCommand("room-bed1", newX, bed.y, "Master Bedroom"));
+        }
+      });
+
+      // Tool palette switching
+      document.querySelectorAll("#tool-palette button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          document.querySelectorAll("#tool-palette button").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          activeEditor.setActiveTool(btn.dataset.tool);
+        });
+      });
+
+      // Keyboard shortcuts
+      window.addEventListener("keydown", (e) => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "z") {
+          e.preventDefault();
+          if (e.shiftKey) {
+            activeEditor.redo();
+          } else {
+            activeEditor.undo();
+          }
+        } else if ((e.ctrlKey || e.metaKey) && e.key === "y") {
+          e.preventDefault();
+          activeEditor.redo();
+        } else if (e.key === "Escape") {
+          activeEditor.selectEntity(null);
+        }
+      });
+
+      // Initial render
+      refreshEditorView();
+    }
+
+    // ─── Scenario Loader ────────────────────────────────────────────────────
+    function loadScenario(key) {
+      if (key === "phase6-editor") {
+        setupInteractiveEditor();
+        return;
+      }
+
+      // Reset layout container for standard Phase 1-4 scenarios
+      const container = document.querySelector(".layout-container");
+      container.innerHTML = `
+        <div class="panel">
+          <div class="panel-title">
+            <span id="plan-title">Plan</span>
+            <span id="plan-status-badge" class="status-pill">Evaluating...</span>
+          </div>
+          <div class="svg-viewer" id="svg-container"></div>
+        </div>
+        <div class="panel">
+          <div class="panel-title">
+            <span>Constraint Engine Diagnostics</span>
+            <span style="font-size: 13px; color: var(--muted);" id="engine-summary">Phase 4 Engine</span>
+          </div>
+          <div class="score-summary">
+            <div class="score-card">
+              <div class="score-label">Plan Status</div>
+              <div class="score-value" id="stat-validity">—</div>
+            </div>
+            <div class="score-card">
+              <div class="score-label">Quality Score</div>
+              <div class="score-value" id="stat-score">—</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600;">CATEGORY BREAKDOWN</div>
+            <div class="categories-grid" id="categories-container"></div>
+          </div>
+          <div>
+            <div style="font-size: 13px; color: var(--muted); margin-bottom: 8px; font-weight: 600;">EVALUATION LOG & EXPLANATIONS</div>
+            <div class="results-list" id="results-log"></div>
+          </div>
+        </div>
+      `;
+
+      let building;
+      let title = "Scenario";
+      let options = {};
+
+      if (key === "30x50-valid") {
+        building = getCanonical30x50Plan();
+        title = "1. Canonical 30×50ft Plan (Valid Reference)";
+      } else if (key === "negative-overlap") {
+        building = getCanonical30x50Plan();
+        title = "2. Negative Scenario: Room Overlap (HC-003)";
+        building.floors[0].rooms[1].x = 4000;
+        building.floors[0].rooms[1].boundary.points = [
+          { x: 4000, y: 1500 }, { x: 7144, y: 1500 }, { x: 7144, y: 4500 }, { x: 4000, y: 4500 }
+        ];
+      } else if (key === "negative-outside") {
+        building = getCanonical30x50Plan();
+        title = "3. Negative Scenario: Room Outside Plot Boundary (HC-001)";
+        building.floors[0].rooms[0].x = 500;
+        building.floors[0].rooms[0].boundary.points = [
+          { x: 500, y: 1500 }, { x: 4500, y: 1500 }, { x: 4500, y: 6500 }, { x: 500, y: 6500 }
+        ];
+      } else if (key === "negative-missing") {
+        building = getCanonical30x50Plan();
+        title = "4. Negative Scenario: Missing Required Kitchen (HC-020)";
+        building.floors[0].rooms = building.floors[0].rooms.filter(r => r.type !== "kitchen");
+        options = { requiredRoomTypes: ["living", "kitchen", "bedroom", "bathroom"] };
+      } else if (key === "soft-distant-kitchen") {
+        building = getCanonical30x50Plan();
+        title = "5. Soft Constraint: Distant Kitchen (SC-001 Penalty)";
+        building.floors[0].rooms[1].y = 10500;
+        building.floors[0].rooms[1].boundary.points = [
+          { x: 5000, y: 10500 }, { x: 8144, y: 10500 }, { x: 8144, y: 13500 }, { x: 5000, y: 13500 }
+        ];
+      } else if (key === "fixture-2bhk") {
+        building = getCanonical30x50Plan();
+        title = "6. Fixture: 30×50 2BHK Plan";
+      }
+
+      document.getElementById("plan-title").textContent = title;
+      const result = validatePlan(building, undefined, options);
+      const svg = renderBuilding(building, 0, 780, 520);
+      document.getElementById("svg-container").innerHTML = svg;
+
+      const validBadge = document.getElementById("plan-status-badge");
+      const statValidity = document.getElementById("stat-validity");
+      const statScore = document.getElementById("stat-score");
+
+      if (result.valid) {
+        validBadge.textContent = "VALID PLAN";
+        validBadge.style.background = "#064e3b";
+        validBadge.style.color = "#34d399";
+        validBadge.style.borderColor = "#059669";
+        statValidity.textContent = "PASSED";
+        statValidity.className = "score-value valid-tag";
+      } else {
+        validBadge.textContent = `INVALID (${result.hardFailures.length} Hard Violations)`;
+        validBadge.style.background = "#7f1d1d";
+        validBadge.style.color = "#f87171";
+        validBadge.style.borderColor = "#dc2626";
+        statValidity.textContent = "FAILED";
+        statValidity.className = "score-value invalid-tag";
+      }
+
+      statScore.textContent = `${Math.round(result.softScore)} / 100`;
+
+      const catContainer = document.getElementById("categories-container");
+      catContainer.innerHTML = "";
+      for (const [catName, catScore] of Object.entries(result.categoryScores)) {
+        const item = document.createElement("div");
+        item.className = "cat-item";
+        item.innerHTML = `
+          <span class="cat-name">${catName.replace('_', ' ')}</span>
+          <span class="cat-score">${Math.round(catScore.score)} / ${catScore.maxScore}</span>
+        `;
+        catContainer.appendChild(item);
+      }
+
+      const logContainer = document.getElementById("results-log");
+      logContainer.innerHTML = "";
+
+      for (const hf of result.hardFailures) {
+        const item = document.createElement("div");
+        item.className = "result-item hard-fail";
+        item.innerHTML = `
+          <div class="result-header">
+            <span style="color: var(--danger);">❌ [${hf.constraintId}] HARD FAILURE</span>
+            <span>Score: 0</span>
+          </div>
+          <div class="result-msg">${hf.message}</div>
+          <div class="result-explanation">${hf.explanation}</div>
+        `;
+        logContainer.appendChild(item);
+      }
+
+      for (const warn of result.warnings) {
+        const item = document.createElement("div");
+        item.className = "result-item soft-warn";
+        item.innerHTML = `
+          <div class="result-header">
+            <span style="color: var(--warning);">⚠️ [${warn.constraintId}] WARNING</span>
+            <span>Score: ${Math.round(warn.score)}/${warn.maxScore}</span>
+          </div>
+          <div class="result-msg">${warn.message}</div>
+          <div class="result-explanation">${warn.explanation}</div>
+        `;
+        logContainer.appendChild(item);
+      }
+
+      const passedSample = result.allResults.filter(r => r.passed).slice(0, 5);
+      for (const p of passedSample) {
+        const item = document.createElement("div");
+        item.className = "result-item passed";
+        item.innerHTML = `
+          <div class="result-header">
+            <span style="color: var(--success);">✓ [${p.constraintId}] SATISFIED</span>
+            <span>Score: ${Math.round(p.score)}/${p.maxScore}</span>
+          </div>
+          <div class="result-msg">${p.message}</div>
+        `;
+        logContainer.appendChild(item);
+      }
+    }
+
+    // Tab Listeners
+    document.querySelectorAll(".tab-btn").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        loadScenario(btn.dataset.scenario);
+      });
+    });
+
+    // Initial load
+    loadScenario("30x50-valid");
+  </script>
+</body>
+</html>
+

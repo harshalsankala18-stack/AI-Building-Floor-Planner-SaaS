@@ -1,0 +1,146 @@
+/**
+ * Domain enumerations for the Building Model.
+ */
+
+/** Types of rooms supported in the system. */
+export enum RoomType {
+  Bedroom = 'bedroom',
+  Bathroom = 'bathroom',
+  Kitchen = 'kitchen',
+  Living = 'living',
+  Dining = 'dining',
+  Utility = 'utility',
+  Balcony = 'balcony',
+  Staircase = 'staircase',
+  Lift = 'lift',
+  Parking = 'parking',
+  Pooja = 'pooja',
+  Storage = 'storage',
+  Corridor = 'corridor',
+  Foyer = 'foyer',
+  Study = 'study',
+  ServantQuarter = 'servant_quarter',
+  Drawing = 'drawing',
+  FamilyLiving = 'family_living',
+  Terrace = 'terrace',
+  Garden = 'garden',
+  Custom = 'custom',
+}
+
+/** Cardinal directions. */
+export enum Direction {
+  North = 'north',
+  South = 'south',
+  East = 'east',
+  West = 'west',
+}
+
+/** Daylight requirement levels. */
+export enum DaylightLevel {
+  None = 'none',
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
+/** Privacy requirement levels. */
+export enum PrivacyLevel {
+  None = 'none',
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
+/** General preference levels. */
+export enum PreferenceLevel {
+  None = 'none',
+  Low = 'low',
+  Medium = 'medium',
+  High = 'high',
+}
+
+/** Adjacency requirement strength. */
+export enum AdjacencyStrength {
+  Required = 'required',
+  Preferred = 'preferred',
+  Avoid = 'avoid',
+}
+
+/** Wall types by structural role. */
+export enum WallType {
+  External = 'external',
+  Internal = 'internal',
+  Partition = 'partition',
+}
+
+/** Door types. */
+export enum DoorType {
+  Single = 'single',
+  Double = 'double',
+  Sliding = 'sliding',
+  Folding = 'folding',
+}
+
+/** Door swing directions. */
+export enum SwingDirection {
+  Inward = 'inward',
+  Outward = 'outward',
+  Left = 'left',
+  Right = 'right',
+}
+
+/** Window types. */
+export enum WindowType {
+  Fixed = 'fixed',
+  Sliding = 'sliding',
+  Casement = 'casement',
+  Ventilator = 'ventilator',
+}
+
+/** Staircase types. */
+export enum StairType {
+  Straight = 'straight',
+  LShaped = 'L_shaped',
+  UShaped = 'U_shaped',
+  Spiral = 'spiral',
+}
+
+/** Column cross-section shapes. */
+export enum ColumnShape {
+  Rectangular = 'rectangular',
+  Circular = 'circular',
+}
+
+/** Project lifecycle status. */
+export enum ProjectStatus {
+  Draft = 'draft',
+  Active = 'active',
+  Completed = 'completed',
+  Archived = 'archived',
+}
+
+/** Source of a plan change. */
+export enum ChangeSource {
+  Manual = 'manual',
+  AIEdit = 'ai_edit',
+  Generation = 'generation',
+}
+
+/** Plot shapes. */
+export enum PlotShape {
+  Rectangular = 'rectangular',
+  LShaped = 'L_shaped',
+  Irregular = 'irregular',
+}
+
+/** AI task types for routing. */
+export enum AITaskType {
+  RequirementExtraction = 'requirement_extraction',
+  PlanExplanation = 'plan_explanation',
+  DesignCritique = 'design_critique',
+  NaturalLanguageEdit = 'natural_language_edit',
+  RoomNaming = 'room_naming',
+  VastuAnalysis = 'vastu_analysis',
+  ImageUnderstanding = 'image_understanding',
+  ComplexReasoning = 'complex_reasoning',
+}

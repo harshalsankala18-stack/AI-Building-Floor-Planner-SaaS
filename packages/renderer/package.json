@@ -1,0 +1,25 @@
+{
+  "name": "@ai-floor-planner/renderer",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SVG rendering engine for Building Model visualization",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "test": "vitest run --passWithNoTests",
+    "test:unit": "vitest run --passWithNoTests",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ai-floor-planner/core": "workspace:*",
+    "@ai-floor-planner/geometry-engine": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "vitest": "2.0.5"
+  }
+}

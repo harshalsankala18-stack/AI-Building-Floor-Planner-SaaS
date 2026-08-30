@@ -1,0 +1,72 @@
+[
+  {
+    "id": "fixture-a-30x50-g1-3bhk",
+    "projectName": "Fixture A - 30x50 G+1 3BHK",
+    "plotWidthMm": 9144,
+    "plotDepthMm": 15240,
+    "floorsCount": 2,
+    "bedroomCount": 3,
+    "bathroomCount": 3,
+    "parkingSpacesCount": 0,
+    "liftRequired": false,
+    "studyRoom": false,
+    "poojaRoom": false,
+    "balconyPreferred": false
+  },
+  {
+    "id": "fixture-b-30x50-g2-4bhk",
+    "projectName": "Fixture B - 30x50 G+2 4BHK",
+    "plotWidthMm": 9144,
+    "plotDepthMm": 15240,
+    "floorsCount": 3,
+    "bedroomCount": 4,
+    "bathroomCount": 4,
+    "parkingSpacesCount": 1,
+    "liftRequired": false,
+    "studyRoom": true,
+    "poojaRoom": false,
+    "balconyPreferred": true
+  },
+  {
+    "id": "fixture-c-40x60-g2-mixed",
+    "projectName": "Fixture C - 40x60 G+2 Mixed Program",
+    "plotWidthMm": 12192,
+    "plotDepthMm": 18288,
+    "floorsCount": 3,
+    "bedroomCount": 5,
+    "bathroomCount": 5,
+    "parkingSpacesCount": 1,
+    "liftRequired": true,
+    "studyRoom": true,
+    "poojaRoom": true,
+    "balconyPreferred": true
+  },
+  {
+    "id": "fixture-d-40x60-g3",
+    "projectName": "Fixture D - 40x60 G+3",
+    "plotWidthMm": 12192,
+    "plotDepthMm": 18288,
+    "floorsCount": 4,
+    "bedroomCount": 5,
+    "bathroomCount": 5,
+    "parkingSpacesCount": 1,
+    "liftRequired": true,
+    "studyRoom": true,
+    "poojaRoom": false,
+    "balconyPreferred": true
+  },
+  {
+    "id": "fixture-e-36x55-g4",
+    "projectName": "Fixture E - 36x55 G+4",
+    "plotWidthMm": 10973,
+    "plotDepthMm": 16764,
+    "floorsCount": 5,
+    "bedroomCount": 5,
+    "bathroomCount": 5,
+    "parkingSpacesCount": 0,
+    "liftRequired": true,
+    "studyRoom": true,
+    "poojaRoom": false,
+    "balconyPreferred": true
+  }
+]

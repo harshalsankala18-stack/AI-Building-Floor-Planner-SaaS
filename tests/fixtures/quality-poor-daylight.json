@@ -1,0 +1,163 @@
+{
+  "id": "fixture-poor-daylight",
+  "projectId": "project-fixture-quality",
+  "name": "Poor Daylight Fixture",
+  "site": {
+    "id": "site-daylight-001",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 12000, "y": 0 },
+        { "x": 12000, "y": 12000 },
+        { "x": 0, "y": 12000 }
+      ]
+    },
+    "plotWidth": 12000,
+    "plotDepth": 12000,
+    "plotArea": 144000000,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1000, "rear": 1000, "left": 1000, "right": 1000 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-daylight-gf",
+      "buildingId": "fixture-poor-daylight",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 1000, "y": 1000 },
+          { "x": 11000, "y": 1000 },
+          { "x": 11000, "y": 11000 },
+          { "x": 1000, "y": 11000 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-dl-perimeter",
+          "floorId": "floor-daylight-gf",
+          "type": "corridor",
+          "name": "Perimeter Corridor",
+          "boundary": {
+            "points": [
+              { "x": 1000, "y": 1000 },
+              { "x": 11000, "y": 1000 },
+              { "x": 11000, "y": 2500 },
+              { "x": 1000, "y": 2500 }
+            ]
+          },
+          "x": 1000,
+          "y": 1000,
+          "width": 10000,
+          "height": 1500,
+          "rotation": 0,
+          "area": 15000000,
+          "priority": 3,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "none",
+          "privacyRequirement": "none",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-dl-bed1",
+          "floorId": "floor-daylight-gf",
+          "type": "bedroom",
+          "name": "Bedroom 1 (Interior)",
+          "boundary": {
+            "points": [
+              { "x": 3500, "y": 4000 },
+              { "x": 7500, "y": 4000 },
+              { "x": 7500, "y": 8000 },
+              { "x": 3500, "y": 8000 }
+            ]
+          },
+          "x": 3500,
+          "y": 4000,
+          "width": 4000,
+          "height": 4000,
+          "rotation": 0,
+          "area": 16000000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-dl-kitchen",
+          "floorId": "floor-daylight-gf",
+          "type": "kitchen",
+          "name": "Kitchen (Interior)",
+          "boundary": {
+            "points": [
+              { "x": 3500, "y": 8000 },
+              { "x": 7500, "y": 8000 },
+              { "x": 7500, "y": 11000 },
+              { "x": 3500, "y": 11000 }
+            ]
+          },
+          "x": 3500,
+          "y": 8000,
+          "width": 4000,
+          "height": 3000,
+          "rotation": 0,
+          "area": 12000000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-dl-living",
+          "floorId": "floor-daylight-gf",
+          "type": "living",
+          "name": "Living Room (Interior)",
+          "boundary": {
+            "points": [
+              { "x": 3500, "y": 2500 },
+              { "x": 7500, "y": 2500 },
+              { "x": 7500, "y": 4000 },
+              { "x": 3500, "y": 4000 }
+            ]
+          },
+          "x": 3500,
+          "y": 2500,
+          "width": 4000,
+          "height": 1500,
+          "rotation": 0,
+          "area": 6000000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "stairs": [],
+      "columns": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-quality",
+    "clientName": "Test Fixture — Poor Daylight"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

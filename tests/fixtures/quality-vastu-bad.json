@@ -1,0 +1,190 @@
+{
+  "id": "fixture-quality-vastu-bad",
+  "projectId": "project-fixture-008",
+  "name": "Quality Vastu Bad Fixture",
+  "site": {
+    "id": "site-fixture-008",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-gf-008",
+      "buildingId": "fixture-quality-vastu-bad",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-vastubad-kitchen",
+          "floorId": "floor-gf-008",
+          "type": "kitchen",
+          "name": "Kitchen (in NE)",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 6000 },
+              { "x": 5000, "y": 6000 }
+            ]
+          },
+          "x": 5000,
+          "y": 1500,
+          "width": 3244,
+          "height": 4500,
+          "rotation": 0,
+          "area": 14598000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastubad-toilet",
+          "floorId": "floor-gf-008",
+          "type": "bathroom",
+          "name": "Toilet (in NE corner)",
+          "boundary": {
+            "points": [
+              { "x": 6000, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 3500 },
+              { "x": 6000, "y": 3500 }
+            ]
+          },
+          "x": 6000,
+          "y": 1500,
+          "width": 2244,
+          "height": 2000,
+          "rotation": 0,
+          "area": 4488000,
+          "priority": 6,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastubad-bed1",
+          "floorId": "floor-gf-008",
+          "type": "bedroom",
+          "name": "Master Bedroom (in NE)",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 6000 },
+              { "x": 900, "y": 6000 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 4500,
+          "rotation": 0,
+          "area": 18450000,
+          "priority": 9,
+          "tags": ["master"],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastubad-pooja",
+          "floorId": "floor-gf-008",
+          "type": "pooja",
+          "name": "Pooja Room (in SW)",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 10000 },
+              { "x": 4000, "y": 10000 },
+              { "x": 4000, "y": 14240 },
+              { "x": 900, "y": 14240 }
+            ]
+          },
+          "x": 900,
+          "y": 10000,
+          "width": 3100,
+          "height": 4240,
+          "rotation": 0,
+          "area": 13144000,
+          "priority": 5,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "none",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastubad-living",
+          "floorId": "floor-gf-008",
+          "type": "living",
+          "name": "Living Room (in SW)",
+          "boundary": {
+            "points": [
+              { "x": 4000, "y": 10000 },
+              { "x": 8244, "y": 10000 },
+              { "x": 8244, "y": 14240 },
+              { "x": 4000, "y": 14240 }
+            ]
+          },
+          "x": 4000,
+          "y": 10000,
+          "width": 4244,
+          "height": 4240,
+          "rotation": 0,
+          "area": 17994560,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "columns": [],
+      "stairs": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-vastubad",
+    "clientName": "Test Fixture"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

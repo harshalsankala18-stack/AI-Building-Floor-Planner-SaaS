@@ -1,0 +1,283 @@
+{
+  "id": "fixture-30x50-3bhk",
+  "projectId": "project-fixture-003",
+  "name": "30x50 3BHK Fixture",
+  "site": {
+    "id": "site-fixture-3bhk",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-gf-3bhk",
+      "buildingId": "fixture-30x50-3bhk",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-3bhk-living",
+          "floorId": "floor-gf-3bhk",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 4800, "y": 1500 },
+              { "x": 4800, "y": 5500 },
+              { "x": 900, "y": 5500 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 3900,
+          "height": 4000,
+          "rotation": 0,
+          "area": 15600000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-kitchen",
+          "floorId": "floor-gf-3bhk",
+          "type": "kitchen",
+          "name": "Kitchen",
+          "boundary": {
+            "points": [
+              { "x": 4800, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 4500 },
+              { "x": 4800, "y": 4500 }
+            ]
+          },
+          "x": 4800,
+          "y": 1500,
+          "width": 3444,
+          "height": 3000,
+          "rotation": 0,
+          "area": 10332000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-dining",
+          "floorId": "floor-gf-3bhk",
+          "type": "dining",
+          "name": "Dining Room",
+          "boundary": {
+            "points": [
+              { "x": 4800, "y": 4500 },
+              { "x": 8244, "y": 4500 },
+              { "x": 8244, "y": 7500 },
+              { "x": 4800, "y": 7500 }
+            ]
+          },
+          "x": 4800,
+          "y": 4500,
+          "width": 3444,
+          "height": 3000,
+          "rotation": 0,
+          "area": 10332000,
+          "priority": 6,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-bed1",
+          "floorId": "floor-gf-3bhk",
+          "type": "bedroom",
+          "name": "Master Bedroom",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 5500 },
+              { "x": 4800, "y": 5500 },
+              { "x": 4800, "y": 9500 },
+              { "x": 900, "y": 9500 }
+            ]
+          },
+          "x": 900,
+          "y": 5500,
+          "width": 3900,
+          "height": 4000,
+          "rotation": 0,
+          "area": 15600000,
+          "priority": 9,
+          "tags": ["master"],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-bed2",
+          "floorId": "floor-gf-3bhk",
+          "type": "bedroom",
+          "name": "Bedroom 2",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 9500 },
+              { "x": 4800, "y": 9500 },
+              { "x": 4800, "y": 14240 },
+              { "x": 900, "y": 14240 }
+            ]
+          },
+          "x": 900,
+          "y": 9500,
+          "width": 3900,
+          "height": 4740,
+          "rotation": 0,
+          "area": 18486000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "medium",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-bed3",
+          "floorId": "floor-gf-3bhk",
+          "type": "bedroom",
+          "name": "Bedroom 3",
+          "boundary": {
+            "points": [
+              { "x": 4800, "y": 10500 },
+              { "x": 8244, "y": 10500 },
+              { "x": 8244, "y": 14240 },
+              { "x": 4800, "y": 14240 }
+            ]
+          },
+          "x": 4800,
+          "y": 10500,
+          "width": 3444,
+          "height": 3740,
+          "rotation": 0,
+          "area": 12880560,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "medium",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-bath1",
+          "floorId": "floor-gf-3bhk",
+          "type": "bathroom",
+          "name": "Master Bathroom",
+          "boundary": {
+            "points": [
+              { "x": 4800, "y": 7500 },
+              { "x": 6500, "y": 7500 },
+              { "x": 6500, "y": 10500 },
+              { "x": 4800, "y": 10500 }
+            ]
+          },
+          "x": 4800,
+          "y": 7500,
+          "width": 1700,
+          "height": 3000,
+          "rotation": 0,
+          "area": 5100000,
+          "priority": 6,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-3bhk-bath2",
+          "floorId": "floor-gf-3bhk",
+          "type": "bathroom",
+          "name": "Common Bathroom",
+          "boundary": {
+            "points": [
+              { "x": 6500, "y": 7500 },
+              { "x": 8244, "y": 7500 },
+              { "x": 8244, "y": 10500 },
+              { "x": 6500, "y": 10500 }
+            ]
+          },
+          "x": 6500,
+          "y": 7500,
+          "width": 1744,
+          "height": 3000,
+          "rotation": 0,
+          "area": 5232000,
+          "priority": 5,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [
+        {
+          "id": "wall-3bhk-1",
+          "floorId": "floor-gf-3bhk",
+          "startPoint": { "x": 900, "y": 1500 },
+          "endPoint": { "x": 8244, "y": 1500 },
+          "thickness": 200,
+          "height": 3000,
+          "isExterior": true,
+          "loadBearing": true,
+          "material": "brick"
+        }
+      ],
+      "doors": [],
+      "windows": [],
+      "columns": [],
+      "stairs": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-3bhk",
+    "clientName": "Test Fixture 3BHK"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

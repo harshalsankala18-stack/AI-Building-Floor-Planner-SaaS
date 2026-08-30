@@ -1,0 +1,105 @@
+{
+  "id": "fixture-invalid-window-no-wall",
+  "projectId": "project-fixture-004",
+  "name": "Invalid Window No Wall Fixture",
+  "site": {
+    "id": "site-fixture-004",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-gf-004",
+      "buildingId": "fixture-invalid-window-no-wall",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-invwin-living",
+          "floorId": "floor-gf-004",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 5500 },
+              { "x": 900, "y": 5500 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 4000,
+          "rotation": 0,
+          "area": 16400000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [
+        {
+          "id": "wall-valid-1",
+          "floorId": "floor-gf-004",
+          "startPoint": { "x": 900, "y": 1500 },
+          "endPoint": { "x": 5000, "y": 1500 },
+          "thickness": 200,
+          "height": 3000,
+          "isExterior": true,
+          "loadBearing": true,
+          "material": "brick"
+        }
+      ],
+      "doors": [],
+      "windows": [
+        {
+          "id": "win-invalid-1",
+          "wallId": "wall-non-existent-999",
+          "position": 1000,
+          "width": 1200,
+          "height": 1500,
+          "sillHeight": 900,
+          "type": "casement",
+          "glazing": "double"
+        }
+      ],
+      "columns": [],
+      "stairs": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-004",
+    "clientName": "Test Fixture"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

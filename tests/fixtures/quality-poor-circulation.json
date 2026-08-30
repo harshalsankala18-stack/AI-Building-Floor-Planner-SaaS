@@ -1,0 +1,136 @@
+{
+  "id": "fixture-poor-circulation",
+  "projectId": "project-fixture-006",
+  "name": "Poor Circulation Fixture",
+  "site": {
+    "id": "site-fixture-006",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-gf-006",
+      "buildingId": "fixture-poor-circulation",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-circ-living",
+          "floorId": "floor-gf-006",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 6500 },
+              { "x": 900, "y": 6500 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 5000,
+          "rotation": 0,
+          "area": 20500000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-circ-corridor",
+          "floorId": "floor-gf-006",
+          "type": "corridor",
+          "name": "Oversized Corridor",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 9500 },
+              { "x": 5000, "y": 9500 }
+            ]
+          },
+          "x": 5000,
+          "y": 1500,
+          "width": 3244,
+          "height": 8000,
+          "rotation": 0,
+          "area": 25952000,
+          "priority": 2,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "none",
+          "privacyRequirement": "none",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-circ-bed",
+          "floorId": "floor-gf-006",
+          "type": "bedroom",
+          "name": "Bedroom",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 6500 },
+              { "x": 5000, "y": 6500 },
+              { "x": 5000, "y": 11500 },
+              { "x": 900, "y": 11500 }
+            ]
+          },
+          "x": 900,
+          "y": 6500,
+          "width": 4100,
+          "height": 5000,
+          "rotation": 0,
+          "area": 20500000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "columns": [],
+      "stairs": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-circ",
+    "clientName": "Test Fixture"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

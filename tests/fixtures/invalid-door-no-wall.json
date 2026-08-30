@@ -1,0 +1,144 @@
+{
+  "id": "fixture-invalid-door",
+  "projectId": "project-fixture-invalid",
+  "name": "Invalid Door No Wall Fixture",
+  "site": {
+    "id": "site-door-001",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-door-gf",
+      "buildingId": "fixture-invalid-door",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-door-living",
+          "floorId": "floor-door-gf",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 7000 },
+              { "x": 900, "y": 7000 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 5500,
+          "rotation": 0,
+          "area": 22550000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-door-bedroom",
+          "floorId": "floor-door-gf",
+          "type": "bedroom",
+          "name": "Bedroom",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 7000 },
+              { "x": 5000, "y": 7000 }
+            ]
+          },
+          "x": 5000,
+          "y": 1500,
+          "width": 3244,
+          "height": 5500,
+          "rotation": 0,
+          "area": 17842000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [
+        {
+          "id": "wall-door-001",
+          "floorId": "floor-door-gf",
+          "startPoint": { "x": 5000, "y": 1500 },
+          "endPoint": { "x": 5000, "y": 7000 },
+          "thickness": 150,
+          "type": "internal",
+          "roomIds": ["room-door-living", "room-door-bedroom"],
+          "hasOpening": false,
+          "loadBearing": false
+        }
+      ],
+      "doors": [
+        {
+          "id": "door-valid-001",
+          "floorId": "floor-door-gf",
+          "wallId": "wall-door-001",
+          "position": { "x": 5000, "y": 4000 },
+          "width": 900,
+          "height": 2100,
+          "type": "single",
+          "swingDirection": "inward",
+          "connectsRooms": ["room-door-living", "room-door-bedroom"]
+        },
+        {
+          "id": "door-invalid-002",
+          "floorId": "floor-door-gf",
+          "wallId": "wall-nonexistent-xyz",
+          "position": { "x": 3000, "y": 7000 },
+          "width": 900,
+          "height": 2100,
+          "type": "single",
+          "swingDirection": "inward",
+          "connectsRooms": ["room-door-living", ""]
+        }
+      ],
+      "windows": [],
+      "stairs": [],
+      "columns": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-invalid",
+    "clientName": "Test Fixture — Door on nonexistent wall"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

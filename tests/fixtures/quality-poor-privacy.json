@@ -1,0 +1,136 @@
+{
+  "id": "fixture-poor-privacy",
+  "projectId": "project-fixture-007",
+  "name": "Poor Privacy Fixture",
+  "site": {
+    "id": "site-fixture-007",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-gf-007",
+      "buildingId": "fixture-poor-privacy",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-priv-foyer",
+          "floorId": "floor-gf-007",
+          "type": "foyer",
+          "name": "Entrance Foyer",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 4500, "y": 1500 },
+              { "x": 4500, "y": 4500 },
+              { "x": 900, "y": 4500 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 3600,
+          "height": 3000,
+          "rotation": 0,
+          "area": 10800000,
+          "priority": 5,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-priv-bed1",
+          "floorId": "floor-gf-007",
+          "type": "bedroom",
+          "name": "Master Bedroom",
+          "boundary": {
+            "points": [
+              { "x": 4500, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 6000 },
+              { "x": 4500, "y": 6000 }
+            ]
+          },
+          "x": 4500,
+          "y": 1500,
+          "width": 3744,
+          "height": 4500,
+          "rotation": 0,
+          "area": 16848000,
+          "priority": 9,
+          "tags": ["master"],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-priv-living",
+          "floorId": "floor-gf-007",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 4500 },
+              { "x": 4500, "y": 4500 },
+              { "x": 4500, "y": 10000 },
+              { "x": 900, "y": 10000 }
+            ]
+          },
+          "x": 900,
+          "y": 4500,
+          "width": 3600,
+          "height": 5500,
+          "rotation": 0,
+          "area": 19800000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "columns": [],
+      "stairs": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-privacy",
+    "clientName": "Test Fixture"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

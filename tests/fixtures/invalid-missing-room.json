@@ -1,0 +1,109 @@
+{
+  "id": "fixture-invalid-missing",
+  "projectId": "project-fixture-invalid",
+  "name": "Invalid Missing Room Fixture",
+  "site": {
+    "id": "site-missing-001",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-missing-gf",
+      "buildingId": "fixture-invalid-missing",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-missing-living",
+          "floorId": "floor-missing-gf",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 7000 },
+              { "x": 900, "y": 7000 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 5500,
+          "rotation": 0,
+          "area": 22550000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-missing-bedroom",
+          "floorId": "floor-missing-gf",
+          "type": "bedroom",
+          "name": "Bedroom 1",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 7000 },
+              { "x": 5000, "y": 7000 },
+              { "x": 5000, "y": 14240 },
+              { "x": 900, "y": 14240 }
+            ]
+          },
+          "x": 900,
+          "y": 7000,
+          "width": 4100,
+          "height": 7240,
+          "rotation": 0,
+          "area": 29684000,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "stairs": [],
+      "columns": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-invalid",
+    "clientName": "Test Fixture — Missing Kitchen/Bathroom"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

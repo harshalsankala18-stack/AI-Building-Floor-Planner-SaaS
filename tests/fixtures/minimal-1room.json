@@ -1,0 +1,82 @@
+{
+  "id": "fixture-minimal-1room",
+  "projectId": "project-fixture-min",
+  "name": "Minimal 1-Room Fixture",
+  "site": {
+    "id": "site-min-001",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 6000, "y": 0 },
+        { "x": 6000, "y": 9000 },
+        { "x": 0, "y": 9000 }
+      ]
+    },
+    "plotWidth": 6000,
+    "plotDepth": 9000,
+    "plotArea": 54000000,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 500, "rear": 500, "left": 500, "right": 500 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-min-gf",
+      "buildingId": "fixture-minimal-1room",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 500, "y": 500 },
+          { "x": 5500, "y": 500 },
+          { "x": 5500, "y": 8500 },
+          { "x": 500, "y": 8500 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-min-001",
+          "floorId": "floor-min-gf",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 500, "y": 500 },
+              { "x": 5500, "y": 500 },
+              { "x": 5500, "y": 8500 },
+              { "x": 500, "y": 8500 }
+            ]
+          },
+          "x": 500,
+          "y": 500,
+          "width": 5000,
+          "height": 8000,
+          "rotation": 0,
+          "area": 40000000,
+          "priority": 5,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "stairs": [],
+      "columns": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-min",
+    "clientName": "Test Fixture"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

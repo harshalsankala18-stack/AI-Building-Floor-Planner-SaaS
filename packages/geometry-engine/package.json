@@ -1,0 +1,24 @@
+{
+  "name": "@ai-floor-planner/geometry-engine",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Deterministic geometry operations for floor plan computation",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc --build",
+    "dev": "tsc --watch",
+    "test": "vitest run",
+    "test:unit": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src/",
+    "clean": "rm -rf dist *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@ai-floor-planner/core": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "5.5.4",
+    "vitest": "2.0.5"
+  }
+}

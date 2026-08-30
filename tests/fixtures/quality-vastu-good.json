@@ -1,0 +1,217 @@
+{
+  "id": "fixture-vastu-good",
+  "projectId": "project-fixture-quality",
+  "name": "Vastu Compliant Fixture",
+  "site": {
+    "id": "site-vastu-001",
+    "plotBoundary": {
+      "points": [
+        { "x": 0, "y": 0 },
+        { "x": 9144, "y": 0 },
+        { "x": 9144, "y": 15240 },
+        { "x": 0, "y": 15240 }
+      ]
+    },
+    "plotWidth": 9144,
+    "plotDepth": 15240,
+    "plotArea": 139354560,
+    "plotShape": "rectangular",
+    "orientation": 0,
+    "setbacks": { "front": 1500, "rear": 1000, "left": 900, "right": 900 },
+    "accessPoints": [],
+    "roadFacing": "north"
+  },
+  "floors": [
+    {
+      "id": "floor-vastu-gf",
+      "buildingId": "fixture-vastu-good",
+      "level": 0,
+      "name": "Ground Floor",
+      "floorHeight": 3000,
+      "boundary": {
+        "points": [
+          { "x": 900, "y": 1500 },
+          { "x": 8244, "y": 1500 },
+          { "x": 8244, "y": 14240 },
+          { "x": 900, "y": 14240 }
+        ]
+      },
+      "rooms": [
+        {
+          "id": "room-vastu-living",
+          "floorId": "floor-vastu-gf",
+          "type": "living",
+          "name": "Living Room",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 1500 },
+              { "x": 5000, "y": 1500 },
+              { "x": 5000, "y": 5500 },
+              { "x": 900, "y": 5500 }
+            ]
+          },
+          "x": 900,
+          "y": 1500,
+          "width": 4100,
+          "height": 4000,
+          "rotation": 0,
+          "area": 16400000,
+          "priority": 8,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastu-pooja",
+          "floorId": "floor-vastu-gf",
+          "type": "pooja",
+          "name": "Pooja Room",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 1500 },
+              { "x": 8244, "y": 1500 },
+              { "x": 8244, "y": 3500 },
+              { "x": 5000, "y": 3500 }
+            ]
+          },
+          "x": 5000,
+          "y": 1500,
+          "width": 3244,
+          "height": 2000,
+          "rotation": 0,
+          "area": 6488000,
+          "priority": 6,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "medium",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastu-kitchen",
+          "floorId": "floor-vastu-gf",
+          "type": "kitchen",
+          "name": "Kitchen",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 10000 },
+              { "x": 8244, "y": 10000 },
+              { "x": 8244, "y": 14240 },
+              { "x": 5000, "y": 14240 }
+            ]
+          },
+          "x": 5000,
+          "y": 10000,
+          "width": 3244,
+          "height": 4240,
+          "rotation": 0,
+          "area": 13754560,
+          "priority": 7,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastu-master",
+          "floorId": "floor-vastu-gf",
+          "type": "bedroom",
+          "name": "Master Bedroom",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 9000 },
+              { "x": 5000, "y": 9000 },
+              { "x": 5000, "y": 14240 },
+              { "x": 900, "y": 14240 }
+            ]
+          },
+          "x": 900,
+          "y": 9000,
+          "width": 4100,
+          "height": 5240,
+          "rotation": 0,
+          "area": 21484000,
+          "priority": 9,
+          "tags": ["master"],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "high",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastu-dining",
+          "floorId": "floor-vastu-gf",
+          "type": "dining",
+          "name": "Dining Room",
+          "boundary": {
+            "points": [
+              { "x": 5000, "y": 5500 },
+              { "x": 8244, "y": 5500 },
+              { "x": 8244, "y": 10000 },
+              { "x": 5000, "y": 10000 }
+            ]
+          },
+          "x": 5000,
+          "y": 5500,
+          "width": 3244,
+          "height": 4500,
+          "rotation": 0,
+          "area": 14598000,
+          "priority": 6,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "medium",
+          "privacyRequirement": "none",
+          "ventilationRequired": false,
+          "isFixed": false
+        },
+        {
+          "id": "room-vastu-bathroom",
+          "floorId": "floor-vastu-gf",
+          "type": "bathroom",
+          "name": "Bathroom",
+          "boundary": {
+            "points": [
+              { "x": 900, "y": 5500 },
+              { "x": 3000, "y": 5500 },
+              { "x": 3000, "y": 9000 },
+              { "x": 900, "y": 9000 }
+            ]
+          },
+          "x": 900,
+          "y": 5500,
+          "width": 2100,
+          "height": 3500,
+          "rotation": 0,
+          "area": 7350000,
+          "priority": 5,
+          "tags": [],
+          "adjacencyRequirements": [],
+          "daylightRequirement": "low",
+          "privacyRequirement": "high",
+          "ventilationRequired": true,
+          "isFixed": false
+        }
+      ],
+      "walls": [],
+      "doors": [],
+      "windows": [],
+      "stairs": [],
+      "columns": []
+    }
+  ],
+  "metadata": {
+    "projectId": "project-fixture-quality",
+    "clientName": "Test Fixture — Vastu Compliant"
+  },
+  "version": 1,
+  "createdAt": "2026-01-01T00:00:00Z",
+  "updatedAt": "2026-01-01T00:00:00Z"
+}

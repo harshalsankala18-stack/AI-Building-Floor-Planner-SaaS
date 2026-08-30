@@ -1,0 +1,137 @@
+/**
+ * Public type exports for @ai-floor-planner/core
+ */
+
+// Geometric primitives
+export type {
+  Point,
+  LineSegment,
+  Polygon,
+  BoundingBox,
+  Vector2D,
+  CollisionResult,
+  AlignmentGuide,
+} from './geometry';
+
+// Enumerations
+export {
+  RoomType,
+  Direction,
+  DaylightLevel,
+  PrivacyLevel,
+  PreferenceLevel,
+  AdjacencyStrength,
+  WallType,
+  DoorType,
+  SwingDirection,
+  WindowType,
+  StairType,
+  ColumnShape,
+  ProjectStatus,
+  ChangeSource,
+  PlotShape,
+  AITaskType,
+} from './enums';
+
+// Building model
+export type {
+  Setbacks,
+  AccessPoint,
+  Site,
+  AdjacencyRequirement,
+  Room,
+  Wall,
+  Door,
+  Window,
+  Stair,
+  Column,
+  Floor,
+  BuildingMetadata,
+  Building,
+  Project,
+  PlanVersion,
+} from './building';
+
+// Requirements
+export type {
+  RoomRequirement,
+  DesignPreferences,
+  UserRequirements,
+} from './requirements';
+
+// Constraints
+export type {
+  ScoreDetail,
+  CategoryScore,
+  PlanScore,
+  HardConstraintViolation,
+  SoftConstraintViolation,
+  RepairSuggestion,
+  ValidationReport,
+  ValidationSummary,
+  ConstraintConfig,
+} from './constraints';
+
+// AI
+export type {
+  TokenUsage,
+  ModelInfo,
+  AIRequest,
+  AIResponse,
+  AIChunk,
+  AIContext,
+  RoomSummary,
+  AIProvider,
+  AIOrchestration,
+  EditOperationType,
+  EditOperation,
+  DesignCritique,
+  QuotaStatus,
+  CostEstimate,
+} from './ai';
+
+// Rendering
+export type {
+  ViewTransform,
+  ScreenPoint,
+  ExportOptions,
+  PaperSize,
+  Renderer,
+} from './rendering';
+
+export { RenderLayer } from './rendering';
+
+// Design Intelligence & Requirements (Phase 7)
+export {
+  FunctionalZone,
+  AdjacencyRelationType,
+  HumanVerificationStatus,
+} from './design-intelligence';
+
+export type {
+  DesignGraphEdge,
+  DesignGraph,
+  SpatialGraphNode,
+  SpatialGraphEdge,
+  InstanceDesignGraph,
+  RoomProgramItem,
+  RoomProgram,
+  HardDesignRequirements,
+  SoftDesignPreferences,
+  DesignRequirementSpecification,
+  RequirementValidationIssue,
+  RequirementValidationResult,
+  DesignSpecification,
+  CandidateMetrics,
+  CandidatePlan,
+  CandidateOptimizationSummary,
+  PlanRepairStep,
+  FloorAllocationEvidence,
+  MultiFloorPlanningSummary,
+  VastuRuleEvidence,
+  VastuOptimizationStep,
+  VastuPlanningSummary,
+  DrawingAsset,
+  ProjectMetadata,
+  HistoricalProject,
+} from './design-intelligence';
