@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { lazy, Suspense, useEffect, useMemo, useState } from 'react';
 import { useEditorStore } from '../../stores/editor-store';
 import { TopBar } from './TopBar';
 import { ToolPalette } from './ToolPalette';
@@ -10,13 +10,15 @@ import { ExportModal } from '../modals/ExportModal';
 import { AIDesignModal } from '../ai-design/AIDesignModal';
 import { AIEditPanel } from '../ai-edit/AIEditPanel';
 import { ValidationPanel } from '../validation/ValidationPanel';
-import { BarChart3, SlidersHorizontal } from 'lucide-react';
+import { BarChart3, Box, DraftingCompass, SlidersHorizontal } from 'lucide-react';
 import { BuildingNavigator, type WorkspaceLayer } from '../workspace/BuildingNavigator';
 import { CommandPalette } from '../workspace/CommandPalette';
 import { floorSearchKeywords, isEditableKeyboardTarget, type WorkspaceCommand } from '../../services/workspace-commands';
 
 type InspectorView = 'properties' | 'quality';
+type WorkspaceView = '2d' | '3d';
 
+const ModelWorkspace = lazy(() => import('../model-3d/ModelWorkspace'));
 
 interface AppShellProps {
   onBackToProjects: () => void;
@@ -37,6 +39,7 @@ export const AppShell: React.FC<AppShellProps> = ({ onBackToProjects, onOpenSite
   const [fitRequest, setFitRequest] = useState(0);
   const [snapEnabled, setSnapEnabled] = useState(true);
   const [layers, setLayers] = useState<Record<WorkspaceLayer, boolean>>({ rooms: true, walls: true, openings: true, stairs: true, dimensions: true, grid: true, validation: true });
+  const [workspaceView, setWorkspaceView] = useState<WorkspaceView>('2d');
 
   useEffect(() => {
     if (editor.selection) setInspectorView('properties');
@@ -93,7 +96,7 @@ export const AppShell: React.FC<AppShellProps> = ({ onBackToProjects, onOpenSite
       />
 
       {/* 2. Main CAD Workspace (5-zone layout) */}
-      <main className="workspace-main">
+      <main className={`workspace-main ${workspaceView === '3d' ? 'model-mode' : ''}`}>
         {/* Left Toolbar */}
         <div className="workspace-left-rail">
           <BuildingNavigator editor={editor} layers={layers} onToggleLayer={layer => setLayers(value => ({ ...value, [layer]: !value[layer] }))} collapsed={navigatorCollapsed} onToggleCollapsed={() => setNavigatorCollapsed(value => !value)} />
@@ -101,14 +104,31 @@ export const AppShell: React.FC<AppShellProps> = ({ onBackToProjects, onOpenSite
         </div>
 
         {/* Center Canvas Viewport */}
-        <ArchitecturalCanvas
-          editor={editor}
-          onCursorMove={setCursorWorldPos}
-          onZoomChange={setZoom}
-          snapEnabled={snapEnabled}
-          layers={layers}
-          fitRequest={fitRequest}
-        />
+        <div className="workspace-view-stage">
+          <div className="workspace-view-switch" role="tablist" aria-label="Building representation">
+            <button role="tab" aria-selected={workspaceView === '2d'} className={workspaceView === '2d' ? 'active' : ''} onClick={() => setWorkspaceView('2d')}><DraftingCompass size={15} /> 2D Plan</button>
+            <button role="tab" aria-selected={workspaceView === '3d'} className={workspaceView === '3d' ? 'active' : ''} onClick={() => setWorkspaceView('3d')}><Box size={15} /> 3D Model</button>
+          </div>
+          {workspaceView === '2d'
+            ? <ArchitecturalCanvas
+                editor={editor}
+                onCursorMove={setCursorWorldPos}
+                onZoomChange={setZoom}
+                snapEnabled={snapEnabled}
+                layers={layers}
+                fitRequest={fitRequest}
+              />
+            : <Suspense fallback={<div className="model-loading-state"><Box size={30} /><strong>Loading structured 3D projection…</strong><span>Three.js is downloaded only when 3D mode opens.</span></div>}>
+                <ModelWorkspace
+                  building={editor.building}
+                  activeFloorId={editor.activeFloor.id}
+                  selection={editor.selection}
+                  onSelectEntity={editor.selectEntity}
+                  onClearSelection={editor.clearSelection}
+                  onSwitchFloor={editor.switchFloor}
+                />
+              </Suspense>}
+        </div>
 
         {/* Right Intelligence Dock */}
         <aside className="inspector-dock" aria-label="Plan inspector">
