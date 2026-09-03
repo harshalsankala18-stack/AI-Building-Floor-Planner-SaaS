@@ -25,3 +25,37 @@ export type {
 export { VastuOptimizer } from './vastu/optimizer';
 export type { VastuOptimizationOptions, VastuOptimizationResult } from './vastu/optimizer';
 export { CandidateGenerator } from './generator/candidate-generator';
+export type { GenerationGeometryContext } from './generator/candidate-generator';
+export {
+  decomposeOrthogonalIntersection,
+  decomposeOrthogonalPolygon,
+  sharedRegionEdge,
+  subtractRegion,
+  subtractRegions,
+} from './regions/orthogonal-decomposition';
+export type { PlanningRegion, SharedRegionEdge } from './regions/orthogonal-decomposition';
+export {
+  GENERATION_STAGES,
+  assessGenerationReadiness,
+  runGenerationWorkflow,
+} from './generation/workflow';
+export type {
+  GenerationStageId,
+  GenerationStage,
+  GenerationWorkflowIssue,
+  GenerationReadinessReport,
+  GenerationWorkflowInput,
+  GenerationWorkflowResult,
+} from './generation/workflow';
+export {
+  RefinementError,
+  buildingRefinementRevision,
+  isRefinementCandidateStale,
+  generateTargetedRefinements,
+} from './refinement/targeted-regeneration';
+export type {
+  RefinementFailureCode,
+  RefinementChange,
+  RefinementCandidate,
+  TargetedRegenerationInput,
+} from './refinement/targeted-regeneration';

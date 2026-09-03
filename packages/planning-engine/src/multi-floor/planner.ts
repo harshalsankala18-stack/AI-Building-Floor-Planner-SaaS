@@ -23,6 +23,8 @@ const GROUND_ANCHOR_TYPES = new Set([
 
 export interface FloorProgramAllocationOptions {
   readonly availableAreaMm2?: number;
+  /** Authoritative usable plate capacity for each level. Takes precedence over the legacy scalar. */
+  readonly availableAreaMm2ByFloor?: readonly number[];
   readonly circulationAllowanceRatio?: number;
   readonly wallAllowanceRatio?: number;
   readonly requireOccupiedFloor?: boolean;
@@ -70,8 +72,17 @@ function cloneForFloor(item: RoomProgramItem, floorLevel: number): RoomProgramIt
   return { ...item, id: `${item.id}_floor_${floorLevel}`, floorLevel };
 }
 
-function lowestLoadFloor(loads: readonly number[], candidates: readonly number[]): number {
-  return candidates.reduce((best, level) => loads[level]! < loads[best]! ? level : best, candidates[0]!);
+function availableAreaAt(options: FloorProgramAllocationOptions, level: number): number | undefined {
+  return options.availableAreaMm2ByFloor?.[level] ?? options.availableAreaMm2;
+}
+
+function lowestLoadFloor(
+  loads: readonly number[],
+  candidates: readonly number[],
+  options: FloorProgramAllocationOptions,
+): number {
+  const normalizedLoad = (level: number) => loads[level]! / Math.max(1, availableAreaAt(options, level) ?? 1);
+  return candidates.reduce((best, level) => normalizedLoad(level) < normalizedLoad(best) ? level : best, candidates[0]!);
 }
 
 function buildBudget(
@@ -89,7 +100,7 @@ function buildBudget(
     minimumRoomAreaMm2 * (options.wallAllowanceRatio ?? 0.06),
   );
   const requiredAreaMm2 = minimumRoomAreaMm2 + circulationAllowanceMm2 + wallAllowanceMm2;
-  const availableAreaMm2 = options.availableAreaMm2 ?? null;
+  const availableAreaMm2 = availableAreaAt(options, level) ?? null;
   return {
     level,
     availableAreaMm2,
@@ -151,7 +162,7 @@ export class FloorProgramPlanner {
         ?? attachedBathrooms[index];
       let preferredLevel = index < privateLevels.length
         ? privateLevels[index]!
-        : lowestLoadFloor(loads, privateLevels);
+        : lowestLoadFloor(loads, privateLevels, options);
       if (options.distributionStrategy === 'top_master' && index === 0 && floorCount > 1) {
         preferredLevel = floorCount - 1;
       }
@@ -161,7 +172,8 @@ export class FloorProgramPlanner {
         const projectedRequiredArea = projectedMinimumArea * (1
           + (options.circulationAllowanceRatio ?? 0.12)
           + (options.wallAllowanceRatio ?? 0.06));
-        if (options.availableAreaMm2 === undefined || projectedRequiredArea <= options.availableAreaMm2) {
+        const groundCapacity = availableAreaAt(options, 0);
+        if (groundCapacity === undefined || projectedRequiredArea <= groundCapacity) {
           preferredLevel = 0;
         }
       }
@@ -179,7 +191,9 @@ export class FloorProgramPlanner {
           - floor.filter(item => item.type === RoomType.Bathroom).length;
         const bestDemand = floors[best]!.filter(item => item.type === RoomType.Bedroom).length
           - floors[best]!.filter(item => item.type === RoomType.Bathroom).length;
-        return demand > bestDemand || (demand === bestDemand && loads[index]! < loads[best]!) ? index : best;
+        const load = loads[index]! / Math.max(1, availableAreaAt(options, index) ?? 1);
+        const bestLoad = loads[best]! / Math.max(1, availableAreaAt(options, best) ?? 1);
+        return demand > bestDemand || (demand === bestDemand && load < bestLoad) ? index : best;
       }, 0);
       add(bathroom, level);
     }
@@ -199,16 +213,36 @@ export class FloorProgramPlanner {
       } else if (item.zone === FunctionalZone.Public || item.zone === FunctionalZone.Service) {
         candidates = [0];
       }
-      add(item, lowestLoadFloor(loads, candidates));
+      add(item, lowestLoadFloor(loads, candidates, options));
     }
 
     if ((options.requireOccupiedFloor ?? true) && floorCount > 1) {
+      // If a strategy's preferred zoning leaves a level with only the repeated
+      // core, move the least constrained room from the most populated level.
+      // This preserves every program instance while avoiding fake empty storeys.
+      for (let level = 0; level < floorCount; level += 1) {
+        if (floors[level]!.some(item => !CORE_TYPES.has(item.type))) continue;
+        const donors = floors.map((floor, donorLevel) => ({
+          donorLevel,
+          movable: floor.filter(item => !CORE_TYPES.has(item.type) && !GROUND_ANCHOR_TYPES.has(item.type)),
+          nonCoreCount: floor.filter(item => !CORE_TYPES.has(item.type)).length,
+        })).filter(donor => donor.nonCoreCount > 1 && donor.movable.length > 0)
+          .sort((a, b) => b.nonCoreCount - a.nonCoreCount || a.donorLevel - b.donorLevel);
+        const donor = donors[0];
+        const moved = donor?.movable.sort((a, b) => a.minAreaMm2 - b.minAreaMm2 || a.id.localeCompare(b.id))[0];
+        if (donor && moved) {
+          floors[donor.donorLevel] = floors[donor.donorLevel]!.filter(item => item.id !== moved.id);
+          floors[level]!.push({ ...moved, floorLevel: level });
+          loads[donor.donorLevel]! -= moved.targetAreaMm2;
+          loads[level]! += moved.targetAreaMm2;
+        }
+      }
       const emptyLevel = floors.findIndex(floor => floor.every(item => CORE_TYPES.has(item.type)));
       if (emptyLevel >= 0) {
         throw new FloorProgramAllocationError(
           emptyLevel,
           0,
-          options.availableAreaMm2 ?? 0,
+          availableAreaAt(options, emptyLevel) ?? 0,
           `INFEASIBLE_PROGRAM: Floor ${emptyLevel} has no occupiable room allocation. Reduce the floor count or add a required space for that level.`,
         );
       }

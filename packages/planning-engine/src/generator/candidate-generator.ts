@@ -8,6 +8,7 @@ import type {
   DesignRequirementSpecification, InstanceDesignGraph, RoomProgram, RoomType,
 } from '@ai-floor-planner/core';
 import { ConstraintCategory, PlanValidator } from '@ai-floor-planner/constraint-engine';
+import { polygonArea } from '@ai-floor-planner/geometry-engine';
 import { DesignGraphBuilder } from '../graph/builder';
 import { evaluateInstanceGraph } from '../graph/scorer';
 import type { InstanceGraphEvaluation } from '../graph/scorer';
@@ -15,6 +16,7 @@ import { PlanRepairEngine } from '../repair/engine';
 import type { PlanRepairResult } from '../repair/engine';
 import { LAYOUT_STRATEGIES, StructuredLayoutGenerator, roomProgramCounts } from './structured-layout';
 import type { LayoutStrategyProfile } from './structured-layout';
+import { PolygonLayoutGenerator } from './polygon-layout';
 import { evaluateMultiFloorPlanning } from '../multi-floor/planner';
 import { VastuOptimizer } from '../vastu/optimizer';
 import type { VastuOptimizationResult } from '../vastu/optimizer';
@@ -30,6 +32,11 @@ interface ValidAttempt {
   readonly selectionScore: number;
 }
 
+export interface GenerationGeometryContext {
+  /** Building whose Floor.boundary values are the authoritative generation plates. */
+  readonly sourceBuilding: Building;
+}
+
 // Keep strategy envelopes distinct while still exploring meaningful geometry.
 const VARIANT_OFFSETS = [0, -0.005, 0.005] as const;
 
@@ -41,6 +48,7 @@ export class CandidateGenerator {
   private readonly validator = new PlanValidator();
   private readonly graphBuilder = new DesignGraphBuilder();
   private readonly layoutGenerator = new StructuredLayoutGenerator();
+  private readonly polygonLayoutGenerator = new PolygonLayoutGenerator();
   private readonly repairEngine = new PlanRepairEngine(this.validator);
   private readonly vastuOptimizer = new VastuOptimizer(this.validator);
 
@@ -48,12 +56,14 @@ export class CandidateGenerator {
     spec: DesignRequirementSpecification,
     program: RoomProgram,
     _seed: number = 42,
+    geometry?: GenerationGeometryContext,
   ): CandidatePlan[] {
     const requiredRoomCounts = roomProgramCounts(program);
     const requiredRoomTypes = Object.keys(requiredRoomCounts) as RoomType[];
     const designGraph = this.graphBuilder.buildInstanceGraph(program);
+    const strategyFailures: string[] = [];
 
-    const candidates = LAYOUT_STRATEGIES.map((profile, index) => {
+    const candidates = LAYOUT_STRATEGIES.map((profile, index): CandidatePlan | null => {
       const validAttempts: ValidAttempt[] = [];
       const failureMessages: string[] = [];
       let initialGraphScore = 0;
@@ -63,7 +73,9 @@ export class CandidateGenerator {
         const variantId = `${profile.strategy}_ratio_${Math.round(ratio * 1000)}`;
         const variantProfile: LayoutStrategyProfile = { ...profile, columnRatio: ratio };
         try {
-          const generatedBuilding = this.layoutGenerator.generate(spec, program, variantProfile, designGraph);
+          const generatedBuilding = geometry
+            ? this.polygonLayoutGenerator.generate(spec, program, variantProfile, designGraph, geometry.sourceBuilding)
+            : this.layoutGenerator.generate(spec, program, variantProfile, designGraph);
           const generatedGraphEvaluation = evaluateInstanceGraph(generatedBuilding, designGraph);
           if (variantIndex === 0) initialGraphScore = generatedGraphEvaluation.score;
           // Phase 5 repairs architectural function independently of optional Vastu guidance.
@@ -125,7 +137,8 @@ export class CandidateGenerator {
       const selected = selectableAttempts[0];
       if (!selected) {
         const detail = [...new Set(failureMessages)].slice(0, 3).join(' ');
-        throw new Error(`The ${profile.name} strategy could not produce a hard-valid plan. ${detail}`.trim());
+        strategyFailures.push(`The ${profile.name} strategy could not produce a hard-valid plan. ${detail}`.trim());
+        return null;
       }
 
       const optimization: CandidateOptimizationSummary = {
@@ -147,14 +160,23 @@ export class CandidateGenerator {
         designGraph,
         optimization,
       );
-    });
+    }).filter((candidate): candidate is CandidatePlan => candidate !== null);
 
-    candidates.sort((a, b) =>
+    if (!candidates.length) {
+      throw new Error(`No strategy produced a hard-valid plan. ${strategyFailures.join(' ')}`.trim());
+    }
+
+    const unique = candidates.filter((candidate, index, values) => {
+      const signature = layoutSignature(candidate.building);
+      return values.findIndex(value => layoutSignature(value.building) === signature) === index;
+    });
+    if (!unique.length) throw new Error('No materially distinct hard-valid candidate remained after diversity checks.');
+    unique.sort((a, b) =>
       b.metrics.overallQualityScore - a.metrics.overallQualityScore
       || b.metrics.adjacencyScore - a.metrics.adjacencyScore
       || a.id.localeCompare(b.id),
     );
-    return candidates.map((candidate, index) => ({ ...candidate, rank: index + 1 }));
+    return unique.map((candidate, index) => ({ ...candidate, rank: index + 1 }));
   }
 
   private createCandidate(
@@ -170,10 +192,7 @@ export class CandidateGenerator {
     const allRooms = building.floors.flatMap(floor => floor.rooms);
     const carpetArea = allRooms.reduce((sum, room) => sum + room.area, 0);
     const buildableArea = building.floors.reduce((sum, floor) => {
-      if (floor.boundary.points.length < 3) return sum;
-      const xs = floor.boundary.points.map(point => point.x);
-      const ys = floor.boundary.points.map(point => point.y);
-      return sum + (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys));
+      return floor.boundary.points.length < 3 ? sum : sum + polygonArea(floor.boundary);
     }, 0);
     const category = (kind: ConstraintCategory): number => validation.categoryScores[kind]?.score ?? 0;
 
@@ -205,4 +224,10 @@ export class CandidateGenerator {
       rank: 1,
     };
   }
+}
+
+function layoutSignature(building: Building): string {
+  return building.floors.map(floor => floor.rooms
+    .map(room => [room.type, Math.round(room.x), Math.round(room.y), Math.round(room.width), Math.round(room.height)].join(':'))
+    .sort().join('|')).join('||');
 }
