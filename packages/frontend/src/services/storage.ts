@@ -3,7 +3,7 @@
  * Strictly adheres to project envelope versioning and domain validation.
  */
 
-import type { Building } from '@ai-floor-planner/core';
+import type { Building, CandidatePlan, FootprintIntent, GenerationControlState, SpaceProgram } from '@ai-floor-planner/core';
 import {
   serializeBuilding,
   deserializeBuilding,
@@ -18,6 +18,10 @@ import {
   WindowType,
   WallType,
   Direction,
+  deriveSpaceProgramFromBuilding,
+  deriveFootprintIntent,
+  createGenerationControlState,
+  validateGenerationControl,
 } from '@ai-floor-planner/core';
 
 export interface ProjectEnvelope {
@@ -30,17 +34,29 @@ export interface ProjectEnvelope {
   readonly requiredRoomCounts?: Partial<Record<RoomType, number>>;
   readonly category?: BuildingCategory;
   readonly status?: ProjectLifecycleStatus;
+  readonly spaceProgram?: SpaceProgram;
+  readonly footprintIntent?: FootprintIntent;
+  /** null is a save-time tombstone used to invalidate stale alternatives. */
+  readonly generationSession?: GenerationSession | null;
+  readonly generationControl?: GenerationControlState;
+}
+
+export interface GenerationSession {
+  readonly schemaVersion: 1;
+  readonly generatedAt: string;
+  readonly selectedCandidateId?: string;
+  readonly candidates: readonly CandidatePlan[];
 }
 
 export const BUILDING_CATEGORIES = ['residential', 'commercial', 'mixed_use', 'educational'] as const;
 export type BuildingCategory = (typeof BUILDING_CATEGORIES)[number];
 
 export const PROJECT_LIFECYCLE_STATUSES = [
-  'CONCEPT', 'DESIGNING', 'ANALYZING', 'REVIEW_REQUIRED', 'REVIEWED', 'RELEASED',
+  'CONCEPT', 'DESIGNING', 'ANALYZING', 'GENERATED', 'REVIEW_REQUIRED', 'REVIEWED', 'RELEASED',
 ] as const;
 export type ProjectLifecycleStatus = (typeof PROJECT_LIFECYCLE_STATUSES)[number];
 
-export const CURRENT_PROJECT_SCHEMA_VERSION = 3;
+export const CURRENT_PROJECT_SCHEMA_VERSION = 8;
 
 export interface ProjectHeader {
   readonly id: string;
@@ -85,8 +101,37 @@ function normalizeRequiredRoomCounts(input: unknown): Partial<Record<RoomType, n
 export class LocalStorageProjectStorage {
   save(envelope: ProjectEnvelope): void {
     try {
+      const previousRaw = localStorage.getItem(STORAGE_KEY_PREFIX + envelope.projectId);
+      const previousProgram = previousRaw
+        ? (JSON.parse(previousRaw).spaceProgram as SpaceProgram | undefined)
+        : undefined;
+      const previousFootprint = previousRaw
+        ? (JSON.parse(previousRaw).footprintIntent as FootprintIntent | undefined)
+        : undefined;
+      const previousGeneration = previousRaw
+        ? (JSON.parse(previousRaw).generationSession as GenerationSession | undefined)
+        : undefined;
+      const previousControl = previousRaw
+        ? (JSON.parse(previousRaw).generationControl as GenerationControlState | undefined)
+        : undefined;
+      const category = normalizeBuildingCategory(envelope.category);
+      const candidateProgram = envelope.spaceProgram ?? previousProgram;
+      const spaceProgram = candidateProgram?.category === category
+        ? candidateProgram
+        : deriveSpaceProgramFromBuilding(envelope.building, category);
       const serialized = JSON.stringify({
         ...envelope,
+        schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
+        category,
+        spaceProgram,
+        footprintIntent: envelope.footprintIntent ?? previousFootprint ?? deriveFootprintIntent(envelope.building),
+        generationSession: envelope.generationSession === null
+          ? undefined
+          : envelope.generationSession ?? previousGeneration,
+        generationControl: validateGenerationControl(
+          envelope.generationControl ?? previousControl ?? createGenerationControlState(),
+          envelope.building,
+        ).state,
         building: JSON.parse(serializeBuilding(envelope.building)),
       });
       localStorage.setItem(STORAGE_KEY_PREFIX + envelope.projectId, serialized);
@@ -103,12 +148,30 @@ export class LocalStorageProjectStorage {
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       const building = deserializeBuilding(JSON.stringify(parsed.building));
+      const category = normalizeBuildingCategory(parsed.category);
+      const savedProgram = parsed.spaceProgram as SpaceProgram | undefined;
+      const savedFootprint = parsed.footprintIntent as FootprintIntent | undefined;
+      const savedGeneration = parsed.generationSession as GenerationSession | undefined;
+      const savedControl = parsed.generationControl as GenerationControlState | undefined;
       return {
         ...parsed,
+        schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
         building,
         requiredRoomCounts: normalizeRequiredRoomCounts(parsed.requiredRoomCounts),
-        category: normalizeBuildingCategory(parsed.category),
+        category,
         status: normalizeProjectStatus(parsed.status),
+        spaceProgram: savedProgram?.category === category
+          ? savedProgram
+          : deriveSpaceProgramFromBuilding(building, category),
+        footprintIntent: savedFootprint ?? deriveFootprintIntent(building),
+        generationSession: savedGeneration ? {
+          ...savedGeneration,
+          candidates: savedGeneration.candidates.map(candidate => ({
+            ...candidate,
+            building: deserializeBuilding(JSON.stringify(candidate.building)),
+          })),
+        } : undefined,
+        generationControl: validateGenerationControl(savedControl, building).state,
       };
     } catch (err) {
       console.error(`Failed to load project ${projectId}:`, err);
@@ -134,7 +197,7 @@ export class LocalStorageProjectStorage {
                 0,
               ) ?? 0,
               plotArea: data.building?.site?.plotArea ?? 0,
-              floorCount: data.building?.floors?.length ?? 0,
+              floorCount: data.building?.site?.plannedFloorCount ?? data.building?.floors?.length ?? 0,
               plotWidth: data.building?.site?.plotWidth ?? 0,
               plotDepth: data.building?.site?.plotDepth ?? 0,
               category: normalizeBuildingCategory(data.category),
@@ -212,16 +275,33 @@ export function parseAndValidateProjectJson(jsonString: string): ProjectEnvelope
   const projectId = (record.projectId as string) ?? building.id;
   const name = (record.name as string) ?? building.name;
 
+  const category = normalizeBuildingCategory(record.category);
+  const importedProgram = record.spaceProgram as SpaceProgram | undefined;
+  const importedFootprint = record.footprintIntent as FootprintIntent | undefined;
+  const importedGeneration = record.generationSession as GenerationSession | undefined;
+  const importedControl = record.generationControl as GenerationControlState | undefined;
   return {
-    schemaVersion: (record.schemaVersion as number) ?? 1,
+    schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
     projectId,
     name,
     createdAt: (record.createdAt as string) ?? building.createdAt,
     updatedAt: (record.updatedAt as string) ?? new Date().toISOString(),
     building,
     requiredRoomCounts: normalizeRequiredRoomCounts(record.requiredRoomCounts),
-    category: normalizeBuildingCategory(record.category),
+    category,
     status: normalizeProjectStatus(record.status),
+    spaceProgram: importedProgram?.category === category
+      ? importedProgram
+      : deriveSpaceProgramFromBuilding(building, category),
+    footprintIntent: importedFootprint ?? deriveFootprintIntent(building),
+    generationSession: importedGeneration ? {
+      ...importedGeneration,
+      candidates: importedGeneration.candidates.map(candidate => ({
+        ...candidate,
+        building: deserializeBuilding(JSON.stringify(candidate.building)),
+      })),
+    } : undefined,
+    generationControl: validateGenerationControl(importedControl, building).state,
   };
 }
 
