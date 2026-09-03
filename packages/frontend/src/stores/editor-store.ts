@@ -4,7 +4,7 @@
  */
 
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
-import type { Building, Floor, RoomType } from '@ai-floor-planner/core';
+import type { Building, Floor, GenerationControlState, RoomType } from '@ai-floor-planner/core';
 import {
   EditorEngine,
   SelectEntityCommand,
@@ -15,6 +15,11 @@ import {
   IEditorCommand,
   EditorTool,
   EditorSelection,
+  SetSelectionsCommand,
+  ReplaceBuildingCommand,
+  createGenerationControlState,
+  updateGenerationControl,
+  validateGenerationControl,
 } from '@ai-floor-planner/core';
 import { PlanValidator, ValidationSummary } from '@ai-floor-planner/constraint-engine';
 import {
@@ -31,6 +36,8 @@ export interface EditorContextValue {
   building: Building;
   activeFloor: Floor;
   selection: EditorSelection | null;
+  selections: readonly EditorSelection[];
+  generationControl: GenerationControlState;
   activeTool: EditorTool;
   canUndo: boolean;
   canRedo: boolean;
@@ -44,12 +51,17 @@ export interface EditorContextValue {
   undo: () => void;
   redo: () => void;
   selectEntity: (entityType: string, entityId: string, floorId?: string) => void;
+  toggleRoomSelection: (entityId: string, floorId?: string) => void;
   clearSelection: () => void;
   switchFloor: (floorId: string) => void;
   setTool: (tool: EditorTool) => void;
   deleteSelected: () => void;
   saveProject: () => void;
   revalidate: () => void;
+  setRoomLocks: (roomIds: readonly string[], locked: boolean) => void;
+  setFloorLock: (floorId: string, locked: boolean) => void;
+  setCoreLock: (coreId: string, locked: boolean) => void;
+  applyRefinement: (building: Building, description?: string) => void;
   loadProject: (projectId: string) => void;
   setBuilding: (
     building: Building,
@@ -112,6 +124,12 @@ export function useEditorStore() {
   // Reactive state synced with EditorEngine
   const [building, setBuildingState] = useState<Building>(() => engine.getBuilding());
   const [editorState, setEditorState] = useState(() => engine.getState());
+  const initialControl = validateGenerationControl(
+    initialEnvelope.generationControl ?? createGenerationControlState(),
+    initialEnvelope.building,
+  ).state;
+  const [generationControl, setGenerationControlState] = useState<GenerationControlState>(initialControl);
+  const generationControlRef = useRef(initialControl);
   // Vastu is opt-in guidance. A project that did not request it must not receive
   // an authoritative-looking score by default.
   const planValidator = useMemo(() => new PlanValidator(undefined, { enableVastu: false }), []);
@@ -153,6 +171,7 @@ export function useEditorStore() {
             requiredRoomCounts: requiredRoomCountsRef.current,
             category: projectIdentityRef.current.category,
             status: projectIdentityRef.current.status,
+            generationControl: validateGenerationControl(generationControlRef.current, b).state,
           });
         } catch (e) {
           console.warn('Autosave warning:', e);
@@ -188,6 +207,13 @@ export function useEditorStore() {
     }));
   }, [engine, activeFloor.id]);
 
+  const toggleRoomSelection = useCallback((entityId: string, floorId?: string) => {
+    const selection: EditorSelection = { entityType: 'room', entityId, floorId: floorId ?? activeFloor.id };
+    const current = engine.getState().selections ?? [];
+    const exists = current.some(item => item.entityType === 'room' && item.entityId === entityId);
+    engine.execute(new SetSelectionsCommand(exists ? current.filter(item => item.entityId !== entityId) : [...current, selection]));
+  }, [engine, activeFloor.id]);
+
   const clearSelection = useCallback(() => {
     engine.execute(new ClearSelectionCommand());
   }, [engine]);
@@ -216,8 +242,49 @@ export function useEditorStore() {
       requiredRoomCounts: requiredRoomCountsRef.current,
       category: projectCategory,
       status: projectStatus,
+      generationControl,
     });
-  }, [projectId, projectName, building, projectCategory, projectStatus]);
+  }, [projectId, projectName, building, projectCategory, projectStatus, generationControl]);
+
+  const persistControl = useCallback((next: GenerationControlState) => {
+    const validated = validateGenerationControl(next, engine.getBuilding()).state;
+    generationControlRef.current = validated;
+    setGenerationControlState(validated);
+    projectStorage.save({
+      schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
+      projectId: projectIdentityRef.current.id,
+      name: projectIdentityRef.current.name,
+      createdAt: engine.getBuilding().createdAt,
+      updatedAt: new Date().toISOString(),
+      building: engine.getBuilding(),
+      requiredRoomCounts: requiredRoomCountsRef.current,
+      category: projectIdentityRef.current.category,
+      status: projectIdentityRef.current.status,
+      generationControl: validated,
+    });
+  }, [engine]);
+
+  const setRoomLocks = useCallback((roomIds: readonly string[], locked: boolean) => {
+    const current = new Set(generationControlRef.current.lockedEntityIds);
+    roomIds.forEach(id => locked ? current.add(id) : current.delete(id));
+    persistControl(updateGenerationControl(generationControlRef.current, { lockedEntityIds: [...current] }));
+  }, [persistControl]);
+
+  const setFloorLock = useCallback((floorId: string, locked: boolean) => {
+    const current = new Set(generationControlRef.current.lockedFloorIds);
+    if (locked) current.add(floorId); else current.delete(floorId);
+    persistControl(updateGenerationControl(generationControlRef.current, { lockedFloorIds: [...current] }));
+  }, [persistControl]);
+
+  const setCoreLock = useCallback((coreId: string, locked: boolean) => {
+    const current = new Set(generationControlRef.current.protectedCoreIds);
+    if (locked) current.add(coreId); else current.delete(coreId);
+    persistControl(updateGenerationControl(generationControlRef.current, { protectedCoreIds: [...current] }));
+  }, [persistControl]);
+
+  const applyRefinement = useCallback((nextBuilding: Building, description = 'Targeted regeneration') => {
+    engine.execute(new ReplaceBuildingCommand(engine.getBuilding(), nextBuilding, description));
+  }, [engine]);
 
   const revalidate = useCallback(() => {
     setValidationSummary(planValidator.validate(building, {
@@ -239,6 +306,9 @@ export function useEditorStore() {
       status: loaded.status ?? 'CONCEPT',
     };
     requiredRoomCountsRef.current = loaded.requiredRoomCounts ?? {};
+    const loadedControl = validateGenerationControl(loaded.generationControl, loaded.building).state;
+    generationControlRef.current = loadedControl;
+    setGenerationControlState(loadedControl);
     engine.setBuilding(loaded.building);
   }, [engine]);
 
@@ -260,6 +330,9 @@ export function useEditorStore() {
       status: 'CONCEPT',
     };
     requiredRoomCountsRef.current = requiredRoomCounts;
+    const nextControl = createGenerationControlState();
+    generationControlRef.current = nextControl;
+    setGenerationControlState(nextControl);
     projectStorage.save({
       schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
       projectId: newBuilding.projectId,
@@ -270,6 +343,7 @@ export function useEditorStore() {
       requiredRoomCounts,
       category,
       status: 'CONCEPT',
+      generationControl: nextControl,
     });
     engine.setBuilding(newBuilding);
   }, [engine]);
@@ -279,6 +353,8 @@ export function useEditorStore() {
     building,
     activeFloor,
     selection: editorState.selection,
+    selections: editorState.selections ?? (editorState.selection ? [editorState.selection] : []),
+    generationControl,
     activeTool: editorState.activeTool,
     canUndo: editorState.historySummary.canUndo,
     canRedo: editorState.historySummary.canRedo,
@@ -292,12 +368,17 @@ export function useEditorStore() {
     undo,
     redo,
     selectEntity,
+    toggleRoomSelection,
     clearSelection,
     switchFloor,
     setTool,
     deleteSelected,
     saveProject,
     revalidate,
+    setRoomLocks,
+    setFloorLock,
+    setCoreLock,
+    applyRefinement,
     loadProject,
     setBuilding,
   };

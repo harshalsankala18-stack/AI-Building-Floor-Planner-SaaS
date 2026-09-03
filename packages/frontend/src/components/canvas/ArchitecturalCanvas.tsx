@@ -8,35 +8,47 @@ import {
   scaleToScreen,
 } from '@ai-floor-planner/renderer';
 import {
-  MoveRoomCommand,
-  ResizeRoomCommand,
+  UpdateRoomGeometryCommand,
   AddRoomCommand,
   AddDoorCommand,
   AddWindowCommand,
+  MoveDoorCommand,
+  MoveWindowCommand,
   RoomType,
   DoorType,
   WindowType,
+  RenderLayer,
 } from '@ai-floor-planner/core';
 import type { AlignmentGuide, ViewTransform } from '@ai-floor-planner/core';
 import {
   snapToGrid,
   findAlignmentGuides,
   clampOpeningPositionOnWall,
+  containsPolygon,
+  polygonIntersectionArea,
 } from '@ai-floor-planner/geometry-engine';
 import { fitFloorToViewport, rememberFloorCamera, restoreOrFitFloorCamera } from '../../services/floor-camera';
+import type { WorkspaceLayer } from '../workspace/BuildingNavigator';
+import { hasOpeningPositionChanged } from '../../services/workspace-commands';
 
 interface ArchitecturalCanvasProps {
   editor: EditorContextValue;
   onCursorMove: (worldPos: { x: number; y: number }) => void;
   onZoomChange: (zoom: number) => void;
+  snapEnabled: boolean;
+  layers: Readonly<Record<WorkspaceLayer, boolean>>;
+  fitRequest: number;
 }
 
-type DragMode = 'none' | 'pan' | 'move_room' | 'resize_room';
+type DragMode = 'none' | 'pan' | 'move_room' | 'resize_room' | 'move_door' | 'move_window';
 
 export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
   editor,
   onCursorMove,
   onZoomChange,
+  snapEnabled,
+  layers,
+  fitRequest,
 }) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewportSize, setViewportSize] = useState({ width: 1200, height: 800 });
@@ -66,6 +78,8 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
 
   const [activeGuides, setActiveGuides] = useState<AlignmentGuide[]>([]);
   const [doorPreview, setDoorPreview] = useState<{ position: { x: number; y: number }; wallId: string } | null>(null);
+  const [transientOpening, setTransientOpening] = useState<{ entityType: 'door' | 'window'; id: string; position: { x: number; y: number }; wallId: string; width: number } | null>(null);
+  const [measurement, setMeasurement] = useState<{ start: { x: number; y: number }; end: { x: number; y: number } } | null>(null);
 
   // Measure container viewport on mount and resize
   useEffect(() => {
@@ -93,6 +107,10 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     setTransform(fit);
     onZoomChange(fit.scale);
   }, [editor.activeFloor, viewportSize.width, viewportSize.height, onZoomChange]);
+
+  useEffect(() => {
+    if (fitRequest > 0) fitPlanToView();
+  }, [fitPlanToView, fitRequest]);
 
   // Keep each floor's camera independent. First visit fits that floor; later visits restore it.
   useEffect(() => {
@@ -127,9 +145,21 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       editor.building,
       transform,
       viewportSize.width,
-      viewportSize.height
+      viewportSize.height,
+      {
+        showGrid: layers.grid,
+        showDimensions: layers.dimensions,
+        layers: {
+          [RenderLayer.Grid]: layers.grid,
+          [RenderLayer.Rooms]: layers.rooms,
+          [RenderLayer.Walls]: layers.walls,
+          [RenderLayer.Openings]: layers.openings,
+          [RenderLayer.Stairs]: layers.stairs,
+          [RenderLayer.Annotations]: layers.dimensions,
+        },
+      },
     );
-  }, [editor.activeFloor, editor.building, transform, viewportSize.width, viewportSize.height]);
+  }, [editor.activeFloor, editor.building, transform, viewportSize.width, viewportSize.height, layers]);
 
   // Screen to World Conversion using Authoritative transform
   const getScreenToWorld = useCallback((screenX: number, screenY: number) => {
@@ -146,6 +176,19 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     }
     return null;
   }, [editor.selection, editor.activeFloor.rooms]);
+
+  const transientRoomValid = useMemo(() => {
+    if (!transientRoom || !selectedRoom) return true;
+    const boundary = { points: [
+      { x: transientRoom.x, y: transientRoom.y },
+      { x: transientRoom.x + transientRoom.width, y: transientRoom.y },
+      { x: transientRoom.x + transientRoom.width, y: transientRoom.y + transientRoom.height },
+      { x: transientRoom.x, y: transientRoom.y + transientRoom.height },
+    ] };
+    if (!containsPolygon(editor.activeFloor.boundary, boundary)) return false;
+    if (selectedRoom.minArea && transientRoom.width * transientRoom.height < selectedRoom.minArea) return false;
+    return editor.activeFloor.rooms.every(room => room.id === transientRoom.id || polygonIntersectionArea(boundary, room.boundary) <= 2);
+  }, [editor.activeFloor.boundary, editor.activeFloor.rooms, selectedRoom, transientRoom]);
 
   // Handle Wheel Zoom (Cursor-Anchored)
   const handleWheel = (e: React.WheelEvent) => {
@@ -178,7 +221,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
 
     // Add Room Tool
     if (editor.activeTool === 'add_room') {
-      const snapped = snapToGrid(worldPos, 100);
+      const snapped = snapEnabled ? snapToGrid(worldPos, 100) : worldPos;
       editor.executeCommand(
         new AddRoomCommand(editor.activeFloor.id, {
           floorId: editor.activeFloor.id,
@@ -207,7 +250,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
               width: 900,
               height: 2100,
               type: DoorType.Single,
-              connectsRooms: ['', ''],
+              connectsRooms: [wall.roomIds[0] ?? '__outside__', wall.roomIds[1] ?? '__outside__'],
             })
           );
           editor.setTool('select');
@@ -231,12 +274,23 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
               height: 1200,
               sillHeight: 900,
               type: WindowType.Sliding,
-              roomId: editor.activeFloor.rooms[0]?.id ?? '',
+              roomId: wall.roomIds.find(id => id !== '__outside__') ?? '',
             })
           );
           editor.setTool('select');
           return;
         }
+      }
+      return;
+    }
+
+    if (editor.activeTool === 'measure') {
+      const point = snapEnabled ? snapToGrid(worldPos, 100) : worldPos;
+      if (measurement) {
+        setMeasurement({ ...measurement, end: point });
+        editor.setTool('select');
+      } else {
+        setMeasurement({ start: point, end: point });
       }
       return;
     }
@@ -248,6 +302,10 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       const entityId = entityElement.getAttribute('data-entity-id')!;
       const entityType = entityElement.getAttribute('data-entity-type') || 'room';
 
+      if (entityType === 'room' && (e.ctrlKey || e.metaKey || e.shiftKey)) {
+        editor.toggleRoomSelection(entityId, editor.activeFloor.id);
+        return;
+      }
       editor.selectEntity(entityType, entityId, editor.activeFloor.id);
 
       if (entityType === 'room') {
@@ -256,6 +314,18 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           setDragMode('move_room');
           setDragStart({ x: worldPos.x - r.x, y: worldPos.y - r.y });
           setTransientRoom({ id: r.id, x: r.x, y: r.y, width: r.width, height: r.height });
+        }
+      } else if (entityType === 'door') {
+        const door = editor.activeFloor.doors.find(value => value.id === entityId);
+        if (door) {
+          setDragMode('move_door');
+          setTransientOpening({ entityType: 'door', id: door.id, position: door.position, wallId: door.wallId, width: door.width });
+        }
+      } else if (entityType === 'window') {
+        const window = editor.activeFloor.windows.find(value => value.id === entityId);
+        if (window) {
+          setDragMode('move_window');
+          setTransientOpening({ entityType: 'window', id: window.id, position: window.position, wallId: window.wallId, width: window.width });
         }
       }
       return;
@@ -267,6 +337,10 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     );
 
     if (hitRoom) {
+      if (e.ctrlKey || e.metaKey || e.shiftKey) {
+        editor.toggleRoomSelection(hitRoom.id, editor.activeFloor.id);
+        return;
+      }
       editor.selectEntity('room', hitRoom.id, editor.activeFloor.id);
       setDragMode('move_room');
       setDragStart({ x: worldPos.x - hitRoom.x, y: worldPos.y - hitRoom.y });
@@ -313,7 +387,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       const rawY = worldPos.y - dragStart.y;
 
       // Snapping to grid & alignment guides
-      const snapped = snapToGrid({ x: rawX, y: rawY }, 100);
+      const snapped = snapEnabled ? snapToGrid({ x: rawX, y: rawY }, 100) : { x: rawX, y: rawY };
       const hostRoom = editor.activeFloor.rooms.find(r => r.id === transientRoom.id);
       const guides = hostRoom
         ? findAlignmentGuides(
@@ -325,6 +399,19 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
 
       setActiveGuides(guides);
       setTransientRoom(prev => prev ? { ...prev, x: snapped.x, y: snapped.y } : null);
+      return;
+    }
+
+    if ((dragMode === 'move_door' || dragMode === 'move_window') && transientOpening) {
+      const wall = editor.activeFloor.walls.find(value => value.id === transientOpening.wallId);
+      if (!wall) return;
+      const clamped = clampOpeningPositionOnWall(worldPos, wall, transientOpening.width);
+      if (clamped.valid) setTransientOpening({ ...transientOpening, position: clamped.position });
+      return;
+    }
+
+    if (editor.activeTool === 'measure' && measurement) {
+      setMeasurement({ ...measurement, end: snapEnabled ? snapToGrid(worldPos, 100) : worldPos });
       return;
     }
 
@@ -381,37 +468,36 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
 
   // Handle Pointer Up (Commit Command)
   const handlePointerUp = () => {
-    if (dragMode === 'move_room' && transientRoom && selectedRoom) {
+    if ((dragMode === 'move_room' || dragMode === 'resize_room') && transientRoom && selectedRoom) {
+      if (!transientRoomValid) {
+        setDragMode('none'); setTransientRoom(null); setActiveGuides([]); setResizeHandle(null); return;
+      }
       if (transientRoom.x !== selectedRoom.x || transientRoom.y !== selectedRoom.y) {
-        editor.executeCommand(new MoveRoomCommand(transientRoom.id, transientRoom.x, transientRoom.y));
+        // Fall through to one complete geometry command below.
       }
-    } else if (dragMode === 'resize_room' && transientRoom && selectedRoom) {
-      if (
-        transientRoom.x !== selectedRoom.x ||
-        transientRoom.y !== selectedRoom.y ||
-        transientRoom.width !== selectedRoom.width ||
-        transientRoom.height !== selectedRoom.height
-      ) {
-        editor.executeCommand(
-          new ResizeRoomCommand(
-            transientRoom.id,
-            transientRoom.width,
-            transientRoom.height
-          )
-        );
+      if (transientRoom.x !== selectedRoom.x || transientRoom.y !== selectedRoom.y || transientRoom.width !== selectedRoom.width || transientRoom.height !== selectedRoom.height) {
+        editor.executeCommand(new UpdateRoomGeometryCommand(transientRoom.id, transientRoom, selectedRoom.name));
       }
+    } else if (dragMode === 'move_door' && transientOpening) {
+      const original = editor.activeFloor.doors.find(door => door.id === transientOpening.id);
+      if (original && hasOpeningPositionChanged(original.position, transientOpening.position)) editor.executeCommand(new MoveDoorCommand(transientOpening.id, transientOpening.position));
+    } else if (dragMode === 'move_window' && transientOpening) {
+      const original = editor.activeFloor.windows.find(window => window.id === transientOpening.id);
+      if (original && hasOpeningPositionChanged(original.position, transientOpening.position)) editor.executeCommand(new MoveWindowCommand(transientOpening.id, transientOpening.position));
     }
 
     setDragMode('none');
     setTransientRoom(null);
     setActiveGuides([]);
     setResizeHandle(null);
+    setTransientOpening(null);
   };
 
   // Keyboard Shortcuts (Delete, Escape)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        setMeasurement(null);
         editor.clearSelection();
         editor.setTool('select');
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
@@ -436,14 +522,21 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
 
   const displayRoom = transientRoom ?? selectedRoom;
 
+  const lockedRooms = useMemo(() => editor.activeFloor.rooms.filter(room =>
+    editor.generationControl.lockedEntityIds.includes(room.id)
+      || editor.generationControl.lockedFloorIds.includes(editor.activeFloor.id)), [editor.activeFloor, editor.generationControl]);
+
+  const selectedRooms = useMemo(() => editor.activeFloor.rooms.filter(room =>
+    editor.selections.some(selection => selection.entityType === 'room' && selection.entityId === room.id)), [editor.activeFloor.rooms, editor.selections]);
+
   const violatingRooms = useMemo(() => {
     const affectedIds = new Set(
       editor.validationSummary.violations
         .filter(issue => issue.severity === 'hard')
         .flatMap(issue => issue.affectedEntities),
     );
-    return editor.activeFloor.rooms.filter(room => affectedIds.has(room.id));
-  }, [editor.activeFloor.rooms, editor.validationSummary.violations]);
+    return layers.validation ? editor.activeFloor.rooms.filter(room => affectedIds.has(room.id)) : [];
+  }, [editor.activeFloor.rooms, editor.validationSummary.violations, layers.validation]);
 
   // Compute Screen Coordinates for Overlay Elements
   const overlayRoomBox = useMemo(() => {
@@ -510,6 +603,17 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           pointerEvents: 'none',
         }}
       >
+        {lockedRooms.map(room => {
+          const topLeft = worldToScreen({ x: room.x, y: room.y }, transform);
+          return <g key={`locked-${room.id}`} pointerEvents="none">
+            <rect className="generation-locked-overlay" x={topLeft.x} y={topLeft.y} width={scaleToScreen(room.width, transform)} height={scaleToScreen(room.height, transform)} rx={4} />
+            <text className="generation-lock-mark" x={topLeft.x + 8} y={topLeft.y + 17}>LOCKED</text>
+          </g>;
+        })}
+        {selectedRooms.map(room => {
+          const topLeft = worldToScreen({ x: room.x, y: room.y }, transform);
+          return <rect key={`multi-${room.id}`} className="generation-selection-overlay" x={topLeft.x} y={topLeft.y} width={scaleToScreen(room.width, transform)} height={scaleToScreen(room.height, transform)} rx={4} pointerEvents="none" />;
+        })}
         {/* Constraint-linked rooms remain visible in the drawing itself. */}
         {violatingRooms.map(room => {
           const topLeft = worldToScreen({ x: room.x, y: room.y }, transform);
@@ -563,7 +667,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
         {overlayRoomBox && displayRoom && (
           <g>
             <rect
-              className={transientRoom ? 'ghost-room-preview' : 'selection-box'}
+              className={transientRoom ? `ghost-room-preview ${transientRoomValid ? 'valid' : 'invalid'}` : 'selection-box'}
               x={overlayRoomBox.x}
               y={overlayRoomBox.y}
               width={overlayRoomBox.width}
@@ -605,11 +709,21 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
                 fontWeight="bold"
                 textAnchor="middle"
               >
-                {Math.round(displayRoom.width)} × {Math.round(displayRoom.height)} mm
+                {Math.round(displayRoom.width)} × {Math.round(displayRoom.height)} mm · {(displayRoom.width * displayRoom.height / 1_000_000).toFixed(1)} m² · {transientRoomValid ? 'VALID' : 'INVALID'}
               </text>
             )}
           </g>
         )}
+        {transientOpening && (() => {
+          const point = worldToScreen(transientOpening.position, transform);
+          return <g><circle className="opening-move-preview" cx={point.x} cy={point.y} r={9} /><text className="opening-move-label" x={point.x + 13} y={point.y - 8}>{transientOpening.entityType.toUpperCase()} · {Math.round(transientOpening.width)} mm</text></g>;
+        })()}
+        {measurement && (() => {
+          const start = worldToScreen(measurement.start, transform);
+          const end = worldToScreen(measurement.end, transform);
+          const distance = Math.hypot(measurement.end.x - measurement.start.x, measurement.end.y - measurement.start.y);
+          return <g className="measurement-overlay"><line x1={start.x} y1={start.y} x2={end.x} y2={end.y} /><circle cx={start.x} cy={start.y} r={4} /><circle cx={end.x} cy={end.y} r={4} /><text x={(start.x + end.x) / 2} y={(start.y + end.y) / 2 - 9}>{(distance / 1000).toFixed(2)} m · {Math.round(distance)} mm</text></g>;
+        })()}
       </svg>
     </div>
   );

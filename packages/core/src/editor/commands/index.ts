@@ -7,12 +7,14 @@ export {
   ClearSelectionCommand,
   SwitchFloorCommand,
   SetToolCommand,
+  SetSelectionsCommand,
 } from './selection-commands';
 
 export {
   AddRoomCommand,
   MoveRoomCommand,
   ResizeRoomCommand,
+  UpdateRoomGeometryCommand,
   UpdateRoomPropertiesCommand,
 } from './room-commands';
 
@@ -37,3 +39,5 @@ export {
 export {
   BatchCommand,
 } from './batch-command';
+
+export { ReplaceBuildingCommand } from './replace-building-command';

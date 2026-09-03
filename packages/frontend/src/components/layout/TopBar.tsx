@@ -6,12 +6,12 @@ import {
   Save,
   Download,
   Upload,
-  Layers,
   Sparkles,
   MessageSquareText,
   HardDrive,
-  ChevronDown,
   ArrowLeft,
+  Command,
+  DraftingCompass,
 } from 'lucide-react';
 import type { EditorContextValue } from '../../stores/editor-store';
 import {
@@ -27,6 +27,8 @@ interface TopBarProps {
   onOpenAIDesignModal: () => void;
   onOpenAIEditPanel: () => void;
   onBackToProjects: () => void;
+  onOpenSite: () => void;
+  onOpenCommandPalette: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -36,6 +38,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenAIDesignModal,
   onOpenAIEditPanel,
   onBackToProjects,
+  onOpenSite,
+  onOpenCommandPalette,
 }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
@@ -91,11 +95,12 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button className="btn-icon" onClick={onBackToProjects} title="Back to projects" aria-label="Back to projects">
           <ArrowLeft size={15} />
         </button>
+        <button className="btn-secondary" onClick={onOpenSite}>Site setup</button>
         <div className="app-brand">
           <span className="app-brand-mark"><Sparkles size={17} /></span>
           <span className="app-brand-copy">
             <strong>FORMA</strong>
-            <small>AI PLANNER</small>
+            <small>ARCHITECTURE</small>
           </span>
         </div>
         <div className="topbar-divider" />
@@ -105,23 +110,9 @@ export const TopBar: React.FC<TopBarProps> = ({
         </div>
       </div>
 
-      {/* Center: Floor Navigation Switcher */}
+      {/* Center: professional mode identity; floor navigation lives in the Building Navigator. */}
       <div className="topbar-center">
-        <div className="floor-switcher">
-          {editor.building.floors.map((floor) => (
-            <button
-              key={floor.id}
-              className={`floor-tab ${editor.activeFloor.id === floor.id ? 'active' : ''}`}
-              onClick={() => editor.switchFloor(floor.id)}
-            >
-              <Layers size={13} />
-              {floor.name}
-            </button>
-          ))}
-          <button className="floor-menu-button" title="Floor options" aria-label="Floor options">
-            <ChevronDown size={13} />
-          </button>
-        </div>
+        <div className="architecture-mode-chip"><DraftingCompass size={14} /><span>Architecture workspace</span><small>{editor.activeFloor.name}</small></div>
       </div>
 
       {/* Right: Actions */}
@@ -131,23 +122,25 @@ export const TopBar: React.FC<TopBarProps> = ({
         <button
           className="btn-secondary ai-action"
           onClick={onOpenAIDesignModal}
-          title="Open AI Building Design Intelligence"
+          title="Generate design options"
         >
           <Sparkles size={14} />
-          <span>AI Design</span>
+          <span>Generate Options</span>
         </button>
 
         <button
           className="btn-secondary ai-action"
           onClick={onOpenAIEditPanel}
-          title="Edit the current plan with natural language"
+          title="Describe a plan edit"
         >
           <MessageSquareText size={14} />
-          <span>AI Edit</span>
+          <span>Edit Request</span>
         </button>
         </div>
 
         <div className="topbar-divider compact" />
+
+        <button className="btn-icon" onClick={onOpenCommandPalette} title="Command palette (Ctrl/Cmd+K)" aria-label="Open command palette"><Command size={16} /></button>
 
         <button
           className="btn-icon"

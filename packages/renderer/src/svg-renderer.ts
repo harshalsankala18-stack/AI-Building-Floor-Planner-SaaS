@@ -186,7 +186,10 @@ function renderWalls(floor: Floor, transform: ViewTransform): string {
     const style = WALL_STYLES[wall.type] ?? WALL_STYLES[WallType.Internal]!;
 
     elements.push(
-      `<line x1="${start.x.toFixed(1)}" y1="${start.y.toFixed(1)}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="${style.stroke}" stroke-width="${style.width}" stroke-linecap="square" data-entity-type="wall" data-entity-id="${wall.id}"/>`,
+      `<g data-entity-type="wall" data-entity-id="${wall.id}">
+  <line x1="${start.x.toFixed(1)}" y1="${start.y.toFixed(1)}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="transparent" stroke-width="14" pointer-events="stroke"/>
+  <line x1="${start.x.toFixed(1)}" y1="${start.y.toFixed(1)}" x2="${end.x.toFixed(1)}" y2="${end.y.toFixed(1)}" stroke="${style.stroke}" stroke-width="${style.width}" stroke-linecap="square" pointer-events="none"/>
+</g>`,
     );
   }
 
@@ -203,6 +206,7 @@ function renderDoors(floor: Floor, transform: ViewTransform): string {
 
     // Door symbol: gap + swing arc + hinge line
     elements.push(`<g data-entity-type="door" data-entity-id="${door.id}">
+  <circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${Math.max(9, scaledWidth / 2).toFixed(1)}" fill="transparent" pointer-events="all"/>
   <path d="M ${(pos.x - scaledWidth / 2).toFixed(1)} ${pos.y.toFixed(1)} A ${r.toFixed(1)} ${r.toFixed(1)} 0 0 1 ${(pos.x + scaledWidth / 2).toFixed(1)} ${pos.y.toFixed(1)}" fill="none" stroke="#0066cc" stroke-width="0.8"/>
   <line x1="${(pos.x - scaledWidth / 2).toFixed(1)}" y1="${pos.y.toFixed(1)}" x2="${(pos.x + scaledWidth / 2).toFixed(1)}" y2="${pos.y.toFixed(1)}" stroke="#0066cc" stroke-width="0.8"/>
 </g>`);
@@ -222,6 +226,7 @@ function renderWindows(floor: Floor, transform: ViewTransform): string {
 
     // Window symbol: 3 parallel lines
     elements.push(`<g data-entity-type="window" data-entity-id="${win.id}">
+  <line x1="${(pos.x - halfW).toFixed(1)}" y1="${pos.y.toFixed(1)}" x2="${(pos.x + halfW).toFixed(1)}" y2="${pos.y.toFixed(1)}" stroke="transparent" stroke-width="14" pointer-events="stroke"/>
   <line x1="${(pos.x - halfW).toFixed(1)}" y1="${(pos.y - gap).toFixed(1)}" x2="${(pos.x + halfW).toFixed(1)}" y2="${(pos.y - gap).toFixed(1)}" stroke="#4488cc" stroke-width="1"/>
   <line x1="${(pos.x - halfW).toFixed(1)}" y1="${pos.y.toFixed(1)}" x2="${(pos.x + halfW).toFixed(1)}" y2="${pos.y.toFixed(1)}" stroke="#4488cc" stroke-width="1.5"/>
   <line x1="${(pos.x - halfW).toFixed(1)}" y1="${(pos.y + gap).toFixed(1)}" x2="${(pos.x + halfW).toFixed(1)}" y2="${(pos.y + gap).toFixed(1)}" stroke="#4488cc" stroke-width="1"/>

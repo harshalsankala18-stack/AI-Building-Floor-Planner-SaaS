@@ -43,9 +43,11 @@ export {
   ClearSelectionCommand,
   SwitchFloorCommand,
   SetToolCommand,
+  SetSelectionsCommand,
   AddRoomCommand,
   MoveRoomCommand,
   ResizeRoomCommand,
+  UpdateRoomGeometryCommand,
   UpdateRoomPropertiesCommand,
   AddDoorCommand,
   MoveDoorCommand,
@@ -57,6 +59,7 @@ export {
   RemoveWindowCommand,
   DeleteEntityCommand,
   BatchCommand,
+  ReplaceBuildingCommand,
 } from './commands/index';
 
 // Editor Engine

@@ -118,6 +118,46 @@ export class ResizeRoomCommand implements IEditorCommand {
   }
 }
 
+/** Atomically update room position and dimensions as one reversible history entry. */
+export class UpdateRoomGeometryCommand implements IEditorCommand {
+  readonly id = generateId();
+  readonly description: string;
+  readonly affectedEntityId: string;
+  private previous?: Pick<Room, 'x' | 'y' | 'width' | 'height'>;
+
+  constructor(
+    readonly roomId: string,
+    readonly geometry: Pick<Room, 'x' | 'y' | 'width' | 'height'>,
+    roomName?: string,
+  ) {
+    this.affectedEntityId = roomId;
+    this.description = `Update ${roomName ?? 'Room'} geometry`;
+  }
+
+  execute(building: Building, _state: EditorState): CommandExecutionResult {
+    const room = this.findRoom(building);
+    this.previous = { x: room.x, y: room.y, width: room.width, height: room.height };
+    return { building: this.apply(building, this.geometry) };
+  }
+
+  undo(building: Building, _state: EditorState): CommandExecutionResult {
+    return { building: this.previous ? this.apply(building, this.previous) : building };
+  }
+
+  private apply(building: Building, geometry: Pick<Room, 'x' | 'y' | 'width' | 'height'>): Building {
+    const moved = moveRoom(building, this.roomId, geometry.x, geometry.y);
+    return resizeRoom(moved, this.roomId, geometry.width, geometry.height);
+  }
+
+  private findRoom(building: Building): Room {
+    for (const floor of building.floors) {
+      const room = floor.rooms.find(candidate => candidate.id === this.roomId);
+      if (room) return room;
+    }
+    throw new Error(`Room not found: ${this.roomId}`);
+  }
+}
+
 /** Update room semantic attributes (name, type, requirements, priority). */
 export class UpdateRoomPropertiesCommand implements IEditorCommand {
   readonly id: string;

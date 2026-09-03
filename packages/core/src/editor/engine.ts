@@ -57,6 +57,7 @@ export class EditorEngine {
     this.state = {
       activeFloorId: defaultFloorId,
       selection: null,
+      selections: [],
       hoveredEntity: null,
       activeTool: options.initialTool ?? 'select',
       viewport: {
@@ -225,6 +226,7 @@ export class EditorEngine {
     this.state = {
       ...this.state,
       selection,
+      selections: selection ? [selection] : [],
     };
 
     this.emit('selection_changed', undefined, prevState);
@@ -261,6 +263,7 @@ export class EditorEngine {
       activeFloorId: floorId,
       // Clear selection if it belonged to previous floor
       selection: this.state.selection?.floorId && this.state.selection.floorId !== floorId ? null : this.state.selection,
+      selections: (this.state.selections ?? []).filter(selection => !selection.floorId || selection.floorId === floorId),
     };
 
     this.emit('floor_changed', undefined, prevState);
@@ -352,6 +355,7 @@ export class EditorEngine {
       ...this.state,
       activeFloorId,
       selection: null,
+      selections: [],
       hoveredEntity: null,
       historySummary: this.history.getSummary(),
     };

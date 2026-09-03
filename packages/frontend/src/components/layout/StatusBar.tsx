@@ -6,6 +6,9 @@ interface StatusBarProps {
   editor: EditorContextValue;
   cursorWorldPos: { x: number; y: number };
   zoom: number;
+  snapEnabled: boolean;
+  selectionCount: number;
+  onToggleSnap: () => void;
   onOpenQuality: () => void;
 }
 
@@ -13,6 +16,9 @@ export const StatusBar: React.FC<StatusBarProps> = ({
   editor,
   cursorWorldPos,
   zoom,
+  snapEnabled,
+  selectionCount,
+  onToggleSnap,
   onOpenQuality,
 }) => {
   const { validationSummary } = editor;
@@ -52,17 +58,20 @@ export const StatusBar: React.FC<StatusBarProps> = ({
       </div>
 
       <div className="status-right">
+        <button className={`status-control ${snapEnabled ? 'active' : ''}`} onClick={onToggleSnap} aria-pressed={snapEnabled}>SNAP {snapEnabled ? 'ON' : 'OFF'}</button>
+        <span>{selectionCount} SELECTED</span>
+        <span>{validationSummary.failed} HARD · {validationSummary.warnings} WARNINGS</span>
         {/* World Coordinates Display */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
           <Crosshair size={13} color="var(--text-muted)" />
           <span style={{ fontFamily: 'var(--font-mono)' }}>
-            X: {Math.round(cursorWorldPos.x)}mm | Y: {Math.round(cursorWorldPos.y)}mm
+            X {(cursorWorldPos.x / 1000).toFixed(2)}m · Y {(cursorWorldPos.y / 1000).toFixed(2)}m
           </span>
         </div>
 
         {/* Zoom percentage */}
         <span style={{ fontFamily: 'var(--font-mono)' }}>
-          Zoom: {Math.round(zoom * 100)}%
+          {editor.activeFloor.name.toUpperCase()} · Zoom {Math.round(zoom * 100)}%
         </span>
       </div>
     </footer>

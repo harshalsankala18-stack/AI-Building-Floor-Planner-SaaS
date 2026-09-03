@@ -132,6 +132,8 @@ export interface HistorySummary {
 export interface EditorState {
   readonly activeFloorId: string;
   readonly selection: EditorSelection | null;
+  /** Multi-selection; selection remains the primary inspector target. */
+  readonly selections?: readonly EditorSelection[];
   readonly hoveredEntity: EditorSelection | null;
   readonly activeTool: EditorTool;
   readonly viewport: ViewportState;
