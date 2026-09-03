@@ -3,7 +3,7 @@ import {
   Direction, RoomType, applyFootprintToBuilding, applySpaceProgramPreset, autoFitFootprint, createBuilding, createDefaultFootprintIntent,
   getSpaceProgramPresets,
 } from '@ai-floor-planner/core';
-import { containsPolygon, polygonArea } from '@ai-floor-planner/geometry-engine';
+import { containsPolygon, polygonArea, polygonsAdjacent } from '@ai-floor-planner/geometry-engine';
 import { assessGenerationReadiness, runGenerationWorkflow } from '../generation/workflow';
 
 function input() {
@@ -147,6 +147,27 @@ describe('controlled generation workflow', () => {
       expect(new Set(stairs.map(room => `${room.x}|${room.y}|${room.width}|${room.height}`)).size).toBe(1);
       expect(candidate.multiFloorPlanning.verticalCoreAligned).toBe(true);
     }
+  }, 20_000);
+
+  it('ranks a real residential program using same-floor adjacency, wet stacking, and privacy evidence', async () => {
+    const result = await runGenerationWorkflow(coverageInput());
+    const candidate = result.candidates[0]!;
+    const rooms = candidate.building.floors.flatMap(floor => floor.rooms);
+    const kitchen = rooms.find(room => room.type === RoomType.Kitchen)!;
+    const dining = rooms.find(room => room.type === RoomType.Dining)!;
+    const failedEvidence = candidate.validation.violations
+      .filter(issue => !issue.passed)
+      .map(issue => issue.constraintId);
+
+    expect(kitchen.floorId).toBe(dining.floorId);
+    expect(polygonsAdjacent(kitchen.boundary, dining.boundary)).toBe(true);
+    expect(candidate.multiFloorPlanning.wetAreaStackPairs).toBeGreaterThan(0);
+    expect(candidate.multiFloorPlanning.wetAreaStackScore).toBeGreaterThanOrEqual(80);
+    expect(candidate.metrics.privacyScore).toBeGreaterThanOrEqual(80);
+    expect(failedEvidence).not.toContain('SC-ZON-001');
+    expect(failedEvidence).not.toContain('SC-ZON-003');
+    expect(failedEvidence).not.toContain('SC-PRI-002');
+    expect(failedEvidence).not.toContain('SC-PRI-003');
   }, 20_000);
 
   it('fails clearly when a reduced plate cannot carry its allocated minimum program', async () => {

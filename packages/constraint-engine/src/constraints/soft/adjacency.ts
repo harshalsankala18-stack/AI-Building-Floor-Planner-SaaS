@@ -42,7 +42,7 @@ function adjacencyCheck(
   let found = false;
   for (const s of sources) {
     for (const t of targets) {
-      if (polygonsAdjacent(s.boundary, t.boundary)) {
+      if (s.floorId === t.floorId && polygonsAdjacent(s.boundary, t.boundary)) {
         found = true;
         break;
       }
@@ -129,7 +129,9 @@ export const MasterBathroom: Constraint = {
       }];
     }
 
-    const hasAttached = bathrooms.some(b => polygonsAdjacent(master.boundary, b.boundary));
+    const hasAttached = bathrooms.some(b =>
+      b.floorId === master.floorId && polygonsAdjacent(master.boundary, b.boundary),
+    );
 
     return [{
       constraintId: 'SC-ADJ-003',

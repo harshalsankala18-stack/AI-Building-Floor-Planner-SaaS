@@ -99,7 +99,7 @@ export const MasterIsolation: Constraint = {
     let adjacentToPublic = false;
 
     for (const pub of publicRooms) {
-      if (polygonsAdjacent(master.boundary, pub.boundary)) {
+      if (master.floorId === pub.floorId && polygonsAdjacent(master.boundary, pub.boundary)) {
         adjacentToPublic = true;
         break;
       }
@@ -153,7 +153,7 @@ export const BathroomVisibility: Constraint = {
     let visible = false;
     for (const bath of bathrooms) {
       for (const pub of publicSpaces) {
-        if (polygonsAdjacent(bath.boundary, pub.boundary)) {
+        if (bath.floorId === pub.floorId && polygonsAdjacent(bath.boundary, pub.boundary)) {
           visible = true;
           break;
         }
@@ -206,7 +206,9 @@ export const GuestSeparation: Constraint = {
     let hasSeparated = false;
     for (const bed of bedrooms) {
       const adjToOther = bedrooms.some(other =>
-        other.id !== bed.id && polygonsAdjacent(bed.boundary, other.boundary),
+        other.id !== bed.id
+          && other.floorId === bed.floorId
+          && polygonsAdjacent(bed.boundary, other.boundary),
       );
       if (!adjToOther) {
         hasSeparated = true;

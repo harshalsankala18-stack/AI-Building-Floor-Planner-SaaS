@@ -39,7 +39,7 @@ export const PublicPrivateSeparation: Constraint = {
     let crossZoneAdjacencies = 0;
     for (const pub of publicRooms) {
       for (const priv of privateRooms) {
-        if (polygonsAdjacent(pub.boundary, priv.boundary)) {
+        if (pub.floorId === priv.floorId && polygonsAdjacent(pub.boundary, priv.boundary)) {
           crossZoneAdjacencies++;
         }
       }
@@ -98,7 +98,8 @@ export const ServiceZoneGrouping: Constraint = {
     let hasGrouping = false;
     for (let i = 0; i < serviceRooms.length; i++) {
       for (let j = i + 1; j < serviceRooms.length; j++) {
-        if (polygonsAdjacent(serviceRooms[i]!.boundary, serviceRooms[j]!.boundary)) {
+        if (serviceRooms[i]!.floorId === serviceRooms[j]!.floorId
+          && polygonsAdjacent(serviceRooms[i]!.boundary, serviceRooms[j]!.boundary)) {
           hasGrouping = true;
           break;
         }
@@ -157,7 +158,7 @@ export const NightDaySeparation: Constraint = {
     for (const night of nightRooms) {
       if (night.type !== 'bedroom') continue; // only count bedrooms, not bathrooms
       for (const day of dayRooms) {
-        if (polygonsAdjacent(night.boundary, day.boundary)) {
+        if (night.floorId === day.floorId && polygonsAdjacent(night.boundary, day.boundary)) {
           directContacts++;
         }
       }
