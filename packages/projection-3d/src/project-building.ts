@@ -211,6 +211,7 @@ export function projectBuildingTo3D(
         verticalExtent: level?.floorToFloorHeight ?? settings.defaultFloorToFloorHeight.value,
         direction: stair.direction,
         connectsFloors: stair.connectsFloors,
+        verticalCoreId: stair.verticalCoreId,
         representation: 'SCHEMATIC_VOLUME' as const,
       }));
     }),

@@ -16,7 +16,7 @@ export const FOOTPRINT_SHAPES: readonly FootprintShapeDefinition[] = Object.free
   { id: 'l_shape', name: 'L Shape', description: 'Two wings around an open edge', recommendedCategories: ['residential', 'commercial', 'educational', 'mixed_use'] },
   { id: 'u_shape', name: 'U Shape', description: 'Three-sided court or arrival space', recommendedCategories: ['educational', 'commercial'] },
   { id: 't_shape', name: 'T Shape', description: 'Primary bar with a central wing', recommendedCategories: ['educational', 'commercial'] },
-  { id: 'courtyard', name: 'Courtyard', description: 'Internal open court for daylight and ventilation', recommendedCategories: ['residential', 'commercial', 'educational'] },
+  { id: 'courtyard', name: 'Courtyard', description: 'Limited perimeter plate with an access slot; not polygon-hole topology', recommendedCategories: ['residential', 'commercial', 'educational'], customSupport: 'limited' },
   { id: 'linear', name: 'Linear', description: 'Shallow elongated building plate', recommendedCategories: ['commercial', 'educational'] },
   { id: 'custom', name: 'Custom', description: 'Preserved existing or imported polygon', recommendedCategories: [], customSupport: 'limited' },
 ]);

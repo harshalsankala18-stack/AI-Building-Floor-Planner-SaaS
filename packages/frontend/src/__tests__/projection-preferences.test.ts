@@ -1,6 +1,6 @@
 import { DEFAULT_PROJECTION_SETTINGS } from '@ai-floor-planner/projection-3d';
 import { describe, expect, it } from 'vitest';
-import { isProjectionSourceSelected, loadModelViewPreferences, projectionSourceToSelection, saveModelViewPreferences } from '../services/projection-preferences';
+import { isProjectionSourceSelected, loadModelViewPreferences, projectionSourceToSelection, saveModelViewPreferences, shouldRenderRoomProjection } from '../services/projection-preferences';
 
 describe('3D model view preferences and selection bridge', () => {
   it('falls back safely when no persisted view state exists', () => {
@@ -28,5 +28,10 @@ describe('3D model view preferences and selection bridge', () => {
     expect(projectionSourceToSelection({ sourceEntityType: 'floor', sourceEntityId: 'floor-1', floorId: 'floor-1' })).toBeNull();
   });
 
+  it('renders a selected room highlight even when the optional Rooms layer is hidden', () => {
+    const selection = { entityType: 'room' as const, entityId: 'room-1', floorId: 'floor-1' };
+    expect(shouldRenderRoomProjection('room-1', false, 'solid', selection)).toBe(true);
+    expect(shouldRenderRoomProjection('room-2', false, 'solid', selection)).toBe(false);
+  });
 
 });

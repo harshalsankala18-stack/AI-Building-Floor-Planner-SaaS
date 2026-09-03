@@ -3,7 +3,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { EditorSelection, Polygon } from '@ai-floor-planner/core';
 import { millimetersToSceneUnits, type Building3DProjection, type ProjectionSource } from '@ai-floor-planner/projection-3d';
-import { type ModelCameraPreset, type ModelFloorMode, type ModelLayerVisibility, type ModelViewMode } from '../../services/projection-preferences';
+import { shouldRenderRoomProjection, type ModelCameraPreset, type ModelFloorMode, type ModelLayerVisibility, type ModelViewMode } from '../../services/projection-preferences';
 
 const MM_TO_M = millimetersToSceneUnits(1);
 const EXPLODED_GAP_M = 1.8;
@@ -95,7 +95,7 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(host.clientWidth, host.clientHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFShadowMap;
     renderer.domElement.setAttribute('aria-label', 'Interactive canonical 3D building model');
     host.appendChild(renderer.domElement);
     const controls = new OrbitControls(camera, renderer.domElement);
@@ -192,14 +192,20 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
       addSelectable(mesh, plate);
     });
 
-    if (layers.rooms || viewMode === 'rooms') projection.rooms.forEach(room => {
+    projection.rooms.forEach(room => {
+      if (!shouldRenderRoomProjection(room.sourceEntityId, layers.rooms, viewMode, selection)) return;
       if (!shouldShowFloor(room.floorId, activeFloorId, floorMode)) return;
       const geometry = viewMode === 'rooms'
         ? new THREE.ExtrudeGeometry(makeShape(room.boundary), { depth: room.height * MM_TO_M * 0.88, bevelEnabled: false })
         : new THREE.ShapeGeometry(makeShape(room.boundary));
       geometry.rotateX(-Math.PI / 2);
-      const mesh = new THREE.Mesh(geometry, material(selected(room, selection) ? 0x22d3ee : 0x38bdf8, (viewMode === 'rooms' ? 0.16 : 0.46) * floorContextOpacity(room.floorId, activeFloorId, floorMode)));
+      const roomSelected = selected(room, selection);
+      const roomMaterial = roomSelected
+        ? new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.68, side: THREE.DoubleSide, depthTest: false })
+        : material(0x38bdf8, (viewMode === 'rooms' ? 0.16 : 0.46) * floorContextOpacity(room.floorId, activeFloorId, floorMode));
+      const mesh = new THREE.Mesh(geometry, roomMaterial);
       mesh.position.y = room.elevation * MM_TO_M + 0.012 + floorOffset(projection, room.floorId, exploded);
+      mesh.renderOrder = roomSelected ? 20 : 0;
       addSelectable(mesh, room);
     });
 

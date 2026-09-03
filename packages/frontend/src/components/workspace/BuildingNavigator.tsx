@@ -59,7 +59,7 @@ export const BuildingNavigator: React.FC<BuildingNavigatorProps> = ({ editor, la
           <span className="navigator-eyebrow">Other disciplines</span>
           <div><Box size={13} /><span><strong>Structure</strong><small>Not implemented</small></span></div>
           <div><ShieldAlert size={13} /><span><strong>Vastu</strong><small>Guidance only</small></span></div>
-          <div><Ruler size={13} /><span><strong>3D</strong><small>Not implemented</small></span></div>
+          <div><Ruler size={13} /><span><strong>3D</strong><small>Canonical model</small></span></div>
         </section>
       </>}
     </aside>

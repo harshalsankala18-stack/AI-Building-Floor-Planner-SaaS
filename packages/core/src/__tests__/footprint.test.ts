@@ -38,6 +38,7 @@ function fitted(shape: FootprintShapeType, building = testBuilding()): Footprint
 describe('parametric footprint geometry', () => {
   it('exposes the complete initial professional shape library', () => {
     expect(FOOTPRINT_SHAPES.map(shape => shape.id)).toEqual(['rectangle', 'l_shape', 'u_shape', 't_shape', 'courtyard', 'linear', 'custom']);
+    expect(FOOTPRINT_SHAPES.find(shape => shape.id === 'courtyard')).toMatchObject({ customSupport: 'limited' });
   });
 
   it.each(['rectangle', 'l_shape', 'u_shape', 't_shape', 'courtyard', 'linear'] as FootprintShapeType[])('%s generates valid positive-area geometry', shape => {

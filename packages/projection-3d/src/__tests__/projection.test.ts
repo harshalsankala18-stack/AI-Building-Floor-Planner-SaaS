@@ -29,7 +29,7 @@ function withFloorGeometry(building: Building, floorIndex: number, boundary: Pol
   const wall = createWall({ floorId: floor.id, startPoint: boundary.points[0]!, endPoint: boundary.points[1]!, thickness: 230, type: WallType.External, roomIds: [room.id, '__outside__'] });
   const door = createDoor({ floorId: floor.id, wallId: wall.id, position: midpoint(wall.startPoint, wall.endPoint), width: 900, height: 2100, type: DoorType.Single, swingDirection: SwingDirection.Inward, connectsRooms: [room.id, '__outside__'] });
   const window = createWindow({ floorId: floor.id, wallId: wall.id, position: interpolate(wall.startPoint, wall.endPoint, 0.75), width: 1000, height: 1200, sillHeight: 900, type: WindowType.Sliding, roomId: room.id });
-  const stair = createStair({ floorId: floor.id, x: 1000, y: 1000, width: 1000, length: 2600, direction: Direction.North, connectsFloors: [floor.level, floor.level + 1] });
+  const stair = createStair({ floorId: floor.id, x: 1000, y: 1000, width: 1000, length: 2600, direction: Direction.North, connectsFloors: [floor.level, floor.level + 1], verticalCoreId: 'primary-stair-core' });
   const updatedFloor = { ...floor, boundary, rooms: [room], walls: [wall], doors: [door], windows: [window], stairs: [stair] };
   return { ...building, floors: building.floors.map((candidate, index) => index === floorIndex ? updatedFloor : candidate) };
 }
@@ -108,7 +108,7 @@ describe('canonical Building 3D projection', () => {
     const building = createThreeFloorBuilding();
     const projection = projectBuildingTo3D(building);
     expect(projection.rooms[0]).toMatchObject({ sourceEntityId: building.floors[0]!.rooms[0]!.id, sourceEntityType: 'room', floorId: building.floors[0]!.id });
-    expect(projection.stairs[0]).toMatchObject({ sourceEntityId: building.floors[0]!.stairs[0]!.id, sourceEntityType: 'stair', representation: 'SCHEMATIC_VOLUME' });
+    expect(projection.stairs[0]).toMatchObject({ sourceEntityId: building.floors[0]!.stairs[0]!.id, sourceEntityType: 'stair', verticalCoreId: 'primary-stair-core', representation: 'SCHEMATIC_VOLUME' });
   });
 
   it('keeps site orientation and road context without rotating canonical coordinates', () => {

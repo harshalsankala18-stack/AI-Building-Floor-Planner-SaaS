@@ -72,3 +72,12 @@ export function projectionSourceToSelection(source: ProjectionSource): (EditorSe
 export function isProjectionSourceSelected(source: ProjectionSource, selection: EditorSelection | null): boolean {
   return Boolean(selection && source.sourceEntityId === selection.entityId && source.floorId === selection.floorId);
 }
+
+export function shouldRenderRoomProjection(
+  roomId: string,
+  roomsLayerVisible: boolean,
+  viewMode: ModelViewMode,
+  selection: EditorSelection | null,
+): boolean {
+  return roomsLayerVisible || viewMode === 'rooms' || Boolean(selection?.entityType === 'room' && selection.entityId === roomId);
+}

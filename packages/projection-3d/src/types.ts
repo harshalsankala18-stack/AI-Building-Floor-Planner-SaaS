@@ -100,6 +100,7 @@ export interface Stair3D extends ProjectionSource {
   readonly verticalExtent: number;
   readonly direction: Direction;
   readonly connectsFloors: readonly [number, number];
+  readonly verticalCoreId?: string;
   readonly representation: 'SCHEMATIC_VOLUME';
 }
 
