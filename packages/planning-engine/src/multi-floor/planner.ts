@@ -69,7 +69,16 @@ export class FloorProgramAllocationError extends Error {
 }
 
 function cloneForFloor(item: RoomProgramItem, floorLevel: number): RoomProgramItem {
-  return { ...item, id: `${item.id}_floor_${floorLevel}`, floorLevel };
+  return { ...item, id: `${item.id}_floor_${floorLevel}`, floorLevel,
+    attachedToRoomId: item.attachedToRoomId === undefined ? undefined : `${item.attachedToRoomId}_floor_${floorLevel}` };
+}
+
+function requiredFloor(item: RoomProgramItem): number | undefined {
+  if (item.floorPreference?.kind === 'ground_required') return 0;
+  if (item.floorPreference?.kind === 'specific') return item.floorPreference.specificFloor;
+  // Older planner callers used positive floorLevel as an explicit request.
+  if (!item.floorPreference && item.floorLevel > 0) return item.floorLevel;
+  return undefined;
 }
 
 function availableAreaAt(options: FloorProgramAllocationOptions, level: number): number | undefined {
@@ -132,7 +141,19 @@ export class FloorProgramPlanner {
     const floors = Array.from({ length: floorCount }, () => [] as RoomProgramItem[]);
     const loads = Array.from({ length: floorCount }, () => 0);
     const assigned = new Set<string>();
+    for (const item of program.items) {
+      const required = requiredFloor(item);
+      if ((item.floorPreference?.kind === 'specific' && required === undefined)
+          || (required !== undefined && (!Number.isInteger(required) || required < 0 || required >= floorCount))) {
+        throw new Error(`INVALID_REQUIRED_FLOOR: ${item.name} references an unavailable floor.`);
+      }
+      if (item.attachedToRoomId !== undefined && (item.type !== RoomType.Bathroom
+          || !program.items.some(owner => owner.id === item.attachedToRoomId && owner.type === RoomType.Bedroom))) {
+        throw new Error(`INVALID_SUITE_OWNER: ${item.name} references a missing bedroom.`);
+      }
+    }
     const add = (item: RoomProgramItem, level: number, repeatedCore = false) => {
+      if (!repeatedCore) level = requiredFloor(item) ?? level;
       floors[level]!.push(cloneForFloor(item, level));
       loads[level]! += item.targetAreaMm2;
       if (!repeatedCore) assigned.add(item.id);
@@ -155,11 +176,17 @@ export class FloorProgramPlanner {
 
     // Spread bedroom suites across upper floors deterministically.
     bedrooms.forEach((bedroom, index) => {
-      const explicit = bedroom.floorLevel > 0
-        ? Math.min(floorCount - 1, bedroom.floorLevel)
-        : undefined;
-      const bathroom = attachedBathrooms.find(item => item.attachedToRoomId === bedroom.id)
-        ?? attachedBathrooms[index];
+      const ownedBathrooms = attachedBathrooms.filter(item => item.attachedToRoomId === bedroom.id);
+      const legacyBathroom = attachedBathrooms[index];
+      const suiteBathrooms = ownedBathrooms.length > 0 ? ownedBathrooms
+        : legacyBathroom && legacyBathroom.attachedToRoomId === undefined && !assigned.has(legacyBathroom.id)
+          ? [legacyBathroom] : [];
+      const suiteRequired = [bedroom, ...suiteBathrooms].map(requiredFloor)
+        .filter((level): level is number => level !== undefined);
+      if (new Set(suiteRequired).size > 1) {
+        throw new Error(`CONFLICTING_SUITE_FLOORS: ${bedroom.name} and its bathroom require different floors.`);
+      }
+      const explicit = suiteRequired[0] ?? (bedroom.floorLevel > 0 ? bedroom.floorLevel : undefined);
       let preferredLevel = index < privateLevels.length
         ? privateLevels[index]!
         : lowestLoadFloor(loads, privateLevels, options);
@@ -167,7 +194,7 @@ export class FloorProgramPlanner {
         preferredLevel = floorCount - 1;
       }
       if (options.distributionStrategy === 'ground_guest' && index === bedrooms.length - 1 && floorCount > 1) {
-        const extraMinimumArea = bedroom.minAreaMm2 + (bathroom?.minAreaMm2 ?? 0);
+        const extraMinimumArea = bedroom.minAreaMm2 + suiteBathrooms.reduce((sum, bathroom) => sum + bathroom.minAreaMm2, 0);
         const projectedMinimumArea = floors[0]!.reduce((sum, item) => sum + item.minAreaMm2, 0) + extraMinimumArea;
         const projectedRequiredArea = projectedMinimumArea * (1
           + (options.circulationAllowanceRatio ?? 0.12)
@@ -179,7 +206,7 @@ export class FloorProgramPlanner {
       }
       const level = explicit ?? preferredLevel;
       add(bedroom, level);
-      if (bathroom && !assigned.has(bathroom.id)) add(bathroom, level);
+      for (const bathroom of suiteBathrooms) if (!assigned.has(bathroom.id)) add(bathroom, level);
     });
 
     // Keep one common bathroom with ground-floor public functions when available.
@@ -224,7 +251,12 @@ export class FloorProgramPlanner {
         if (floors[level]!.some(item => !CORE_TYPES.has(item.type))) continue;
         const donors = floors.map((floor, donorLevel) => ({
           donorLevel,
-          movable: floor.filter(item => !CORE_TYPES.has(item.type) && !GROUND_ANCHOR_TYPES.has(item.type)),
+          movable: floor.filter(item => !CORE_TYPES.has(item.type) && !GROUND_ANCHOR_TYPES.has(item.type)
+            && requiredFloor(item) === undefined && !item.attachedToRoomId
+            && !attachedBathrooms.some(bathroom => bathroom.attachedToRoomId === sourceProgramItemId(item.id))
+            // Legacy suite inference is not an ownership guarantee: don't split it either.
+            && !(item.type === RoomType.Bedroom && attachedBathrooms.length > 0)
+            && !/^Attached Bath/i.test(item.name)),
           nonCoreCount: floor.filter(item => !CORE_TYPES.has(item.type)).length,
         })).filter(donor => donor.nonCoreCount > 1 && donor.movable.length > 0)
           .sort((a, b) => b.nonCoreCount - a.nonCoreCount || a.donorLevel - b.donorLevel);

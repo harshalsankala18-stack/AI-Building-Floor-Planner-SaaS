@@ -14,6 +14,7 @@
 import type { RoomType, Direction, PlotShape, PreferenceLevel, DaylightLevel, PrivacyLevel } from './enums';
 import type { Building } from './building';
 import type { ValidationSummary } from './constraints';
+import type { SpaceFloorPreference } from './space-program';
 
 // ─── 1. Functional Zoning ───────────────────────────────────────────────────
 
@@ -82,6 +83,8 @@ export interface RoomProgramItem {
   readonly name: string;
   readonly zone: FunctionalZone;
   readonly floorLevel: number;
+  /** Distinguishes required Ground (zero) from an unspecified legacy floor. */
+  readonly floorPreference?: SpaceFloorPreference;
   readonly targetAreaMm2: number;
   readonly minAreaMm2: number;
   readonly maxAreaMm2: number;

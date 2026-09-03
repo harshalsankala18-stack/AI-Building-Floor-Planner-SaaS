@@ -56,6 +56,9 @@ export interface SpaceProgramItem {
   readonly maximumAreaMm2?: number;
   readonly priority: SpacePriority;
   readonly floorPreference: SpaceFloorPreference;
+  /** Owning bedroom's Program item ID. Equal quantities pair by instance index;
+   * a single owner may own multiple baths. Omission preserves legacy inference. */
+  readonly attachedToRoomId?: string;
   readonly group: SpaceFunctionalGroup;
   readonly zone: FunctionalZone;
   readonly occupancy: SpaceOccupancy;

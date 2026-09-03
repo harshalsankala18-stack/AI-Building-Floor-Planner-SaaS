@@ -65,14 +65,20 @@ export class DesignGraphBuilder {
     const kitchen = first(RoomType.Kitchen);
     const bedrooms = itemsOfType(RoomType.Bedroom);
     const bathrooms = itemsOfType(RoomType.Bathroom);
-    const attachedBathrooms = bathrooms.filter(item => /^Attached Bath/i.test(item.name));
+    const attachedBathrooms = bathrooms.filter(item => item.attachedToRoomId !== undefined || /^Attached Bath/i.test(item.name));
 
     connect(living, dining, AdjacencyRelationType.PreferredAdjacency, 0.9, 'Direct public social flow');
     connect(dining, kitchen, AdjacencyRelationType.RequiredAdjacency, 1, 'Direct food service path');
 
     attachedBathrooms.forEach((bathroom, index) => {
+      const owner = bathroom.attachedToRoomId === undefined
+        ? bedrooms[index] ?? bedrooms[0]
+        : bedrooms.find(bedroom => bedroom.id === bathroom.attachedToRoomId);
+      if (bathroom.attachedToRoomId !== undefined && !owner) {
+        throw new Error(`INVALID_SUITE_OWNER: ${bathroom.name} references a missing bedroom.`);
+      }
       connect(
-        bedrooms.find(bedroom => bedroom.id === bathroom.attachedToRoomId) ?? bedrooms[index] ?? bedrooms[0],
+        owner,
         bathroom,
         AdjacencyRelationType.AccessRequired,
         1,

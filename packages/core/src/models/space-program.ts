@@ -99,6 +99,24 @@ export function validateSpaceProgram(program: SpaceProgram, plannedFloorCount?: 
       invalid('maximumAreaMm2', 'Maximum area must be at least the preferred area.');
     }
     if (item.isCustom && !item.name.trim()) invalid('name', 'Custom spaces require a name.');
+    if (item.attachedToRoomId !== undefined) {
+      const owner = program.items.find(candidate => candidate.id === item.attachedToRoomId);
+      if (item.canonicalType !== RoomType.Bathroom || !owner || owner.canonicalType !== RoomType.Bedroom
+          || owner.isCustom || owner.generatorSupport !== 'supported') {
+        invalid('attachedToRoomId', 'An attached bathroom must reference an existing supported bedroom Program item.');
+      } else {
+        if (owner.quantity !== 1 && owner.quantity !== item.quantity) {
+          invalid('attachedToRoomId', 'Ambiguous suite quantities: use one owner or equal bedroom/bathroom quantities.');
+        }
+        const requiredLevel = (preference: SpaceFloorPreference) => preference.kind === 'ground_required'
+          ? 0 : preference.kind === 'specific' ? preference.specificFloor : undefined;
+        const ownerLevel = requiredLevel(owner.floorPreference);
+        const bathLevel = requiredLevel(item.floorPreference);
+        if (ownerLevel !== undefined && bathLevel !== undefined && ownerLevel !== bathLevel) {
+          invalid('attachedToRoomId', 'Attached bathroom and bedroom have conflicting required floors.');
+        }
+      }
+    }
     if (item.floorPreference.kind === 'specific') {
       const floor = item.floorPreference.specificFloor;
       if (!Number.isInteger(floor) || (floor as number) < 0 || plannedFloorCount === undefined || (floor as number) >= plannedFloorCount) {
@@ -296,6 +314,8 @@ export function adaptSpaceProgramToPlannerProgram(
   plannedFloorCount: number,
 ): RoomProgram {
   const floorCount = Math.max(1, plannedFloorCount);
+  const validation = validateSpaceProgram(program, floorCount);
+  if (validation.status === 'INVALID') throw new Error(validation.issues.map(issue => issue.message).join(' '));
   const items = program.items.flatMap(item => {
     const canonicalType = item.canonicalType;
     if (item.generatorSupport !== 'supported' || item.isCustom || !canonicalType) return [];
@@ -324,6 +344,9 @@ export function adaptSpaceProgramToPlannerProgram(
         name: item.quantity > 1 ? `${item.name} ${index + 1}` : item.name,
         zone: item.zone,
         floorLevel,
+        floorPreference: { ...item.floorPreference },
+        attachedToRoomId: item.attachedToRoomId === undefined ? undefined
+          : `${item.attachedToRoomId}_${program.items.find(owner => owner.id === item.attachedToRoomId)!.quantity === 1 ? 1 : index + 1}`,
         targetAreaMm2: item.preferredAreaMm2,
         minAreaMm2: item.minimumAreaMm2,
         maxAreaMm2: Math.max(item.preferredAreaMm2, item.maximumAreaMm2 ?? item.preferredAreaMm2 * 1.5),
