@@ -92,3 +92,61 @@ export type { BuildingDiff } from './versioning';
 
 // Canonical requirement normalization
 export { normalizeDesignRequirementSpecification } from './requirements-normalization';
+
+export {
+  EMPTY_DEVELOPMENT_CONTROLS,
+  polygonArea,
+  calculateSiteMetrics,
+  validateSite,
+  oppositeDirection,
+  resolveCardinalSetbacks,
+  updateBuildingSite,
+} from './site-intelligence';
+export type { CardinalSetbacks, SiteMetrics, SiteValidationFinding, SiteValidationStatus } from './site-intelligence';
+
+export {
+  SPACE_CATALOG,
+  SPACE_PROGRAM_PRESETS,
+  getSpaceDefinition,
+  getSpaceCatalog,
+  searchSpaceCatalog,
+  getSpaceProgramPresets,
+} from './space-catalog';
+
+export {
+  createEmptySpaceProgram,
+  createProgramItem,
+  createCustomProgramItem,
+  applySpaceProgramPreset,
+  validateSpaceProgram,
+  getGenerationReadiness,
+  calculateProgramCapacity,
+  deriveSpaceProgramFromBuilding,
+  adaptSpaceProgramToResidentialRequirements,
+  adaptSpaceProgramToPlannerProgram,
+  updateProgramItem,
+  removeProgramItem,
+  addProgramItem,
+  floorPreferenceLabel,
+} from './space-program';
+
+export {
+  FOOTPRINT_SHAPES,
+  getFootprintEnvelope,
+  createDefaultFootprintIntent,
+  generateFootprintPolygon,
+  validateFootprint,
+  applyFootprintToBuilding,
+  deriveFootprintIntent,
+  recenterFootprint,
+  snapFootprintToEnvelope,
+  autoFitFootprint,
+  calculateFootprintMetrics,
+  buildingHasDesignedGeometry,
+} from './footprint';
+
+export {
+  createGenerationControlState,
+  updateGenerationControl,
+  validateGenerationControl,
+} from './generation-control';

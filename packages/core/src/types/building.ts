@@ -40,6 +40,20 @@ export interface AccessPoint {
   readonly direction: Direction;
 }
 
+export type SiteInputProvenance = 'USER_PROVIDED' | 'NOT_CONFIGURED';
+export type SiteUnitSystem = 'metric' | 'imperial';
+
+export interface SitePlanningValue {
+  readonly value?: number;
+  readonly provenance: SiteInputProvenance;
+}
+
+export interface SiteDevelopmentControls {
+  readonly permissibleFsi: SitePlanningValue;
+  readonly maxCoveragePercent: SitePlanningValue;
+  readonly maxHeight: SitePlanningValue;
+}
+
 /** Site/plot information for a building project. */
 export interface Site {
   readonly id: string;
@@ -52,6 +66,13 @@ export interface Site {
   readonly setbacks: Setbacks;
   readonly accessPoints: readonly AccessPoint[];
   readonly roadFacing: Direction;
+  /** Expected levels from the brief. This never creates or deletes floor geometry. */
+  readonly plannedFloorCount?: number;
+  readonly roadWidth?: number;
+  readonly cornerPlot?: boolean;
+  readonly secondaryRoadFacing?: Direction;
+  readonly developmentControls?: SiteDevelopmentControls;
+  readonly unitSystem?: SiteUnitSystem;
 }
 
 // ─── Room ───────────────────────────────────────────────────────────────────

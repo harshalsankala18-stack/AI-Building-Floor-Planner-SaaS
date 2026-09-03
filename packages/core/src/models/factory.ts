@@ -21,6 +21,8 @@ import type {
   Site,
   Setbacks,
   AccessPoint,
+  SiteDevelopmentControls,
+  SiteUnitSystem,
   AdjacencyRequirement,
   Point,
   Polygon,
@@ -109,6 +111,12 @@ export interface CreateSiteParams {
   setbacks?: Partial<Setbacks>;
   roadFacing?: Direction;
   accessPoints?: Omit<AccessPoint, 'id'>[];
+  plannedFloorCount?: number;
+  roadWidth?: number;
+  cornerPlot?: boolean;
+  secondaryRoadFacing?: Direction;
+  developmentControls?: SiteDevelopmentControls;
+  unitSystem?: SiteUnitSystem;
 }
 
 export interface CreateBuildingParams {
@@ -233,6 +241,12 @@ export function createSite(params: CreateSiteParams): Site {
     setbacks,
     accessPoints,
     roadFacing: params.roadFacing ?? Direction.North,
+    plannedFloorCount: params.plannedFloorCount,
+    roadWidth: params.roadWidth,
+    cornerPlot: params.cornerPlot ?? false,
+    secondaryRoadFacing: params.secondaryRoadFacing,
+    developmentControls: params.developmentControls,
+    unitSystem: params.unitSystem ?? 'metric',
   };
 }
 

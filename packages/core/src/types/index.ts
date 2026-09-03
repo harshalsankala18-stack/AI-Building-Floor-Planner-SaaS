@@ -37,6 +37,10 @@ export {
 export type {
   Setbacks,
   AccessPoint,
+  SiteInputProvenance,
+  SiteUnitSystem,
+  SitePlanningValue,
+  SiteDevelopmentControls,
   Site,
   AdjacencyRequirement,
   Room,
@@ -107,6 +111,40 @@ export {
   AdjacencyRelationType,
   HumanVerificationStatus,
 } from './design-intelligence';
+
+export type {
+  SpaceBuildingCategory,
+  SpaceFunctionalGroup,
+  SpacePriority,
+  SpaceFloorPreferenceKind,
+  SpaceOccupancy,
+  SpaceGeneratorSupport,
+  ProgramProvenance,
+  GenerationReadiness,
+  ProgramCapacityState,
+  SpaceRelationshipDefinition,
+  SpaceDefinition,
+  SpaceFloorPreference,
+  SpaceProgramItem,
+  SpaceProgram,
+  ProgramValidationIssue,
+  ProgramValidationResult,
+  FloorCapacityPressure,
+  ProgramCapacityResult,
+  ResidentialProgramAdapterResult,
+  SpaceProgramPreset,
+} from './space-program';
+
+export type {
+  FootprintShapeType, FloorPlateStrategy, FootprintStatus, CoreAnchor,
+  FootprintParameters, FootprintTransform, FloorPlateOverride, FootprintIntent,
+  FootprintShapeDefinition, FootprintValidationIssue, FootprintValidationResult,
+  FootprintMetrics, FootprintEnvelope, FootprintDragDelta, FootprintDimensionSegment,
+} from './footprint';
+
+export type {
+  RefinementIntent, GenerationControlState, GenerationControlValidation, RegenerationSelection,
+} from './generation-control';
 
 export type {
   DesignGraphEdge,
