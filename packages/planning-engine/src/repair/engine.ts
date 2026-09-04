@@ -1,9 +1,9 @@
 /** Bounded, immutable, validation-gated plan repair. */
 import type { Building, InstanceDesignGraph, PlanRepairStep, Room } from '@ai-floor-planner/core';
-import { RoomType } from '@ai-floor-planner/core';
+import { AdjacencyRelationType, RoomType } from '@ai-floor-planner/core';
 import { PlanValidator } from '@ai-floor-planner/constraint-engine';
 import type { ValidateOptions, ValidationSummary } from '@ai-floor-planner/constraint-engine';
-import { evaluateInstanceGraph } from '../graph/scorer';
+import { evaluateInstanceGraph, sourceProgramItemId } from '../graph/scorer';
 import type { InstanceGraphEvaluation } from '../graph/scorer';
 
 export interface PlanRepairOptions extends ValidateOptions {
@@ -21,7 +21,7 @@ export interface PlanRepairResult {
 }
 
 const NON_REASSIGNABLE_TYPES = new Set<RoomType>([
-  RoomType.Staircase, RoomType.Lift, RoomType.Parking, RoomType.Garden, RoomType.Balcony,
+  RoomType.Staircase, RoomType.Lift, RoomType.Parking, RoomType.Garden, RoomType.Balcony, RoomType.Corridor,
 ]);
 
 function combinedQuality(validation: ValidationSummary, graph: InstanceGraphEvaluation): number {
@@ -34,6 +34,30 @@ function programTag(room: Room): string | undefined {
 
 function canReassign(room: Room): boolean {
   return !room.isFixed && !NON_REASSIGNABLE_TYPES.has(room.type) && programTag(room) !== undefined;
+}
+
+function directRequiredEdges(building: Building, graph: InstanceDesignGraph): Set<string> {
+  const nodes = new Map(graph.nodes.map(node => [node.id, node.programItemId]));
+  const rooms = building.floors.flatMap(floor => floor.rooms);
+  const programRooms = (nodeId: string) => rooms.filter(room => {
+    const tag = programTag(room);
+    return tag && sourceProgramItemId(tag.slice(8)) === nodes.get(nodeId);
+  });
+  return new Set(graph.edges.filter(edge => {
+    if (edge.relation !== AdjacencyRelationType.RequiredAdjacency && edge.relation !== AdjacencyRelationType.AccessRequired) return false;
+    return programRooms(edge.sourceNodeId).some(a => programRooms(edge.targetNodeId).some(b =>
+      a.floorId === b.floorId && building.floors.some(floor => floor.doors.some(door =>
+        door.connectsRooms.includes(a.id) && door.connectsRooms.includes(b.id)))));
+  }).map(edge => edge.id));
+}
+
+function accessFailures(building: Building, validation: ValidationSummary): Set<string> {
+  const rooms = new Map(building.floors.flatMap(floor => floor.rooms).map(room => [room.id, room]));
+  return new Set(validation.violations.filter(result => result.constraintId === 'SC-CIR-003' && !result.passed)
+    .flatMap(result => result.affectedEntities.map(id => {
+      const room = rooms.get(id);
+      return room ? programTag(room) ?? room.id : id;
+    })));
 }
 
 function semanticAssignment(room: Room) {
@@ -94,6 +118,8 @@ export class PlanRepairEngine {
 
     for (let iteration = 1; iteration <= Math.max(0, maxIterations); iteration++) {
       const currentQuality = combinedQuality(currentValidation, currentGraph);
+      const protectedEdges = directRequiredEdges(currentBuilding, graph);
+      const existingAccessFailures = accessFailures(currentBuilding, currentValidation);
       let best: {
         building: Building; validation: ValidationSummary; graph: InstanceGraphEvaluation;
         source: Room; target: Room; quality: number;
@@ -109,6 +135,12 @@ export class PlanRepairEngine {
             attempts++;
             const proposal = swapProgramAssignments(currentBuilding, source.id, target.id);
             const validation = this.validator.validate(proposal, validateOptions);
+            const proposedEdges = directRequiredEdges(proposal, graph);
+            // Do not preserve accidental relationships in a hard-invalid damaged
+            // plan at the expense of restoring validity. Once valid, every
+            // accepted step must preserve access already demonstrated as safe.
+            if (currentValidation.isValid && ([...protectedEdges].some(id => !proposedEdges.has(id))
+                || [...accessFailures(proposal, validation)].some(id => !existingAccessFailures.has(id)))) continue;
             const graphEvaluation = evaluateInstanceGraph(proposal, graph);
             const quality = combinedQuality(validation, graphEvaluation);
             const improvesFailures = validation.failed < currentValidation.failed;
