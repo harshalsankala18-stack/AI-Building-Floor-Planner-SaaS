@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import { ArchitecturalEvidencePanel } from '../generation/ArchitecturalEvidencePanel';
 import {
   Sparkles,
   X,
@@ -620,9 +621,9 @@ export const AIDesignModal: React.FC<AIDesignModalProps> = ({
                             <span>Worst unused: {Math.round(cand.multiFloorPlanning.maximumUnusedSpaceRatio * 100)}%</span>
                             <span>Room distribution: {cand.multiFloorPlanning.roomDistributionScore}%</span>
                             <span>Vertical continuity: {cand.multiFloorPlanning.verticalContinuityScore}%</span>
-                            <span>Bed/bath floors: {cand.multiFloorPlanning.bedroomBathroomPairingScore}%</span>
+                            <span>Legacy same-floor bath availability: {cand.multiFloorPlanning.bedroomBathroomPairingScore}%</span>
                             <span>
-                              Wet stack: {cand.multiFloorPlanning.wetAreaStackScore === null
+                              Legacy best wet-pair overlap: {cand.multiFloorPlanning.wetAreaStackScore === null
                                 ? 'N/A'
                                 : `${cand.multiFloorPlanning.wetAreaStackScore}%`}
                             </span>
@@ -630,6 +631,7 @@ export const AIDesignModal: React.FC<AIDesignModalProps> = ({
                         )}
                       </div>
 
+                      <ArchitecturalEvidencePanel candidate={cand} />
                       {/* Open in Editor Button */}
                       <button
                         className={isSelected ? 'btn btn-primary' : 'btn btn-secondary'}

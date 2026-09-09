@@ -97,6 +97,19 @@ describe('floor and suite intent', () => {
       const result = await runGenerationWorkflow({building,program,footprint,category:'residential'});
       expect(result.candidates.length).toBeGreaterThan(1);
       for (const candidate of result.candidates) {
+        const evidence = candidate.architecturalEvidence!;
+        expect(evidence.buildingId).toBe(candidate.building.id);
+        expect(evidence.buildingVersion).toBe(candidate.building.version);
+        expect(evidence.requiredFloors.every(check => check.passed)).toBe(true);
+        expect(evidence.suites).toHaveLength(4);
+        expect(evidence.wetStacking.rooms).toHaveLength(3);
+        for (const suite of evidence.suites) {
+          const actualDoors = candidate.building.floors.flatMap(floor => floor.doors)
+            .filter(door => door.connectsRooms.includes(suite.ownerId!) && door.connectsRooms.includes(suite.bathroomId!));
+          expect(suite.directDoorIds).toEqual(actualDoors.map(door => door.id));
+        }
+        expect(evidence.status).toBe(evidence.suites.every(suite => suite.status === 'PRIVATE_DIRECT_ACCESS')
+          ? 'CHECKED_REQUIREMENTS_MET' : 'REVIEW_REQUIRED');
         const find = (id: string) => candidate.building.floors.flatMap(f => f.rooms).find(r => r.tags.some(t => t.startsWith(`program:${id}_1_floor_`)))!;
         const level = (id: string) => candidate.building.floors.find(f => f.id === find(id).floorId)!.level;
         expect(candidate.validation.isValid).toBe(true);

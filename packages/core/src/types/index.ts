@@ -162,6 +162,7 @@ export type {
   DesignSpecification,
   CandidateMetrics,
   CandidatePlan,
+  ArchitecturalEvidence,
   CandidateOptimizationSummary,
   PlanRepairStep,
   FloorAllocationEvidence,

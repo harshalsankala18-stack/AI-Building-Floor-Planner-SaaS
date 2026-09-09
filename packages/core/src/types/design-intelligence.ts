@@ -259,6 +259,54 @@ export interface CandidatePlan {
   readonly multiFloorPlanning: MultiFloorPlanningSummary;
   readonly vastuPlanning: VastuPlanningSummary;
   readonly rank: number;
+  /** Optional for old saved candidates; absence must never be presented as a pass. */
+  readonly architecturalEvidence?: ArchitecturalEvidence;
+}
+
+/** Versioned observations, independent of legacy ranking and professional approval. */
+export interface ArchitecturalEvidence {
+  readonly schemaVersion: 1;
+  readonly buildingId: string;
+  readonly buildingVersion: number;
+  readonly status: 'CHECKED_REQUIREMENTS_MET' | 'REVIEW_REQUIRED';
+  readonly requiredFloors: readonly {
+    readonly programItemId: string;
+    readonly name: string;
+    readonly requiredLevel: number;
+    readonly roomIds: readonly string[];
+    readonly actualLevels: readonly number[];
+    readonly passed: boolean;
+  }[];
+  readonly suites: readonly {
+    readonly bathroomProgramItemId: string;
+    readonly ownerProgramItemId: string;
+    readonly name: string;
+    readonly bathroomId: string | null;
+    readonly ownerId: string | null;
+    readonly sameFloor: boolean;
+    readonly directDoorIds: readonly string[];
+    readonly otherAccessRoomIds: readonly string[];
+    readonly status: 'PRIVATE_DIRECT_ACCESS' | 'SHARED_ACCESS' | 'REVIEW_REQUIRED';
+  }[];
+  readonly wetStacking: {
+    /** Mean upper-room footprint coverage by its best lower wet room, not a plumbing check. */
+    readonly coveragePercent: number | null;
+    readonly status: 'MEASURED' | 'NOT_APPLICABLE' | 'NOT_EVALUATED';
+    readonly rooms: readonly {
+      readonly upperRoomId: string;
+      readonly upperFloorId: string;
+      readonly lowerRoomId: string | null;
+      readonly lowerFloorId: string;
+      readonly coveragePercent: number | null;
+    }[];
+  };
+  readonly openSpace: readonly {
+    readonly floorId: string;
+    readonly explicitOutdoorRoomIds: readonly string[];
+    readonly explicitOutdoorAreaMm2: number;
+    readonly residualUnclassifiedAreaMm2: number | null;
+  }[];
+  readonly limitations: readonly string[];
 }
 
 export interface VastuRuleEvidence {
@@ -311,7 +359,9 @@ export interface MultiFloorPlanningSummary {
   readonly floorCount: number;
   readonly allocations: readonly FloorAllocationEvidence[];
   readonly verticalCoreAligned: boolean;
+  /** Legacy same-floor bathroom availability only; not suite ownership/access. */
   readonly bedroomBathroomPairingScore: number;
+  /** Legacy best wet-pair overlap; use architecturalEvidence for all-upper-room coverage. */
   readonly wetAreaStackScore: number | null;
   readonly wetAreaStackPairs: number;
   readonly adjacentFloorPairsCovered: number;

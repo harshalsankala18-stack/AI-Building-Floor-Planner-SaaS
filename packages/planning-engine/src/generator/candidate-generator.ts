@@ -18,6 +18,7 @@ import { LAYOUT_STRATEGIES, StructuredLayoutGenerator, roomProgramCounts } from 
 import type { LayoutStrategyProfile } from './structured-layout';
 import { PolygonLayoutGenerator } from './polygon-layout';
 import { evaluateMultiFloorPlanning } from '../multi-floor/planner';
+import { evaluateArchitecturalEvidence } from '../evidence/architectural-evidence';
 import { VastuOptimizer } from '../vastu/optimizer';
 import type { VastuOptimizationResult } from '../vastu/optimizer';
 
@@ -151,7 +152,7 @@ export class CandidateGenerator {
         acceptedRepairs: selected.repair.acceptedSteps.length,
         repairTrace: selected.repair.acceptedSteps,
       };
-      return this.createCandidate(
+      const candidate = this.createCandidate(
         `candidate_${profile.strategy}_${index + 1}`,
         `${profile.name} ${spec.hard.bedroomCount}BHK`,
         profile,
@@ -160,6 +161,7 @@ export class CandidateGenerator {
         designGraph,
         optimization,
       );
+      return { ...candidate, architecturalEvidence: evaluateArchitecturalEvidence(candidate.building, program) };
     }).filter((candidate): candidate is CandidatePlan => candidate !== null);
 
     if (!candidates.length) {
