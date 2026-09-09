@@ -99,6 +99,21 @@ export function validateSpaceProgram(program: SpaceProgram, plannedFloorCount?: 
       invalid('maximumAreaMm2', 'Maximum area must be at least the preferred area.');
     }
     if (item.isCustom && !item.name.trim()) invalid('name', 'Custom spaces require a name.');
+    if (item.privateSuiteAccess) {
+      const access = item.privateSuiteAccess;
+      const owner = program.items.find(candidate => candidate.id === access.ownerProgramItemId);
+      const accessType = item.canonicalType;
+      const eligible = item.definitionId === 'dressing' || accessType === RoomType.Storage
+        || accessType === RoomType.Corridor || accessType === RoomType.Foyer
+        || accessType === RoomType.Custom || (item.isCustom && accessType === undefined);
+      if (!eligible || !['dressing', 'private_access'].includes(access.role)
+        || !owner || owner.id === item.id || owner.canonicalType !== RoomType.Bedroom
+        || owner.generatorSupport !== 'supported' || owner.isCustom || item.attachedToRoomId !== undefined) {
+        invalid('privateSuiteAccess', 'Private access requires an explicit access space and supported bedroom owner.');
+      } else if (owner.quantity !== 1 && owner.quantity !== item.quantity) {
+        invalid('privateSuiteAccess', 'Ambiguous private access quantities: use one owner or matching quantities.');
+      }
+    }
     if (item.attachedToRoomId !== undefined) {
       const owner = program.items.find(candidate => candidate.id === item.attachedToRoomId);
       if (item.canonicalType !== RoomType.Bathroom || !owner || owner.canonicalType !== RoomType.Bedroom
@@ -347,6 +362,7 @@ export function adaptSpaceProgramToPlannerProgram(
         floorPreference: { ...item.floorPreference },
         attachedToRoomId: item.attachedToRoomId === undefined ? undefined
           : `${item.attachedToRoomId}_${program.items.find(owner => owner.id === item.attachedToRoomId)!.quantity === 1 ? 1 : index + 1}`,
+        bathroomUse: item.definitionId === 'common_bathroom' || item.definitionId === 'powder_room' ? 'common' as const : undefined,
         targetAreaMm2: item.preferredAreaMm2,
         minAreaMm2: item.minimumAreaMm2,
         maxAreaMm2: Math.max(item.preferredAreaMm2, item.maximumAreaMm2 ?? item.preferredAreaMm2 * 1.5),
@@ -361,6 +377,12 @@ export function adaptSpaceProgramToPlannerProgram(
   });
   return {
     items,
+    reviewedAccessSpaces: program.items.flatMap(item => item.privateSuiteAccess
+      ? Array.from({ length: item.quantity }, (_, index) => ({
+        programItemId: `${item.id}_${index + 1}`,
+        ownerProgramItemId: `${item.privateSuiteAccess!.ownerProgramItemId}_${program.items.find(owner => owner.id === item.privateSuiteAccess!.ownerProgramItemId)!.quantity === 1 ? 1 : index + 1}`,
+        role: item.privateSuiteAccess!.role,
+      })) : []),
     totalTargetAreaMm2: items.reduce((sum, item) => sum + item.targetAreaMm2, 0),
     totalMinAreaMm2: items.reduce((sum, item) => sum + item.minAreaMm2, 0),
     totalMaxAreaMm2: items.reduce((sum, item) => sum + item.maxAreaMm2, 0),

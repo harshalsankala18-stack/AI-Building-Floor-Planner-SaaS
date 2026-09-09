@@ -27,10 +27,88 @@ function validRoomDoors(floor: Floor, room: Room) {
     return door.connectsRooms.every(id => {
       if (id === '__outside__' || id === 'outside' || id === '') return true;
       const endpoint = floor.rooms.find(candidate => candidate.id === id);
-      return endpoint && polygonEdges(endpoint.boundary).some(edge =>
+      return endpoint && endpoint.floorId === floor.id && polygonEdges(endpoint.boundary).some(edge =>
         pointOnSegment(door.position, edge, TOLERANCES.ADJACENCY));
     });
   });
+}
+
+type Access = NonNullable<ArchitecturalEvidence['suites'][number]['access']>;
+const ACCESS_TYPES = new Set([RoomType.Storage, RoomType.Custom, RoomType.Corridor, RoomType.Foyer]);
+const COMMON_TYPES = new Set([RoomType.Living, RoomType.FamilyLiving, RoomType.Drawing, RoomType.Dining,
+  RoomType.Kitchen, RoomType.Corridor, RoomType.Foyer, RoomType.Staircase, RoomType.Lift]);
+
+/** Walk only the bath-side private component. The owner is its entrance boundary:
+ * normal common access to that bedroom does not make its ensuite shared. */
+function suiteAccess(building: Building, program: RoomProgram, ownerProgramId: string,
+  floor: Floor | undefined, owner: Room | undefined, bath: Room | undefined): Access {
+  const result = (status: Access['status'], reason: string, pathRoomIds: string[] = [],
+    pathDoorIds: string[] = [], viaRoles: Access['viaRoles'] = [], sharedEntryRoomIds: string[] = []): Access =>
+    ({ status, reason, pathRoomIds, pathDoorIds, viaRoles, sharedEntryRoomIds });
+  if (!floor || !owner || !bath || owner.floorId !== floor.id || bath.floorId !== floor.id
+    || program.items.filter(item => item.id === ownerProgramId && item.type === RoomType.Bedroom).length !== 1
+    || !floor.rooms.some(room => room.id === owner.id)) {
+    return result('UNRESOLVED', 'Owner and bath must map uniquely to actual rooms on the same floor.');
+  }
+  const entries = program.reviewedAccessSpaces ?? [];
+  const permitted = new Map<string, 'dressing' | 'private_access'>();
+  let incomplete = false;
+  for (const entry of entries.filter(item => item.ownerProgramItemId === ownerProgramId)) {
+    const rooms = mappedRooms(building, entry.programItemId);
+    const room = rooms.length === 1 ? rooms[0] : undefined;
+    if (entries.filter(item => item.programItemId === entry.programItemId).length !== 1
+      || !['dressing', 'private_access'].includes(entry.role) || !room || !ACCESS_TYPES.has(room.type)
+      || room.floorId !== floor.id || !floor.rooms.some(item => item.id === room.id)
+      || permitted.has(room.id) || room.id === owner.id || room.id === bath.id) {
+      incomplete = true;
+    } else permitted.set(room.id, entry.role);
+  }
+  const physical = floor.doors.filter(door => {
+    const room = floor.rooms.find(item => door.connectsRooms.includes(item.id));
+    return room && validRoomDoors(floor, room).includes(door);
+  }).sort((a, b) => a.id.localeCompare(b.id));
+  const queue = [{ id: bath.id, rooms: [bath.id], doors: [] as string[] }];
+  const visited = new Set([bath.id]);
+  const shared = new Set<string>();
+  let unknownBoundary = false;
+  let path: { rooms: string[]; doors: string[] } | undefined;
+  // At most one visit per physical room; no recursive or unbounded path enumeration.
+  for (let index = 0; index < queue.length && index < floor.rooms.length; index++) {
+    const current = queue[index]!;
+    for (const door of physical.filter(item => item.connectsRooms.includes(current.id))) {
+      const next = door.connectsRooms.find(id => id !== current.id)!;
+      if (next === owner.id) {
+        if (!path) path = { rooms: [...current.rooms, next].reverse(), doors: [...current.doors, door.id].reverse() };
+        continue;
+      }
+      if (next === bath.id || permitted.has(next)) {
+        if (!visited.has(next)) {
+          visited.add(next);
+          queue.push({ id: next, rooms: [...current.rooms, next], doors: [...current.doors, door.id] });
+        }
+      } else {
+        const room = floor.rooms.find(item => item.id === next);
+        if (room?.type === RoomType.Bathroom) {
+          const bathItems = program.items.filter(item => item.type === RoomType.Bathroom
+            && mappedRooms(building, item.id).some(mapped => mapped.id === next));
+          if (bathItems.length === 1 && (bathItems[0]!.bathroomUse === 'common'
+            || (bathItems[0]!.attachedToRoomId !== undefined && bathItems[0]!.attachedToRoomId !== ownerProgramId))) shared.add(next);
+          else unknownBoundary = true;
+        } else if (!room || !ACCESS_TYPES.has(room.type)) shared.add(next);
+        else if (COMMON_TYPES.has(room.type)) shared.add(next);
+        else unknownBoundary = true;
+      }
+    }
+  }
+  const rooms = path?.rooms ?? [];
+  const doors = path?.doors ?? [];
+  const roles = rooms.slice(1, -1).map(id => permitted.get(id)!);
+  if (shared.size) return result('SHARED', 'Bath-side access reaches a non-suite space or another owner without crossing the owner bedroom.',
+    rooms, doors, roles, [...shared].sort());
+  if (incomplete || unknownBoundary) return result('NOT_EVALUATED', 'Private intermediate identity, role or exclusivity is incomplete.', rooms, doors, roles);
+  if (!path) return result('UNRESOLVED', 'No validated owner-to-bath path through explicit private access spaces.');
+  return result(doors.length === 1 ? 'PRIVATE_DIRECT' : 'PRIVATE_INDIRECT',
+    'Validated same-floor door path; no other entry to its bath-side private component.', rooms, doors, roles);
 }
 
 function usablePolygon(room: Room): boolean {
@@ -72,9 +150,23 @@ export function evaluateArchitecturalEvidence(building: Building, program: RoomP
     return { bathroomProgramItemId: item.id, ownerProgramItemId: item.attachedToRoomId!, name: item.name,
       bathroomId: bathroom?.id ?? null, ownerId: owner?.id ?? null, sameFloor,
       directDoorIds, otherAccessRoomIds,
+      access: suiteAccess(building, program, item.attachedToRoomId!, floor, owner, bathroom),
       status: directDoorIds.length === 0 ? 'REVIEW_REQUIRED'
         : otherAccessRoomIds.length > 0 ? 'SHARED_ACCESS' : 'PRIVATE_DIRECT_ACCESS' };
   });
+
+  const unownedBathrooms: NonNullable<ArchitecturalEvidence['unownedBathrooms']> = program.items
+    .filter(item => item.type === RoomType.Bathroom && item.attachedToRoomId === undefined).map(item => {
+      const rooms = mappedRooms(building, item.id);
+      const bathroom = rooms.length === 1 && rooms[0]!.type === RoomType.Bathroom ? rooms[0] : undefined;
+      const floor = floors.find(candidate => candidate.id === bathroom?.floorId);
+      const doors = floor && bathroom ? validRoomDoors(floor, bathroom) : [];
+      const commonDoor = doors.some(door => door.connectsRooms.some(id =>
+        floor?.rooms.some(room => room.id === id && COMMON_TYPES.has(room.type))));
+      return { programItemId: item.id, name: item.name, bathroomId: bathroom?.id ?? null,
+        ownership: item.bathroomUse === 'common' && commonDoor ? 'COMMON_ACCESS' : 'AMBIGUOUS_OWNERSHIP',
+        physicalDoorIds: doors.map(door => door.id) };
+    });
 
   const wetRooms: ArchitecturalEvidence['wetStacking']['rooms'][number][] = [];
   for (let index = 1; index < floors.length; index++) {
@@ -114,13 +206,15 @@ export function evaluateArchitecturalEvidence(building: Building, program: RoomP
   const unknownSuites = program.items.some(item => item.type === RoomType.Bathroom
     && item.attachedToRoomId === undefined && /^Attached Bath/i.test(item.name));
   return {
-    schemaVersion: 1, buildingId: building.id, buildingVersion: building.version,
-    status: requiredFloors.some(item => !item.passed) || suites.some(suite => suite.status !== 'PRIVATE_DIRECT_ACCESS') || unknownSuites
+    schemaVersion: 1, accessEvidenceVersion: 1, buildingId: building.id, buildingVersion: building.version,
+    status: requiredFloors.some(item => !item.passed) || suites.some(suite =>
+      suite.access?.status !== 'PRIVATE_DIRECT' && suite.access?.status !== 'PRIVATE_INDIRECT') || unknownSuites
       ? 'REVIEW_REQUIRED' : 'CHECKED_REQUIREMENTS_MET',
-    requiredFloors, suites, wetStacking, openSpace,
+    requiredFloors, suites, unownedBathrooms, wetStacking, openSpace,
     limitations: [
-      'Checks cover explicit required floors and directly owned bathroom access only; this is not architectural approval.',
-      'Indirect private paths (including dressing rooms) require explicit reviewed relationships and are not certified here.',
+      'Checks cover explicit required floors and owned bathroom door paths only; this is not architectural approval.',
+      'Private paths require explicit reviewed access-space identities and actual validated same-floor doors. Missing semantics are not evaluated.',
+      'Door-only evidence does not evaluate open thresholds, door operation, plumbing or professional compliance.',
       'Wet coverage is a geometric observation, not plumbing feasibility or a minimum compliance score.',
       'Outdoor area includes only typed balcony, terrace and garden rooms; residual area is unclassified, not wasted space.',
       ...(unknownSuites ? ['A legacy attached-bath name has no explicit owner; ownership was not inferred.'] : []),

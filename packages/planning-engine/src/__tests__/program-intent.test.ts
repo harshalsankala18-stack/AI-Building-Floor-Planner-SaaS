@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { createHash } from 'node:crypto';
 import { createEmptySpaceProgram, createProgramItem, getSpaceDefinition, adaptSpaceProgramToPlannerProgram, RoomType,
   createBuilding, createDefaultFootprintIntent, Direction, setIdSeed, resetIdGenerator,
   type SpaceFloorPreference, type SpaceProgramItem } from '@ai-floor-planner/core';
@@ -96,6 +97,31 @@ describe('floor and suite intent', () => {
       const footprint = {...base,parameters:{...base.parameters,width:20000,depth:25500},transform:{...base.transform,x:1000,y:1500},strategy:'custom_per_floor' as const,floorOverrides:[{floorLevel:1,scalePercent:75}]};
       const result = await runGenerationWorkflow({building,program,footprint,category:'residential'});
       expect(result.candidates.length).toBeGreaterThan(1);
+      const preserved = result.candidates.map(candidate => ({
+        id: candidate.id, strategy: candidate.strategy, rank: candidate.rank,
+        geometryHash: createHash('sha256').update(JSON.stringify(candidate.building.floors)).digest('hex'),
+        score: candidate.metrics.overallQualityScore, oldWet: candidate.multiFloorPlanning.wetAreaStackScore,
+        wet: candidate.architecturalEvidence!.wetStacking.coveragePercent,
+        required: candidate.architecturalEvidence!.requiredFloors.filter(check => check.passed).length,
+        direct: candidate.architecturalEvidence!.suites.filter(suite => suite.directDoorIds.length).length,
+      }));
+      // Captured from clean Phase 1A HEAD 16f4dbf before access-path implementation.
+      // Hash includes every floor entity/ID/door, not just room bounding boxes.
+      expect(preserved).toEqual([
+        { id: 'candidate_compact_zoning_1', strategy: 'compact_zoning', rank: 1,
+          geometryHash: '62e3f6dffaaacb5178aec21d6c4cb1c1ad22f6d8ee8571e292f82db4cc12225e', score: 80, oldWet: 61, wet: 34, required: 8, direct: 3 },
+        { id: 'candidate_vastu_aligned_3', strategy: 'vastu_aligned', rank: 2,
+          geometryHash: '51ca896a9b4936876068d1cb333d2d3c5019201670577806a4b6bcef62e58dac', score: 79, oldWet: 51, wet: 17, required: 8, direct: 3 },
+        { id: 'candidate_open_circulation_2', strategy: 'open_circulation', rank: 3,
+          geometryHash: '126b1e5d0708ff3ed24af9cfbad63bd75f85726ce3946d593d0aabe59f29e6d2', score: 74, oldWet: 52, wet: 22, required: 8, direct: 0 },
+      ]);
+      console.log('PHASE_1B_BENCHMARK', JSON.stringify(result.candidates.map((candidate, index) => ({
+        ...preserved[index], owned: candidate.architecturalEvidence!.suites.length,
+        access: Object.fromEntries(['PRIVATE_DIRECT', 'PRIVATE_INDIRECT', 'SHARED', 'UNRESOLVED', 'NOT_EVALUATED']
+          .map(status => [status, candidate.architecturalEvidence!.suites.filter(suite => suite.access?.status === status).length])),
+        suites: candidate.architecturalEvidence!.suites.map(suite => ({ name: suite.name, status: suite.access?.status,
+          otherAccessTypes: suite.otherAccessRoomIds.map(id => candidate.building.floors.flatMap(floor => floor.rooms).find(room => room.id === id)?.type ?? 'outside') })),
+      }))));
       for (const candidate of result.candidates) {
         const evidence = candidate.architecturalEvidence!;
         expect(evidence.buildingId).toBe(candidate.building.id);
@@ -108,7 +134,9 @@ describe('floor and suite intent', () => {
             .filter(door => door.connectsRooms.includes(suite.ownerId!) && door.connectsRooms.includes(suite.bathroomId!));
           expect(suite.directDoorIds).toEqual(actualDoors.map(door => door.id));
         }
-        expect(evidence.status).toBe(evidence.suites.every(suite => suite.status === 'PRIVATE_DIRECT_ACCESS')
+        expect(evidence.accessEvidenceVersion).toBe(1);
+        expect(evidence.suites.every(suite => suite.access !== undefined)).toBe(true);
+        expect(evidence.status).toBe(evidence.suites.every(suite => suite.access?.status === 'PRIVATE_DIRECT' || suite.access?.status === 'PRIVATE_INDIRECT')
           ? 'CHECKED_REQUIREMENTS_MET' : 'REVIEW_REQUIRED');
         const find = (id: string) => candidate.building.floors.flatMap(f => f.rooms).find(r => r.tags.some(t => t.startsWith(`program:${id}_1_floor_`)))!;
         const level = (id: string) => candidate.building.floors.find(f => f.id === find(id).floorId)!.level;

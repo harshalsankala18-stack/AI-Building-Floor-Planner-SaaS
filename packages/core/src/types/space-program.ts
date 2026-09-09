@@ -59,6 +59,12 @@ export interface SpaceProgramItem {
   /** Owning bedroom's Program item ID. Equal quantities pair by instance index;
    * a single owner may own multiple baths. Omission preserves legacy inference. */
   readonly attachedToRoomId?: string;
+  /** Explicit reviewed access-space intent, never inferred from name/zone/proximity.
+   * This does not enable generation of program-only spaces. */
+  readonly privateSuiteAccess?: {
+    readonly ownerProgramItemId: string;
+    readonly role: 'dressing' | 'private_access';
+  };
   readonly group: SpaceFunctionalGroup;
   readonly zone: FunctionalZone;
   readonly occupancy: SpaceOccupancy;

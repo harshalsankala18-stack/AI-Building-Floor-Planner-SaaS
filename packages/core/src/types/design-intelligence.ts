@@ -94,11 +94,20 @@ export interface RoomProgramItem {
   readonly privacy: PrivacyLevel;
   readonly ventilationRequired: boolean;
   readonly attachedToRoomId?: string; // e.g. attached bath to master bed
+  /** Explicit catalog common-bath use; absent metadata remains ambiguous. */
+  readonly bathroomUse?: 'common';
   readonly isFixed?: boolean;
 }
 
 export interface RoomProgram {
   readonly items: readonly RoomProgramItem[];
+  /** Evidence-only reviewed identities, including program-only spaces. These
+   * never become placement requests or physical doors merely by being listed. */
+  readonly reviewedAccessSpaces?: readonly {
+    readonly programItemId: string;
+    readonly ownerProgramItemId: string;
+    readonly role: 'dressing' | 'private_access';
+  }[];
   readonly totalTargetAreaMm2: number;
   readonly totalMinAreaMm2: number;
   readonly totalMaxAreaMm2: number;
@@ -266,6 +275,8 @@ export interface CandidatePlan {
 /** Versioned observations, independent of legacy ranking and professional approval. */
 export interface ArchitecturalEvidence {
   readonly schemaVersion: 1;
+  /** Absent on Phase 1A saves: access-path evaluation must show Not evaluated. */
+  readonly accessEvidenceVersion?: 1;
   readonly buildingId: string;
   readonly buildingVersion: number;
   readonly status: 'CHECKED_REQUIREMENTS_MET' | 'REVIEW_REQUIRED';
@@ -287,6 +298,22 @@ export interface ArchitecturalEvidence {
     readonly directDoorIds: readonly string[];
     readonly otherAccessRoomIds: readonly string[];
     readonly status: 'PRIVATE_DIRECT_ACCESS' | 'SHARED_ACCESS' | 'REVIEW_REQUIRED';
+    /** Legacy status above describes direct-door observations only. */
+    readonly access?: {
+      readonly status: 'PRIVATE_DIRECT' | 'PRIVATE_INDIRECT' | 'SHARED' | 'UNRESOLVED' | 'NOT_EVALUATED';
+      readonly pathRoomIds: readonly string[];
+      readonly pathDoorIds: readonly string[];
+      readonly viaRoles: readonly ('dressing' | 'private_access')[];
+      readonly sharedEntryRoomIds: readonly string[];
+      readonly reason: string;
+    };
+  }[];
+  readonly unownedBathrooms?: readonly {
+    readonly programItemId: string;
+    readonly name: string;
+    readonly bathroomId: string | null;
+    readonly ownership: 'COMMON_ACCESS' | 'AMBIGUOUS_OWNERSHIP';
+    readonly physicalDoorIds: readonly string[];
   }[];
   readonly wetStacking: {
     /** Mean upper-room footprint coverage by its best lower wet room, not a plumbing check. */
