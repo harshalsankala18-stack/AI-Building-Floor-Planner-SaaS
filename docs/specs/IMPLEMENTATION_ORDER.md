@@ -1,3 +1,11 @@
+# HISTORICAL FOUNDATION IMPLEMENTATION SEQUENCE
+
+This document preserves the original Phase 1–4 foundation build sequence and useful technical dependencies. Those phases describe currently implemented foundations, not the active V1 delivery roadmap. The original status, prohibitions, estimates, commands and acceptance targets below are historical, not current instructions or verified maturity claims. Day counts are not current delivery commitments.
+
+Current delivery planning lives in [docs/ROADMAP.md](../ROADMAP.md). V1 includes coordinated multi-floor editable architectural 2D, professional exports, canonical-model-driven Blender architecture and elevations. Structural analysis/design, foundations/reinforcement, structural 3D and BOQ/costing are deferred post-V1. Canonical Building authority remains unchanged; internal tests do not establish professional approval.
+
+---
+
 # Implementation Order & Dependency Graph
 
 ## Status: IMPLEMENTATION-READY

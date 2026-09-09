@@ -1,220 +1,79 @@
-# AI Floor Planner — System Architecture
+# AI Building SaaS — System Architecture
 
-## 1. Overview
+## 1. Product and maturity
 
-AI Floor Planner is a production-grade SaaS platform for architectural floor plan generation and editing. The system separates AI reasoning from deterministic computation, ensuring that all geometric output is mathematically valid and architecturally sound.
+AI Building SaaS is an **AI-assisted residential architectural design platform under active development**. Existing foundations generate, edit, evaluate and display building data. They do not establish that every output is architecturally sound, professionally validated, construction ready or production ready.
 
-### Core Principle
+The active delivery plan is [ROADMAP.md](ROADMAP.md). V1 includes editable residential 2D, meaningful alternatives, coordinated multi-floor architecture, review/finalization, professional exports, canonical-model-driven Blender architecture and elevations/presentation. Structural engineering, foundations/reinforcement, structural 3D and quantities/BOQ/costing are DEFERRED_POST_V1.
 
-```
-User Requirements
-→ Requirement Parser (AI)
-→ Architectural Reasoning (AI)
-→ Structured Building Model (deterministic)
-→ Constraint Engine (deterministic)
-→ Geometry Engine (deterministic)
-→ Validation (deterministic)
-→ Optimization (deterministic)
-→ SVG/Canvas Rendering (deterministic)
-→ Editable Plan
-→ Export
-```
+Audit anchor: e968720. Source and current verification override this documentation snapshot.
 
-AI is responsible for: reasoning, interpretation, explanation, and planning intent.
+## 2. Canonical authority and flow
 
-Deterministic software is responsible for: geometry, coordinates, dimensions, room boundaries, wall placement, doors, windows, staircase geometry, collision detection, area calculations, constraint validation, plan consistency.
+Requirements/site/reviewed Program → AI interpretation or deterministic fallback → structured intent → deterministic architectural planner → canonical Building Model with deterministic geometry → architectural validation/evidence/ranking → 2D renderer/editor → reviewed/finalized canonical revision → professional exports and Blender adapter → reproducible architectural 3D/elevations.
 
----
+The finalization and Blender portions are PLANNED_V1 completion work, not a claim of an implemented end-to-end flow.
 
-## 2. High-Level Architecture
+The Building Model is the sole authoritative geometry. Requirements/Program metadata describe intent; desired adjacency and ownership do not prove physical doors. AI may interpret, propose and explain, but must not directly author authoritative geometry, bypass validation or invent engineering inputs.
 
-```
-┌─────────────────────────────────────────────────────────────────┐
-│                         CLIENT (Browser)                         │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────────┐  │
-│  │  App     │ │  Plan    │ │  AI      │ │  Property         │  │
-│  │  Shell   │ │  Editor  │ │  Chat    │ │  Inspector        │  │
-│  └──────────┘ └──────────┘ └──────────┘ └───────────────────┘  │
-│  ┌──────────────────────────────────────────────────────────┐   │
-│  │              SVG Renderer / Canvas Layer                   │   │
-│  └──────────────────────────────────────────────────────────┘   │
-└─────────────────────────────────────────────────────────────────┘
-                              │ HTTP/WS
-┌─────────────────────────────────────────────────────────────────┐
-│                         BACKEND (API)                            │
-│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌───────────────────┐  │
-│  │  Auth    │ │  Project │ │  Plan    │ │  AI               │  │
-│  │  Service │ │  Service │ │  Service │ │  Service           │  │
-│  └──────────┘ └──────────┘ └──────────┘ └───────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────────────────────────────────────────┐
-│                      CORE ENGINE (Library)                       │
-│  ┌──────────────┐ ┌────────────────┐ ┌───────────────────────┐  │
-│  │  Geometry    │ │  Constraint    │ │  Planning             │  │
-│  │  Engine      │ │  Engine        │ │  Engine               │  │
-│  └──────────────┘ └────────────────┘ └───────────────────────┘  │
-│  ┌──────────────┐ ┌────────────────┐ ┌───────────────────────┐  │
-│  │  Building    │ │  Renderer      │ │  AI Orchestration     │  │
-│  │  Model       │ │  (SVG)         │ │  Layer                │  │
-│  └──────────────┘ └────────────────┘ └───────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-                              │
-┌─────────────────────────────────────────────────────────────────┐
-│                        DATA LAYER                                │
-│  ┌──────────────┐ ┌────────────────┐ ┌───────────────────────┐  │
-│  │  PostgreSQL  │ │  Redis         │ │  Object Storage       │  │
-│  │  (primary)   │ │  (cache/queue) │ │  (exports/assets)     │  │
-│  └──────────────┘ └────────────────┘ └───────────────────────┘  │
-└─────────────────────────────────────────────────────────────────┘
-```
+SVG, React state, Three.js projection, Blender meshes and AI imagery cannot become competing building models. Editing changes canonical data. Dependent evidence, exports and 3D must be invalidated/regenerated for that revision. Full Building-plus-reviewed-Program freshness remains incomplete.
 
----
+## 3. Current implementation versus targets
 
-## 3. Technology Stack
+IMPLEMENTED denotes code foundations, not professional/product acceptance. PARTIALLY_IMPLEMENTED denotes incomplete V1 capability. PLANNED_V1 describes future delivery.
 
-| Layer | Technology | Rationale |
-|-------|-----------|-----------|
-| Language | TypeScript | Full-stack type safety, shared domain model |
-| Frontend Framework | React 18+ | Component architecture, ecosystem, performance |
-| State Management | Zustand | Lightweight, TypeScript-first, undo/redo friendly |
-| SVG Rendering | Custom SVG + D3 utilities | Precise architectural rendering |
-| Backend Runtime | Node.js | Shared language, async I/O |
-| API Framework | Fastify | Performance, schema validation, TypeScript |
-| Database | PostgreSQL 15+ | Relational integrity, JSON support, spatial extensions |
-| Cache | Redis | Session cache, job queues, pub/sub |
-| ORM | Drizzle ORM | Type-safe, lightweight, migration-friendly |
-| AI Providers | Gemini / OpenAI / Claude | Multi-provider abstraction |
-| Testing | Vitest | Fast, TypeScript-native, compatible with workspace |
-| Build | Turborepo | Monorepo build orchestration |
-| Package Manager | pnpm | Efficient, workspace-native |
-| Deployment | Docker + cloud-agnostic | Portability |
+| Component | Status | Reality and limits |
+|---|---|---|
+| core | IMPLEMENTED | Canonical entities, factories, immutable updates, serialization, site/Program/footprint and editor-domain foundations. Not a structural analytical model. |
+| geometry-engine | IMPLEMENTED | Deterministic geometry and placement checks; not architectural or engineering approval. |
+| constraint-engine | IMPLEMENTED | Configured hard checks, soft heuristics, statuses and explanations. Regulatory provider returns no jurisdiction rules; structural-named rules are not engineering analysis. |
+| planning-engine | PARTIALLY_IMPLEMENTED | Strategies/ranking, multi-floor planning, repair/targeted regeneration and evidence exist. Layout quality, diversity and complete acceptance remain active work. |
+| ai-orchestration | IMPLEMENTED | Provider abstraction, Gemini/OpenAI adapters, normalized interpretation/edit-intent foundations and rule-based fallback. No implemented Claude adapter found in the provider directory. |
+| renderer | IMPLEMENTED | Canonical SVG rendering/export foundation; professional semantic/sheet completeness still needs acceptance. |
+| frontend | PARTIALLY_IMPLEMENTED | React/Vite site, Program, footprint, generation, editor, validation, export and model workspaces; local persistence. Not a completed professional workflow. |
+| projection-3d | IMPLEMENTED | Canonical browser projection with source IDs, units, levels, floor plates, walls/openings and schematic elements. Not detailed Blender delivery. |
+| Review/finalization | PARTIALLY_IMPLEMENTED | Validation/project-persistence foundations; complete revision-finalization and scoped acceptance remain planned. |
+| Blender integration | PLANNED_V1 | The separate JSON-wall experiment is outside the primary repository; no integrated canonical Blender bridge established. |
+| Professional DXF/DWG | PLANNED_V1 | Current export service offers SVG/PDF/JSON. Genuine DWG needs supported tooling where feasible. |
+| Backend services | PLANNED_INFRASTRUCTURE | packages/backend is a directory skeleton, not an implemented API/package establishing hosted services. |
+| Structural engineering / BOQ / costing | DEFERRED_POST_V1 | Preserve future interfaces without implementing these capabilities in V1. |
 
----
+## 4. Current runtime and infrastructure
 
-## 4. Package Architecture (Monorepo)
+The frontend uses React, Vite, Three.js, a repository-owned editor store and custom SVG rendering. TypeScript libraries supply domain/planning/geometry/constraint/AI functionality. Vitest tests and pnpm/Turborepo scripts exist; sandbox/configuration limitations may affect which verification commands run.
 
-```
-ai-floor-planner/
-├── packages/
-│   ├── core/                    # Domain model, shared types, utilities
-│   │   └── src/
-│   │       ├── models/          # Building, Floor, Room, Wall, etc.
-│   │       └── types/           # Shared TypeScript interfaces
-│   ├── geometry-engine/         # Deterministic geometry operations
-│   │   └── src/
-│   ├── constraint-engine/       # Hard/soft constraint validation
-│   │   └── src/
-│   ├── planning-engine/         # Candidate generation & optimization
-│   │   └── src/
-│   ├── ai-orchestration/        # AI provider abstraction & routing
-│   │   └── src/
-│   │       └── providers/       # Gemini, OpenAI, Claude adapters
-│   ├── renderer/                # SVG generation from Building Model
-│   │   └── src/
-│   ├── backend/                 # HTTP API, services, database
-│   │   └── src/
-│   │       ├── api/             # Route handlers
-│   │       ├── services/        # Business logic
-│   │       └── db/              # Schema, migrations, queries
-│   └── frontend/                # React application
-│       └── src/
-│           ├── components/      # UI components
-│           ├── stores/          # State management
-│           └── views/           # Page-level views
-├── tests/
-│   ├── fixtures/                # Test floor plans
-│   ├── unit/                    # Unit tests
-│   └── integration/             # Integration tests
-├── docs/                        # Architecture & specification docs
-├── package.json                 # Root workspace config
-├── turbo.json                   # Turborepo pipeline
-└── tsconfig.base.json           # Shared TypeScript config
-```
+Current persistence uses browser local storage and JSON interchange. Do not describe it as PostgreSQL persistence, cloud backup or authenticated multi-user isolation.
 
----
+Fastify, PostgreSQL, Redis, ORM/database services, object storage, authentication/organizations, billing and hosted jobs are **PLANNED_INFRASTRUCTURE**. Earlier diagrams depicting these as running components were aspirational. Infrastructure must follow the supported deployment workflow; full SaaS billing is not a prerequisite for local architectural development.
 
-## 5. Data Flow
+## 5. Generation, editing and evidence
 
-### Plan Generation Flow
+The frontend collects site, Program and footprint inputs. AI can interpret requirements with normalization and safe fallback. Deterministic generation creates candidate Buildings, checks geometry/hard requirements and soft preferences, applies existing repair/optimization and returns ranked candidates. Architectural evidence records observations; it neither replaces legacy ranking nor completes final acceptance.
 
-```
-1. User submits requirements (rooms, plot, preferences)
-2. Backend receives request, validates input
-3. AI Orchestration: requirement parser extracts structured intent
-4. Planning Engine: generates N candidate room layouts
-5. Geometry Engine: computes walls, boundaries, coordinates
-6. Constraint Engine: validates hard constraints, scores soft constraints
-7. Invalid candidates filtered out
-8. Top candidates scored and ranked
-9. AI Orchestration: AI critiques candidates, suggests repairs
-10. Planning Engine: applies repairs, re-validates
-11. Final candidates returned with scores
-12. Frontend renders SVG from Building Model
-13. User selects preferred candidate
-14. Plan version saved to database
-```
+Phase 1 evidence covers required floor intent, explicit bath ownership, physical direct/reviewed private-indirect access, shared/unresolved/not-evaluated states, wet geometric coverage and outdoor/residual observations. ArchitecturalEvidencePanel handles versioned evidence and stale Building revisions. Reviewed-Program freshness, broader acceptance and review/finalization status remain incomplete.
 
-### AI Edit Flow
+Editor commands operate on canonical data with selection, undo/redo and persistence foundations. Supported workflows require end-to-end verification; do not claim that every conceivable mutation has complete validation or that every historical revision is recoverable without evidence.
 
-```
-1. User types natural-language command
-2. AI Orchestration: parses command into structured edit intent
-3. Edit intent mapped to Building Model operations
-4. Geometry Engine: applies geometric changes
-5. Constraint Engine: validates result
-6. If valid: Building Model updated, new version created
-7. If invalid: AI suggests alternatives
-8. Renderer updates SVG from new Building Model state
-```
+RBEA references provide redacted semantic/topological evidence, not generator coordinates. Preserve provenance and uncertainty; names, proximity, ordering and desired graph edges do not establish physical private access.
 
----
+## 6. Export and Blender boundary
 
-## 6. Key Design Decisions
+SVG/PDF/JSON export exists. PDF uses fit-to-page scaling and simplified room/opening drawing, so professional scale, geometry, symbols and sheet fidelity remain delivery work. DXF must carry genuine interoperable geometry; DWG requires legitimate supported conversion/tooling, never renaming another format.
 
-### Building Model is the Source of Truth
-The rendered SVG/Canvas is a projection of the Building Model. All edits modify the model; the view re-renders from model state.
+The browser projection is separate from the planned **finalized canonical Building → Blender adapter → reproducible Blender model**. Preserve source IDs, units, axes, levels, revision identity, wall dimensions and openings. Regeneration must reflect canonical edits without independent redesign.
 
-### AI Safety Boundary
-AI never directly writes geometry or bypasses validation. AI proposes structured intents; deterministic engines execute and validate.
+Architectural targets include floor plates/slabs, doors/windows, stairs/railings, balconies/terraces/parapets, applicable roofs, materials and site/context. Front/side/rear elevations, exterior perspectives, facade detail, cameras and lighting derive from that geometry. Architectural slab representation is not structural slab design. AI imagery may assist presentation later, never replace geometric truth.
 
-### Versioning
-Every mutation to a plan creates a version snapshot. Users can revert to any previous version. AI edits are versioned identically to manual edits.
+## 7. Security, professional status and verification
 
-### Deterministic Geometry
-All coordinate calculations, collision detection, area computations, and constraint checks are implemented in pure deterministic functions with no AI involvement.
+The optional VITE_GEMINI_API_KEY frontend configuration is development-only: a client build-time variable exposes the key in frontend assets. Before public release, credentials must remain server-side and browsers call an appropriate backend boundary. Do not record secret values in documentation.
 
-### Multi-Provider AI
-The AI layer abstracts over multiple LLM providers. Business logic never couples directly to a specific model API.
+Authentication/authorization, request isolation and hosted data controls are planned—not guaranteed current protections. Provider inputs require minimization/validation; missing engineering inputs remain absent or unknown.
 
----
+Configured checks and tests demonstrate internal behavior, not load paths, capacity, reinforcement, seismic safety, statutory compliance or construction readiness. Professional review and successful release/build verification are separate gates. A blocked build is BUILD_ENVIRONMENT_BLOCKED, never PASS.
 
-## 7. Security Boundaries
+## 8. Future extensibility
 
-- AI providers receive only sanitized architectural context, never user credentials or billing data.
-- The constraint engine enforces physical validity; AI cannot override hard constraints.
-- All plan mutations go through validation before persistence.
-- Authentication and authorization are handled at the API gateway level.
+Preserve clean canonical floors, walls, openings, rooms, stairs, levels, site and existing support/grid data. Do not add speculative structural systems. A later version may derive an analytical model from finalized architecture, then use validated loads/combinations, solver, reactions, BM/SF/stress/deflection, member design, geotechnical input, foundations, reinforcement and structural 3D under professional oversight. Quantity take-off, BOQ and costing are also later-version work.
 
----
-
-## 8. Scalability Considerations
-
-- The core engines (geometry, constraint, planning) are pure computation with no I/O dependencies, enabling horizontal scaling and worker-based parallelism.
-- Candidate generation can be parallelized across workers.
-- The Building Model is serializable, enabling stateless API design.
-- Redis provides caching and job queue capabilities for async operations.
-
----
-
-## 9. Future Extension Points
-
-The architecture is designed to accommodate:
-- Elevations and 3D views
-- Structural planning (columns, beams)
-- BOQ and cost estimation
-- DXF/DWG export
-- BIM integration
-- Multi-user collaboration (via CRDT or OT on the Building Model)
-
-These are NOT implemented in V1 but the architecture does not preclude them.
+No whole-product completion date is asserted. Follow bounded tasks, actual verification and reviewed checkpoints in the active roadmap.
