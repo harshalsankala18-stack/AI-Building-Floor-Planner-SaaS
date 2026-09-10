@@ -14,6 +14,8 @@ import {
 } from '../regions/orthogonal-decomposition';
 import type { PlanningRegion, SharedRegionEdge } from '../regions/orthogonal-decomposition';
 
+type PlacementProfile = LayoutStrategyProfile & { readonly architectural?: boolean };
+
 const DOOR_WIDTH_MM = 900;
 const WINDOW_WIDTH_MM = 1000;
 const EDGE_CLEARANCE_MM = 250;
@@ -42,7 +44,7 @@ function itemMinimum(item: RoomProgramItem): { width: number; height: number } {
 function corePlacements(
   polygons: readonly Polygon[],
   items: readonly RoomProgramItem[],
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
 ): CorePlacement[] {
   if (!items.length) return [];
   // Prefer the smallest region that comfortably contains the core. This
@@ -89,7 +91,7 @@ type PackedRegion = PlanningRegion & { item: RoomProgramItem };
 function guillotinePack(
   items: readonly RoomProgramItem[],
   region: PlanningRegion,
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
   floorLevel: number,
   depth = 0,
 ): PackedRegion[] | undefined {
@@ -103,9 +105,20 @@ function guillotinePack(
   const axes: readonly ('vertical' | 'horizontal')[] = preferredAxis === 'vertical'
     ? ['vertical', 'horizontal'] : ['horizontal', 'vertical'];
 
-  for (let split = 1; split < items.length; split += 1) {
+  // Balanced groups avoid repeatedly peeling a single full-width sliver from
+  // a large region. Feasibility still uses the existing dimensional checks.
+  const splits = Array.from({ length: items.length - 1 }, (_, index) => index + 1)
+    .sort((a, b) => !profile.architectural ? a - b : Math.abs(items.slice(0, a).reduce((sum, item) => sum + item.targetAreaMm2, 0) / totalTarget - 0.5)
+      - Math.abs(items.slice(0, b).reduce((sum, item) => sum + item.targetAreaMm2, 0) / totalTarget - 0.5) || a - b);
+  for (const split of splits) {
     const firstItems = items.slice(0, split);
     const secondItems = items.slice(split);
+    // Keep a requested suite in one region until that suite itself is being
+    // subdivided. Individual type sorting previously separated owners and baths.
+    const owners = new Set(items.map(item => item.attachedToRoomId).filter(Boolean));
+    const suiteOnly = owners.size === 1 && items.every(item => owners.has(item.id) || owners.has(item.attachedToRoomId));
+    if (profile.architectural && !suiteOnly && items.some(item => item.attachedToRoomId && items.some(owner => owner.id === item.attachedToRoomId)
+      && firstItems.includes(item) !== firstItems.some(owner => owner.id === item.attachedToRoomId))) continue;
     const targetRatio = firstItems.reduce((sum, item) => sum + item.targetAreaMm2, 0) / totalTarget;
     for (const axis of axes) {
       const cutLength = axis === 'vertical' ? region.width : region.height;
@@ -142,7 +155,7 @@ function guillotinePack(
 
 function regionOrder(
   regions: readonly PlanningRegion[],
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
   anchors: readonly PlanningRegion[] = [],
 ): PlanningRegion[] {
   if (!regions.length) return [];
@@ -165,18 +178,30 @@ function regionOrder(
   return ordered;
 }
 
-function orderItems(items: readonly RoomProgramItem[], profile: LayoutStrategyProfile): RoomProgramItem[] {
-  return [...items].sort((a, b) => {
+function orderItems(items: readonly RoomProgramItem[], profile: PlacementProfile): RoomProgramItem[] {
+  const ordered = [...items].sort((a, b) => {
     const aPriority = a.type === RoomType.Corridor ? -50 : profile.priority[a.type] ?? 50;
     const bPriority = b.type === RoomType.Corridor ? -50 : profile.priority[b.type] ?? 50;
     return aPriority - bPriority || b.minAreaMm2 - a.minAreaMm2 || a.id.localeCompare(b.id);
   });
+  if (!profile.architectural) return ordered;
+  const result: RoomProgramItem[] = [];
+  const append = (item: RoomProgramItem) => { if (!result.includes(item)) result.push(item); };
+  for (const item of ordered) {
+    if (item.attachedToRoomId && items.some(owner => owner.id === item.attachedToRoomId)) continue;
+    append(item);
+
+    if (item.type === RoomType.Bedroom) ordered.filter(bath => bath.attachedToRoomId === item.id).forEach(append);
+    if (item.type === RoomType.Kitchen) ordered.filter(service => service.type === RoomType.Utility
+      || (service.type === RoomType.Storage && !service.attachedToRoomId)).forEach(append);
+  }
+  return result;
 }
 
 function assignToRegions(
   items: readonly RoomProgramItem[],
   availableRegions: readonly PlanningRegion[],
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
   floorLevel: number,
   anchors: readonly PlanningRegion[],
 ): { region: PlanningRegion; items: readonly RoomProgramItem[] }[] {
@@ -185,19 +210,21 @@ function assignToRegions(
   const search = (regionCount: number) => {
     const regions = orderedRegions.slice(0, regionCount);
     const groups = regions.map(() => [] as RoomProgramItem[]);
+    const units = !profile.architectural ? orderedItems.map(item => [item]) : orderedItems.filter(item => !item.attachedToRoomId || !items.some(owner => owner.id === item.attachedToRoomId))
+      .map(item => [item, ...orderedItems.filter(bath => bath.attachedToRoomId === item.id)]);
     const visit = (index: number): boolean => {
-      if (index === orderedItems.length) return groups.every(group => group.length > 0);
-      const item = orderedItems[index]!;
+      if (index === units.length) return groups.every(group => group.length > 0);
+      const unit = units[index]!;
       const candidates = regions.map((region, regionIndex) => ({
         regionIndex,
         empty: groups[regionIndex]!.length === 0,
         load: groups[regionIndex]!.reduce((sum, value) => sum + value.targetAreaMm2, 0) / region.area,
-      })).filter(candidate => guillotinePack([...groups[candidate.regionIndex]!, item], regions[candidate.regionIndex]!, profile, floorLevel) !== undefined)
+      })).filter(candidate => guillotinePack([...groups[candidate.regionIndex]!, ...unit], regions[candidate.regionIndex]!, profile, floorLevel) !== undefined)
         .sort((a, b) => Number(a.empty) - Number(b.empty) || a.load - b.load || a.regionIndex - b.regionIndex);
       for (const candidate of candidates) {
-        groups[candidate.regionIndex]!.push(item);
+        groups[candidate.regionIndex]!.push(...unit);
         if (visit(index + 1)) return true;
-        groups[candidate.regionIndex]!.pop();
+        groups[candidate.regionIndex]!.splice(-unit.length);
       }
       return false;
     };
@@ -216,7 +243,7 @@ function assignToRegions(
 function partitionRegion(
   region: PlanningRegion,
   items: readonly RoomProgramItem[],
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
   floorLevel: number,
 ): (PlanningRegion & { item: RoomProgramItem })[] {
   const packed = guillotinePack(items, region, profile, floorLevel);
@@ -262,13 +289,78 @@ function exteriorExposure(room: Pick<PlanningRegion, 'x' | 'y' | 'width' | 'heig
   return undefined;
 }
 
+/** A distribution spine is placed before rooms, not left over after packing.
+ * Applicable to a broad rectangular region meeting the existing vertical core.
+ * Concave/narrow cases retain the established polygon feasibility path. */
+function anchoredPacking(items: readonly RoomProgramItem[], available: readonly PlanningRegion[], core: readonly CorePlacement[],
+  profile: PlacementProfile, level: number): PackedRegion[] | undefined {
+  if (!profile.architectural) return undefined;
+  const circulation = items.find(item => item.type === RoomType.Corridor);
+  const region = [...available].sort((a, b) => b.area - a.area)[0];
+  if (!circulation || !region || region.width < 9000 || region.height < 9000) return undefined;
+  const coreEdge = core.map(value => sharedRegionEdge(region, value)).find(edge => edge?.orientation === 'horizontal');
+  if (!coreEdge) return undefined;
+  const fromBottom = Math.abs(coreEdge.start.y - (region.y + region.height)) < EPSILON;
+  const header = 1200;
+  const spine = 1200;
+  const leftWidth = (region.width - spine) * profile.columnRatio;
+  const depth = region.height - header;
+  const y = region.y + (fromBottom ? 0 : header);
+  const ordered = orderItems(items.filter(item => item !== circulation), profile);
+  const units = ordered.filter(item => !item.attachedToRoomId || !ordered.some(owner => owner.id === item.attachedToRoomId))
+    .map(item => [item, ...ordered.filter(bath => bath.attachedToRoomId === item.id)]);
+  const total = units.reduce((sum, unit) => sum + unit.reduce((area, item) => area + item.targetAreaMm2, 0), 0);
+  const cuts = Array.from({ length: units.length - 1 }, (_, index) => index + 1).sort((a, b) =>
+    Math.abs(units.slice(0, a).flat().reduce((sum, item) => sum + item.targetAreaMm2, 0) / total - 0.5)
+    - Math.abs(units.slice(0, b).flat().reduce((sum, item) => sum + item.targetAreaMm2, 0) / total - 0.5));
+  for (const [reserveMinimum, cut] of [false, true].flatMap(reserve => cuts.map(cut => [reserve, cut] as const))) {
+    const sides = [units.slice(0, cut), units.slice(cut)];
+    if (profile.strategy === 'open_circulation') sides.reverse();
+    const result: PackedRegion[] = [
+      { id: `${region.id}_spine`, x: region.x + leftWidth, y, width: spine, height: depth,
+        area: spine * depth, item: circulation },
+      { id: `${region.id}_arrival`, x: region.x, y: fromBottom ? region.y + depth : region.y,
+        width: region.width, height: header, area: region.width * header,
+        item: { ...circulation, id: `${circulation.id}_arrival`, name: `${circulation.name} Arrival` } },
+    ];
+    let feasible = true;
+    for (let side = 0; side < 2; side++) {
+      const groups = sides[side]!;
+      const sideArea = groups.flat().reduce((sum, item) => sum + item.targetAreaMm2, 0);
+      const width = side === 0 ? leftWidth : region.width - leftWidth - spine;
+      const minima = groups.map(group => Math.max(
+        ...group.map(item => Math.min(itemMinimum(item).width, itemMinimum(item).height)),
+        group.reduce((sum, item) => sum + Math.max(item.minAreaMm2, MINIMUM_ROOM_AREAS[item.type] ?? 0), 0) / width));
+      const minimumDepth = minima.reduce((sum, value) => sum + value, 0);
+      if (reserveMinimum && minimumDepth > depth) { feasible = false; break; }
+      let offset = 0;
+      for (const [groupIndex, group] of groups.entries()) {
+        const height = (reserveMinimum ? minima[groupIndex]! : 0) + (depth - (reserveMinimum ? minimumDepth : 0))
+          * group.reduce((sum, item) => sum + item.targetAreaMm2, 0) / sideArea;
+        const band = { id: `${region.id}_${side}_${offset}`, x: side === 0 ? region.x : region.x + leftWidth + spine,
+          y: fromBottom ? y + depth - offset - height : y + offset, width, height, area: width * height };
+        // Put the owner at the distribution edge and bath outward, while all
+        // singleton rooms get their own common-side access edge.
+        const packed = guillotinePack(group, band, { ...profile, strategy: 'compact_zoning' }, level);
+        if (!packed) { feasible = false; break; }
+        result.push(...(side === 0 ? packed.map(value => ({ ...value,
+          x: band.x + band.width - (value.x - band.x) - value.width })) : packed));
+        offset += height;
+      }
+      if (!feasible) break;
+    }
+    if (feasible) return result;
+  }
+  return undefined;
+}
+
 function addFloorGeometry(
   building: Building,
   floor: Floor,
   polygon: Polygon,
   items: readonly RoomProgramItem[],
   core: readonly CorePlacement[],
-  profile: LayoutStrategyProfile,
+  profile: PlacementProfile,
 ): Building {
   let next = building;
   const placements: Omit<RoomPlacement, 'room'>[] = [];
@@ -281,8 +373,12 @@ function addFloorGeometry(
   });
   const available = subtractRegions(decomposeOrthogonalPolygon(polygon), core);
   const nonCore = items.filter(item => !CORE_TYPES.has(item.type));
+  const anchored = anchoredPacking(nonCore, available, core, profile, floor.level);
   let assignments: ReturnType<typeof assignToRegions>;
-  try {
+  if (anchored) {
+    placements.push(...anchored);
+    assignments = [];
+  } else try {
     assignments = assignToRegions(nonCore, available, profile, floor.level, core);
   } catch (error) {
     // Circulation remains explicit in the door graph even where a separate
@@ -330,6 +426,18 @@ function addFloorGeometry(
       ?? placed.find(value => exteriorExposure(value, polygon)) ?? placed[0];
   if (!root) throw new Error(`CONNECTIVITY_FAILURE: Floor ${floor.level} has no occupiable room.`);
   const visited = new Set([root.room.id]);
+  const common = new Set([RoomType.Living, RoomType.Dining, RoomType.FamilyLiving, RoomType.Drawing,
+    RoomType.Corridor, RoomType.Foyer, RoomType.Staircase, RoomType.Lift]);
+  const connectionPriority = (a: RoomPlacement, b: RoomPlacement): number => {
+    if (a.item.attachedToRoomId === b.item.id || b.item.attachedToRoomId === a.item.id) return 0;
+    if (a.item.attachedToRoomId || b.item.attachedToRoomId) return 100;
+    if (common.has(a.item.type) && common.has(b.item.type)) return 1;
+    if ((a.item.type === RoomType.Kitchen && [RoomType.Dining, RoomType.Utility, RoomType.Storage].includes(b.item.type))
+      || (b.item.type === RoomType.Kitchen && [RoomType.Dining, RoomType.Utility, RoomType.Storage].includes(a.item.type))) return 2;
+    if (common.has(a.item.type) || common.has(b.item.type)) return 3;
+    return 10;
+  };
+  if (profile.architectural) adjacency.sort((a, b) => connectionPriority(a.room, a.other) - connectionPriority(b.room, b.other));
   while (visited.size < placed.length) {
     const connection = adjacency.find(edge => visited.has(edge.room.room.id) !== visited.has(edge.other.room.id));
     if (!connection) throw new Error(`CONNECTIVITY_FAILURE: Rooms on floor ${floor.level} do not form a connected physical adjacency graph.`);
@@ -401,10 +509,13 @@ export class PolygonLayoutGenerator {
   generate(
     spec: DesignRequirementSpecification,
     program: RoomProgram,
-    profile: LayoutStrategyProfile,
+    profile: PlacementProfile,
     _graph: InstanceDesignGraph,
     source: Building,
   ): Building {
+    // Do not infer suite intent from legacy names. Preserve their established
+    // placement path until ownership is explicitly reviewed.
+    profile = { ...profile, architectural: program.items.some(item => item.attachedToRoomId !== undefined) };
     const floorCount = Math.max(1, spec.hard.floorsCount);
     const sourceFloors = [...source.floors].sort((a, b) => a.level - b.level).slice(0, floorCount);
     if (sourceFloors.length !== floorCount || sourceFloors.some(floor => floor.boundary.points.length < 4)) {

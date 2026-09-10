@@ -6,6 +6,7 @@ import { createEmptySpaceProgram, createProgramItem, getSpaceDefinition, adaptSp
 import { FloorProgramPlanner } from '../multi-floor/planner';
 import { DesignGraphBuilder } from '../graph/builder';
 import { runGenerationWorkflow } from '../generation/workflow';
+import { recordPlacementBenchmark } from './fixtures/placement-benchmark';
 
 function input() {
   return adaptSpaceProgramToPlannerProgram({ ...createEmptySpaceProgram('residential'), items: [
@@ -96,6 +97,7 @@ describe('floor and suite intent', () => {
       const base = createDefaultFootprintIntent(building);
       const footprint = {...base,parameters:{...base.parameters,width:20000,depth:25500},transform:{...base.transform,x:1000,y:1500},strategy:'custom_per_floor' as const,floorOverrides:[{floorLevel:1,scalePercent:75}]};
       const result = await runGenerationWorkflow({building,program,footprint,category:'residential'});
+      recordPlacementBenchmark(result.candidates);
       expect(result.candidates.length).toBeGreaterThan(1);
       const preserved = result.candidates.map(candidate => ({
         id: candidate.id, strategy: candidate.strategy, rank: candidate.rank,
@@ -105,16 +107,29 @@ describe('floor and suite intent', () => {
         required: candidate.architecturalEvidence!.requiredFloors.filter(check => check.passed).length,
         direct: candidate.architecturalEvidence!.suites.filter(suite => suite.directDoorIds.length).length,
       }));
-      // Captured from clean Phase 1A HEAD 16f4dbf before access-path implementation.
+      // Phase 2 intentionally changes initial geometry. Pre-change output is
+      // retained in the placement audit; this exact snapshot guards the new
+      // deterministic geometry as well as the unchanged required-floor contract.
       // Hash includes every floor entity/ID/door, not just room bounding boxes.
       expect(preserved).toEqual([
         { id: 'candidate_compact_zoning_1', strategy: 'compact_zoning', rank: 1,
-          geometryHash: '62e3f6dffaaacb5178aec21d6c4cb1c1ad22f6d8ee8571e292f82db4cc12225e', score: 80, oldWet: 61, wet: 34, required: 8, direct: 3 },
+          geometryHash: 'ab186ac86a7b5bf1d9a86e0459717cab69ee6174e337b3759c94014f2cb613c6', score: 77, oldWet: 100, wet: 55, required: 8, direct: 4 },
         { id: 'candidate_vastu_aligned_3', strategy: 'vastu_aligned', rank: 2,
-          geometryHash: '51ca896a9b4936876068d1cb333d2d3c5019201670577806a4b6bcef62e58dac', score: 79, oldWet: 51, wet: 17, required: 8, direct: 3 },
+          geometryHash: '4f19bb6f0ae2e2f1d0f9258ecb3c1332f843519f753fcb85e838126ff0d78652', score: 75, oldWet: 98, wet: 33, required: 8, direct: 4 },
         { id: 'candidate_open_circulation_2', strategy: 'open_circulation', rank: 3,
-          geometryHash: '126b1e5d0708ff3ed24af9cfbad63bd75f85726ce3946d593d0aabe59f29e6d2', score: 74, oldWet: 52, wet: 22, required: 8, direct: 0 },
+          geometryHash: '084c4b1700386e5f0a0b8d477a49f65e5973e8e63a565d5852022b92f843028e', score: 71, oldWet: 100, wet: 33, required: 8, direct: 4 },
       ]);
+      for (const candidate of result.candidates) {
+        const evidence = candidate.architecturalEvidence!;
+        expect(candidate.validation.isValid).toBe(true);
+        expect(evidence.closeout!.circulation.filter(item => item.status === 'PRIVATE_TRANSIT_REQUIRED')).toHaveLength(0);
+        expect(evidence.suites.filter(suite => suite.access?.status === 'PRIVATE_DIRECT').length).toBeGreaterThanOrEqual(3);
+        expect(evidence.closeout!.kitchenService.find(item => item.relationship === 'KITCHEN_UTILITY')!.status).toBe('DIRECT_CONNECTION');
+        if (candidate.strategy !== 'vastu_aligned') {
+          expect(evidence.suites.every(suite => suite.access?.status === 'PRIVATE_DIRECT')).toBe(true);
+          expect(candidate.optimization.acceptedRepairs).toBe(0);
+        }
+      }
       console.log('PHASE_1B_BENCHMARK', JSON.stringify(result.candidates.map((candidate, index) => ({
         ...preserved[index], owned: candidate.architecturalEvidence!.suites.length,
         access: Object.fromEntries(['PRIVATE_DIRECT', 'PRIVATE_INDIRECT', 'SHARED', 'UNRESOLVED', 'NOT_EVALUATED']
