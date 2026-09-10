@@ -7,6 +7,9 @@ import { FloorProgramPlanner } from '../multi-floor/planner';
 import { DesignGraphBuilder } from '../graph/builder';
 import { runGenerationWorkflow } from '../generation/workflow';
 import { recordPlacementBenchmark } from './fixtures/placement-benchmark';
+import { evaluateSuiteEvidence } from '../evidence/architectural-evidence';
+import { evaluateInstanceGraph } from '../graph/scorer';
+import { preservesPrivateSuites, swapProgramAssignments } from '../repair/engine';
 
 function input() {
   return adaptSpaceProgramToPlannerProgram({ ...createEmptySpaceProgram('residential'), items: [
@@ -111,11 +114,13 @@ describe('floor and suite intent', () => {
       // retained in the placement audit; this exact snapshot guards the new
       // deterministic geometry as well as the unchanged required-floor contract.
       // Hash includes every floor entity/ID/door, not just room bounding boxes.
+      // Vastu now retains pre-repair assignments: the private-suite safeguard
+      // rejects its former owner/bath swap. Compact/Open hashes stay unchanged.
       expect(preserved).toEqual([
         { id: 'candidate_compact_zoning_1', strategy: 'compact_zoning', rank: 1,
           geometryHash: 'ab186ac86a7b5bf1d9a86e0459717cab69ee6174e337b3759c94014f2cb613c6', score: 77, oldWet: 100, wet: 55, required: 8, direct: 4 },
         { id: 'candidate_vastu_aligned_3', strategy: 'vastu_aligned', rank: 2,
-          geometryHash: '4f19bb6f0ae2e2f1d0f9258ecb3c1332f843519f753fcb85e838126ff0d78652', score: 75, oldWet: 98, wet: 33, required: 8, direct: 4 },
+          geometryHash: '73ac658a9c7dfb762459ed3f3fd9e85c324c4fdd6a5805df205dbe5646bf16e4', score: 75, oldWet: 98, wet: 44, required: 8, direct: 4 },
         { id: 'candidate_open_circulation_2', strategy: 'open_circulation', rank: 3,
           geometryHash: '084c4b1700386e5f0a0b8d477a49f65e5973e8e63a565d5852022b92f843028e', score: 71, oldWet: 100, wet: 33, required: 8, direct: 4 },
       ]);
@@ -123,13 +128,23 @@ describe('floor and suite intent', () => {
         const evidence = candidate.architecturalEvidence!;
         expect(candidate.validation.isValid).toBe(true);
         expect(evidence.closeout!.circulation.filter(item => item.status === 'PRIVATE_TRANSIT_REQUIRED')).toHaveLength(0);
-        expect(evidence.suites.filter(suite => suite.access?.status === 'PRIVATE_DIRECT').length).toBeGreaterThanOrEqual(3);
+        expect(evidence.suites.filter(suite => suite.access?.status === 'PRIVATE_DIRECT')).toHaveLength(4);
         expect(evidence.closeout!.kitchenService.find(item => item.relationship === 'KITCHEN_UTILITY')!.status).toBe('DIRECT_CONNECTION');
-        if (candidate.strategy !== 'vastu_aligned') {
-          expect(evidence.suites.every(suite => suite.access?.status === 'PRIVATE_DIRECT')).toBe(true);
-          expect(candidate.optimization.acceptedRepairs).toBe(0);
-        }
+        expect(candidate.optimization.acceptedRepairs).toBe(0);
       }
+      const vastu = result.candidates.find(candidate => candidate.strategy === 'vastu_aligned')!;
+      const plannerProgram = adaptSpaceProgramToPlannerProgram(program, 2);
+      const guestSuite = evaluateSuiteEvidence(vastu.building, plannerProgram)
+        .find(suite => suite.ownerProgramItemId === 'guest_1')!;
+      const badSwap = swapProgramAssignments(vastu.building, guestSuite.ownerId!, guestSuite.bathroomId!);
+      const swappedSuite = evaluateSuiteEvidence(badSwap, plannerProgram)
+        .find(suite => suite.ownerProgramItemId === 'guest_1')!;
+      expect(guestSuite.access?.status).toBe('PRIVATE_DIRECT');
+      expect(swappedSuite.access?.status).toBe('SHARED');
+      expect(swappedSuite.directDoorIds).toEqual(guestSuite.directDoorIds);
+      expect(evaluateInstanceGraph(vastu.building, vastu.designGraph).score).toBe(70);
+      expect(evaluateInstanceGraph(badSwap, vastu.designGraph).score).toBe(71);
+      expect(preservesPrivateSuites(vastu.building, badSwap, plannerProgram)).toBe(false);
       console.log('PHASE_1B_BENCHMARK', JSON.stringify(result.candidates.map((candidate, index) => ({
         ...preserved[index], owned: candidate.architecturalEvidence!.suites.length,
         access: Object.fromEntries(['PRIVATE_DIRECT', 'PRIVATE_INDIRECT', 'SHARED', 'UNRESOLVED', 'NOT_EVALUATED']

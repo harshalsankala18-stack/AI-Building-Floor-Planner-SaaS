@@ -82,6 +82,7 @@ export class CandidateGenerator {
           // Phase 5 repairs architectural function independently of optional Vastu guidance.
           this.validator.configure({ enableVastu: false });
           const repair = this.repairEngine.repair(generatedBuilding, designGraph, {
+            program,
             requiredRoomTypes,
             requiredRoomCounts,
             maxIterations: 2,

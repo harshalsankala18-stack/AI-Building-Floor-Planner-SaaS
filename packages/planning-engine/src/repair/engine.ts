@@ -1,13 +1,29 @@
 /** Bounded, immutable, validation-gated plan repair. */
-import type { Building, InstanceDesignGraph, PlanRepairStep, Room } from '@ai-floor-planner/core';
+import type { Building, InstanceDesignGraph, PlanRepairStep, Room, RoomProgram } from '@ai-floor-planner/core';
 import { AdjacencyRelationType, RoomType } from '@ai-floor-planner/core';
 import { PlanValidator } from '@ai-floor-planner/constraint-engine';
 import type { ValidateOptions, ValidationSummary } from '@ai-floor-planner/constraint-engine';
 import { evaluateInstanceGraph, sourceProgramItemId } from '../graph/scorer';
 import type { InstanceGraphEvaluation } from '../graph/scorer';
+import { evaluateSuiteEvidence } from '../evidence/architectural-evidence';
 
 export interface PlanRepairOptions extends ValidateOptions {
   readonly maxIterations?: number;
+  /** Original reviewed intent; graph adjacency alone cannot establish ownership. */
+  readonly program?: RoomProgram;
+}
+
+/** Non-regression only: shared/unknown suites are not newly required to be private.
+ * Stable Program pairs survive semantic swaps between canonical geometry slots. */
+export function preservesPrivateSuites(before: Building, proposal: Building, program: RoomProgram): boolean {
+  const isPrivate = (suite: ReturnType<typeof evaluateSuiteEvidence>[number]) =>
+    suite.access?.status === 'PRIVATE_DIRECT' || suite.access?.status === 'PRIVATE_INDIRECT';
+  const protectedSuites = evaluateSuiteEvidence(before, program).filter(isPrivate);
+  if (!protectedSuites.length) return true;
+  const proposedSuites = evaluateSuiteEvidence(proposal, program);
+  return protectedSuites.every(suite => proposedSuites.some(proposed =>
+    proposed.bathroomProgramItemId === suite.bathroomProgramItemId
+    && proposed.ownerProgramItemId === suite.ownerProgramItemId && isPrivate(proposed)));
 }
 
 export interface PlanRepairResult {
@@ -107,7 +123,7 @@ export class PlanRepairEngine {
   }
 
   repair(building: Building, graph: InstanceDesignGraph, options: PlanRepairOptions = {}): PlanRepairResult {
-    const { maxIterations = 2, ...validateOptions } = options;
+    const { maxIterations = 2, program, ...validateOptions } = options;
     const initialValidation = this.validator.validate(building, validateOptions);
     const initialGraphEvaluation = evaluateInstanceGraph(building, graph);
     let currentBuilding = building;
@@ -149,6 +165,10 @@ export class PlanRepairEngine {
               && graphEvaluation.score >= currentGraph.score
               && quality > currentQuality + 0.001;
             if (!preservesValidity || (!improvesFailures && !improvesQuality)) continue;
+            // Reuse physical access evidence, not merely the undirected owner door.
+            // Hard-invalid recovery retains its existing flexibility.
+            if (currentValidation.isValid && program
+              && !preservesPrivateSuites(currentBuilding, proposal, program)) continue;
 
             const isBetter = !best
               || validation.failed < best.validation.failed

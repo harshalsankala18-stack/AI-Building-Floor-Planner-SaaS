@@ -122,22 +122,10 @@ function normalizedBoundary(room: Room) {
     ? { points: [...room.boundary.points].reverse() } : room.boundary;
 }
 
-/** Pure observations of one immutable candidate and its original reviewed program. */
-export function evaluateArchitecturalEvidence(building: Building, program: RoomProgram): ArchitecturalEvidence {
+/** Shared explicit-ownership topology semantics for evidence and repair safety. */
+export function evaluateSuiteEvidence(building: Building, program: RoomProgram): ArchitecturalEvidence['suites'] {
   const floors = [...building.floors].sort((a, b) => a.level - b.level || a.id.localeCompare(b.id));
-  const requiredFloors: ArchitecturalEvidence['requiredFloors'] = program.items.flatMap(item => {
-    const level = item.floorPreference?.kind === 'ground_required' ? 0
-      : item.floorPreference?.kind === 'specific' ? item.floorPreference.specificFloor
-        : !item.floorPreference && item.floorLevel > 0 ? item.floorLevel : undefined;
-    if (level === undefined) return [];
-    const rooms = mappedRooms(building, item.id);
-    const actualLevels = rooms.flatMap(room => floors.filter(floor => floor.id === room.floorId).map(floor => floor.level));
-    return [{ programItemId: item.id, name: item.name, requiredLevel: level,
-      roomIds: rooms.map(room => room.id), actualLevels,
-      passed: rooms.length === 1 && actualLevels.length === 1 && actualLevels[0] === level }];
-  });
-
-  const suites: ArchitecturalEvidence['suites'] = program.items.filter(item => item.attachedToRoomId !== undefined).map(item => {
+  return program.items.filter(item => item.attachedToRoomId !== undefined).map(item => {
     const bathrooms = mappedRooms(building, item.id);
     const owners = mappedRooms(building, item.attachedToRoomId!);
     const bathroom = bathrooms.length === 1 && bathrooms[0]!.type === RoomType.Bathroom ? bathrooms[0] : undefined;
@@ -156,6 +144,23 @@ export function evaluateArchitecturalEvidence(building: Building, program: RoomP
         : otherAccessRoomIds.length > 0 ? 'SHARED_ACCESS' : 'PRIVATE_DIRECT_ACCESS' };
   });
 
+}
+
+/** Pure observations of one immutable candidate and its original reviewed program. */
+export function evaluateArchitecturalEvidence(building: Building, program: RoomProgram): ArchitecturalEvidence {
+  const floors = [...building.floors].sort((a, b) => a.level - b.level || a.id.localeCompare(b.id));
+  const requiredFloors: ArchitecturalEvidence['requiredFloors'] = program.items.flatMap(item => {
+    const level = item.floorPreference?.kind === 'ground_required' ? 0
+      : item.floorPreference?.kind === 'specific' ? item.floorPreference.specificFloor
+        : !item.floorPreference && item.floorLevel > 0 ? item.floorLevel : undefined;
+    if (level === undefined) return [];
+    const rooms = mappedRooms(building, item.id);
+    const actualLevels = rooms.flatMap(room => floors.filter(floor => floor.id === room.floorId).map(floor => floor.level));
+    return [{ programItemId: item.id, name: item.name, requiredLevel: level,
+      roomIds: rooms.map(room => room.id), actualLevels,
+      passed: rooms.length === 1 && actualLevels.length === 1 && actualLevels[0] === level }];
+  });
+  const suites = evaluateSuiteEvidence(building, program);
   const unownedBathrooms: NonNullable<ArchitecturalEvidence['unownedBathrooms']> = program.items
     .filter(item => item.type === RoomType.Bathroom && item.attachedToRoomId === undefined).map(item => {
       const rooms = mappedRooms(building, item.id);
