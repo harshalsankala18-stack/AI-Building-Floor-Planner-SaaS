@@ -2,16 +2,20 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import type { CandidatePlan, ArchitecturalEvidence } from '@ai-floor-planner/core';
-import { createBuilding } from '@ai-floor-planner/core';
+import { createBuilding, architecturalIdentity, type RoomProgram } from '@ai-floor-planner/core';
 import { ArchitecturalEvidencePanel } from '../components/generation/ArchitecturalEvidencePanel';
 
 const building = createBuilding({ projectId: 'panel', name: 'Panel', site: { plotWidth: 10000, plotDepth: 10000 } });
-function render(evidence?: ArchitecturalEvidence) {
+const program: RoomProgram = { items: [], totalTargetAreaMm2: 0, totalMinAreaMm2: 0, totalMaxAreaMm2: 0 };
+function render(evidence?: ArchitecturalEvidence, intent = program) {
   return renderToStaticMarkup(createElement(ArchitecturalEvidencePanel, {
     candidate: { building, architecturalEvidence: evidence } as CandidatePlan,
+    program: intent,
   }));
 }
 const evidence: ArchitecturalEvidence = {
+  closeout: { version: 1, buildingIdentity: architecturalIdentity(building), programIdentity: architecturalIdentity(program),
+    review: 'REVIEW_REQUIRED', blockers: [], kitchenService: [], circulation: [], exposure: [], transitionRoomIds: [] },
   schemaVersion: 1, accessEvidenceVersion: 1, buildingId: building.id, buildingVersion: building.version, status: 'REVIEW_REQUIRED',
   requiredFloors: [], suites: [], wetStacking: { coveragePercent: null, status: 'NOT_APPLICABLE', rooms: [] }, openSpace: [], limitations: [],
 };
@@ -50,8 +54,13 @@ describe('architectural evidence display', () => {
     expect(html).not.toContain('100%');
   });
   it('scopes successful observations instead of claiming design approval', () => {
-    const html = render({ ...evidence, status: 'CHECKED_REQUIREMENTS_MET' });
-    expect(html).toContain('limited scope');
+    const html = render({ ...evidence, closeout: { ...evidence.closeout!, review: 'ARCHITECTURALLY_ACCEPTABLE' } });
+    expect(html).toContain('current automated scope only');
+    expect(html).toContain('Automated architectural acceptance is not professional approval');
     expect(html).toContain('do not change candidate ranking or certify the design');
+  });
+  it('invalidates changed Program and legacy closeout identity', () => {
+    expect(render(evidence, { ...program, totalTargetAreaMm2: 1 })).toContain('not evaluated');
+    expect(render({ ...evidence, closeout: undefined })).toContain('not evaluated');
   });
 });

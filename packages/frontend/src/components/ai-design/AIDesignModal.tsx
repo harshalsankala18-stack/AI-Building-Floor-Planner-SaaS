@@ -631,7 +631,7 @@ export const AIDesignModal: React.FC<AIDesignModalProps> = ({
                         )}
                       </div>
 
-                      <ArchitecturalEvidencePanel candidate={cand} />
+                      <ArchitecturalEvidencePanel candidate={cand} program={roomProgramGenerator.generateProgram(spec)} />
                       {/* Open in Editor Button */}
                       <button
                         className={isSelected ? 'btn btn-primary' : 'btn btn-secondary'}

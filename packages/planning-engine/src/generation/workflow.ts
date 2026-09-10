@@ -8,6 +8,7 @@ import {
   validateSpaceProgram,
 } from '@ai-floor-planner/core';
 import { PlanValidator } from '@ai-floor-planner/constraint-engine';
+import { evaluateArchitecturalEvidence } from '../evidence/architectural-evidence';
 import { containsPolygon } from '@ai-floor-planner/geometry-engine';
 import { CandidateGenerator } from '../generator/candidate-generator';
 
@@ -129,7 +130,8 @@ export async function runGenerationWorkflow(
   onStage?.('validate_candidates', 'ACTIVE');
   const candidates = rawCandidates.flatMap(candidate => {
     const approvedCandidate = withApprovedFootprint(candidate, approvedBuilding);
-    return approvedCandidate ? [approvedCandidate] : [];
+    return approvedCandidate ? [{ ...approvedCandidate,
+      architecturalEvidence: evaluateArchitecturalEvidence(approvedCandidate.building, program) }] : [];
   });
   if (!candidates.length) throw new Error('No candidate remained hard-valid inside the approved Footprint. Review the Program or enlarge the Footprint.');
   onStage?.('validate_candidates', 'COMPLETE');

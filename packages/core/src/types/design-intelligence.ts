@@ -274,6 +274,33 @@ export interface CandidatePlan {
 
 /** Versioned observations, independent of legacy ranking and professional approval. */
 export interface ArchitecturalEvidence {
+  /** Optional only for legacy saves. No closeout identity means Not evaluated. */
+  readonly closeout?: {
+    readonly version: 1;
+    readonly buildingIdentity: string;
+    readonly programIdentity: string;
+    readonly review: 'DRAFT' | 'REVIEW_REQUIRED' | 'ARCHITECTURALLY_ACCEPTABLE' | 'NOT_EVALUATED';
+    readonly blockers: readonly string[];
+    readonly kitchenService: readonly {
+      readonly relationship: 'KITCHEN_DINING' | 'KITCHEN_UTILITY' | 'KITCHEN_STORE' | 'KITCHEN_COMMON';
+      readonly sourceId: string | null;
+      readonly targetId: string | null;
+      readonly status: 'DIRECT_CONNECTION' | 'SHORT_FUNCTIONAL_PATH' | 'UNRESOLVED' | 'NOT_APPLICABLE' | 'NOT_EVALUATED';
+      readonly pathRoomIds: readonly string[];
+      readonly pathDoorIds: readonly string[];
+    }[];
+    readonly circulation: readonly {
+      readonly roomId: string;
+      readonly status: 'PRIVATE_TRANSIT_REQUIRED' | 'NO_PRIVATE_TRANSIT_REQUIRED' | 'NOT_EVALUATED';
+      readonly pathRoomIds: readonly string[];
+      readonly pathDoorIds: readonly string[];
+    }[];
+    readonly exposure: readonly {
+      readonly roomId: string;
+      readonly status: 'EXTERIOR_OPPORTUNITY' | 'NO_EXTERIOR_CONTACT' | 'NOT_EVALUATED';
+    }[];
+    readonly transitionRoomIds: readonly string[];
+  };
   readonly schemaVersion: 1;
   /** Absent on Phase 1A saves: access-path evaluation must show Not evaluated. */
   readonly accessEvidenceVersion?: 1;

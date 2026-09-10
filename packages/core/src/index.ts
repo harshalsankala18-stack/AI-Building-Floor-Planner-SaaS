@@ -10,3 +10,4 @@ export * from './models/index';
 export * from './editor/index';
 export * from './constants';
 export * from './capabilities';
+export * from './architectural-review';

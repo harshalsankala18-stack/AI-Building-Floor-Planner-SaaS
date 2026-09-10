@@ -1,12 +1,13 @@
 import React from 'react';
-import type { CandidatePlan } from '@ai-floor-planner/core';
+import { architecturalReviewState, type CandidatePlan, type RoomProgram } from '@ai-floor-planner/core';
 
 /** Shared by both candidate entry points; old saved results never imply a pass. */
-export function ArchitecturalEvidencePanel({ candidate }: { candidate: CandidatePlan }): React.ReactElement {
+export function ArchitecturalEvidencePanel({ candidate, program }: { candidate: CandidatePlan; program?: RoomProgram }): React.ReactElement {
   const evidence = candidate.architecturalEvidence;
-  if (!evidence || evidence.schemaVersion !== 1 || evidence.accessEvidenceVersion !== 1 || evidence.buildingId !== candidate.building.id
-    || evidence.buildingVersion !== candidate.building.version) {
-    return <p role="status">Architectural checks not evaluated for this revision. Regenerate to obtain current evidence.</p>;
+  const review = architecturalReviewState(evidence, candidate.building, program);
+  if (!evidence || review === 'NOT_EVALUATED') {
+    return <div><p role="status">Architectural checks not evaluated for this Building and reviewed Program. Regenerate to obtain current evidence.</p>
+      <p>Automated architectural acceptance is not professional approval.</p></div>;
   }
   const direct = evidence.suites.filter(suite => suite.directDoorIds.length > 0).length;
   const privateDirect = evidence.suites.filter(suite => suite.access?.status === 'PRIVATE_DIRECT').length;
@@ -23,8 +24,9 @@ export function ArchitecturalEvidencePanel({ candidate }: { candidate: Candidate
   };
   const required = evidence.requiredFloors.filter(item => item.passed).length;
   return <section aria-label="Architectural acceptance evidence">
-    <p role="status"><strong>{evidence.status === 'REVIEW_REQUIRED'
-      ? 'Architectural review required' : 'Checked requirements met — limited scope'}</strong></p>
+    <p role="status"><strong>{review === 'DRAFT' ? 'Draft' : review === 'REVIEW_REQUIRED'
+      ? 'Architectural review required' : 'Architecturally acceptable — current automated scope only'}</strong></p>
+    <p>Automated architectural acceptance is not professional approval. No code compliance, construction readiness or structural safety is established.</p>
     <dl>
       <div><dt>Required floor placements</dt><dd>{evidence.requiredFloors.length ? `${required}/${evidence.requiredFloors.length}` : 'None specified'}</dd></div>
       <div><dt>Owned baths with direct doors</dt><dd>{evidence.suites.length ? `${direct}/${evidence.suites.length}` : 'None explicitly specified'}</dd></div>
@@ -33,6 +35,15 @@ export function ArchitecturalEvidencePanel({ candidate }: { candidate: Candidate
       <div><dt>Upper wet-room footprint coverage</dt><dd>{evidence.wetStacking.coveragePercent === null
         ? evidence.wetStacking.status.replaceAll('_', ' ') : `${evidence.wetStacking.coveragePercent}% across ${evidence.wetStacking.rooms.length} rooms`}</dd></div>
     </dl>
+    <details><summary>Kitchen/service, privacy/circulation and exposure</summary>
+      <ul>
+        {evidence.closeout?.blockers.map(reason => <li key={reason}>{reason}</li>)}
+        {evidence.closeout?.kitchenService.map((item, index) => <li key={`service-${index}`}>{item.relationship}: {item.status.replaceAll('_', ' ')}; {item.pathDoorIds.length} door transitions.</li>)}
+        {evidence.closeout?.circulation.map(item => <li key={`path-${item.roomId}`}>{candidate.building.floors.flatMap(floor => floor.rooms).find(room => room.id === item.roomId)?.name}: {item.status.replaceAll('_', ' ')}; {item.pathDoorIds.length} door transitions.</li>)}
+        {evidence.closeout?.exposure.map(item => <li key={`exposure-${item.roomId}`}>{candidate.building.floors.flatMap(floor => floor.rooms).find(room => room.id === item.roomId)?.name}: {item.status.replaceAll('_', ' ')} — boundary contact only, not daylight/ventilation compliance.</li>)}
+        <li>{evidence.closeout?.transitionRoomIds.length ?? 0} typed functional transition/core spaces; unclassified residual is not automatically waste. Unmodeled void, semi-open and site/service reservations remain unclassified.</li>
+      </ul>
+    </details>
     <details><summary>Inspect checks and limits</summary>
       <ul>
         {evidence.requiredFloors.map(item => <li key={item.programItemId}>{item.name}: required level {item.requiredLevel}; observed {item.actualLevels.join(', ') || 'missing'} — {item.passed ? 'met' : 'review required'}.</li>)}

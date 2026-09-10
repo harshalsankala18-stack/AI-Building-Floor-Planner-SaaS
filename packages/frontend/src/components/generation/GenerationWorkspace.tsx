@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { ArchitecturalEvidencePanel } from './ArchitecturalEvidencePanel';
 import type { CandidatePlan, Floor, RoomType } from '@ai-floor-planner/core';
-import { buildingHasDesignedGeometry } from '@ai-floor-planner/core';
+import { buildingHasDesignedGeometry, adaptSpaceProgramToPlannerProgram } from '@ai-floor-planner/core';
 import {
   GENERATION_STAGES, assessGenerationReadiness, runGenerationWorkflow,
   type GenerationStageId,
@@ -77,6 +77,10 @@ export const GenerationWorkspace: React.FC<GenerationWorkspaceProps> = props => 
   const [error, setError] = useState<string>();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const program = envelope.spaceProgram;
+  const evidenceProgram = useMemo(() => {
+    try { return program ? adaptSpaceProgramToPlannerProgram(program, envelope.building.site.plannedFloorCount ?? envelope.building.floors.length) : undefined; }
+    catch { return undefined; }
+  }, [program, envelope.building]);
   const footprint = envelope.footprintIntent;
   const input = program && footprint ? { building: envelope.building, category: envelope.category ?? 'residential', program, footprint } : undefined;
   const readiness = useMemo(() => input ? assessGenerationReadiness(input) : {
@@ -188,7 +192,7 @@ export const GenerationWorkspace: React.FC<GenerationWorkspaceProps> = props => 
               <aside className="generation-evidence">
                 <span className="eyebrow">Calculated evidence</span><h2>Option summary</h2>
                 <dl><div><dt>Hard constraints</dt><dd>PASS</dd></div><div><dt>Rooms</dt><dd>{selected.metrics.roomCount}</dd></div><div><dt>Carpet area</dt><dd>{area(selected.metrics.totalCarpetAreaMm2)}</dd></div><div><dt>Floors</dt><dd>{selected.multiFloorPlanning.floorCount}</dd></div><div><dt>Valid attempts</dt><dd>{selected.optimization.validAttempts}/{selected.optimization.attempts}</dd></div><div><dt>Accepted repairs</dt><dd>{selected.optimization.acceptedRepairs}</dd></div></dl>
-                <ArchitecturalEvidencePanel candidate={selected} />
+                <ArchitecturalEvidencePanel candidate={selected} program={evidenceProgram} />
                 <button className="btn-primary generation-adopt" onClick={requestApply}>Open Concept for Review <ChevronRight size={15} /></button>
                 <p className="generation-disclaimer">CONCEPT DESIGN · NOT FOR CONSTRUCTION · Professional review required.</p>
               </aside>

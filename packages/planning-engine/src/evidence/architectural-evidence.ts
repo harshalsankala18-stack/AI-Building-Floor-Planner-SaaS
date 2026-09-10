@@ -5,6 +5,7 @@ import {
   polygonIntersectionArea, polygonSignedArea, validateDoorPlacement,
 } from '@ai-floor-planner/geometry-engine';
 import { sourceProgramItemId } from '../graph/scorer';
+import { evaluateCloseout } from './architectural-closeout';
 
 const WET_TYPES = new Set([RoomType.Bathroom, RoomType.Kitchen, RoomType.Utility]);
 const OUTDOOR_TYPES = new Set([RoomType.Balcony, RoomType.Terrace, RoomType.Garden]);
@@ -205,7 +206,7 @@ export function evaluateArchitecturalEvidence(building: Building, program: RoomP
   });
   const unknownSuites = program.items.some(item => item.type === RoomType.Bathroom
     && item.attachedToRoomId === undefined && /^Attached Bath/i.test(item.name));
-  return {
+  const evidence: ArchitecturalEvidence = {
     schemaVersion: 1, accessEvidenceVersion: 1, buildingId: building.id, buildingVersion: building.version,
     status: requiredFloors.some(item => !item.passed) || suites.some(suite =>
       suite.access?.status !== 'PRIVATE_DIRECT' && suite.access?.status !== 'PRIVATE_INDIRECT') || unknownSuites
@@ -220,4 +221,5 @@ export function evaluateArchitecturalEvidence(building: Building, program: RoomP
       ...(unknownSuites ? ['A legacy attached-bath name has no explicit owner; ownership was not inferred.'] : []),
     ],
   };
+  return { ...evidence, closeout: evaluateCloseout(building, program, evidence, validRoomDoors) };
 }
