@@ -16,8 +16,7 @@
   },
   "dependencies": {
     "@ai-floor-planner/core": "workspace:*",
-    "@ai-floor-planner/geometry-engine": "workspace:*",
-    "@ai-floor-planner/constraint-engine": "workspace:*"
+    "@ai-floor-planner/geometry-engine": "workspace:*"
   },
   "devDependencies": {
     "typescript": "5.5.4",

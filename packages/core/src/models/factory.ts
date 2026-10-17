@@ -23,6 +23,7 @@ import type {
   AccessPoint,
   SiteDevelopmentControls,
   SiteUnitSystem,
+  SiteZone,
   AdjacencyRequirement,
   Point,
   Polygon,
@@ -76,6 +77,7 @@ export function rectToPolygon(x: number, y: number, width: number, height: numbe
 /** Default human-readable name for a room type. */
 function defaultRoomName(type: RoomType): string {
   const names: Record<RoomType, string> = {
+    [RoomType.ServiceShaft]: 'Service Shaft',
     [RoomType.Bedroom]: 'Bedroom',
     [RoomType.Bathroom]: 'Bathroom',
     [RoomType.Kitchen]: 'Kitchen',
@@ -96,6 +98,9 @@ function defaultRoomName(type: RoomType): string {
     [RoomType.FamilyLiving]: 'Family Living',
     [RoomType.Terrace]: 'Terrace',
     [RoomType.Garden]: 'Garden',
+    [RoomType.OTS]: 'Open to Sky (OTS)',
+    [RoomType.Porch]: 'Entrance Porch',
+    [RoomType.Dressing]: 'Dressing Room',
     [RoomType.Custom]: 'Room',
   };
   return names[type];
@@ -117,6 +122,7 @@ export interface CreateSiteParams {
   secondaryRoadFacing?: Direction;
   developmentControls?: SiteDevelopmentControls;
   unitSystem?: SiteUnitSystem;
+  siteZones?: readonly SiteZone[];
 }
 
 export interface CreateBuildingParams {
@@ -247,6 +253,7 @@ export function createSite(params: CreateSiteParams): Site {
     secondaryRoadFacing: params.secondaryRoadFacing,
     developmentControls: params.developmentControls,
     unitSystem: params.unitSystem ?? 'metric',
+    siteZones: params.siteZones,
   };
 }
 

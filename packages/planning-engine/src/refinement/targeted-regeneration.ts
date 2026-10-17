@@ -1,7 +1,8 @@
 import type { Building, Door, Floor, GenerationControlState, Polygon, RefinementIntent, Room, Wall } from '@ai-floor-planner/core';
 import { DoorType, SwingDirection, WallType } from '@ai-floor-planner/core';
-import { PlanValidator, type ValidationSummary } from '@ai-floor-planner/constraint-engine';
 import { containsPolygon } from '@ai-floor-planner/geometry-engine';
+import { evaluateDesign } from '../diagnostics/design-evaluator';
+import { diagnosticsToValidation, type ValidationSummary } from '../repair/engine';
 
 export type RefinementFailureCode = 'INVALID_REGENERATION_SELECTION' | 'REGENERATION_SCOPE_CONFLICT' | 'NO_VALID_REFINEMENT' | 'STALE_REFINEMENT';
 
@@ -150,8 +151,7 @@ export function generateTargetedRefinements(input: TargetedRegenerationInput): r
   const locked = new Set(input.control.lockedEntityIds); const lockedFloors = new Set(input.control.lockedFloorIds);
   if (selectedRooms.some(room => locked.has(room.id) || lockedFloors.has(room.floorId) || room.type === 'staircase')) throw new RefinementError('REGENERATION_SCOPE_CONFLICT', 'Unlock the selected room or floor. Stair/core geometry remains protected during room refinement.');
   const baseRevision = buildingRefinementRevision(input.building, input.control);
-  const validator = new PlanValidator(undefined, { enableVastu: false });
-  const baseline = validator.validate(input.building, { requiredRoomCounts: input.requiredRoomCounts as never });
+  const baseline = diagnosticsToValidation(input.building);
   const raw: RefinementCandidate[] = [];
   for (let variant = 0; variant < 8 && raw.length < 4; variant += 1) {
     try {
@@ -164,7 +164,9 @@ export function generateTargetedRefinements(input: TargetedRegenerationInput): r
       }
       const building: Building = { ...input.building, floors, version: input.building.version + 1 };
       assertProtectedEquality(input.building, building, selected);
-      const validation = validator.validate(building, { requiredRoomCounts: input.requiredRoomCounts as never }); if (!validation.isValid) continue;
+      const diag = evaluateDesign(building);
+      if (!diag.geometryHealthy) continue;
+      const validation = diagnosticsToValidation(building);
       const changedRooms = building.floors.flatMap(floor => floor.rooms).filter(room => selected.has(room.id));
       const geometryKey = canonical(changedRooms.map(room => ({ id: room.id, x: room.x, y: room.y, width: room.width, height: room.height })));
       if (raw.some(candidate => canonical(candidate.building.floors.flatMap(floor => floor.rooms).filter(room => selected.has(room.id)).map(room => ({ id: room.id, x: room.x, y: room.y, width: room.width, height: room.height }))) === geometryKey)) continue;

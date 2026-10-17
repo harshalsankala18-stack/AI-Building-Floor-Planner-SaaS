@@ -4,6 +4,8 @@
 
 /** Types of rooms supported in the system. */
 export enum RoomType {
+  /** Non-walkable service/ventilation void; never a circulation shortcut. */
+  ServiceShaft = 'service_shaft',
   Bedroom = 'bedroom',
   Bathroom = 'bathroom',
   Kitchen = 'kitchen',
@@ -24,6 +26,9 @@ export enum RoomType {
   FamilyLiving = 'family_living',
   Terrace = 'terrace',
   Garden = 'garden',
+  OTS = 'ots',
+  Porch = 'porch',
+  Dressing = 'dressing',
   Custom = 'custom',
 }
 
@@ -75,6 +80,8 @@ export enum WallType {
 
 /** Door types. */
 export enum DoorType {
+  /** A hosted, traversable opening with no door leaf or swing. */
+  OpenPassage = 'open_passage',
   Single = 'single',
   Double = 'double',
   Sliding = 'sliding',

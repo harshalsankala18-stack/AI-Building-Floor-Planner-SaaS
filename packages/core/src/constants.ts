@@ -41,6 +41,11 @@ export const MINIMUM_ROOM_AREAS: Record<string, number> = {
   bathroom: 2_500_000,        // 2.5 sq m
   living: 12_000_000,         // 12 sq m
   dining: 9_000_000,          // 9 sq m
+  utility: 3_000_000,         // 3 sq m
+  dressing: 3_000_000,        // 3 sq m
+  foyer: 3_500_000,           // 3.5 sq m
+  porch: 4_000_000,           // 4 sq m
+  ots: 1_000_000,             // 1 sq m (Open to Sky shaft)
 };
 
 /**
@@ -54,6 +59,11 @@ export const MINIMUM_DIMENSIONS: Record<string, number> = {
   bathroom: 1200,
   living: 3000,
   dining: 2700,
+  utility: 1200,
+  dressing: 1500,
+  foyer: 1500,
+  porch: 1800,
+  ots: 900,
   corridor: 900,
   staircase: 900,
 };

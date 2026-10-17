@@ -1,0 +1,16 @@
+﻿[
+    {
+        "id":  "ref_concept_01",
+        "file":  "ref_concept_01.png",
+        "original":  "02_fi_side (1).png",
+        "originalSize":  "860x664",
+        "normalizedSize":  "512x395"
+    },
+    {
+        "id":  "ref_concept_02",
+        "file":  "ref_concept_02.png",
+        "original":  "03_60x60.png",
+        "originalSize":  "720x834",
+        "normalizedSize":  "442x511"
+    }
+]

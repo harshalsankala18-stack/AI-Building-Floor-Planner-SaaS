@@ -14,6 +14,8 @@ import {
   AddWindowCommand,
   MoveDoorCommand,
   MoveWindowCommand,
+  UpdateDoorPropertiesCommand,
+  SwingDirection,
   RoomType,
   DoorType,
   WindowType,
@@ -156,6 +158,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           [RenderLayer.Openings]: layers.openings,
           [RenderLayer.Stairs]: layers.stairs,
           [RenderLayer.Annotations]: layers.dimensions,
+          [RenderLayer.SiteZones]: layers.siteZones ?? true,
         },
       },
     );
@@ -538,6 +541,20 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     return layers.validation ? editor.activeFloor.rooms.filter(room => affectedIds.has(room.id)) : [];
   }, [editor.activeFloor.rooms, editor.validationSummary.violations, layers.validation]);
 
+  const selectedDoor = useMemo(() =>
+    !editor.selections.length && editor.selection?.entityType === 'door'
+      ? editor.activeFloor.doors.find(d => d.id === editor.selection?.entityId)
+      : null,
+    [editor.selections, editor.selection, editor.activeFloor.doors],
+  );
+
+  const selectedWindow = useMemo(() =>
+    !editor.selections.length && editor.selection?.entityType === 'window'
+      ? editor.activeFloor.windows.find(w => w.id === editor.selection?.entityId)
+      : null,
+    [editor.selections, editor.selection, editor.activeFloor.windows],
+  );
+
   // Compute Screen Coordinates for Overlay Elements
   const overlayRoomBox = useMemo(() => {
     if (!displayRoom) return null;
@@ -675,28 +692,50 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
               pointerEvents="none"
             />
 
-            {/* 8 Resize Handles (nw, n, ne, e, se, s, sw, w) */}
+            {/* 8 Resize Handles (nw, n, ne, e, se, s, sw, w) with Drafted.ai corner nodes */}
             {[
-              { id: 'nw', x: overlayRoomBox.x, y: overlayRoomBox.y },
-              { id: 'n', x: overlayRoomBox.x + overlayRoomBox.width / 2, y: overlayRoomBox.y },
-              { id: 'ne', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y },
-              { id: 'e', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y + overlayRoomBox.height / 2 },
-              { id: 'se', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y + overlayRoomBox.height },
-              { id: 's', x: overlayRoomBox.x + overlayRoomBox.width / 2, y: overlayRoomBox.y + overlayRoomBox.height },
-              { id: 'sw', x: overlayRoomBox.x, y: overlayRoomBox.y + overlayRoomBox.height },
-              { id: 'w', x: overlayRoomBox.x, y: overlayRoomBox.y + overlayRoomBox.height / 2 },
+              { id: 'nw', x: overlayRoomBox.x, y: overlayRoomBox.y, isCorner: true },
+              { id: 'n', x: overlayRoomBox.x + overlayRoomBox.width / 2, y: overlayRoomBox.y, isCorner: false },
+              { id: 'ne', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y, isCorner: true },
+              { id: 'e', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y + overlayRoomBox.height / 2, isCorner: false },
+              { id: 'se', x: overlayRoomBox.x + overlayRoomBox.width, y: overlayRoomBox.y + overlayRoomBox.height, isCorner: true },
+              { id: 's', x: overlayRoomBox.x + overlayRoomBox.width / 2, y: overlayRoomBox.y + overlayRoomBox.height, isCorner: false },
+              { id: 'sw', x: overlayRoomBox.x, y: overlayRoomBox.y + overlayRoomBox.height, isCorner: true },
+              { id: 'w', x: overlayRoomBox.x, y: overlayRoomBox.y + overlayRoomBox.height / 2, isCorner: false },
             ].map(h => (
-              <rect
-                key={h.id}
-                className={`resize-handle ${h.id}`}
-                x={h.x - 5}
-                y={h.y - 5}
-                width={10}
-                height={10}
-                style={{ pointerEvents: 'all', cursor: `${h.id}-resize` }}
-                onPointerDown={e => handleResizeStart(h.id, e)}
-              />
+              <g key={h.id}>
+                {h.isCorner ? (
+                  <circle
+                    cx={h.x}
+                    cy={h.y}
+                    r={6}
+                    fill="#C86D48"
+                    stroke="#FFFFFF"
+                    strokeWidth={2}
+                    style={{ pointerEvents: 'all', cursor: `${h.id}-resize` }}
+                    onPointerDown={e => handleResizeStart(h.id, e)}
+                  />
+                ) : (
+                  <rect
+                    className={`resize-handle ${h.id}`}
+                    x={h.x - 5}
+                    y={h.y - 5}
+                    width={10}
+                    height={10}
+                    style={{ pointerEvents: 'all', cursor: `${h.id}-resize` }}
+                    onPointerDown={e => handleResizeStart(h.id, e)}
+                  />
+                )}
+              </g>
             ))}
+
+            {/* Corner Angle Badges (90° for orthogonal boundaries) */}
+            <g pointerEvents="none">
+              <text x={overlayRoomBox.x + 14} y={overlayRoomBox.y + 16} fontSize={10} fontWeight="700" fill="#C86D48" opacity={0.8}>90°</text>
+              <text x={overlayRoomBox.x + overlayRoomBox.width - 24} y={overlayRoomBox.y + 16} fontSize={10} fontWeight="700" fill="#C86D48" opacity={0.8}>90°</text>
+              <text x={overlayRoomBox.x + overlayRoomBox.width - 24} y={overlayRoomBox.y + overlayRoomBox.height - 8} fontSize={10} fontWeight="700" fill="#C86D48" opacity={0.8}>90°</text>
+              <text x={overlayRoomBox.x + 14} y={overlayRoomBox.y + overlayRoomBox.height - 8} fontSize={10} fontWeight="700" fill="#C86D48" opacity={0.8}>90°</text>
+            </g>
 
             {/* Live Dimensions HUD during Drag */}
             {transientRoom && (
@@ -714,6 +753,78 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
             )}
           </g>
         )}
+
+        {/* Drafted.ai Opening Distance Callouts & Quick Flip Action on Canvas */}
+        {selectedDoor && (() => {
+          const hostWall = editor.activeFloor.walls.find(w => w.id === selectedDoor.wallId);
+          if (!hostWall) return null;
+          const sPos = worldToScreen(selectedDoor.position, transform);
+          const pStart = worldToScreen(hostWall.startPoint, transform);
+          const pEnd = worldToScreen(hostWall.endPoint, transform);
+          const distStartMm = Math.round(Math.hypot(selectedDoor.position.x - hostWall.startPoint.x, selectedDoor.position.y - hostWall.startPoint.y));
+          const distEndMm = Math.round(Math.hypot(selectedDoor.position.x - hostWall.endPoint.x, selectedDoor.position.y - hostWall.endPoint.y));
+
+          return (
+            <g className="drafted-door-hud">
+              {/* Clearance Dimension Lines */}
+              <line x1={pStart.x} y1={pStart.y} x2={sPos.x} y2={sPos.y} stroke="#C86D48" strokeWidth="1.5" strokeDasharray="3 3" />
+              <line x1={sPos.x} y1={sPos.y} x2={pEnd.x} y2={pEnd.y} stroke="#C86D48" strokeWidth="1.5" strokeDasharray="3 3" />
+              {/* Clearance Text Tags */}
+              <rect x={(pStart.x + sPos.x) / 2 - 28} y={(pStart.y + sPos.y) / 2 - 18} width="56" height="18" rx="4" fill="#FFFFFF" stroke="#C86D48" strokeWidth="1" />
+              <text x={(pStart.x + sPos.x) / 2} y={(pStart.y + sPos.y) / 2 - 6} textAnchor="middle" fontSize="10" fontWeight="700" fill="#C86D48" fontFamily="var(--studio-font-mono)">
+                {distStartMm}
+              </text>
+              <rect x={(sPos.x + pEnd.x) / 2 - 28} y={(sPos.y + pEnd.y) / 2 - 18} width="56" height="18" rx="4" fill="#FFFFFF" stroke="#C86D48" strokeWidth="1" />
+              <text x={(sPos.x + pEnd.x) / 2} y={(sPos.y + pEnd.y) / 2 - 6} textAnchor="middle" fontSize="10" fontWeight="700" fill="#C86D48" fontFamily="var(--studio-font-mono)">
+                {distEndMm}
+              </text>
+
+              {/* Floating Quick Action Pill */}
+              <g
+                style={{ cursor: 'pointer', pointerEvents: 'all' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  const nextSwing = selectedDoor.swingDirection === SwingDirection.Inward
+                    ? SwingDirection.Outward
+                    : SwingDirection.Inward;
+                  editor.executeCommand(new UpdateDoorPropertiesCommand(selectedDoor.id, { swingDirection: nextSwing }));
+                }}
+              >
+                <rect x={sPos.x - 48} y={sPos.y - 38} width="96" height="24" rx="12" fill="#1E293B" stroke="#475569" strokeWidth="1" />
+                <text x={sPos.x} y={sPos.y - 22} textAnchor="middle" fontSize="11" fontWeight="600" fill="#FFFFFF" fontFamily="sans-serif">
+                  ⇄ Flip ({selectedDoor.swingDirection === SwingDirection.Inward ? 'In' : 'Out'})
+                </text>
+              </g>
+            </g>
+          );
+        })()}
+
+        {selectedWindow && (() => {
+          const hostWall = editor.activeFloor.walls.find(w => w.id === selectedWindow.wallId);
+          if (!hostWall) return null;
+          const sPos = worldToScreen(selectedWindow.position, transform);
+          const pStart = worldToScreen(hostWall.startPoint, transform);
+          const pEnd = worldToScreen(hostWall.endPoint, transform);
+          const distStartMm = Math.round(Math.hypot(selectedWindow.position.x - hostWall.startPoint.x, selectedWindow.position.y - hostWall.startPoint.y));
+          const distEndMm = Math.round(Math.hypot(selectedWindow.position.x - hostWall.endPoint.x, selectedWindow.position.y - hostWall.endPoint.y));
+
+          return (
+            <g className="drafted-window-hud">
+              {/* Clearance Dimension Lines */}
+              <line x1={pStart.x} y1={pStart.y} x2={sPos.x} y2={sPos.y} stroke="#0284C7" strokeWidth="1.5" strokeDasharray="3 3" />
+              <line x1={sPos.x} y1={sPos.y} x2={pEnd.x} y2={pEnd.y} stroke="#0284C7" strokeWidth="1.5" strokeDasharray="3 3" />
+              {/* Clearance Text Tags */}
+              <rect x={(pStart.x + sPos.x) / 2 - 28} y={(pStart.y + sPos.y) / 2 - 18} width="56" height="18" rx="4" fill="#FFFFFF" stroke="#0284C7" strokeWidth="1" />
+              <text x={(pStart.x + sPos.x) / 2} y={(pStart.y + sPos.y) / 2 - 6} textAnchor="middle" fontSize="10" fontWeight="700" fill="#0284C7" fontFamily="var(--studio-font-mono)">
+                {distStartMm}
+              </text>
+              <rect x={(sPos.x + pEnd.x) / 2 - 28} y={(sPos.y + pEnd.y) / 2 - 18} width="56" height="18" rx="4" fill="#FFFFFF" stroke="#0284C7" strokeWidth="1" />
+              <text x={(sPos.x + pEnd.x) / 2} y={(sPos.y + pEnd.y) / 2 - 6} textAnchor="middle" fontSize="10" fontWeight="700" fill="#0284C7" fontFamily="var(--studio-font-mono)">
+                {distEndMm}
+              </text>
+            </g>
+          );
+        })()}
         {transientOpening && (() => {
           const point = worldToScreen(transientOpening.position, transform);
           return <g><circle className="opening-move-preview" cx={point.x} cy={point.y} r={9} /><text className="opening-move-label" x={point.x + 13} y={point.y - 8}>{transientOpening.entityType.toUpperCase()} · {Math.round(transientOpening.width)} mm</text></g>;

@@ -14,7 +14,7 @@ import {
   X,
 } from 'lucide-react';
 import type { Building, Floor, PaperSize } from '@ai-floor-planner/core';
-import type { ValidationSummary } from '@ai-floor-planner/constraint-engine';
+import type { ValidationSummary } from '@ai-floor-planner/planning-engine';
 import {
   createExportArtifact,
   DEFAULT_ADVANCED_EXPORT_SETTINGS,

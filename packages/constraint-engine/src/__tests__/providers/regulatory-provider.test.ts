@@ -16,4 +16,12 @@ describe('RegulatoryRuleProvider (Stub)', () => {
     const constraints = provider.getConstraints(config);
     expect(constraints).toEqual([]);
   });
+
+  it('returns NBC 2016 room dimension constraint for india_nbc_2016 jurisdiction', () => {
+    const provider = new RegulatoryRuleProvider('india_nbc_2016', '1.0.0');
+    const config = resolveConfig();
+    const constraints = provider.getConstraints(config);
+    expect(constraints).toHaveLength(1);
+    expect(constraints[0]?.id).toBe('NBC-2016-ROOM-DIM');
+  });
 });

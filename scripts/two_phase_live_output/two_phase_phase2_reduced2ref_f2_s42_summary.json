@@ -1,0 +1,653 @@
+{
+  "mode": "LIVE",
+  "runMode": "REDUCED_REFERENCE_SMOKE",
+  "note": "Real Cloudflare FLUX and real Gemini responses in this run (no replay).",
+  "seed": 42,
+  "flats": 2,
+  "referenceIntegrity": {
+    "distinctReferencesAvailable": 2,
+    "requiredForFullAcceptance": 4,
+    "fullFourReferenceAcceptance": "NOT_TESTED",
+    "duplicateGroups": [],
+    "issues": [
+      {
+        "code": "REFERENCE_MISSING",
+        "id": "slot_03",
+        "message": "no reference file for slot 3"
+      },
+      {
+        "code": "REFERENCE_MISSING",
+        "id": "slot_04",
+        "message": "no reference file for slot 4"
+      }
+    ]
+  },
+  "referencesSentPerConcept": [
+    {
+      "candidateNumber": 1,
+      "strategy": "balanced",
+      "seed": 42,
+      "slotStatus": "GENERATED",
+      "slotError": null,
+      "distinctReferencesAvailable": 2,
+      "inputImages": [
+        "schematic_scaffold",
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "styleReferences": [
+        {
+          "id": "ref_concept_01",
+          "original": "02_fi_side (1).png"
+        },
+        {
+          "id": "ref_concept_02",
+          "original": "03_60x60.png"
+        }
+      ]
+    },
+    {
+      "candidateNumber": 2,
+      "strategy": "daylight",
+      "seed": 179,
+      "slotStatus": "GENERATED",
+      "slotError": null,
+      "distinctReferencesAvailable": 2,
+      "inputImages": [
+        "schematic_scaffold",
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "styleReferences": [
+        {
+          "id": "ref_concept_02",
+          "original": "03_60x60.png"
+        },
+        {
+          "id": "ref_concept_01",
+          "original": "02_fi_side (1).png"
+        }
+      ]
+    },
+    {
+      "candidateNumber": 3,
+      "strategy": "privacy",
+      "seed": 316,
+      "slotStatus": "GENERATED",
+      "slotError": null,
+      "distinctReferencesAvailable": 2,
+      "inputImages": [
+        "schematic_scaffold",
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "styleReferences": [
+        {
+          "id": "ref_concept_01",
+          "original": "02_fi_side (1).png"
+        },
+        {
+          "id": "ref_concept_02",
+          "original": "03_60x60.png"
+        }
+      ]
+    },
+    {
+      "candidateNumber": 4,
+      "strategy": "circulation",
+      "seed": 453,
+      "slotStatus": "GENERATED",
+      "slotError": null,
+      "distinctReferencesAvailable": 2,
+      "inputImages": [
+        "schematic_scaffold",
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "styleReferences": [
+        {
+          "id": "ref_concept_02",
+          "original": "03_60x60.png"
+        },
+        {
+          "id": "ref_concept_01",
+          "original": "02_fi_side (1).png"
+        }
+      ]
+    }
+  ],
+  "referenceAssets": [
+    {
+      "id": "ref_concept_01",
+      "file": "ref_concept_01.png",
+      "bytes": 360743,
+      "size": "512x395",
+      "sha256": "5caf53a1b1e09e991377eb2895afc617b099f58b862fb7582778020e8f1981e4",
+      "status": "VALID",
+      "duplicateOf": null
+    },
+    {
+      "id": "ref_concept_02",
+      "file": "ref_concept_02.png",
+      "bytes": 382612,
+      "size": "442x511",
+      "sha256": "6e7befd523ec6633db97e267b1e6e4fef8428a34ec9261a8b03e2515b814d5c6",
+      "status": "VALID",
+      "duplicateOf": null
+    }
+  ],
+  "preFluxLayouts": [
+    {
+      "concept": "Concept 01 (balanced)",
+      "flats": 2,
+      "unitMix": "2BHK + 3BHK",
+      "lifts": 2,
+      "stairs": 2,
+      "commonLobby": 1,
+      "spatialChecks": "33/33",
+      "areaStatus": "Flat 01 6.81% OK; Flat 02 2.12% OK",
+      "fits": true,
+      "manifestMatch": true,
+      "discrepancies": []
+    },
+    {
+      "concept": "Concept 02 (daylight)",
+      "flats": 2,
+      "unitMix": "2BHK + 3BHK",
+      "lifts": 2,
+      "stairs": 2,
+      "commonLobby": 1,
+      "spatialChecks": "33/33",
+      "areaStatus": "Flat 01 5.71% OK; Flat 02 0.28% OK",
+      "fits": true,
+      "manifestMatch": true,
+      "discrepancies": []
+    },
+    {
+      "concept": "Concept 03 (privacy)",
+      "flats": 2,
+      "unitMix": "2BHK + 3BHK",
+      "lifts": 2,
+      "stairs": 2,
+      "commonLobby": 1,
+      "spatialChecks": "33/33",
+      "areaStatus": "Flat 01 7.73% OK; Flat 02 2.94% OK",
+      "fits": true,
+      "manifestMatch": true,
+      "discrepancies": []
+    },
+    {
+      "concept": "Concept 04 (circulation)",
+      "flats": 2,
+      "unitMix": "2BHK + 3BHK",
+      "lifts": 2,
+      "stairs": 2,
+      "commonLobby": 1,
+      "spatialChecks": "33/33",
+      "areaStatus": "Flat 01 -2.23% OK; Flat 02 0.72% OK",
+      "fits": true,
+      "manifestMatch": true,
+      "discrepancies": []
+    }
+  ],
+  "elapsedS": 368.5,
+  "success": true,
+  "conceptMode": true,
+  "conceptSlots": [
+    {
+      "candidateNumber": 1,
+      "strategy": "balanced",
+      "label": "Balanced / symmetric",
+      "seed": 42,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_42_0",
+      "referenceIds": [
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "distinctReferencesAvailable": 2
+    },
+    {
+      "candidateNumber": 2,
+      "strategy": "daylight",
+      "label": "Daylight / external edge",
+      "seed": 179,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_179_1",
+      "referenceIds": [
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "distinctReferencesAvailable": 2
+    },
+    {
+      "candidateNumber": 3,
+      "strategy": "privacy",
+      "label": "Privacy-oriented",
+      "seed": 316,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_316_2",
+      "referenceIds": [
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "distinctReferencesAvailable": 2
+    },
+    {
+      "candidateNumber": 4,
+      "strategy": "circulation",
+      "label": "Circulation / efficiency",
+      "seed": 453,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_453_3",
+      "referenceIds": [
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "distinctReferencesAvailable": 2
+    }
+  ],
+  "candidateSource": "FALLBACK_DETERMINISTIC",
+  "fallback": {
+    "used": true,
+    "reason": "FLUX_CANDIDATES_REJECTED"
+  },
+  "error": null,
+  "candidates": [
+    {
+      "id": "cand_two_ai_42_0",
+      "candidate": "Candidate 01 — Balanced / symmetric",
+      "strategy": "balanced",
+      "seed": 42,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "artifactId": "gen_42_mulnwdp2_310d7714",
+      "httpStatus": 200,
+      "latencyMs": 14619,
+      "width": 960,
+      "height": 1088,
+      "promptVersion": 3,
+      "prompt": "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.\nCONCEPT 01 of 04 - Balanced / symmetric: Mirror-symmetric flats either side of a central common lobby; one stair and lift at each end of the lobby.\nInput image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.\nInput images 2-3 are visual style and planning-language references only: never copy their flat count, geometry or text.\nPriority: user requirements > deterministic layout > reference style.\nEXACTLY 2 flats: FLAT 01 2BHK = 2 bedrooms, 2 baths, living, dining, kitchen, utility; FLAT 02 3BHK = 3 bedrooms, 3 baths, living, dining, kitchen, utility.\nCommon core: EXACTLY 2 lifts (square shafts with X), EXACTLY 2 stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.\nEntry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.\nKeep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.\nEnglish labels only, short and clear, as in image 1: FLAT 01, FLAT 02, 2BHK, 3BHK, LIVING, DINING, KITCHEN, BEDROOM, BATH, UTILITY, FOYER, LIFT, STAIR, LOBBY. No other text, no dimensions.\nDo not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text.",
+      "references": [
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "distinctReferencesAvailable": 2,
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": [],
+        "detected": {
+          "flatCount": 2,
+          "unitMix": [
+            "2BHK",
+            "3BHK"
+          ],
+          "liftCount": 2,
+          "stairCount": 2,
+          "commonLobby": true,
+          "unitSeparation": true,
+          "majorRooms": [
+            "Living Dining",
+            "Kitchen",
+            "Bedroom",
+            "Bathroom",
+            "Foyer",
+            "Utility"
+          ],
+          "labelLanguage": "English",
+          "visualQuality": 8,
+          "observations": "The floor plan clearly depicts two distinct apartment units, Flat 01 (2BHK) and Flat 02 (3BHK), connected via a central lobby containing two lifts and two staircases."
+        }
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "FAIL",
+          "structural": "PASS",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "Requested 2 lift(s), plan has 1."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_two_ai_179_1",
+      "candidate": "Candidate 02 — Daylight / external edge",
+      "strategy": "daylight",
+      "seed": 179,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "artifactId": "gen_179_mulnynzy_6e16542a",
+      "httpStatus": 200,
+      "latencyMs": 13227,
+      "width": 960,
+      "height": 1088,
+      "promptVersion": 3,
+      "prompt": "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.\nCONCEPT 02 of 04 - Daylight / external edge: Shallow flats with long facades; living room and every bedroom on an external wall; deeper balconies.\nInput image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.\nInput images 2-3 are visual style and planning-language references only: never copy their flat count, geometry or text.\nPriority: user requirements > deterministic layout > reference style.\nEXACTLY 2 flats: FLAT 01 2BHK = 2 bedrooms, 2 baths, living, dining, kitchen, utility; FLAT 02 3BHK = 3 bedrooms, 3 baths, living, dining, kitchen, utility.\nCommon core: EXACTLY 2 lifts (square shafts with X), EXACTLY 2 stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.\nEntry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.\nKeep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.\nEnglish labels only, short and clear, as in image 1: FLAT 01, FLAT 02, 2BHK, 3BHK, LIVING, DINING, KITCHEN, BEDROOM, BATH, UTILITY, FOYER, LIFT, STAIR, LOBBY. No other text, no dimensions.\nDo not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text.",
+      "references": [
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "distinctReferencesAvailable": 2,
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": [],
+        "detected": {
+          "flatCount": 2,
+          "unitMix": [
+            "2BHK",
+            "3BHK"
+          ],
+          "liftCount": 2,
+          "stairCount": 2,
+          "commonLobby": true,
+          "unitSeparation": true,
+          "majorRooms": [
+            "Living",
+            "Kitchen",
+            "Bedroom",
+            "Bathroom",
+            "Balcony",
+            "Lobby",
+            "Staircase",
+            "Lift"
+          ],
+          "labelLanguage": "English",
+          "visualQuality": 8,
+          "observations": "The floor plan clearly shows two distinct units (one 2BHK and one 3BHK) arranged symmetrically around a central lobby core containing two lifts and two staircases. The layout includes utility balconies and clear room demarcations."
+        }
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "FAIL",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "FLAT 01 (2BHK) has 1 bathroom space(s); manifest lists 2.",
+        "FLAT 02 (3BHK) has 2 bathroom space(s); manifest lists 3."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_two_ai_316_2",
+      "candidate": "Candidate 03 — Privacy-oriented",
+      "strategy": "privacy",
+      "seed": 316,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "artifactId": "gen_316_mulo0qiu_2abf952e",
+      "httpStatus": 200,
+      "latencyMs": 13870,
+      "width": 960,
+      "height": 1088,
+      "promptVersion": 3,
+      "prompt": "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.\nCONCEPT 03 of 04 - Privacy-oriented: Staggered flats so entrance doors do not face each other; bedrooms grouped in a private wing off a private passage.\nInput image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.\nInput images 2-3 are visual style and planning-language references only: never copy their flat count, geometry or text.\nPriority: user requirements > deterministic layout > reference style.\nEXACTLY 2 flats: FLAT 01 2BHK = 2 bedrooms, 2 baths, living, dining, kitchen, utility; FLAT 02 3BHK = 3 bedrooms, 3 baths, living, dining, kitchen, utility.\nCommon core: EXACTLY 2 lifts (square shafts with X), EXACTLY 2 stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.\nEntry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.\nKeep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.\nEnglish labels only, short and clear, as in image 1: FLAT 01, FLAT 02, 2BHK, 3BHK, LIVING, DINING, KITCHEN, BEDROOM, BATH, UTILITY, FOYER, LIFT, STAIR, LOBBY. No other text, no dimensions.\nDo not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text.",
+      "references": [
+        "ref_concept_01",
+        "ref_concept_02"
+      ],
+      "distinctReferencesAvailable": 2,
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": [],
+        "detected": {
+          "flatCount": 2,
+          "unitMix": [
+            "2BHK",
+            "3BHK"
+          ],
+          "liftCount": 2,
+          "stairCount": 2,
+          "commonLobby": true,
+          "unitSeparation": true,
+          "majorRooms": [
+            "Living",
+            "Dining",
+            "Kitchen",
+            "Bedroom",
+            "Bathroom",
+            "Utility",
+            "Foyer",
+            "Lobby"
+          ],
+          "labelLanguage": "English",
+          "visualQuality": 8,
+          "observations": "The floor plan correctly features 2 distinct flats (Flat 01 as 2BHK and Flat 02 as 3BHK), accessible from a central common lobby. The core contains 2 lifts and 2 staircases."
+        }
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "FAILED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "PASS",
+          "canonicalGeometry": "PASS",
+          "geometryValidation": "FAIL"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "Room \"FLAT 01 BEDROOM\" overlaps with another room on Level 0.",
+        "Room \"FLAT 01 BATH\" overlaps with another room on Level 0.",
+        "Room \"FLAT 01 BATH\" overlaps with another room on Level 0.",
+        "Room \"FLAT 02 BEDROOM\" overlaps with another room on Level 0.",
+        "Room \"FLAT 02 BATH\" overlaps with another room on Level 0.",
+        "Room \"FLAT 02 LIVING DINING\" overlaps with another room on Level 0.",
+        "Room \"FLAT 02 PORCH\" overlaps with another room on Level 0.",
+        "Room \"FLAT 02 KITCHEN\" overlaps with another room on Level 0.",
+        "5 room overlap(s): FLAT 01 BEDROOM ↔ FLAT 01 BATH; FLAT 01 BEDROOM ↔ FLAT 01 BATH; FLAT 01 BATH ↔ FLAT 01 BEDROOM; FLAT 01 BATH ↔ FLAT 01 BEDROOM."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_two_ai_453_3",
+      "candidate": "Candidate 04 — Circulation / efficiency",
+      "strategy": "circulation",
+      "seed": 453,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "artifactId": "gen_453_mulo2eqr_b6d73c03",
+      "httpStatus": 200,
+      "latencyMs": 40111,
+      "width": 960,
+      "height": 1088,
+      "promptVersion": 3,
+      "prompt": "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.\nCONCEPT 04 of 04 - Circulation / efficiency: Compact core with grouped lifts and the shortest common lobby; minimal internal passage.\nInput image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.\nInput images 2-3 are visual style and planning-language references only: never copy their flat count, geometry or text.\nPriority: user requirements > deterministic layout > reference style.\nEXACTLY 2 flats: FLAT 01 2BHK = 2 bedrooms, 2 baths, living, dining, kitchen, utility; FLAT 02 3BHK = 3 bedrooms, 3 baths, living, dining, kitchen, utility.\nCommon core: EXACTLY 2 lifts (square shafts with X), EXACTLY 2 stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.\nEntry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.\nKeep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.\nEnglish labels only, short and clear, as in image 1: FLAT 01, FLAT 02, 2BHK, 3BHK, LIVING, DINING, KITCHEN, BEDROOM, BATH, UTILITY, FOYER, LIFT, STAIR, LOBBY. No other text, no dimensions.\nDo not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text.",
+      "references": [
+        "ref_concept_02",
+        "ref_concept_01"
+      ],
+      "distinctReferencesAvailable": 2,
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": [],
+        "detected": {
+          "flatCount": 2,
+          "unitMix": [
+            "2BHK",
+            "3BHK"
+          ],
+          "liftCount": 2,
+          "stairCount": 2,
+          "commonLobby": true,
+          "unitSeparation": true,
+          "majorRooms": [
+            "Living",
+            "Dining",
+            "Kitchen",
+            "Bedroom",
+            "Bathroom",
+            "Utility",
+            "Foyer",
+            "Lobby"
+          ],
+          "labelLanguage": "English",
+          "visualQuality": 8,
+          "observations": "The floor plan correctly features 2 distinct flats per floor (Flat 01 as 2BHK and Flat 02 as 3BHK). The central core includes a shared lobby, 2 elevators marked 'LIFT', and 2 staircases."
+        }
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "FAIL",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "\"FOYER\" lies outside the FLAT 01 boundary (87% inside).",
+        "FLAT 01 is labelled 2BHK but has 1 bedroom(s).",
+        "FLAT 01 (2BHK) has 1 bedroom(s); manifest requires 2.",
+        "FLAT 01 (2BHK) has 0 dining space(s); manifest lists 1.",
+        "FLAT 01 (2BHK) has 0 kitchen space(s); manifest lists 1.",
+        "FLAT 02 (3BHK) has 0 dining space(s); manifest lists 1."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_fallback_deterministic_42",
+      "candidate": "FALLBACK_DETERMINISTIC",
+      "strategy": null,
+      "seed": 42,
+      "source": "FALLBACK_DETERMINISTIC",
+      "model": "deterministic-apartment-schematic-v1",
+      "provider": "deterministic-planner",
+      "artifactId": "gen_42_mulo394n_a8f2523c",
+      "httpStatus": null,
+      "latencyMs": 6,
+      "width": 512,
+      "height": 512,
+      "promptVersion": 0,
+      "prompt": "Deterministic apartment base plan rendered from schematic (2 flats, 2 lifts, 2 stairs, common lobby). Not generated by FLUX.",
+      "references": [],
+      "distinctReferencesAvailable": null,
+      "layoutChecks": null,
+      "status": "ACCEPTED",
+      "rejectionStage": null,
+      "preflight": null,
+      "stages": {
+        "imageGeneration": "SKIPPED",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "SKIPPED",
+        "imageInterpretation": "SKIPPED",
+        "imageTo2D": "SUCCESS",
+        "validation": "SUCCESS",
+        "geminiEvaluation": "SUCCESS"
+      },
+      "apartmentValidation": {
+        "source": "DETERMINISTIC_SCHEMATIC",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "PASS",
+          "canonicalGeometry": "PASS",
+          "geometryValidation": "PASS"
+        }
+      },
+      "score": "Gemini (advisory) 84/100",
+      "evaluation": {
+        "overallScore": 84,
+        "requirementSatisfaction": 100,
+        "spatialQuality": 80,
+        "circulation": 85,
+        "adjacency": 85,
+        "zoning": 82,
+        "privacy": 80,
+        "daylight": 78,
+        "efficiency": 85,
+        "roomProportions": 83,
+        "orientation": 80,
+        "strengths": [
+          "Clean symmetry in core circulation with dual lifts and stairs",
+          "Clear separation of public living areas from private bedrooms",
+          "Dedicated foyers for each apartment providing entry transition",
+          "Balanced layout fulfilling all 2BHK and 3BHK program requirements"
+        ],
+        "concerns": [
+          "Internal bathrooms rely heavily on mechanical ducting without direct exterior windows",
+          "Some secondary bedroom doors open directly onto the main living and dining circulation paths",
+          "Balcony placements are somewhat restricted to side elevations"
+        ],
+        "rationale": "The plan successfully organizes two distinct residential units around a central vertical circulation core with dual lifts and stairs. Functional zoning is handled well with clear entry foyers, though some interior wet areas depend on service ducts for ventilation. Overall, the layout is efficient, balanced, and precisely meets the specified programmatic requirements.",
+        "model": "gemini-flash-lite-latest",
+        "latencyMs": 14788
+      },
+      "errors": [],
+      "rejectedReason": null
+    }
+  ]
+}

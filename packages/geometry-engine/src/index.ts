@@ -203,6 +203,7 @@ export type { WindowGeometryInfo } from './windows';
 // Staircase geometry
 export {
   computeStairGeometry,
+  computeStairSolids,
   computeStairClearanceEnvelope,
   validateStairDimensions,
 } from './stairs';

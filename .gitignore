@@ -35,3 +35,5 @@ pnpm-debug.log*
 _tmp_*
 playwright-report/
 test-results/
+
+scripts/.cache/

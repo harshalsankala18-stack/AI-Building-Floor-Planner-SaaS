@@ -5,9 +5,9 @@
  * The original is NEVER mutated.
  */
 
-import type { Building, Room, Floor, Point, Door, Window, Column, Stair, Wall } from '../types';
+import type { Building, Room, Floor, Point, Polygon, Door, Window, Column, Stair, Wall } from '../types';
 import { EntityNotFoundError, InvalidDimensionError, InvalidCoordinateError } from './errors';
-import { createRoom, createWall, createDoor, createWindow, createColumn, createStair, rectToPolygon } from './factory';
+import { createRoom, createFloor, createWall, createDoor, createWindow, createColumn, createStair, rectToPolygon } from './factory';
 import type { CreateRoomParams, CreateWallParams, CreateDoorParams, CreateWindowParams, CreateColumnParams, CreateStairParams } from './factory';
 
 // ─── Internal Helpers ───────────────────────────────────────────────────────
@@ -592,4 +592,58 @@ export function updateEntity<T extends keyof EntityMap>(
   }
 
   throw new Error(`Unknown entity type: ${String(entityType)}`);
+}
+
+/** Add a new floor to the building at the top level. */
+export function addFloorToBuilding(
+  building: Building,
+  params?: {
+    name?: string;
+    floorHeight?: number;
+    boundary?: Polygon;
+  },
+): { building: Building; floor: Floor } {
+  const nextLevel = building.floors.length;
+  const groundFloor = building.floors.find(f => f.level === 0) ?? building.floors[0];
+  const floor = createFloor({
+    buildingId: building.id,
+    level: nextLevel,
+    name: params?.name ?? `Floor ${nextLevel}`,
+    floorHeight: params?.floorHeight ?? groundFloor?.floorHeight,
+    boundary: params?.boundary ?? (groundFloor?.boundary
+      ? { points: groundFloor.boundary.points.map(p => ({ ...p })) }
+      : { points: [] }),
+  });
+
+  const nextBuilding: Building = {
+    ...building,
+    floors: [...building.floors, floor],
+    updatedAt: new Date().toISOString(),
+  };
+
+  return { building: nextBuilding, floor };
+}
+
+/** Remove a floor by ID from the building. Preserves at least 1 floor and re-indexes levels. */
+export function removeFloorFromBuilding(
+  building: Building,
+  floorId: string,
+): Building {
+  if (building.floors.length <= 1) {
+    throw new Error('Cannot remove the only floor in a building.');
+  }
+
+  const remainingFloors = building.floors
+    .filter(f => f.id !== floorId)
+    .map((floor, idx) => ({
+      ...floor,
+      level: idx,
+      name: idx === 0 ? 'Ground Floor' : `Floor ${idx}`,
+    }));
+
+  return {
+    ...building,
+    floors: remainingFloors,
+    updatedAt: new Date().toISOString(),
+  };
 }

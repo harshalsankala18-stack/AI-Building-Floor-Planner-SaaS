@@ -54,6 +54,29 @@ export interface SiteDevelopmentControls {
   readonly maxHeight: SitePlanningValue;
 }
 
+export type SiteZoneKind =
+  | 'setback'
+  | 'parking'
+  | 'garden'
+  | 'pedestrian_circulation'
+  | 'vehicle_circulation'
+  | 'service'
+  | 'future_expansion';
+
+/** A classified, non-overlapping functional zone within the site/plot. */
+export interface SiteZone {
+  readonly id: string;
+  readonly kind: SiteZoneKind;
+  readonly name: string;
+  readonly boundary: Polygon;
+  readonly area: number;
+  readonly accessLinks: readonly string[];
+  readonly source: 'RULE_BASED' | 'USER_DEFINED' | 'GENERATED';
+  readonly reviewStatus: 'UNREVIEWED' | 'REVIEWED' | 'LOCKED';
+  readonly description?: string;
+  readonly rationale?: string;
+}
+
 /** Site/plot information for a building project. */
 export interface Site {
   readonly id: string;
@@ -73,6 +96,8 @@ export interface Site {
   readonly secondaryRoadFacing?: Direction;
   readonly developmentControls?: SiteDevelopmentControls;
   readonly unitSystem?: SiteUnitSystem;
+  /** Classified non-overlapping site zones accounting for 100% of the plot area. */
+  readonly siteZones?: readonly SiteZone[];
 }
 
 // ─── Room ───────────────────────────────────────────────────────────────────
@@ -215,6 +240,7 @@ export interface BuildingMetadata {
   readonly clientName?: string;
   readonly description?: string;
   readonly tags?: readonly string[];
+  readonly [key: string]: unknown;
 }
 
 /** The root building entity — source of truth for all plan data. */

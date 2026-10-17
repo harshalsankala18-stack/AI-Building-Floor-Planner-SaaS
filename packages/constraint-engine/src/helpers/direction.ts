@@ -18,6 +18,95 @@ export type CompassDirection = 'N' | 'S' | 'E' | 'W';
 export type CompassZone = CompassDirection | Quadrant | 'center';
 
 /**
+ * 16-Zone MahaVastu angular classification codes (22.5° wedges).
+ * Used by the Vastu constraint provider for fine-grained directional scoring.
+ */
+export type VastuZone16 =
+  | 'N' | 'NNE' | 'NE' | 'ENE'
+  | 'E' | 'ESE' | 'SE' | 'SSE'
+  | 'S' | 'SSW' | 'SW' | 'WSW'
+  | 'W' | 'WNW' | 'NW' | 'NNW';
+
+/** Zone metadata for 16-zone MahaVastu classification. */
+interface VastuZone16Meta {
+  readonly code: VastuZone16;
+  readonly startDeg: number;
+  readonly endDeg: number;
+}
+
+/** The 16 MahaVastu zones, each spanning 22.5° of compass bearing. */
+const VASTU_16_ZONE_META: readonly VastuZone16Meta[] = [
+  { code: 'N',   startDeg: 348.75, endDeg: 11.25  },
+  { code: 'NNE', startDeg: 11.25,  endDeg: 33.75  },
+  { code: 'NE',  startDeg: 33.75,  endDeg: 56.25  },
+  { code: 'ENE', startDeg: 56.25,  endDeg: 78.75  },
+  { code: 'E',   startDeg: 78.75,  endDeg: 101.25 },
+  { code: 'ESE', startDeg: 101.25, endDeg: 123.75 },
+  { code: 'SE',  startDeg: 123.75, endDeg: 146.25 },
+  { code: 'SSE', startDeg: 146.25, endDeg: 168.75 },
+  { code: 'S',   startDeg: 168.75, endDeg: 191.25 },
+  { code: 'SSW', startDeg: 191.25, endDeg: 213.75 },
+  { code: 'SW',  startDeg: 213.75, endDeg: 236.25 },
+  { code: 'WSW', startDeg: 236.25, endDeg: 258.75 },
+  { code: 'W',   startDeg: 258.75, endDeg: 281.25 },
+  { code: 'WNW', startDeg: 281.25, endDeg: 303.75 },
+  { code: 'NW',  startDeg: 303.75, endDeg: 326.25 },
+  { code: 'NNW', startDeg: 326.25, endDeg: 348.75 },
+];
+
+/** Normalise an angle into [0, 360). */
+function normaliseDeg(deg: number): number {
+  return ((deg % 360) + 360) % 360;
+}
+
+/**
+ * Compute the compass bearing (0°=N, 90°=E, 180°=S, 270°=W) from a center
+ * point to a target point in plan coordinates (Y-down), adjusted for site
+ * north rotation (`orientation` = clockwise rotation of North from screen-up).
+ */
+export function computeBearingDeg(
+  center: Point,
+  target: Point,
+  orientation: number = 0,
+): number {
+  const dx = target.x - center.x;
+  const dy = target.y - center.y;
+  // atan2(dx, -dy) gives angle from screen-up direction (0°=Up, CW positive)
+  const angleFromUp = normaliseDeg((Math.atan2(dx, -dy) * 180) / Math.PI);
+  // Subtract orientation to convert from screen-up to true-north
+  return normaliseDeg(angleFromUp - orientation);
+}
+
+/**
+ * Classify a point into one of the 16 MahaVastu 22.5° angular zones.
+ */
+export function classifyVastuZone16(
+  point: Point,
+  center: Point,
+  orientation: number = 0,
+): VastuZone16 {
+  const bearing = computeBearingDeg(center, point, orientation);
+  // Shift by half-wedge so 0° (true North centre) maps to zone index 0
+  const shifted = normaliseDeg(bearing + 11.25);
+  const idx = Math.floor(shifted / 22.5);
+  return VASTU_16_ZONE_META[idx % 16]!.code;
+}
+
+/**
+ * Get the 16-zone MahaVastu classification of a room's centroid
+ * relative to the floor boundary's centroid.
+ */
+export function getRoomVastuZone16(
+  roomBoundary: Polygon,
+  floorBoundary: Polygon,
+  orientation: number,
+): VastuZone16 {
+  const roomCenter = polygonCentroid(roomBoundary);
+  const floorCenter = polygonCentroid(floorBoundary);
+  return classifyVastuZone16(roomCenter, floorCenter, orientation);
+}
+
+/**
  * Determine the quadrant of a point within a bounding box,
  * accounting for building orientation.
  *

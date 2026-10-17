@@ -1,0 +1,335 @@
+{
+  "mode": "LIVE",
+  "note": "Real Cloudflare FLUX and real Gemini responses in this run (no replay).",
+  "seed": 42,
+  "flats": 2,
+  "elapsedS": 262.8,
+  "success": true,
+  "conceptMode": true,
+  "conceptSlots": [
+    {
+      "candidateNumber": 1,
+      "strategy": "balanced",
+      "label": "Balanced / symmetric",
+      "seed": 42,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_42_0",
+      "referenceIds": [
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors"
+      ]
+    },
+    {
+      "candidateNumber": 2,
+      "strategy": "daylight",
+      "label": "Daylight / external edge",
+      "seed": 179,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_179_1",
+      "referenceIds": [
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors",
+        "ref_apartment_01_multi_unit_typical"
+      ]
+    },
+    {
+      "candidateNumber": 3,
+      "strategy": "privacy",
+      "label": "Privacy-oriented",
+      "seed": 316,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_316_2",
+      "referenceIds": [
+        "ref_apartment_03_residential_floors",
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first"
+      ]
+    },
+    {
+      "candidateNumber": 4,
+      "strategy": "circulation",
+      "label": "Circulation / efficiency",
+      "seed": 453,
+      "status": "GENERATED",
+      "candidateId": "cand_two_ai_453_3",
+      "referenceIds": [
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors"
+      ]
+    }
+  ],
+  "candidateSource": "FALLBACK_DETERMINISTIC",
+  "fallback": {
+    "used": true,
+    "reason": "FLUX_CANDIDATES_REJECTED"
+  },
+  "error": null,
+  "candidates": [
+    {
+      "id": "cand_two_ai_42_0",
+      "candidate": "Candidate 01 — Balanced / symmetric",
+      "strategy": "balanced",
+      "seed": 42,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "latencyMs": 64077,
+      "references": [
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors"
+      ],
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": []
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "FAIL",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "Common element \"LIFT 01\" lies inside FLAT 02.",
+        "Common element \"LIFT 02\" lies inside FLAT 02.",
+        "Common element \"COMMON LOBBY\" lies inside FLAT 02.",
+        "FLAT 01 (2BHK) has 0 dining space(s); manifest lists 1.",
+        "FLAT 02 is labelled 3BHK but has 5 bedroom(s).",
+        "FLAT 02 (3BHK) has 5 bedroom(s); manifest requires 3.",
+        "FLAT 02 (3BHK) has 0 bathroom space(s); manifest lists 3.",
+        "FLAT 02 (3BHK) has 0 living space(s); manifest lists 1.",
+        "FLAT 02 (3BHK) has 0 dining space(s); manifest lists 1."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_two_ai_179_1",
+      "candidate": "Candidate 02 — Daylight / external edge",
+      "strategy": "daylight",
+      "seed": 179,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "latencyMs": 17945,
+      "references": [
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors",
+        "ref_apartment_01_multi_unit_typical"
+      ],
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "VISUAL_PREFLIGHT",
+      "preflight": {
+        "pass": false,
+        "summary": "Visual acceptance FAIL: Unit mix mismatch: Expected 1 x 2BHK, but detected 2 x 2BHK.; Unit mix mismatch: Expected 1 x 3BHK, but detected 0 x 3BHK.",
+        "reasons": [
+          "Unit mix mismatch: Expected 1 x 2BHK, but detected 2 x 2BHK.",
+          "Unit mix mismatch: Expected 1 x 3BHK, but detected 0 x 3BHK."
+        ]
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "REJECTED",
+        "imageInterpretation": "SKIPPED",
+        "imageTo2D": "SKIPPED",
+        "validation": "SKIPPED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": null,
+      "score": "NOT SCORED (rejected at visual preflight)",
+      "evaluation": null,
+      "errors": [
+        "Unit mix mismatch: Expected 1 x 2BHK, but detected 2 x 2BHK.",
+        "Unit mix mismatch: Expected 1 x 3BHK, but detected 0 x 3BHK."
+      ],
+      "rejectedReason": "Rejected at visual preflight: Unit mix mismatch: Expected 1 x 2BHK, but detected 2 x 2BHK.; Unit mix mismatch: Expected 1 x 3BHK, but detected 0 x 3BHK."
+    },
+    {
+      "id": "cand_two_ai_316_2",
+      "candidate": "Candidate 03 — Privacy-oriented",
+      "strategy": "privacy",
+      "seed": 316,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "latencyMs": 35487,
+      "references": [
+        "ref_apartment_03_residential_floors",
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first"
+      ],
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": []
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "FAIL",
+          "structural": "FAIL",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "Requested 2 stair(s), plan has 1.",
+        "\"Stair\" is common circulation/core but is assigned to FLAT 02.",
+        "FLAT 01 (2BHK) has 1 bathroom space(s); manifest lists 2.",
+        "FLAT 02 is labelled 3BHK but has 2 bedroom(s).",
+        "FLAT 02 (3BHK) has 2 bedroom(s); manifest requires 3.",
+        "FLAT 02 (3BHK) has 2 bathroom space(s); manifest lists 3."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_two_ai_453_3",
+      "candidate": "Candidate 04 — Circulation / efficiency",
+      "strategy": "circulation",
+      "seed": 453,
+      "source": "FLUX",
+      "model": "@cf/black-forest-labs/flux-2-klein-4b",
+      "provider": "cloudflare-workers-ai",
+      "latencyMs": 63579,
+      "references": [
+        "ref_apartment_01_multi_unit_typical",
+        "ref_apartment_02_multi_unit_first",
+        "ref_apartment_03_residential_floors"
+      ],
+      "layoutChecks": "33/33",
+      "status": "REJECTED",
+      "rejectionStage": "HARD_VALIDATION",
+      "preflight": {
+        "pass": true,
+        "summary": "Visual acceptance PASS: 2 flats, 2 lifts, 2 stairs, English labels, verified central core.",
+        "reasons": []
+      },
+      "stages": {
+        "imageGeneration": "SUCCESS",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "PASSED",
+        "imageInterpretation": "SUCCESS",
+        "imageTo2D": "SKIPPED",
+        "validation": "FAILED",
+        "geminiEvaluation": "SKIPPED"
+      },
+      "apartmentValidation": {
+        "source": "IMAGE_INTERPRETATION",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "FAIL",
+          "canonicalGeometry": "SKIPPED",
+          "geometryValidation": "SKIPPED"
+        }
+      },
+      "score": "NOT SCORED (rejected at hard validation)",
+      "evaluation": null,
+      "errors": [
+        "FLAT 01 (2BHK) has 0 dining space(s); manifest lists 1.",
+        "FLAT 02 (3BHK) has 0 dining space(s); manifest lists 1."
+      ],
+      "rejectedReason": "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable."
+    },
+    {
+      "id": "cand_fallback_deterministic_42",
+      "candidate": "FALLBACK_DETERMINISTIC",
+      "strategy": null,
+      "seed": 42,
+      "source": "FALLBACK_DETERMINISTIC",
+      "model": "deterministic-apartment-schematic-v1",
+      "provider": "deterministic-planner",
+      "latencyMs": 6,
+      "references": [],
+      "layoutChecks": null,
+      "status": "ACCEPTED",
+      "rejectionStage": null,
+      "preflight": null,
+      "stages": {
+        "imageGeneration": "SKIPPED",
+        "imageArtifact": "AVAILABLE",
+        "visualPreflight": "SKIPPED",
+        "imageInterpretation": "SKIPPED",
+        "imageTo2D": "SUCCESS",
+        "validation": "SUCCESS",
+        "geminiEvaluation": "SUCCESS"
+      },
+      "apartmentValidation": {
+        "source": "DETERMINISTIC_SCHEMATIC",
+        "stages": {
+          "completeness": "PASS",
+          "manifestMatch": "PASS",
+          "structural": "PASS",
+          "canonicalGeometry": "PASS",
+          "geometryValidation": "PASS"
+        }
+      },
+      "score": "Gemini (advisory) 85/100",
+      "evaluation": {
+        "overallScore": 85,
+        "requirementSatisfaction": 100,
+        "spatialQuality": 80,
+        "circulation": 85,
+        "adjacency": 85,
+        "zoning": 88,
+        "privacy": 82,
+        "daylight": 78,
+        "efficiency": 82,
+        "roomProportions": 85,
+        "orientation": 80,
+        "strengths": [
+          "Clean symmetrical core arrangement with two lifts and two stairs.",
+          "Clear separation of public and private zones within both apartments.",
+          "Well-placed foyers providing controlled entry into each flat.",
+          "Dedicated utility and dress spaces enhancing functionality."
+        ],
+        "concerns": [
+          "Some internal bathrooms rely on mechanical or duct ventilation rather than exterior windows.",
+          "Deep floor plate layout may limit direct natural light penetration into the central living and dining areas."
+        ],
+        "rationale": "The floor plan successfully fulfills all programmatic requirements for a two-flat layout featuring a 2BHK and a 3BHK unit along with a well-integrated central core containing dual stairs and lifts. Core circulation is efficient and zoning separates public and private spaces effectively, though some inner core wet areas lack direct exterior ventilation.",
+        "model": "gemini-flash-lite-latest",
+        "latencyMs": 3649
+      },
+      "errors": [],
+      "rejectedReason": null
+    }
+  ]
+}

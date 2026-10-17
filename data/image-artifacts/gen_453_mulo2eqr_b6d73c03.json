@@ -1,0 +1,15 @@
+{
+  "generationId": "gen_453_mulo2eqr_b6d73c03",
+  "projectId": "proj_two_phase_2f_42",
+  "seed": 453,
+  "model": "@cf/black-forest-labs/flux-2-klein-4b",
+  "provider": "cloudflare-workers-ai",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.\nCONCEPT 04 of 04 - Circulation / efficiency: Compact core with grouped lifts and the shortest common lobby; minimal internal passage.\nInput image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.\nInput images 2-3 are visual style and planning-language references only: never copy their flat count, geometry or text.\nPriority: user requirements > deterministic layout > reference style.\nEXACTLY 2 flats: FLAT 01 2BHK = 2 bedrooms, 2 baths, living, dining, kitchen, utility; FLAT 02 3BHK = 3 bedrooms, 3 baths, living, dining, kitchen, utility.\nCommon core: EXACTLY 2 lifts (square shafts with X), EXACTLY 2 stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.\nEntry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.\nKeep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.\nEnglish labels only, short and clear, as in image 1: FLAT 01, FLAT 02, 2BHK, 3BHK, LIVING, DINING, KITCHEN, BEDROOM, BATH, UTILITY, FOYER, LIFT, STAIR, LOBBY. No other text, no dimensions.\nDo not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text.",
+  "negativePrompt": "NO VILLA, NO SINGLE FAMILY HOUSE, NO EXTRA FLATS, NO MISSING FLATS, NO MERGED FLATS, NO WRONG UNIT MIX, NO EXTRA BEDROOMS, NO MISSING BEDROOMS, NO EXTRA LIFTS, NO MISSING LIFTS, NO EXTRA STAIRS, NO MISSING STAIRS, NO RANDOM CORE, NO RANDOM AMENITIES, NO RANDOM ROOMS, NO CYRILLIC, NO RUSSIAN, NO NON-LATIN SCRIPT, NO GIBBERISH, NO PSEUDO-TEXT, NO RANDOM NUMBERS, NO WATERMARK, NO LOGO, NO 3D, NO PERSPECTIVE, NO PHOTOREALISTIC INTERIOR, NO HAND DRAWING, NO ARTISTIC RENDERING, NO DISTORTED WALLS, NO OVERLAPPING FLATS, NO FLOATING WALLS",
+  "width": 960,
+  "height": 1088,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-09-28T19:54:35.880Z",
+  "latencyMs": 40111
+}

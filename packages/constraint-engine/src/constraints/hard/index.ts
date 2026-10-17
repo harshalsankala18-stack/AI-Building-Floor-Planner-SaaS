@@ -13,6 +13,7 @@ export { StairConnectivity, StairDimensions } from './stair-validity';
 export { FloorRoomConsistency } from './floor-consistency';
 export { MinimumRoomSize } from './minimum-size';
 export { VerticalCirculationContinuity } from './vertical-continuity';
+export { NbcRoomDimensionConstraint } from '../../providers/regulatory-provider';
 
 import type { Constraint } from '../../types';
 import { RoomContainment, FloorContainment } from './plot-containment';

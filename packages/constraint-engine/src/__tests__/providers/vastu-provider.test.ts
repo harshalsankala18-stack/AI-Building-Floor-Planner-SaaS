@@ -18,7 +18,7 @@ describe('VastuRuleProvider', () => {
     const provider = new VastuRuleProvider();
     const config = resolveConfig({ enableVastu: true });
     const constraints = provider.getConstraints(config);
-    expect(constraints.length).toBe(8);
+    expect(constraints.length).toBe(10);
   });
 
   it('returns empty array when enableVastu is false', () => {

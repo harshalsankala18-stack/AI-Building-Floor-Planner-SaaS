@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { createHash } from 'node:crypto';
 import { createEmptySpaceProgram, createProgramItem, getSpaceDefinition, adaptSpaceProgramToPlannerProgram, RoomType,
-  createBuilding, createDefaultFootprintIntent, Direction, setIdSeed, resetIdGenerator,
-  type SpaceFloorPreference, type SpaceProgramItem } from '@ai-floor-planner/core';
+  setIdSeed, resetIdGenerator } from '@ai-floor-planner/core';
 import { FloorProgramPlanner } from '../multi-floor/planner';
 import { DesignGraphBuilder } from '../graph/builder';
 import { runGenerationWorkflow } from '../generation/workflow';
@@ -10,6 +9,7 @@ import { recordPlacementBenchmark } from './fixtures/placement-benchmark';
 import { evaluateSuiteEvidence } from '../evidence/architectural-evidence';
 import { evaluateInstanceGraph } from '../graph/scorer';
 import { preservesPrivateSuites, swapProgramAssignments } from '../repair/engine';
+import { architecturalBenchmarkInput } from './fixtures/architectural-program';
 
 function input() {
   return adaptSpaceProgramToPlannerProgram({ ...createEmptySpaceProgram('residential'), items: [
@@ -81,24 +81,7 @@ describe('floor and suite intent', () => {
   it('preserves RBEA Ground intent and owned pairs through real generation and repair', async () => {
     setIdSeed(20260904);
     try {
-      const item = (definitionId: string, id: string, name: string, floorPreference: SpaceFloorPreference = { kind: 'any' }, extra: Partial<SpaceProgramItem> = {}) =>
-        createProgramItem(getSpaceDefinition(definitionId)!, id, { name, quantity: 1, floorPreference, ...extra });
-      const owners = { bath1: 'master1', bath2: 'master2', bath3: 'master3', bath4: 'guest' };
-      const items = [
-        item('living','living','Living'), item('kitchen','kitchen','Kitchen'), item('dining','dining','Dining'), item('utility','utility','Utility'),
-        item('bedroom','parents','Parents Bedroom',{kind:'ground_required'}),
-        item('primary_bedroom','master1','Master Bedroom 01',{kind:'specific',specificFloor:0}),
-        item('primary_bedroom','master2','Master Bedroom 02',{kind:'specific',specificFloor:1}),
-        item('primary_bedroom','master3','Master Bedroom 03',{kind:'specific',specificFloor:1}),
-        item('guest_bedroom','guest','Guest Bedroom',{kind:'specific',specificFloor:1}),
-        ...Object.entries(owners).map(([bath,owner],index) => item('attached_bathroom',bath,`Attached Bath ${['01','02','03','Guest'][index]}`,{kind:'any'},{attachedToRoomId:owner})),
-        item('common_bathroom','common','Common Bathroom',{kind:'ground_required'}), item('staircase','stairs','Stair'),
-        item('pooja','pooja','Pooja',{kind:'ground_required'}), item('garage','garage','Garage'), item('balcony','balcony','Balcony',{kind:'specific',specificFloor:1}),
-      ];
-      const program = {...createEmptySpaceProgram('residential'),items};
-      const building = createBuilding({projectId:'rbea-001-audit',name:'RBEA-001 relationship benchmark',site:{plotWidth:22000,plotDepth:28000,plannedFloorCount:2,roadFacing:Direction.North,setbacks:{front:1500,rear:1000,left:1000,right:1000}},floors:[{buildingId:'',level:0}]});
-      const base = createDefaultFootprintIntent(building);
-      const footprint = {...base,parameters:{...base.parameters,width:20000,depth:25500},transform:{...base.transform,x:1000,y:1500},strategy:'custom_per_floor' as const,floorOverrides:[{floorLevel:1,scalePercent:75}]};
+      const { building, program, footprint, owners } = architecturalBenchmarkInput();
       const result = await runGenerationWorkflow({building,program,footprint,category:'residential'});
       recordPlacementBenchmark(result.candidates);
       expect(result.candidates.length).toBeGreaterThan(1);
@@ -114,15 +97,16 @@ describe('floor and suite intent', () => {
       // retained in the placement audit; this exact snapshot guards the new
       // deterministic geometry as well as the unchanged required-floor contract.
       // Hash includes every floor entity/ID/door, not just room bounding boxes.
-      // Vastu now retains pre-repair assignments: the private-suite safeguard
-      // rejects its former owner/bath swap. Compact/Open hashes stay unchanged.
+      // Enclosure completion adds missing bedroom/bath partitions. Room and
+      // opening placement, scores and ordering are unchanged; the full entity
+      // hash intentionally includes the added walls (checked by enclosure tests).
       expect(preserved).toEqual([
         { id: 'candidate_compact_zoning_1', strategy: 'compact_zoning', rank: 1,
-          geometryHash: 'ab186ac86a7b5bf1d9a86e0459717cab69ee6174e337b3759c94014f2cb613c6', score: 77, oldWet: 100, wet: 55, required: 8, direct: 4 },
-        { id: 'candidate_vastu_aligned_3', strategy: 'vastu_aligned', rank: 2,
-          geometryHash: '73ac658a9c7dfb762459ed3f3fd9e85c324c4fdd6a5805df205dbe5646bf16e4', score: 75, oldWet: 98, wet: 44, required: 8, direct: 4 },
+          geometryHash: '888118fc418c13e6735180af84f3587be2742438d8540ca2cfdaf99a32f99695', score: 78, oldWet: 100, wet: 55, required: 8, direct: 4 },
+        { id: 'candidate_linear_split_3', strategy: 'linear_split', rank: 2,
+          geometryHash: 'f138357f1daf94b96663370d10a1207ca8514c0b8a4a52c2173874bbb6d69e85', score: 78, oldWet: 98, wet: 55, required: 8, direct: 4 },
         { id: 'candidate_open_circulation_2', strategy: 'open_circulation', rank: 3,
-          geometryHash: '084c4b1700386e5f0a0b8d477a49f65e5973e8e63a565d5852022b92f843028e', score: 71, oldWet: 100, wet: 33, required: 8, direct: 4 },
+          geometryHash: '27275ab5d780e084172902427e94855643c5f802dd33cb1f796be2963a4735db', score: 77, oldWet: 100, wet: 33, required: 8, direct: 4 },
       ]);
       for (const candidate of result.candidates) {
         const evidence = candidate.architecturalEvidence!;
@@ -132,19 +116,19 @@ describe('floor and suite intent', () => {
         expect(evidence.closeout!.kitchenService.find(item => item.relationship === 'KITCHEN_UTILITY')!.status).toBe('DIRECT_CONNECTION');
         expect(candidate.optimization.acceptedRepairs).toBe(0);
       }
-      const vastu = result.candidates.find(candidate => candidate.strategy === 'vastu_aligned')!;
+      const commonLed = result.candidates.find(candidate => candidate.strategy === 'linear_split')!;
       const plannerProgram = adaptSpaceProgramToPlannerProgram(program, 2);
-      const guestSuite = evaluateSuiteEvidence(vastu.building, plannerProgram)
+      const guestSuite = evaluateSuiteEvidence(commonLed.building, plannerProgram)
         .find(suite => suite.ownerProgramItemId === 'guest_1')!;
-      const badSwap = swapProgramAssignments(vastu.building, guestSuite.ownerId!, guestSuite.bathroomId!);
+      const badSwap = swapProgramAssignments(commonLed.building, guestSuite.ownerId!, guestSuite.bathroomId!);
       const swappedSuite = evaluateSuiteEvidence(badSwap, plannerProgram)
         .find(suite => suite.ownerProgramItemId === 'guest_1')!;
       expect(guestSuite.access?.status).toBe('PRIVATE_DIRECT');
       expect(swappedSuite.access?.status).toBe('SHARED');
       expect(swappedSuite.directDoorIds).toEqual(guestSuite.directDoorIds);
-      expect(evaluateInstanceGraph(vastu.building, vastu.designGraph).score).toBe(70);
-      expect(evaluateInstanceGraph(badSwap, vastu.designGraph).score).toBe(71);
-      expect(preservesPrivateSuites(vastu.building, badSwap, plannerProgram)).toBe(false);
+      expect(evaluateInstanceGraph(commonLed.building, commonLed.designGraph).score).toBe(71);
+      expect(evaluateInstanceGraph(badSwap, commonLed.designGraph).score).toBe(71);
+      expect(preservesPrivateSuites(commonLed.building, badSwap, plannerProgram)).toBe(false);
       console.log('PHASE_1B_BENCHMARK', JSON.stringify(result.candidates.map((candidate, index) => ({
         ...preserved[index], owned: candidate.architecturalEvidence!.suites.length,
         access: Object.fromEntries(['PRIVATE_DIRECT', 'PRIVATE_INDIRECT', 'SHARED', 'UNRESOLVED', 'NOT_EVALUATED']
