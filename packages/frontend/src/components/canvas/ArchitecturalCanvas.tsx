@@ -151,12 +151,16 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       {
         showGrid: layers.grid,
         showDimensions: layers.dimensions,
+        showZones: layers.vastuChakra ?? true,
+        showFurniture: layers.furniture ?? true,
         layers: {
           [RenderLayer.Grid]: layers.grid,
           [RenderLayer.Rooms]: layers.rooms,
           [RenderLayer.Walls]: layers.walls,
           [RenderLayer.Openings]: layers.openings,
           [RenderLayer.Stairs]: layers.stairs,
+          [RenderLayer.Columns]: layers.columns ?? true,
+          [RenderLayer.Furniture]: layers.furniture ?? true,
           [RenderLayer.Annotations]: layers.dimensions,
           [RenderLayer.SiteZones]: layers.siteZones ?? true,
         },

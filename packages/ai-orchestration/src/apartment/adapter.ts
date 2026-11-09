@@ -302,26 +302,6 @@ export function schematicToApartmentStructure(schematic: DeterministicApartmentS
   const windowOpenings = generateWindowsForApartmentSchematic(schematic);
   const openings = [...doorOpenings, ...windowOpenings];
 
-  // Carved OTS shafts from each unit (1200mm x 1500mm)
-  const otsShafts: ApartmentCoreElement[] = [];
-  for (const unit of schematic.units) {
-    if (unit.steppedPolygon?.otsShafts) {
-      unit.steppedPolygon.otsShafts.forEach((ots, idx) => {
-        otsShafts.push({
-          id: `${unit.flatId}__ots_${idx + 1}`,
-          name: `${unit.flatLabel} OTS Shaft`,
-          rect: {
-            x: Math.round(ots.bounds.x * 1000),
-            y: Math.round(ots.bounds.y * 1000),
-            width: ots.widthMm,
-            height: ots.depthMm,
-          },
-          assignedFlatId: null,
-        });
-      });
-    }
-  }
-
   const fp = mm(schematic.buildingFootprint);
   const boundary = [
     { x: fp.x - 50, y: fp.y - 50 },
@@ -414,9 +394,9 @@ export function adaptSchematicToBuilding(
   const { building } = apartmentStructureToBuilding(structure, site, projectId, projectName);
   const floor = building.floors[0]!;
 
-  // Generate walls for all room boundaries
+  // Generate walls for all room boundaries using topological shared-edge classification
   const walls: Wall[] = [];
-  const wallKeys = new Set<string>();
+  const edgeMap = new Map<string, { start: { x: number; y: number }; end: { x: number; y: number }; roomIds: string[] }>();
 
   for (const room of floor.rooms) {
     const x0 = room.x;
@@ -436,27 +416,30 @@ export function adaptSchematicToBuilding(
         ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}`
         : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
 
-      if (!wallKeys.has(k)) {
-        wallKeys.add(k);
-        const isPerimeter =
-          Math.abs(seg.start.x - Math.round(schematic.buildingFootprint.x * 1000)) <= 250 ||
-          Math.abs(seg.end.x - Math.round((schematic.buildingFootprint.x + schematic.buildingFootprint.width) * 1000)) <= 250 ||
-          Math.abs(seg.start.y - Math.round(schematic.buildingFootprint.y * 1000)) <= 250 ||
-          Math.abs(seg.end.y - Math.round((schematic.buildingFootprint.y + schematic.buildingFootprint.height) * 1000)) <= 250;
-
-        const wallType = isPerimeter ? WallType.External : WallType.Internal;
-        walls.push(
-          createWall({
-            floorId: floor.id,
-            startPoint: seg.start,
-            endPoint: seg.end,
-            type: wallType,
-            thickness: isPerimeter ? 200 : 100,
-            roomIds: [room.id],
-          }),
-        );
+      const entry = edgeMap.get(k);
+      if (entry) {
+        entry.roomIds.push(room.id);
+      } else {
+        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room.id] });
       }
     }
+  }
+
+  for (const [, edge] of edgeMap) {
+    const isInternal = edge.roomIds.length >= 2;
+    const wallType = isInternal ? WallType.Internal : WallType.External;
+    const thickness = isInternal ? 100 : 200;
+
+    walls.push(
+      createWall({
+        floorId: floor.id,
+        startPoint: edge.start,
+        endPoint: edge.end,
+        type: wallType,
+        thickness,
+        roomIds: edge.roomIds,
+      }),
+    );
   }
 
   // Generate stairs

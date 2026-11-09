@@ -52,10 +52,10 @@ const ROOM_COLORS: Record<string, string> = {
 
 // ─── Wall Styles ────────────────────────────────────────────────────────────
 
-const WALL_STYLES: Record<string, { fill: string }> = {
-  [WallType.External]: { fill: '#956b3e' },
-  [WallType.Internal]: { fill: '#aa8256' },
-  [WallType.Partition]: { fill: '#c1a07a' },
+const WALL_STYLES: Record<string, { fill: string; stroke: string; strokeWidth: number }> = {
+  [WallType.External]: { fill: '#0F172A', stroke: '#020617', strokeWidth: 0.75 },
+  [WallType.Internal]: { fill: '#475569', stroke: '#1E293B', strokeWidth: 0.5 },
+  [WallType.Partition]: { fill: '#64748B', stroke: '#334155', strokeWidth: 0.4 },
 };
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -74,6 +74,14 @@ function sqMmToSqM(sqMm: number): string {
 
 function mmToFtDisplay(mm: number): string {
   return (mm / 304.8).toFixed(1);
+}
+
+/** Convert millimetres to architectural Feet‑Inches string, e.g. 3658 mm → 12'-0" */
+function formatFeetInches(mm: number): string {
+  const totalInches = mm / 25.4;
+  const feet = Math.floor(totalInches / 12);
+  const inches = Math.round(totalInches - feet * 12);
+  return `${feet}'-${inches}\"`;
 }
 
 function polygonToSvgPoints(polygon: Polygon, transform: ViewTransform): string {
@@ -269,23 +277,54 @@ function renderRooms(
   showAreas: boolean = true,
   labelsOnly = false,
   withFurniture = false,
+  building?: Building,
 ): string {
   const elements: string[] = [];
+  const vastuReport = (building?.metadata as any)?.vastuReport ?? (building?.metadata as any)?.apartmentSchematic?.vastuReport;
+  const vastuCompliance = Array.isArray(vastuReport?.roomCompliance) ? vastuReport.roomCompliance : [];
 
   for (const room of floor.rooms) {
+    const isOTS = room.type === RoomType.ServiceShaft || room.type === RoomType.OTS || /ots|shaft/i.test(room.name);
+    const isBalcony = room.type === RoomType.Balcony || room.type === RoomType.Terrace || /balcony|terrace/i.test(room.name);
+    const isUtility = room.type === RoomType.Utility || /utility/i.test(room.name);
     const color = ROOM_COLORS[room.type] ?? '#F5F5F5';
     const points = polygonToSvgPoints(room.boundary, transform);
 
-    // Room fill
-    if (!labelsOnly) elements.push(
-      `<polygon points="${points}" fill="${color}" fill-opacity="0.35" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
-    );
-    const hatch = room.type === RoomType.Bathroom ? 'wet-hatch'
-      : room.type === RoomType.ServiceShaft ? 'outdoor-hatch'
-      : [RoomType.Balcony, RoomType.Terrace, RoomType.Utility].includes(room.type) ? 'outdoor-hatch' : 'tile-hatch';
-    if (!labelsOnly && ![RoomType.Staircase, RoomType.Lift].includes(room.type)) elements.push(`<polygon points="${points}" fill="url(#${hatch})" pointer-events="none"/>`);
+    // 1. Room fill & patterns
+    if (!labelsOnly) {
+      if (isOTS) {
+        // Cross-Hatched OTS Shafts: Recessed gray fill (#E2E8F0) with crisp diagonal cross (X)
+        elements.push(
+          `<polygon points="${points}" fill="#E2E8F0" fill-opacity="0.95" stroke="#94A3B8" stroke-width="0.75" data-entity-type="room" data-entity-id="${room.id}"/>`,
+        );
+        const tl = worldToScreen({ x: room.x, y: room.y }, transform);
+        const br = worldToScreen({ x: room.x + room.width, y: room.y + room.height }, transform);
+        const tr = worldToScreen({ x: room.x + room.width, y: room.y }, transform);
+        const bl = worldToScreen({ x: room.x, y: room.y + room.height }, transform);
+        elements.push(
+          `<line x1="${tl.x.toFixed(1)}" y1="${tl.y.toFixed(1)}" x2="${br.x.toFixed(1)}" y2="${br.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
+          `<line x1="${tr.x.toFixed(1)}" y1="${tr.y.toFixed(1)}" x2="${bl.x.toFixed(1)}" y2="${bl.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
+        );
+      } else if (isBalcony || isUtility) {
+        // Balconies & Utilities: Deck plank lines with double-line railing border
+        elements.push(
+          `<polygon points="${points}" fill="#F8FAFC" fill-opacity="0.9" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
+          `<polygon points="${points}" fill="url(#deck-plank-pattern)" pointer-events="none"/>`,
+          `<polygon points="${points}" fill="none" stroke="#475569" stroke-width="1.2" pointer-events="none"/>`,
+          `<polygon points="${points}" fill="none" stroke="#94A3B8" stroke-width="0.6" stroke-dasharray="4,2" pointer-events="none"/>`,
+        );
+      } else {
+        elements.push(
+          `<polygon points="${points}" fill="${color}" fill-opacity="0.35" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
+        );
+        const hatch = room.type === RoomType.Bathroom ? 'wet-hatch' : 'tile-hatch';
+        if (![RoomType.Staircase, RoomType.Lift].includes(room.type)) {
+          elements.push(`<polygon points="${points}" fill="url(#${hatch})" pointer-events="none"/>`);
+        }
+      }
+    }
 
-    // Room label
+    // 2. Rich 3-Line Room Label Callouts
     const furniture = withFurniture ? furniturePlacement(room, floor) : undefined;
     const labelY = furniture
       ? (furniture.y > room.y + room.height / 2 ? room.y + 500 : room.y + room.height - 400)
@@ -299,14 +338,31 @@ function renderRooms(
 
     const rotateLabel = [RoomType.Corridor, RoomType.Staircase].includes(room.type) && room.height > room.width;
     elements.push(`<g${rotateLabel ? ` transform="rotate(-90 ${cx.x} ${cx.y})"` : ''} style="paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round" pointer-events="none">`);
+
+    const dimFtIn = `${formatFeetInches(room.width)} × ${formatFeetInches(room.height)}`;
+    const sqFt = Math.round((room.area / 1_000_000) * 10.7639);
+    const sqMText = `${sqMmToSqM(room.area)} sq m`;
+
+    // Vastu audit check
+    const audit = vastuCompliance.find((c: any) =>
+      (c.roomName && c.roomName.toLowerCase() === room.name.toLowerCase()) ||
+      (c.roomType && c.roomType.toLowerCase() === room.type.toLowerCase())
+    );
+    const vastuTag = audit?.zone ? `${audit.zone} • ${(audit.status ?? 'IDEAL').toUpperCase()}`
+      : (room as any).metadata?.vastuZone ? `${(room as any).metadata.vastuZone} • IDEAL`
+      : '';
+
+    const displayName = isOTS ? 'OTS SHAFT' : escapeXml(room.name);
+
     if (showLabels) {
       elements.push(
-        `<text x="${cx.x.toFixed(1)}" y="${(cx.y - fontSize * 0.3).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${fontSize.toFixed(1)}" fill="#333" font-weight="600">${escapeXml(room.name)}</text>`,
+        `<text x="${cx.x.toFixed(1)}" y="${(cx.y - fontSize * 0.6).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${fontSize.toFixed(1)}" fill="#0F172A" font-weight="700" style="text-transform:uppercase">${displayName}</text>`,
+        `<text x="${cx.x.toFixed(1)}" y="${(cx.y + fontSize * 0.4).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${areaFontSize.toFixed(1)}" fill="#334155" font-weight="500">${dimFtIn}</text>`,
       );
     }
     if (showAreas) {
       elements.push(
-        `<text x="${cx.x.toFixed(1)}" y="${(cx.y + fontSize * 0.8).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${areaFontSize.toFixed(1)}" fill="#666">${sqMmToSqM(room.area)} sq m</text>`,
+        `<text x="${cx.x.toFixed(1)}" y="${(cx.y + fontSize * 1.4).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${areaFontSize.toFixed(1)}" fill="#64748B">${sqFt} sq.ft (${sqMText})${vastuTag ? ` • ${vastuTag}` : ''}</text>`,
       );
     }
     elements.push('</g>');
@@ -341,7 +397,7 @@ function renderWalls(floor: Floor, transform: ViewTransform): string {
         x: wall.startPoint.x + frame.ux * distance! - frame.uy * side! * wall.thickness / 2,
         y: wall.startPoint.y + frame.uy * distance! + frame.ux * side! * wall.thickness / 2,
       }));
-      return `<polygon class="wall-solid" data-start-mm="${low.toFixed(3)}" data-end-mm="${high.toFixed(3)}" points="${polygonToSvgPoints({ points: corners }, transform)}" fill="${style.fill}" stroke="#30251a" stroke-width="0.45" pointer-events="none"/>`;
+      return `<polygon class="wall-solid" data-start-mm="${low.toFixed(3)}" data-end-mm="${high.toFixed(3)}" points="${polygonToSvgPoints({ points: corners }, transform)}" fill="${style.fill}" stroke="${style.stroke ?? '#020617'}" stroke-width="${style.strokeWidth ?? 0.6}" pointer-events="none"/>`;
     }).join('\n');
 
     elements.push(
@@ -353,6 +409,70 @@ function renderWalls(floor: Floor, transform: ViewTransform): string {
   }
 
   return `<g class="layer-walls" data-layer="${RenderLayer.Walls}">\n${elements.join('\n')}\n</g>`;
+}
+
+function renderColumns(floor: Floor, transform: ViewTransform): string {
+  const elements: string[] = [];
+  const placedKeys = new Set<string>();
+
+  // 1. Explicit floor.columns if present
+  for (const col of floor.columns ?? []) {
+    const w = col.width || 230;
+    const d = col.depth || 450;
+    const screenPos = worldToScreen({ x: col.position.x - w / 2, y: col.position.y - d / 2 }, transform);
+    const sw = scaleToScreen(w, transform);
+    const sd = scaleToScreen(d, transform);
+    elements.push(
+      `<rect class="structural-column" data-entity-type="column" data-entity-id="${col.id}" x="${screenPos.x.toFixed(1)}" y="${screenPos.y.toFixed(1)}" width="${sw.toFixed(1)}" height="${sd.toFixed(1)}" fill="#020617" stroke="#000000" stroke-width="0.5"/>`,
+    );
+    placedKeys.add(`${Math.round(col.position.x / 100)},${Math.round(col.position.y / 100)}`);
+  }
+
+  // 2. Synthesize RCC columns (230mm x 450mm) at exterior wall corners and major T-junctions
+  const colW = 230;
+  const colD = 450;
+  const junctionPoints: { x: number; y: number; isHorizontal: boolean }[] = [];
+
+  const extWalls = floor.walls.filter(w => w.type === WallType.External);
+  for (const w of extWalls) {
+    const isH = Math.abs(w.startPoint.y - w.endPoint.y) < Math.abs(w.startPoint.x - w.endPoint.x);
+    junctionPoints.push({ x: w.startPoint.x, y: w.startPoint.y, isHorizontal: isH });
+    junctionPoints.push({ x: w.endPoint.x, y: w.endPoint.y, isHorizontal: isH });
+  }
+
+  const intWalls = floor.walls.filter(w => w.type === WallType.Internal);
+  for (const w of intWalls) {
+    const isH = Math.abs(w.startPoint.y - w.endPoint.y) < Math.abs(w.startPoint.x - w.endPoint.x);
+    junctionPoints.push({ x: w.startPoint.x, y: w.startPoint.y, isHorizontal: isH });
+    junctionPoints.push({ x: w.endPoint.x, y: w.endPoint.y, isHorizontal: isH });
+  }
+
+  // Deduplicate points within 300mm
+  const dedupedCols: { x: number; y: number; isHorizontal: boolean }[] = [];
+  for (const pt of junctionPoints) {
+    const key = `${Math.round(pt.x / 250)},${Math.round(pt.y / 250)}`;
+    if (placedKeys.has(key)) continue;
+    const already = dedupedCols.some(d => Math.hypot(d.x - pt.x, d.y - pt.y) < 300);
+    if (!already) {
+      placedKeys.add(key);
+      dedupedCols.push(pt);
+    }
+  }
+
+  for (let i = 0; i < dedupedCols.length; i++) {
+    const c = dedupedCols[i]!;
+    const w = c.isHorizontal ? colD : colW;
+    const d = c.isHorizontal ? colW : colD;
+    const screenPos = worldToScreen({ x: c.x - w / 2, y: c.y - d / 2 }, transform);
+    const sw = scaleToScreen(w, transform);
+    const sd = scaleToScreen(d, transform);
+    elements.push(
+      `<rect class="structural-column" data-entity-type="column" data-entity-id="col-rcc-${i}" x="${screenPos.x.toFixed(1)}" y="${screenPos.y.toFixed(1)}" width="${sw.toFixed(1)}" height="${sd.toFixed(1)}" fill="#020617" stroke="#000000" stroke-width="0.5"/>`,
+    );
+  }
+
+  if (elements.length === 0) return '';
+  return `<g class="layer-columns" data-layer="${RenderLayer.Columns}">\n${elements.join('\n')}\n</g>`;
 }
 
 function wallFrame(wall: Wall) {
@@ -632,7 +752,7 @@ function renderVastuChakraLayer(
   building: Building,
   transform: ViewTransform,
 ): string {
-  const vastu = (building.metadata as any)?.vastuReport;
+  const vastu = (building.metadata as any)?.vastuReport ?? (building.metadata as any)?.apartmentSchematic?.vastuReport;
   if (!vastu) return '';
 
   const rawX = vastu.centroid?.x ?? 0;
@@ -647,7 +767,7 @@ function renderVastuChakraLayer(
   const northAngle = building.site.orientation ?? 0;
 
   const elements: string[] = [];
-  elements.push(`<g class="layer-vastu-chakra" opacity="0.85" style="pointer-events:none;">`);
+  elements.push(`<g class="layer-vastu-chakra vastu-chakra-overlay" opacity="0.85" style="pointer-events:none;">`);
 
   // Concentric circle
   elements.push(`<circle cx="${center.x.toFixed(1)}" cy="${center.y.toFixed(1)}" r="${rScreen.toFixed(1)}" fill="none" stroke="#6366F1" stroke-width="1.2" stroke-dasharray="4,4" opacity="0.5"/>`);
@@ -655,6 +775,8 @@ function renderVastuChakraLayer(
   // Brahmasthana
   elements.push(`<circle cx="${center.x.toFixed(1)}" cy="${center.y.toFixed(1)}" r="${brahmaRadius.toFixed(1)}" fill="#FEF08A" fill-opacity="0.25" stroke="#EAB308" stroke-width="1.5"/>`);
   elements.push(`<circle cx="${center.x.toFixed(1)}" cy="${center.y.toFixed(1)}" r="3" fill="#CA8A04"/>`);
+  elements.push(`<line x1="${(center.x - brahmaRadius).toFixed(1)}" y1="${center.y.toFixed(1)}" x2="${(center.x + brahmaRadius).toFixed(1)}" y2="${center.y.toFixed(1)}" stroke="#EAB308" stroke-width="1.2" stroke-dasharray="2,2"/>`);
+  elements.push(`<line x1="${center.x.toFixed(1)}" y1="${(center.y - brahmaRadius).toFixed(1)}" x2="${center.x.toFixed(1)}" y2="${(center.y + brahmaRadius).toFixed(1)}" stroke="#EAB308" stroke-width="1.2" stroke-dasharray="2,2"/>`);
   elements.push(`<text x="${center.x.toFixed(1)}" y="${(center.y + brahmaRadius + 10).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="8" font-weight="700" fill="#854D0E">BRAHMASTHANA</text>`);
 
   // 16 zone rays
@@ -706,10 +828,11 @@ export function renderFloor(
     resolved.layers[RenderLayer.SiteZones] ? renderSiteZones(building, transform) : '',
     resolved.layers[RenderLayer.Floor] ? renderFloorBoundary(floor, transform) : '',
     resolved.layers[RenderLayer.Rooms]
-      ? renderRooms(floor, transform, false, false) : '',
+      ? renderRooms(floor, transform, false, false, false, false, building) : '',
     resolved.layers[RenderLayer.Furniture] ? renderReferenceFurniture(floor, transform) : '',
-    resolved.layers[RenderLayer.Rooms] ? renderRooms(floor, transform, resolved.showRoomLabels, resolved.showRoomAreas, true, resolved.layers[RenderLayer.Furniture]) : '',
+    resolved.layers[RenderLayer.Rooms] ? renderRooms(floor, transform, resolved.showRoomLabels, resolved.showRoomAreas, true, resolved.layers[RenderLayer.Furniture], building) : '',
     resolved.layers[RenderLayer.Walls] ? renderWalls(floor, transform) : '',
+    resolved.layers[RenderLayer.Columns] ? renderColumns(floor, transform) : '',
     resolved.layers[RenderLayer.Openings] ? renderDoors(floor, transform) : '',
     resolved.layers[RenderLayer.Openings] ? renderWindows(floor, transform) : '',
     resolved.layers[RenderLayer.Stairs] ? renderStairs(floor, transform) : '',
@@ -727,6 +850,7 @@ export function renderFloor(
     <pattern id="tile-hatch" width="${scaleToScreen(600, transform)}" height="${scaleToScreen(600, transform)}" patternUnits="userSpaceOnUse"><path d="M ${scaleToScreen(600, transform)} 0 H 0 V ${scaleToScreen(600, transform)}" fill="none" stroke="#bd9d76" stroke-width="0.4"/></pattern>
     <pattern id="wet-hatch" width="${scaleToScreen(300, transform)}" height="${scaleToScreen(300, transform)}" patternUnits="userSpaceOnUse"><path d="M0 0V${scaleToScreen(220, transform)}H${scaleToScreen(220, transform)}" fill="none" stroke="#6f86c0" stroke-width="0.55"/></pattern>
     <pattern id="outdoor-hatch" width="${scaleToScreen(400, transform)}" height="${scaleToScreen(400, transform)}" patternUnits="userSpaceOnUse"><path d="M0 0L${scaleToScreen(400, transform)} ${scaleToScreen(400, transform)} M${scaleToScreen(200, transform)} 0L${scaleToScreen(400, transform)} ${scaleToScreen(200, transform)}" fill="none" stroke="#b2b5b5" stroke-width="0.5"/></pattern>
+    <pattern id="deck-plank-pattern" width="${scaleToScreen(300, transform)}" height="${scaleToScreen(150, transform)}" patternUnits="userSpaceOnUse"><line x1="0" y1="0" x2="${scaleToScreen(300, transform)}" y2="0" stroke="#94A3B8" stroke-width="0.75"/><line x1="0" y1="${scaleToScreen(75, transform)}" x2="${scaleToScreen(300, transform)}" y2="${scaleToScreen(75, transform)}" stroke="#CBD5E1" stroke-width="0.5" stroke-dasharray="4,2"/></pattern>
     <pattern id="quilt-hatch" width="140" height="140" patternUnits="userSpaceOnUse"><rect width="140" height="140" fill="#f5f2eb"/><path d="M0 0L140 140M140 0L0 140" stroke="#a29382" stroke-width="10"/></pattern>
     <pattern id="site-setback-hatch" width="${scaleToScreen(1000, transform)}" height="${scaleToScreen(1000, transform)}" patternUnits="userSpaceOnUse"><path d="M 0 ${scaleToScreen(1000, transform)} L ${scaleToScreen(1000, transform)} 0" fill="none" stroke="#cbd5e1" stroke-width="0.5" stroke-dasharray="2,2"/></pattern>
     <pattern id="site-garden-pattern" width="${scaleToScreen(800, transform)}" height="${scaleToScreen(800, transform)}" patternUnits="userSpaceOnUse"><circle cx="${scaleToScreen(200, transform)}" cy="${scaleToScreen(200, transform)}" r="1.2" fill="#86efac" opacity="0.6"/><circle cx="${scaleToScreen(600, transform)}" cy="${scaleToScreen(600, transform)}" r="1.5" fill="#4ade80" opacity="0.5"/></pattern>

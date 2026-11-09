@@ -39,7 +39,19 @@ export const AppShell: React.FC<AppShellProps> = ({ onBackToProjects, onOpenSite
   const [navigatorCollapsed, setNavigatorCollapsed] = useState(true);
   const [fitRequest, setFitRequest] = useState(0);
   const [snapEnabled, setSnapEnabled] = useState(true);
-  const [layers, setLayers] = useState<Record<WorkspaceLayer, boolean>>({ rooms: true, walls: true, openings: true, stairs: true, dimensions: true, grid: true, validation: true, siteZones: true });
+  const [layers, setLayers] = useState<Record<WorkspaceLayer, boolean>>({
+    rooms: true,
+    walls: true,
+    openings: true,
+    stairs: true,
+    dimensions: true,
+    grid: true,
+    validation: true,
+    siteZones: true,
+    columns: true,
+    furniture: true,
+    vastuChakra: true,
+  });
   const [workspaceView, setWorkspaceView] = useState<WorkspaceView>('2d');
 
   useEffect(() => {

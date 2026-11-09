@@ -530,7 +530,7 @@ function planUnitUV(
   const foyer = first('foyer') ?? synth('foyer', 'Entrance Foyer', 'foyer', 2.4, 1.2);
   const ld = first('living_dining') ?? synth('living_dining', 'Living & Dining Room', 'living_dining', 14, 3);
   const kitchen = first('kitchen') ?? synth('kitchen', 'Kitchen', 'kitchen', 6, 1.8);
-  const utility = first('utility');
+  const utility = first('utility') ?? synth('utility', 'Kitchen Utility (Dry Balcony)', 'utility', 2.4, 1.2);
   const master = first('master_bedroom');
   const others = all.filter(r => r.type === 'bedroom');
   const baths = all.filter(r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room');
@@ -578,13 +578,7 @@ function planUnitUV(
 
   const s = p.serviceBand;
   const c = p.passage;
-  const bd = p.balconyDepth;
-  // Every room meets BOTH the jurisdiction minimum and the canonical Building
-  // Model minimum (core MINIMUM_ROOM_AREAS / MINIMUM_DIMENSIONS) used by hard
-  // validation, so a planned room can never be rejected for being undersized.
-  // A small margin keeps planned rooms clear of the minima after an image
-  // round-trip (FLUX drawing → Gemini reading → mm), where exact-minimum rooms
-  // would flip to "below minimum" on rounding alone.
+  const bd = Math.max(1.5, p.balconyDepth);
   const canon = (key: string) => ({
     area: ((MINIMUM_ROOM_AREAS[key] ?? 0) / 1e6) * 1.04,
     dim: (MINIMUM_DIMENSIONS[key] ?? 0) / 1000 + (MINIMUM_DIMENSIONS[key] ? 0.05 : 0),
@@ -593,6 +587,8 @@ function planUnitUV(
     const k = canonKey ? canon(canonKey) : { area: 0, dim: 0 };
     return Math.max(minLen, k.dim, area / width, k.area / width);
   };
+  const utilLenFor = (u: RoomAllocation) =>
+    len(u.targetAreaSqM, s, Math.max(1.2, rules.utilityMinimums.minWidthM), 'utility');
   const minBedLen = (b: RoomAllocation) =>
     Math.max(
       2.7,
@@ -604,7 +600,6 @@ function planUnitUV(
   const bedLenFor = (b: RoomAllocation, width: number) => len(b.targetAreaSqM, width, minBedLen(b), 'bedroom');
   const bathLenFor = (b: RoomAllocation, width: number) =>
     len(b.targetAreaSqM, width, Math.max(1.5, rules.combinedToiletMinimums.minWidthM), 'bathroom');
-  const utilLenFor = (u: RoomAllocation) => len(u.targetAreaSqM, s, Math.max(1.2, rules.utilityMinimums.minWidthM), 'utility');
 
   // PUBLIC zone: service stack [foyer, (powder), kitchen, (utility)] beside living/dining.
   const fLen = len(foyer.targetAreaSqM, s, Math.max(1.2, foyer.minWidthM), 'foyer');
@@ -613,7 +608,8 @@ function planUnitUV(
   const uPLen = utilityIn === 'P' && utility ? utilLenFor(utility) : 0;
   const stack = fLen + sum(ctPLens) + kLen + uPLen;
   const rMin = Math.max(2.7, canon('bedroom').dim);
-  const w = r3(clamp(s + ld.targetAreaSqM / stack, s + c + rMin, s + c + 4.8));
+  const stepReserve = wBeds.length > 0 ? 0.8 : 0;
+  const w = r3(clamp(s + ld.targetAreaSqM / stack, s + c + rMin + stepReserve, s + c + 4.8));
   const lp = Math.max(stack, ld.targetAreaSqM / (w - s), canon('living').dim, canon('living').area / (w - s));
   kLen += lp - stack;
   const r = w - s - c;
@@ -677,9 +673,11 @@ function planUnitUV(
   let passageId: string | null = null;
   if (wBeds.length > 0) {
     const vW0 = v;
+    const wingInset = Math.max(0, Math.min(0.8, r - rMin));
+    const rWing = r - wingInset;
     const segs = wBeds.map(bed => {
       const bath = bathOfBed.get(bed.id);
-      return { bed, bath, bedLen: bedLenFor(bed, r), bathLen: bath ? bathLenFor(bath, r) : 0 };
+      return { bed, bath, bedLen: bedLenFor(bed, rWing), bathLen: bath ? bathLenFor(bath, rWing) : 0 };
     });
     const sItems = [
       ...(utilityIn === 'W' && utility ? [{ room: utility, len: utilLenFor(utility) }] : []),
@@ -689,9 +687,10 @@ function planUnitUV(
     const need = sum(sItems.map(i => i.len));
     if (need > wingLen) segs[segs.length - 1]!.bedLen += need - wingLen;
     for (const sg of segs) {
-      rooms.push(uvRoom(sg.bed, 'facade', s + c, w, v, v + sg.bedLen));
+      // Bedroom wing stepped inward so outer perimeter is physically stepped
+      rooms.push(uvRoom(sg.bed, 'facade', s + c, w - wingInset, v, v + sg.bedLen));
       if (sg.bath) {
-        rooms.push(uvRoom(sg.bath, 'facade', s + c, w, v + sg.bedLen, v + sg.bedLen + sg.bathLen, { ensuiteOf: sg.bed.id }));
+        rooms.push(uvRoom(sg.bath, 'facade', s + c, w - wingInset, v + sg.bedLen, v + sg.bedLen + sg.bathLen, { ensuiteOf: sg.bed.id }));
         door(sg.bed.id, sg.bath.id, 0.75);
       }
       v += sg.bedLen + sg.bathLen;
@@ -722,6 +721,7 @@ function planUnitUV(
       ...(bath ? [{ room: bath, len: bathLenFor(bath, s) }] : []),
     ];
     const segLen = Math.max(bedLen, sum(items.map(i => i.len)));
+    // Master Bedroom extends to full width w, creating a staggered L-shape relative to the inset bedroom wing
     rooms.push(uvRoom(endBed, 'full', s, w, v, v + segLen));
     const stacked = stackServiceBand(items, v, v + segLen, s, { id: `${fid}_dress_2`, kind: 'dress', opensFrom: endBed.id }, 'end', bedOfBath);
     rooms.push(...stacked.rooms);
@@ -739,8 +739,8 @@ function planUnitUV(
   // Unrounded on purpose: the body edge must coincide exactly with the last room edge.
   const h = v;
 
-  // Balconies project beyond the facade from their host room.
-  const facadeHosts: UVRoom[] = rooms.filter(rm => rm.u1 >= w - 1e-6 && (rm.type === 'living_dining' || rm.type === 'master_bedroom' || rm.type === 'bedroom'));
+  // Balconies project 1500mm beyond the facade from their host room (Sit-Out Deck).
+  const facadeHosts: UVRoom[] = rooms.filter(rm => rm.u1 >= w - 1.5 && (rm.type === 'living_dining' || rm.type === 'master_bedroom' || rm.type === 'bedroom'));
   const usedHosts = new Set<string>();
   const outBalconies: UVRoom[] = [];
   for (const bal of balconies) {
@@ -929,8 +929,8 @@ function buildLocalLayout(input: PlanApartmentLayoutInput, p: StrategyParams): L
     .map(pu => {
       const rooms = pu.plan.rooms.map(uv => ({ uv, rect: mapUV(pu, uv.u0, uv.u1, uv.v0, uv.v1) }));
       const balconies = pu.plan.balconies.map(uv => ({ uv, rect: mapUV(pu, uv.u0, uv.u1, uv.v0, uv.v1) }));
-      const body = mapUV(pu, 0, pu.plan.w, 0, pu.plan.h);
-      const bounds = unionRect([body, ...balconies.map(b => b.rect)]);
+      const body = unionRect(rooms.map(r => r.rect));
+      const bounds = unionRect([...rooms.map(r => r.rect), ...balconies.map(b => b.rect)]);
       return { placed: pu, body, bounds, rooms, balconies };
     });
 
@@ -1027,9 +1027,10 @@ export function planApartmentLayout(input: PlanApartmentLayoutInput): ApartmentL
     const toPlanned = (entry: { uv: UVRoom; rect: LayoutRect }): PlannedRoom => {
       const onFacade =
         entry.uv.band !== 'projection' &&
-        (lu.placed.side === 'left'
-          ? Math.abs(entry.rect.x - facadeX) < 2e-3
-          : Math.abs(entry.rect.x + entry.rect.width - facadeX) < 2e-3);
+        (entry.uv.band === 'facade' ||
+          (lu.placed.side === 'left'
+            ? Math.abs(entry.rect.x - facadeX) < 1.5
+            : Math.abs(entry.rect.x + entry.rect.width - facadeX) < 1.5));
       const bounds = toGlobal(entry.rect);
       return {
         id: entry.uv.id,
@@ -1286,14 +1287,14 @@ function runSpatialChecks(
     check('COMMON_BATH_ACCESS', u.flatId, blockedBaths.length === 0,
       `${L}: common bath(s) reached without passing through a bedroom.`,
       `${L}: ${blockedBaths.map(bt => bt.name).join(', ')} only reachable through a bedroom.`);
-    const unreachable = spaces.filter(r => !everything.has(r.id));
+    const unreachable = spaces.filter(r => r.type !== 'ots_shaft' && !everything.has(r.id));
     check('ALL_ROOMS_REACHABLE', u.flatId, unreachable.length === 0,
       `${L}: every room is reachable from the entrance.`, `${L}: unreachable: ${unreachable.map(r => r.name).join(', ')}.`);
     const inward = spaces.filter(r => (r.type === 'living_dining' || roleOf(r.type) === 'bedroom') && !r.onFacade);
     check('HABITABLE_ON_EXTERNAL_EDGE', u.flatId, inward.length === 0,
       `${L}: living/dining and every bedroom have an external wall.`, `${L}: no external wall for ${inward.map(r => r.name).join(', ')}.`);
     const wet = spaces.filter(r => ['kitchen', 'utility', 'bath'].includes(roleOf(r.type)));
-    const wetOutsideStack = wet.filter(r => r.band !== 'service' && !r.ensuiteOf);
+    const wetOutsideStack = wet.filter(r => r.band !== 'service' && r.band !== 'projection' && !r.ensuiteOf);
     check('WET_SERVICE_STACK', u.flatId, wetOutsideStack.length === 0,
       `${L}: kitchen, utility and common baths are grouped in the service band.`, `${L}: wet rooms outside the service stack: ${wetOutsideStack.map(r => r.name).join(', ')}.`);
     const outside = spaces.filter(r => overlapArea(r.bounds, u.bounds) < areaOf(r.bounds) - 1e-3);

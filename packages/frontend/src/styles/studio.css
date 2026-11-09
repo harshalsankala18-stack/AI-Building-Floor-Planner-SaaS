@@ -2213,4 +2213,306 @@
   color: #0F172A;
 }
 
+/* ==========================================================================
+   VASTUGRID CAD // NBC-2016 APARTMENT ENGINE - TECHNICAL CAD STYLING
+   Structural Slate (#0F172A / #1E293B), Blueprint Cobalt (#1D4ED8),
+   Vastu Emerald (#15803D), Technical 1px Hairline Borders, Sharp 2px-4px Radii.
+   ========================================================================== */
+
+.studio-header {
+  background: #0F172A !important;
+  border-bottom: 1px solid #334155 !important;
+  color: #F8FAFC !important;
+}
+
+.studio-brand-title {
+  font-family: var(--studio-font-mono, monospace);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #38BDF8;
+  text-transform: uppercase;
+}
+
+.studio-logo:hover {
+  background: #1E293B !important;
+}
+
+.studio-project-selector {
+  background: #1E293B !important;
+  border: 1px solid #334155 !important;
+  color: #F1F5F9 !important;
+  border-radius: 3px !important;
+}
+
+/* CAD Header Controls */
+.studio-topbar-cad-controls,
+.studio-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.studio-cad-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  color: #E2E8F0;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: var(--studio-font-mono, monospace);
+}
+
+.studio-cad-btn:hover {
+  background: #334155;
+  color: #FFFFFF;
+  border-color: #475569;
+}
+
+.studio-cad-btn.active {
+  background: #15803D !important;
+  border-color: #16A34A !important;
+  color: #FFFFFF !important;
+}
+
+.studio-cad-lint-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 3px;
+  font-family: var(--studio-font-mono, monospace);
+}
+
+.studio-cad-lint-badge.pass {
+  background: rgba(21, 128, 61, 0.2);
+  color: #4ADE80;
+  border: 1px solid #15803D;
+}
+
+.studio-cad-lint-badge.warn {
+  background: rgba(217, 119, 6, 0.2);
+  color: #FBBF24;
+  border: 1px solid #D97706;
+}
+
+.studio-sun-slider-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  border-radius: 3px;
+  padding: 3px 8px;
+  color: #94A3B8;
+  font-size: 11px;
+  font-family: var(--studio-font-mono, monospace);
+}
+
+.sun-slider-label {
+  white-space: nowrap;
+}
+
+.studio-sun-slider {
+  width: 75px;
+  cursor: pointer;
+  accent-color: #38BDF8;
+}
+
+.studio-btn-action.primary {
+  background: #1D4ED8 !important;
+  border: 1px solid #2563EB !important;
+  color: #FFFFFF !important;
+  border-radius: 3px !important;
+}
+
+.studio-btn-action.primary:hover {
+  background: #1E40AF !important;
+}
+
+/* CAD Candidate Switcher Bar */
+.cad-candidate-switcher-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #0F172A;
+  border-bottom: 1px solid #334155;
+  padding: 8px 16px;
+  z-index: 25;
+  user-select: none;
+}
+
+.cad-candidate-switcher-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: #94A3B8;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: var(--studio-font-mono, monospace);
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.cad-candidate-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  flex: 1;
+}
+
+.cad-candidate-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: #1E293B;
+  border: 1px solid #334155;
+  color: #CBD5E1;
+  padding: 6px 12px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.cad-candidate-tab:hover {
+  background: #334155;
+  color: #FFFFFF;
+}
+
+.cad-candidate-tab.active {
+  background: #1D4ED8;
+  border-color: #3B82F6;
+  color: #FFFFFF;
+  box-shadow: 0 0 0 1px #3B82F6;
+}
+
+.cad-tab-title {
+  font-weight: 700;
+}
+
+.cad-tab-vastu-badge {
+  background: #15803D;
+  color: #FFFFFF;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: var(--studio-font-mono, monospace);
+}
+
+.cad-tab-area-badge {
+  background: rgba(15, 23, 42, 0.6);
+  color: #94A3B8;
+  padding: 1px 6px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-family: var(--studio-font-mono, monospace);
+}
+
+.cad-candidate-tab.active .cad-tab-area-badge {
+  color: #E2E8F0;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Footer Status Bar */
+.studio-cad-footer {
+  height: 28px;
+  background: #0F172A;
+  border-top: 1px solid #334155;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  font-size: 11px;
+  font-family: var(--studio-font-mono, monospace);
+  color: #94A3B8;
+  z-index: 40;
+}
+
+.footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-status-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22C55E;
+}
+
+.footer-sep {
+  color: #475569;
+}
+
+.footer-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-link-btn {
+  background: none;
+  border: none;
+  color: #60A5FA;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 0;
+}
+
+.footer-link-btn:hover {
+  text-decoration: underline;
+  color: #93C5FD;
+}
+
+/* Legal Modals */
+.studio-legal-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 200;
+  padding: 24px;
+}
+
+.studio-legal-modal-card {
+  max-width: 860px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid #334155;
+  background: #FFFFFF;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+/* Anti-Slop Enforcement: Sharp 2px-4px radii */
+button, input, select, textarea {
+  border-radius: 3px !important;
+}
+
+.studio-stage-tab {
+  border-radius: 3px !important;
+}
+
 

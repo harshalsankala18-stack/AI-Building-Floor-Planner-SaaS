@@ -41,6 +41,9 @@ const FORMAT_OPTIONS: Array<{
   { id: 'pdf', label: 'PDF Sheet', description: 'Print-ready vector document', icon: <FileText size={18} /> },
   { id: 'svg', label: 'SVG Vector', description: 'Editable infinite-resolution drawing', icon: <FileCode2 size={18} /> },
   { id: 'json', label: 'Project JSON', description: 'Complete canonical building model', icon: <FileJson size={18} /> },
+  { id: 'arch', label: 'ArchLang DSL', description: 'Deterministic architectural specification', icon: <FileCode2 size={18} /> },
+  { id: 'dxf', label: 'AutoCAD DXF', description: 'CAD exchange format for structural engineering', icon: <FileCode2 size={18} /> },
+  { id: 'png', label: 'High-Res PNG', description: 'Architectural raster drawing', icon: <FileText size={18} /> },
 ];
 
 const LAYER_OPTIONS: Array<{
@@ -100,6 +103,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     }
   }, [building, settings]);
 
+  
   const previewResult = useMemo(() => {
     try {
       return createExportArtifact(building, { ...settings, format: 'svg' }).content;
@@ -154,6 +158,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 ? `Validated · ${validationSummary.overallScore}/100`
                 : `${validationSummary.failed} hard issues`}
             </span>
+            {(building.metadata as any)?.archlang?.status === 'ACCEPTED' && (
+              <span className="ready" title="ArchLang CAD compiler verified with 100% geometry parity">
+                <BadgeCheck size={14} />
+                ArchLang Verified
+              </span>
+            )}
             <button className="btn-icon" onClick={onClose} aria-label="Close Export Studio">
               <X size={16} />
             </button>

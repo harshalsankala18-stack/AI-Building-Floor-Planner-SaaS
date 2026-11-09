@@ -1,5 +1,4 @@
-import type { Building, Floor, Point, Polygon, Wall } from '@ai-floor-planner/core';
-import { rectToPolygon, RoomType } from '@ai-floor-planner/core';
+import { Building, Floor, Point, Polygon, Wall, RoomType, rectToPolygon } from '@ai-floor-planner/core';
 import { resolveProjectionSettings } from './settings';
 import type {
   Building3DProjection,
@@ -103,11 +102,12 @@ function wallSolidSegments(
   return solids;
 }
 
-function projectOpenings(floor: Floor, elevation: number, settings: Building3DProjectionSettings): readonly Opening3D[] {
+function projectOpenings(floor: Floor, elevation: number, _settings: Building3DProjectionSettings): readonly Opening3D[] {
   const wallById = new Map(floor.walls.map(wall => [wall.id, wall]));
   const doors: Opening3D[] = floor.doors.flatMap(door => {
     const wall = wallById.get(door.wallId);
     if (!wall) return [];
+    // Doors: from 0mm to 2100mm height (standard door height)
     return [{
       sourceEntityId: door.id,
       sourceEntityType: 'door',
@@ -118,13 +118,22 @@ function projectOpenings(floor: Floor, elevation: number, settings: Building3DPr
       alongWall: distanceAlongWall(door.position, wall),
       width: door.width,
       bottom: 0,
-      height: door.height || settings.defaultDoorHeight.value,
+      height: 2100, // fixed door height as per requirement
       elevation,
     }];
   });
   const windows: Opening3D[] = floor.windows.flatMap(window => {
     const wall = wallById.get(window.wallId);
     if (!wall) return [];
+    // Determine if window belongs to a bathroom for special sill height
+    const roomId = window.roomId;
+    const room = floor.rooms.find(r => r.id === roomId);
+    const isBathroom = room &&
+      [RoomType.Bathroom].includes(room.type as RoomType);
+    // Windows: from 900mm to 2100mm height (standard window)
+    // Bathroom ventilators: from 1800mm to 2100mm height
+    const bottom = isBathroom ? 1800 : 900;
+    const height = 2100 - bottom; // 300mm for bathroom, 1200mm for regular windows
     return [{
       sourceEntityId: window.id,
       sourceEntityType: 'window',
@@ -133,8 +142,8 @@ function projectOpenings(floor: Floor, elevation: number, settings: Building3DPr
       position: window.position,
       alongWall: distanceAlongWall(window.position, wall),
       width: window.width,
-      bottom: window.sillHeight ?? settings.defaultWindowSillHeight.value,
-      height: window.height || settings.defaultWindowHeight.value,
+      bottom: bottom,
+      height: height,
       elevation,
     }];
   });
@@ -179,6 +188,16 @@ export function projectBuildingTo3D(
               && stair.boundary.points.every(point => arrival.boundary.points.some(other =>
                 Math.abs(point.x - other.x) < EPSILON && Math.abs(point.y - other.y) < EPSILON))))
           .map(stair => stair.boundary)),
+        // Stepped polygon footprint and OTS shaft cutouts from deterministic schematic
+        ...((building.metadata as any)?.steppedPolygons ?? []).map((sp: any) => ({
+          points: (sp.steppedPolygon?.vertices ?? []).map((v: any) => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }))
+        })),
+        ...((building.metadata as any)?.otsShafts ?? []).map((ots: any) => rectToPolygon(
+          Math.round(ots.bounds.x * 1000),
+          Math.round(ots.bounds.y * 1000),
+          ots.widthMm,
+          ots.depthMm
+        ))
       ],
       elevation: levelByFloor.get(floor.id)?.elevation ?? 0,
       thickness: settings.slabThickness.value,
@@ -280,3 +299,65 @@ export class Building3DProjector {
     return projected;
   }
 }
+
+/**
+ * Compute approximate sun vector for Indian latitudes (~19°N) for a given IST hour.
+ * Returns azimuth (0°=North, 90°=East), altitude above horizon, and unit direction vector.
+ * Based on solar position equations for latitude 19°N, simplified for IST range 6.0–18.5.
+ * @param hourIst - Local Indian Standard Time in decimal hours (e.g., 9.5 for 9:30 AM)
+ * @param northAngleDeg - Optional building north angle (degrees clockwise from true North) to adjust azimuth
+ * @returns Object with azimuthDeg, altitudeDeg, and direction {x, y, z} where z is vertical component
+ */
+export function computeIndianSunVector(hourIst: number, northAngleDeg: number = 0): { azimuthDeg: number; altitudeDeg: number; direction: { x: number; y: number; z: number } } {
+  // Clamp hour to valid range
+  const h = Math.max(6.0, Math.min(18.5, hourIst));
+
+  // Approximate solar declination for equinox (simplified; ignores seasonal variation)
+  const declinationRad = 0; // Assume equinox for simplicity; can be improved with day-of-year
+
+  // Convert latitude to radians (19°N)
+  const latitudeRad = 19 * Math.PI / 180;
+
+  // Hour angle: 0° at solar noon, 15° per hour (360°/24h)
+  const hourAngleDeg = (h - 12.0) * 15.0; // Negative in morning, positive in afternoon
+  const hourAngleRad = hourAngleDeg * Math.PI / 180;
+
+  // Solar elevation angle (altitude)
+  const sinAltitude = Math.sin(declinationRad) * Math.sin(latitudeRad) +
+                      Math.cos(declinationRad) * Math.cos(latitudeRad) * Math.cos(hourAngleRad);
+  const altitudeRad = Math.asin(Math.max(-1, Math.min(1, sinAltitude)));
+  const altitudeDeg = altitudeRad * 180 / Math.PI;
+
+  // Solar azimuth angle (0° = North, +ve clockwise)
+  const cosAzimuth = (Math.sin(declinationRad) - Math.sin(altitudeRad) * Math.sin(latitudeRad)) /
+                     (Math.cos(altitudeRad) * Math.cos(latitudeRad));
+  let azimuthRad = Math.acos(Math.max(-1, Math.min(1, cosAzimuth)));
+
+  // Adjust sign based on hour angle (morning vs afternoon)
+  if (hourAngleRad > 0) {
+    azimuthRad = 2 * Math.PI - azimuthRad; // Afternoon: azimuth in western hemisphere
+  }
+
+  // Convert from true north to building north (if northAngleDeg provided)
+  const azimuthDeg = (azimuthRad * 180 / Math.PI - northAngleDeg + 360) % 360;
+
+  // Convert spherical coordinates to Cartesian unit vector
+  // x: East, y: North, z: Up (assuming right-handed coordinate system)
+  const altitudeRadForVector = altitudeRad;
+  const azimuthRadForVector = azimuthDeg * Math.PI / 180;
+
+  const x = Math.cos(altitudeRadForVector) * Math.sin(azimuthRadForVector); // East component
+  const y = Math.cos(altitudeRadForVector) * Math.cos(azimuthRadForVector); // North component
+  const z = Math.sin(altitudeRadForVector); // Vertical component
+
+  return {
+    azimuthDeg: parseFloat(azimuthDeg.toFixed(2)),
+    altitudeDeg: parseFloat(altitudeDeg.toFixed(2)),
+    direction: {
+      x: parseFloat(x.toFixed(6)),
+      y: parseFloat(y.toFixed(6)),
+      z: parseFloat(z.toFixed(6))
+    }
+  };
+}
+

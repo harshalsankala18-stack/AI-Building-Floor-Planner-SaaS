@@ -254,18 +254,20 @@ function selectBestVastuRoomPermutation(
     // SW is x < centroid.x, y > centroid.y.
     // Toilets must NOT be in SW (y > centroid.y). Move Common Toilet to NW/WNW (y < centroid.y).
     const copy = rooms.map(r => ({ ...r, bounds: { ...r.bounds } }));
-    const ct = copy.find(r => r.type === 'common_toilet' || (r.type === 'toilet' && !r.ensuiteOf));
     const k = copy.find(r => r.type === 'kitchen');
-    if (ct && (ct.bounds.y + ct.bounds.height / 2) > centroid.y && k && (k.bounds.y + k.bounds.height / 2) < centroid.y) {
-      // Position Common Toilet in the NW/WNW sector beside or above kitchen
-      ct.bounds = {
-        x: k.bounds.x,
-        y: Math.max(0, k.bounds.y - ct.bounds.height - 0.1),
-        width: ct.bounds.width,
-        height: ct.bounds.height,
-      };
-      tryAdd(copy);
+    let modified = false;
+    for (const t of copy.filter(r => r.type.includes('toilet') || r.type.includes('bath'))) {
+      if ((t.bounds.y + t.bounds.height / 2) > centroid.y) {
+        t.bounds = {
+          x: k ? k.bounds.x : t.bounds.x,
+          y: Math.max(0, centroid.y - t.bounds.height - 0.2),
+          width: t.bounds.width,
+          height: t.bounds.height,
+        };
+        modified = true;
+      }
     }
+    if (modified) tryAdd(copy);
   }
 
   // Sort candidates by overallScore descending, then defects count ascending
@@ -436,12 +438,23 @@ export function generateDeterministicApartmentSchematic(
     avgVastuScore >= 90 ? 'A+' : avgVastuScore >= 80 ? 'A' : avgVastuScore >= 65 ? 'B' : 'C';
 
   const fp = plan.footprint;
-  const footprintVertices = [
-    { x: fp.x, y: fp.y },
-    { x: fp.x + fp.width, y: fp.y },
-    { x: fp.x + fp.width, y: fp.y + fp.height },
-    { x: fp.x, y: fp.y + fp.height },
-  ];
+  const footprintVertices = (units.length === 2 && units[0]?.steppedPolygon && units[1]?.steppedPolygon)
+    ? [
+        { x: Math.min(units[0].steppedPolygon.boundingBox.x, units[1].steppedPolygon.boundingBox.x), y: fp.y },
+        { x: Math.max(units[0].steppedPolygon.boundingBox.x + units[0].steppedPolygon.boundingBox.width, units[1].steppedPolygon.boundingBox.x + units[1].steppedPolygon.boundingBox.width), y: fp.y },
+        { x: Math.max(units[0].steppedPolygon.boundingBox.x + units[0].steppedPolygon.boundingBox.width, units[1].steppedPolygon.boundingBox.x + units[1].steppedPolygon.boundingBox.width), y: fp.y + fp.height * 0.58 },
+        { x: Math.max(units[0].steppedPolygon.boundingBox.x + units[0].steppedPolygon.boundingBox.width, units[1].steppedPolygon.boundingBox.x + units[1].steppedPolygon.boundingBox.width) - 1.2, y: fp.y + fp.height * 0.58 },
+        { x: Math.max(units[0].steppedPolygon.boundingBox.x + units[0].steppedPolygon.boundingBox.width, units[1].steppedPolygon.boundingBox.x + units[1].steppedPolygon.boundingBox.width) - 1.2, y: fp.y + fp.height },
+        { x: Math.min(units[0].steppedPolygon.boundingBox.x, units[1].steppedPolygon.boundingBox.x) + 1.2, y: fp.y + fp.height },
+        { x: Math.min(units[0].steppedPolygon.boundingBox.x, units[1].steppedPolygon.boundingBox.x) + 1.2, y: fp.y + fp.height * 0.58 },
+        { x: Math.min(units[0].steppedPolygon.boundingBox.x, units[1].steppedPolygon.boundingBox.x), y: fp.y + fp.height * 0.58 },
+      ]
+    : [
+        { x: fp.x, y: fp.y },
+        { x: fp.x + fp.width, y: fp.y },
+        { x: fp.x + fp.width, y: fp.y + fp.height },
+        { x: fp.x, y: fp.y + fp.height },
+      ];
   const floorCentroid = computePolygonCentroid(footprintVertices);
   const floorZones = compute16VastuZones(floorCentroid, Math.max(fp.width, fp.height) * 0.7, options.northAngleDeg ?? 0);
 

@@ -339,19 +339,22 @@ export class ArchitecturalLayoutEngine {
     let kitchenH: number;
     let utilH = 0;
 
-    if (bay3TotalD >= 9000) {
-      // Generous depth: Living + Dining + Kitchen (+ optional Utility)
+    if (bay3TotalD >= 8500) {
+      // Generous depth: Living + Dining + Kitchen (+ Kitchen Dry Utility)
       livingH = Math.max(3850, Math.round(bay3TotalD * 0.42));
       diningH = Math.max(2750, Math.round(bay3TotalD * 0.28));
       const rem = bay3TotalD - livingH - diningH;
-      const hasUtility = rem >= 3800;
-      utilH = hasUtility ? Math.max(1500, Math.min(1800, Math.round(rem * 0.38))) : 0;
+      const hasUtility = rem >= 3400;
+      utilH = hasUtility ? Math.max(1400, Math.min(1800, Math.round(rem * 0.38))) : 0;
       kitchenH = rem - utilH;
     } else if (bay3TotalD >= 7500) {
-      // Standard depth: Living + Dining + Kitchen
+      // Standard depth: Living + Dining + Kitchen (+ optional dry utility)
       diningH = Math.max(2400, Math.min(2800, Math.round(bay3TotalD * 0.32)));
-      kitchenH = Math.max(2150, Math.min(2700, Math.round(bay3TotalD * 0.30)));
-      livingH = bay3TotalD - diningH - kitchenH;
+      const rem = bay3TotalD - diningH;
+      const hasUtility = rem >= 5200;
+      utilH = hasUtility ? 1500 : 0;
+      kitchenH = Math.max(2150, Math.min(2700, Math.round((rem - utilH) * 0.46)));
+      livingH = rem - diningH - utilH;
     } else {
       // Compact depth (< 7500): Proportionally allocate
       const kH = Math.max(2000, Math.round(bay3TotalD * 0.30));
@@ -407,7 +410,7 @@ export class ArchitecturalLayoutEngine {
       building = addRoom(building, floorId, {
         floorId,
         type: RoomType.Utility,
-        name: utilityItem?.name ?? 'Utility / Wash Yard',
+        name: utilityItem?.name ?? 'Kitchen Dry Utility',
         x: x2,
         y: utilY,
         width: w3,

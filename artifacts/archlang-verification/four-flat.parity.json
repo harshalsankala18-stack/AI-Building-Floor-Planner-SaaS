@@ -1,0 +1,5699 @@
+{
+  "status": "PASS",
+  "passed": true,
+  "totalChecks": 124,
+  "passedChecks": 124,
+  "failedChecks": 0,
+  "expectedElements": 123,
+  "actualElements": 313,
+  "missingElements": [],
+  "unexpectedElements": [],
+  "duplicates": [],
+  "coordinateMismatches": [],
+  "dimensionMismatches": [],
+  "unsupportedElements": [],
+  "maximumCoordinateDriftMm": 0,
+  "items": [
+    {
+      "canonicalId": "FLAT_COUNT",
+      "archlangId": "ZONES_COUNT",
+      "elementType": "flat",
+      "expected": {
+        "flatCount": 4,
+        "mix": {
+          "2BHK": 2,
+          "3BHK": 2
+        }
+      },
+      "actual": {
+        "flatCount": 4,
+        "mix": {
+          "2BHK": 2,
+          "3BHK": 2
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01",
+      "archlangId": "zone_flat_01",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_01",
+        "unitType": "2BHK",
+        "totalRooms": 10,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 10,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02",
+      "archlangId": "zone_flat_02",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_02",
+        "unitType": "2BHK",
+        "totalRooms": 10,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 10,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03",
+      "archlangId": "zone_flat_03",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_03",
+        "unitType": "3BHK",
+        "totalRooms": 13,
+        "bedrooms": 3,
+        "bathrooms": 3,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 13,
+        "bedrooms": 3
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04",
+      "archlangId": "zone_flat_04",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_04",
+        "unitType": "3BHK",
+        "totalRooms": 13,
+        "bedrooms": 3,
+        "bathrooms": 3,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 13,
+        "bedrooms": 3
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "COMMON_CORE_ISOLATION",
+      "archlangId": "COMMON_CORE_ZONE",
+      "elementType": "room",
+      "expected": {
+        "coreIsolated": true
+      },
+      "actual": {
+        "coreIsolated": true
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "e0eb6b31-a873-456e-9328-b6af671077b7",
+      "archlangId": "r_e0eb6b31_a873_456e_9328_b6af671077b7",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 30350,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "f56a2c5f-e50b-4a8e-9532-444c2d4df30c",
+      "archlangId": "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "actual": {
+        "x": 30350,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "28061fcf-222a-4df9-9035-cb58295361b0",
+      "archlangId": "r_28061fcf_222a_4df9_9035_cb58295361b0",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "actual": {
+        "x": 25700,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "26d66294-4ead-4abe-9b86-2ef36829c80f",
+      "archlangId": "r_26d66294_4ead_4abe_9b86_2ef36829c80f",
+      "elementType": "room",
+      "expected": {
+        "x": 26500,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "actual": {
+        "x": 26500,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+      "archlangId": "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+      "elementType": "room",
+      "expected": {
+        "x": 29250,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "actual": {
+        "x": 29250,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "40c35acf-19d3-4458-9b47-6923db163948",
+      "archlangId": "r_40c35acf_19d3_4458_9b47_6923db163948",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "actual": {
+        "x": 30350,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "39b0c0ee-6400-4ae8-8dd5-15d260cbb5a1",
+      "archlangId": "r_39b0c0ee_6400_4ae8_8dd5_15d260cbb5a1",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "actual": {
+        "x": 30350,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "29931ad4-145b-4f21-9fd8-b3628c64415a",
+      "archlangId": "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 25700,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "67a38e01-3633-4be6-96f8-7610b8c9a2f9",
+      "archlangId": "r_67a38e01_3633_4be6_96f8_7610b8c9a2f9",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a25af4f0-4c78-4845-a970-46cfde92e059",
+      "archlangId": "r_a25af4f0_4c78_4845_a970_46cfde92e059",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 30350,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+      "archlangId": "r_cda06784_b756_48f7_a2e6_e7c3cd730fab",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 37250,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d6401b5f-3923-46f7-b545-82d441a50b5f",
+      "archlangId": "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "actual": {
+        "x": 37250,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+      "archlangId": "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "actual": {
+        "x": 39650,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "9aa19998-1f63-463c-ac6b-2036f18c500d",
+      "archlangId": "r_9aa19998_1f63_463c_ac6b_2036f18c500d",
+      "elementType": "room",
+      "expected": {
+        "x": 40750,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "actual": {
+        "x": 40750,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "965be242-b911-42d1-9714-631f4d4369de",
+      "archlangId": "r_965be242_b911_42d1_9714_631f4d4369de",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "actual": {
+        "x": 39650,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "bbe9c1d6-2c47-4eb9-91ca-6883d76b1a64",
+      "archlangId": "r_bbe9c1d6_2c47_4eb9_91ca_6883d76b1a64",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "actual": {
+        "x": 37250,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "15880674-6456-4608-b8c4-e014bcd43408",
+      "archlangId": "r_15880674_6456_4608_b8c4_e014bcd43408",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "actual": {
+        "x": 37250,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+      "archlangId": "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 39650,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "60249816-a377-463b-bfbe-dbbaaaba9eea",
+      "archlangId": "r_60249816_a377_463b_bfbe_dbbaaaba9eea",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "af1d81d4-cbcf-4b23-ac63-26f2898be36e",
+      "archlangId": "r_af1d81d4_cbcf_4b23_ac63_26f2898be36e",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 37250,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+      "archlangId": "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 25700,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "f396afbd-1890-492c-939c-cb3eaea48419",
+      "archlangId": "r_f396afbd_1890_492c_939c_cb3eaea48419",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a3dda1c3-008e-43d1-b39d-89435fafc30b",
+      "archlangId": "r_a3dda1c3_008e_43d1_b39d_89435fafc30b",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 30350,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "32492d3e-c587-4212-8886-5a7028b3de4c",
+      "archlangId": "r_32492d3e_c587_4212_8886_5a7028b3de4c",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 30350,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1d213b0c-df0a-4276-bd54-d84c79e7557a",
+      "archlangId": "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "actual": {
+        "x": 30350,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+      "archlangId": "r_ac0b5595_0528_4b54_9550_f6dcfa20174b",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "actual": {
+        "x": 25700,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "5c245632-6706-47f5-a029-1410381f9f4d",
+      "archlangId": "r_5c245632_6706_47f5_a029_1410381f9f4d",
+      "elementType": "room",
+      "expected": {
+        "x": 26500,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "actual": {
+        "x": 26500,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+      "archlangId": "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+      "elementType": "room",
+      "expected": {
+        "x": 29250,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "actual": {
+        "x": 29250,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "6a0a766f-5aa8-44aa-aad7-dcca9c32234a",
+      "archlangId": "r_6a0a766f_5aa8_44aa_aad7_dcca9c32234a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "actual": {
+        "x": 30350,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "aca60053-e6db-41e1-a8ad-e48355e6971b",
+      "archlangId": "r_aca60053_e6db_41e1_a8ad_e48355e6971b",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "actual": {
+        "x": 30350,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+      "archlangId": "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "actual": {
+        "x": 25700,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a00374a2-ad34-478e-a7bd-dd76abad0841",
+      "archlangId": "r_a00374a2_ad34_478e_a7bd_dd76abad0841",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ee70ac73-38aa-407d-aaf5-7078f9cd972a",
+      "archlangId": "r_ee70ac73_38aa_407d_aaf5_7078f9cd972a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "actual": {
+        "x": 30350,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "c6b75427-2a50-435f-b52b-d33254d59713",
+      "archlangId": "r_c6b75427_2a50_435f_b52b_d33254d59713",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 39650,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "e80b3d48-3845-4726-8a48-872c2bd0ef9a",
+      "archlangId": "r_e80b3d48_3845_4726_8a48_872c2bd0ef9a",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1992db95-35e5-43ca-853b-d2e5b8abdd26",
+      "archlangId": "r_1992db95_35e5_43ca_853b_d2e5b8abdd26",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 37250,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+      "archlangId": "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 37250,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694",
+      "archlangId": "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "actual": {
+        "x": 37250,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d43418c1-4565-47ab-af1c-4d27302082be",
+      "archlangId": "r_d43418c1_4565_47ab_af1c_4d27302082be",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "actual": {
+        "x": 39650,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1a6dda6d-3941-4d06-8ad6-037f4eeb8144",
+      "archlangId": "r_1a6dda6d_3941_4d06_8ad6_037f4eeb8144",
+      "elementType": "room",
+      "expected": {
+        "x": 40750,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "actual": {
+        "x": 40750,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+      "archlangId": "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "actual": {
+        "x": 39650,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "2e4673ca-02e3-404f-9dce-bce3ede13e41",
+      "archlangId": "r_2e4673ca_02e3_404f_9dce_bce3ede13e41",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "actual": {
+        "x": 37250,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "09b2e973-79a5-45a0-b06a-cff7067d537f",
+      "archlangId": "r_09b2e973_79a5_45a0_b06a_cff7067d537f",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "actual": {
+        "x": 37250,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "974d96d1-9524-45a5-bc4f-4d70db675fce",
+      "archlangId": "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "actual": {
+        "x": 39650,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "fcd445b4-7b80-4b3a-99fa-fddc66399da0",
+      "archlangId": "r_fcd445b4_7b80_4b3a_99fa_fddc66399da0",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "99603f11-d6c7-43e5-8db6-13921a66fe7a",
+      "archlangId": "r_99603f11_d6c7_43e5_8db6_13921a66fe7a",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "actual": {
+        "x": 37250,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0e344db3-18b1-494b-8668-6ca09f37ce68",
+      "archlangId": "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+      "elementType": "room",
+      "expected": {
+        "x": 32750,
+        "y": 30836,
+        "width": 4500,
+        "height": 6450
+      },
+      "actual": {
+        "x": 32750,
+        "y": 30836,
+        "width": 4500,
+        "height": 6450
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "eb55e04f-2d21-4a1b-b886-3bbb285fb246",
+      "archlangId": "balc_eb55e04f_2d21_4a1b_b886_3bbb285fb246",
+      "elementType": "balcony",
+      "expected": {
+        "x": 24200,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "actual": {
+        "x": 24200,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "edc80688-5302-47bb-8254-707dac6a5ce9",
+      "archlangId": "balc_edc80688_5302_47bb_8254_707dac6a5ce9",
+      "elementType": "balcony",
+      "expected": {
+        "x": 44300,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "actual": {
+        "x": 44300,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "9699c0c9-1863-440e-8e7d-76dd554ecf2c",
+      "archlangId": "balc_9699c0c9_1863_440e_8e7d_76dd554ecf2c",
+      "elementType": "balcony",
+      "expected": {
+        "x": 24200,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "actual": {
+        "x": 24200,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ed246a4d-73f5-453d-999c-eeb8af9a507b",
+      "archlangId": "balc_ed246a4d_73f5_453d_999c_eeb8af9a507b",
+      "elementType": "balcony",
+      "expected": {
+        "x": 44300,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "actual": {
+        "x": 44300,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_01",
+      "archlangId": "d_flat_01_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "e0eb6b31-a873-456e-9328-b6af671077b7",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_e0eb6b31_a873_456e_9328_b6af671077b7"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_02",
+      "archlangId": "d_flat_01_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "e0eb6b31-a873-456e-9328-b6af671077b7",
+          "28061fcf-222a-4df9-9035-cb58295361b0"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_e0eb6b31_a873_456e_9328_b6af671077b7",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_03",
+      "archlangId": "d_flat_01_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "f56a2c5f-e50b-4a8e-9532-444c2d4df30c"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_04",
+      "archlangId": "d_flat_01_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_28061fcf_222a_4df9_9035_cb58295361b0",
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_05",
+      "archlangId": "d_flat_01_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "26d66294-4ead-4abe-9b86-2ef36829c80f"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_26d66294_4ead_4abe_9b86_2ef36829c80f",
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_06",
+      "archlangId": "d_flat_01_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "f56a2c5f-e50b-4a8e-9532-444c2d4df30c",
+          "40c35acf-19d3-4458-9b47-6923db163948"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+          "r_40c35acf_19d3_4458_9b47_6923db163948"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_07",
+      "archlangId": "d_flat_01_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "39b0c0ee-6400-4ae8-8dd5-15d260cbb5a1"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+          "r_39b0c0ee_6400_4ae8_8dd5_15d260cbb5a1"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_08",
+      "archlangId": "d_flat_01_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "29931ad4-145b-4f21-9fd8-b3628c64415a",
+          "a25af4f0-4c78-4845-a970-46cfde92e059"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+          "r_a25af4f0_4c78_4845_a970_46cfde92e059"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_09",
+      "archlangId": "d_flat_01_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "29931ad4-145b-4f21-9fd8-b3628c64415a"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_10",
+      "archlangId": "d_flat_01_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "29931ad4-145b-4f21-9fd8-b3628c64415a",
+          "67a38e01-3633-4be6-96f8-7610b8c9a2f9"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+          "r_67a38e01_3633_4be6_96f8_7610b8c9a2f9"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_11",
+      "archlangId": "d_flat_01_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 1366,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "eb55e04f-2d21-4a1b-b886-3bbb285fb246"
+        ]
+      },
+      "actual": {
+        "width": 1366,
+        "between": [
+          "exterior",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_01",
+      "archlangId": "d_flat_02_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_cda06784_b756_48f7_a2e6_e7c3cd730fab"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_02",
+      "archlangId": "d_flat_02_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_cda06784_b756_48f7_a2e6_e7c3cd730fab",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_03",
+      "archlangId": "d_flat_02_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "d6401b5f-3923-46f7-b545-82d441a50b5f"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_04",
+      "archlangId": "d_flat_02_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "965be242-b911-42d1-9714-631f4d4369de"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10",
+          "r_965be242_b911_42d1_9714_631f4d4369de"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_05",
+      "archlangId": "d_flat_02_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "9aa19998-1f63-463c-ac6b-2036f18c500d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_9aa19998_1f63_463c_ac6b_2036f18c500d",
+          "r_965be242_b911_42d1_9714_631f4d4369de"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_06",
+      "archlangId": "d_flat_02_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "d6401b5f-3923-46f7-b545-82d441a50b5f",
+          "bbe9c1d6-2c47-4eb9-91ca-6883d76b1a64"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+          "r_bbe9c1d6_2c47_4eb9_91ca_6883d76b1a64"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_07",
+      "archlangId": "d_flat_02_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "15880674-6456-4608-b8c4-e014bcd43408"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_965be242_b911_42d1_9714_631f4d4369de",
+          "r_15880674_6456_4608_b8c4_e014bcd43408"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_08",
+      "archlangId": "d_flat_02_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+          "af1d81d4-cbcf-4b23-ac63-26f2898be36e"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+          "r_af1d81d4_cbcf_4b23_ac63_26f2898be36e"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_09",
+      "archlangId": "d_flat_02_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_965be242_b911_42d1_9714_631f4d4369de",
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_10",
+      "archlangId": "d_flat_02_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+          "60249816-a377-463b-bfbe-dbbaaaba9eea"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+          "r_60249816_a377_463b_bfbe_dbbaaaba9eea"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_11",
+      "archlangId": "d_flat_02_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 1366,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "edc80688-5302-47bb-8254-707dac6a5ce9"
+        ]
+      },
+      "actual": {
+        "width": 1366,
+        "between": [
+          "exterior",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_01",
+      "archlangId": "d_flat_03_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+          "a3dda1c3-008e-43d1-b39d-89435fafc30b"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_a3dda1c3_008e_43d1_b39d_89435fafc30b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_02",
+      "archlangId": "d_flat_03_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_03",
+      "archlangId": "d_flat_03_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+          "f396afbd-1890-492c-939c-cb3eaea48419"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_f396afbd_1890_492c_939c_cb3eaea48419"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_04",
+      "archlangId": "d_flat_03_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "32492d3e-c587-4212-8886-5a7028b3de4c",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_32492d3e_c587_4212_8886_5a7028b3de4c"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_05",
+      "archlangId": "d_flat_03_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "32492d3e-c587-4212-8886-5a7028b3de4c",
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_32492d3e_c587_4212_8886_5a7028b3de4c",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_06",
+      "archlangId": "d_flat_03_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "1d213b0c-df0a-4276-bd54-d84c79e7557a"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_07",
+      "archlangId": "d_flat_03_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b",
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_08",
+      "archlangId": "d_flat_03_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "5c245632-6706-47f5-a029-1410381f9f4d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_5c245632_6706_47f5_a029_1410381f9f4d",
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_09",
+      "archlangId": "d_flat_03_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "1d213b0c-df0a-4276-bd54-d84c79e7557a",
+          "6a0a766f-5aa8-44aa-aad7-dcca9c32234a"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+          "r_6a0a766f_5aa8_44aa_aad7_dcca9c32234a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_10",
+      "archlangId": "d_flat_03_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "aca60053-e6db-41e1-a8ad-e48355e6971b"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+          "r_aca60053_e6db_41e1_a8ad_e48355e6971b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_11",
+      "archlangId": "d_flat_03_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+          "ee70ac73-38aa-407d-aaf5-7078f9cd972a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+          "r_ee70ac73_38aa_407d_aaf5_7078f9cd972a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_12",
+      "archlangId": "d_flat_03_door_12",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_13",
+      "archlangId": "d_flat_03_door_13",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+          "a00374a2-ad34-478e-a7bd-dd76abad0841"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+          "r_a00374a2_ad34_478e_a7bd_dd76abad0841"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_14",
+      "archlangId": "d_flat_03_door_14",
+      "elementType": "door",
+      "expected": {
+        "width": 1500,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "9699c0c9-1863-440e-8e7d-76dd554ecf2c"
+        ]
+      },
+      "actual": {
+        "width": 1500,
+        "between": [
+          "exterior",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_01",
+      "archlangId": "d_flat_04_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "c6b75427-2a50-435f-b52b-d33254d59713",
+          "1992db95-35e5-43ca-853b-d2e5b8abdd26"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_1992db95_35e5_43ca_853b_d2e5b8abdd26"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_02",
+      "archlangId": "d_flat_04_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "c6b75427-2a50-435f-b52b-d33254d59713"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_03",
+      "archlangId": "d_flat_04_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "c6b75427-2a50-435f-b52b-d33254d59713",
+          "e80b3d48-3845-4726-8a48-872c2bd0ef9a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_e80b3d48_3845_4726_8a48_872c2bd0ef9a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_04",
+      "archlangId": "d_flat_04_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_05",
+      "archlangId": "d_flat_04_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+          "d43418c1-4565-47ab-af1c-4d27302082be"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_06",
+      "archlangId": "d_flat_04_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_07",
+      "archlangId": "d_flat_04_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_d43418c1_4565_47ab_af1c_4d27302082be",
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_08",
+      "archlangId": "d_flat_04_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "1a6dda6d-3941-4d06-8ad6-037f4eeb8144"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_1a6dda6d_3941_4d06_8ad6_037f4eeb8144",
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_09",
+      "archlangId": "d_flat_04_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694",
+          "2e4673ca-02e3-404f-9dce-bce3ede13e41"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+          "r_2e4673ca_02e3_404f_9dce_bce3ede13e41"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_10",
+      "archlangId": "d_flat_04_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "09b2e973-79a5-45a0-b06a-cff7067d537f"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+          "r_09b2e973_79a5_45a0_b06a_cff7067d537f"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_11",
+      "archlangId": "d_flat_04_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "974d96d1-9524-45a5-bc4f-4d70db675fce",
+          "99603f11-d6c7-43e5-8db6-13921a66fe7a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+          "r_99603f11_d6c7_43e5_8db6_13921a66fe7a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_12",
+      "archlangId": "d_flat_04_door_12",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "974d96d1-9524-45a5-bc4f-4d70db675fce"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_13",
+      "archlangId": "d_flat_04_door_13",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "974d96d1-9524-45a5-bc4f-4d70db675fce",
+          "fcd445b4-7b80-4b3a-99fa-fddc66399da0"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+          "r_fcd445b4_7b80_4b3a_99fa_fddc66399da0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_14",
+      "archlangId": "d_flat_04_door_14",
+      "elementType": "door",
+      "expected": {
+        "width": 1500,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "ed246a4d-73f5-453d-999c-eeb8af9a507b"
+        ]
+      },
+      "actual": {
+        "width": 1500,
+        "between": [
+          "exterior",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_01",
+      "archlangId": "d_core_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1200,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "85851b04-2a9c-4560-8be2-ea5ff1fd71bc"
+        ]
+      },
+      "actual": {
+        "width": 1200,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_02",
+      "archlangId": "d_core_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1200,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "b04d8a3f-4f51-4ba9-979b-a028fd322f54"
+        ]
+      },
+      "actual": {
+        "width": 1200,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_03",
+      "archlangId": "d_core_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "37de44b2-2eef-497f-8af9-617944b72142"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_04",
+      "archlangId": "d_core_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "db865cd5-b6e3-4619-89d9-000e831a27f5"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_kitchen_E_1",
+      "archlangId": "win_flat_01__win_flat_01_kitchen_E_1",
+      "elementType": "window",
+      "expected": {
+        "width": 1633
+      },
+      "actual": {
+        "width": 1633
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_living_dining_S_2",
+      "archlangId": "win_flat_01__win_flat_01_living_dining_S_2",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_master_bedroom_N_3",
+      "archlangId": "win_flat_01__win_flat_01_master_bedroom_N_3",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_kitchen_W_4",
+      "archlangId": "win_flat_02__win_flat_02_kitchen_W_4",
+      "elementType": "window",
+      "expected": {
+        "width": 1633
+      },
+      "actual": {
+        "width": 1633
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_living_dining_S_5",
+      "archlangId": "win_flat_02__win_flat_02_living_dining_S_5",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_master_bedroom_N_6",
+      "archlangId": "win_flat_02__win_flat_02_master_bedroom_N_6",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_bedroom_2_N_7",
+      "archlangId": "win_flat_03__win_flat_03_bedroom_2_N_7",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_kitchen_E_8",
+      "archlangId": "win_flat_03__win_flat_03_kitchen_E_8",
+      "elementType": "window",
+      "expected": {
+        "width": 1913
+      },
+      "actual": {
+        "width": 1913
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_master_bedroom_S_9",
+      "archlangId": "win_flat_03__win_flat_03_master_bedroom_S_9",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_bedroom_2_N_10",
+      "archlangId": "win_flat_04__win_flat_04_bedroom_2_N_10",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_kitchen_W_11",
+      "archlangId": "win_flat_04__win_flat_04_kitchen_W_11",
+      "elementType": "window",
+      "expected": {
+        "width": 1913
+      },
+      "actual": {
+        "width": 1913
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_master_bedroom_S_12",
+      "archlangId": "win_flat_04__win_flat_04_master_bedroom_S_12",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "CORE_VERTICALS",
+      "archlangId": "VERTICALS_SUMMARY",
+      "elementType": "stair",
+      "expected": {
+        "lifts": 2,
+        "stairs": 2
+      },
+      "actual": {
+        "lifts": 2,
+        "stairs": 2
+      },
+      "status": "PASS"
+    }
+  ],
+  "checks": [
+    {
+      "canonicalId": "FLAT_COUNT",
+      "archlangId": "ZONES_COUNT",
+      "elementType": "flat",
+      "expected": {
+        "flatCount": 4,
+        "mix": {
+          "2BHK": 2,
+          "3BHK": 2
+        }
+      },
+      "actual": {
+        "flatCount": 4,
+        "mix": {
+          "2BHK": 2,
+          "3BHK": 2
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01",
+      "archlangId": "zone_flat_01",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_01",
+        "unitType": "2BHK",
+        "totalRooms": 10,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 10,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02",
+      "archlangId": "zone_flat_02",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_02",
+        "unitType": "2BHK",
+        "totalRooms": 10,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 10,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03",
+      "archlangId": "zone_flat_03",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_03",
+        "unitType": "3BHK",
+        "totalRooms": 13,
+        "bedrooms": 3,
+        "bathrooms": 3,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 13,
+        "bedrooms": 3
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04",
+      "archlangId": "zone_flat_04",
+      "elementType": "program",
+      "expected": {
+        "flatId": "flat_04",
+        "unitType": "3BHK",
+        "totalRooms": 13,
+        "bedrooms": 3,
+        "bathrooms": 3,
+        "livingDining": 1
+      },
+      "actual": {
+        "totalRooms": 13,
+        "bedrooms": 3
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "COMMON_CORE_ISOLATION",
+      "archlangId": "COMMON_CORE_ZONE",
+      "elementType": "room",
+      "expected": {
+        "coreIsolated": true
+      },
+      "actual": {
+        "coreIsolated": true
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "e0eb6b31-a873-456e-9328-b6af671077b7",
+      "archlangId": "r_e0eb6b31_a873_456e_9328_b6af671077b7",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 30350,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "f56a2c5f-e50b-4a8e-9532-444c2d4df30c",
+      "archlangId": "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "actual": {
+        "x": 30350,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "28061fcf-222a-4df9-9035-cb58295361b0",
+      "archlangId": "r_28061fcf_222a_4df9_9035_cb58295361b0",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "actual": {
+        "x": 25700,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "26d66294-4ead-4abe-9b86-2ef36829c80f",
+      "archlangId": "r_26d66294_4ead_4abe_9b86_2ef36829c80f",
+      "elementType": "room",
+      "expected": {
+        "x": 26500,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "actual": {
+        "x": 26500,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+      "archlangId": "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+      "elementType": "room",
+      "expected": {
+        "x": 29250,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "actual": {
+        "x": 29250,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "40c35acf-19d3-4458-9b47-6923db163948",
+      "archlangId": "r_40c35acf_19d3_4458_9b47_6923db163948",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "actual": {
+        "x": 30350,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "39b0c0ee-6400-4ae8-8dd5-15d260cbb5a1",
+      "archlangId": "r_39b0c0ee_6400_4ae8_8dd5_15d260cbb5a1",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "actual": {
+        "x": 30350,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "29931ad4-145b-4f21-9fd8-b3628c64415a",
+      "archlangId": "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 25700,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "67a38e01-3633-4be6-96f8-7610b8c9a2f9",
+      "archlangId": "r_67a38e01_3633_4be6_96f8_7610b8c9a2f9",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a25af4f0-4c78-4845-a970-46cfde92e059",
+      "archlangId": "r_a25af4f0_4c78_4845_a970_46cfde92e059",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 30350,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+      "archlangId": "r_cda06784_b756_48f7_a2e6_e7c3cd730fab",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 37250,
+        "y": 31136,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d6401b5f-3923-46f7-b545-82d441a50b5f",
+      "archlangId": "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "actual": {
+        "x": 37250,
+        "y": 28415,
+        "width": 2400,
+        "height": 2721
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+      "archlangId": "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "actual": {
+        "x": 39650,
+        "y": 28415,
+        "width": 4650,
+        "height": 4271
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "9aa19998-1f63-463c-ac6b-2036f18c500d",
+      "archlangId": "r_9aa19998_1f63_463c_ac6b_2036f18c500d",
+      "elementType": "room",
+      "expected": {
+        "x": 40750,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "actual": {
+        "x": 40750,
+        "y": 24822,
+        "width": 2750,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "965be242-b911-42d1-9714-631f4d4369de",
+      "archlangId": "r_965be242_b911_42d1_9714_631f4d4369de",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "actual": {
+        "x": 39650,
+        "y": 24822,
+        "width": 1100,
+        "height": 3593
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "bbe9c1d6-2c47-4eb9-91ca-6883d76b1a64",
+      "archlangId": "r_bbe9c1d6_2c47_4eb9_91ca_6883d76b1a64",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "actual": {
+        "x": 37250,
+        "y": 26747,
+        "width": 2400,
+        "height": 1668
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "15880674-6456-4608-b8c4-e014bcd43408",
+      "archlangId": "r_15880674_6456_4608_b8c4_e014bcd43408",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "actual": {
+        "x": 37250,
+        "y": 24822,
+        "width": 2400,
+        "height": 1925
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+      "archlangId": "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 39650,
+        "y": 22072,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "60249816-a377-463b-bfbe-dbbaaaba9eea",
+      "archlangId": "r_60249816_a377_463b_bfbe_dbbaaaba9eea",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 23322,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "af1d81d4-cbcf-4b23-ac63-26f2898be36e",
+      "archlangId": "r_af1d81d4_cbcf_4b23_ac63_26f2898be36e",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 37250,
+        "y": 22072,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+      "archlangId": "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 25700,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "f396afbd-1890-492c-939c-cb3eaea48419",
+      "archlangId": "r_f396afbd_1890_492c_939c_cb3eaea48419",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a3dda1c3-008e-43d1-b39d-89435fafc30b",
+      "archlangId": "r_a3dda1c3_008e_43d1_b39d_89435fafc30b",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 30350,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "32492d3e-c587-4212-8886-5a7028b3de4c",
+      "archlangId": "r_32492d3e_c587_4212_8886_5a7028b3de4c",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 30350,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1d213b0c-df0a-4276-bd54-d84c79e7557a",
+      "archlangId": "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "actual": {
+        "x": 30350,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+      "archlangId": "r_ac0b5595_0528_4b54_9550_f6dcfa20174b",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "actual": {
+        "x": 25700,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "5c245632-6706-47f5-a029-1410381f9f4d",
+      "archlangId": "r_5c245632_6706_47f5_a029_1410381f9f4d",
+      "elementType": "room",
+      "expected": {
+        "x": 26500,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "actual": {
+        "x": 26500,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+      "archlangId": "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+      "elementType": "room",
+      "expected": {
+        "x": 29250,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "actual": {
+        "x": 29250,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "6a0a766f-5aa8-44aa-aad7-dcca9c32234a",
+      "archlangId": "r_6a0a766f_5aa8_44aa_aad7_dcca9c32234a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "actual": {
+        "x": 30350,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "aca60053-e6db-41e1-a8ad-e48355e6971b",
+      "archlangId": "r_aca60053_e6db_41e1_a8ad_e48355e6971b",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "actual": {
+        "x": 30350,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+      "archlangId": "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+      "elementType": "room",
+      "expected": {
+        "x": 25700,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "actual": {
+        "x": 25700,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "a00374a2-ad34-478e-a7bd-dd76abad0841",
+      "archlangId": "r_a00374a2_ad34_478e_a7bd_dd76abad0841",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 30350,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ee70ac73-38aa-407d-aaf5-7078f9cd972a",
+      "archlangId": "r_ee70ac73_38aa_407d_aaf5_7078f9cd972a",
+      "elementType": "room",
+      "expected": {
+        "x": 30350,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "actual": {
+        "x": 30350,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "c6b75427-2a50-435f-b52b-d33254d59713",
+      "archlangId": "r_c6b75427_2a50_435f_b52b_d33254d59713",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "actual": {
+        "x": 39650,
+        "y": 32686,
+        "width": 4650,
+        "height": 2750
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "e80b3d48-3845-4726-8a48-872c2bd0ef9a",
+      "archlangId": "r_e80b3d48_3845_4726_8a48_872c2bd0ef9a",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 33936,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1992db95-35e5-43ca-853b-d2e5b8abdd26",
+      "archlangId": "r_1992db95_35e5_43ca_853b_d2e5b8abdd26",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "actual": {
+        "x": 37250,
+        "y": 32686,
+        "width": 2400,
+        "height": 1250
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+      "archlangId": "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "actual": {
+        "x": 37250,
+        "y": 35436,
+        "width": 2400,
+        "height": 1550
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694",
+      "archlangId": "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "actual": {
+        "x": 37250,
+        "y": 36986,
+        "width": 2400,
+        "height": 3188
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d43418c1-4565-47ab-af1c-4d27302082be",
+      "archlangId": "r_d43418c1_4565_47ab_af1c_4d27302082be",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "actual": {
+        "x": 39650,
+        "y": 35436,
+        "width": 4650,
+        "height": 4738
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "1a6dda6d-3941-4d06-8ad6-037f4eeb8144",
+      "archlangId": "r_1a6dda6d_3941_4d06_8ad6_037f4eeb8144",
+      "elementType": "room",
+      "expected": {
+        "x": 40750,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "actual": {
+        "x": 40750,
+        "y": 40174,
+        "width": 2750,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+      "archlangId": "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "actual": {
+        "x": 39650,
+        "y": 40174,
+        "width": 1100,
+        "height": 3778
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "2e4673ca-02e3-404f-9dce-bce3ede13e41",
+      "archlangId": "r_2e4673ca_02e3_404f_9dce_bce3ede13e41",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "actual": {
+        "x": 37250,
+        "y": 40174,
+        "width": 2400,
+        "height": 1780
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "09b2e973-79a5-45a0-b06a-cff7067d537f",
+      "archlangId": "r_09b2e973_79a5_45a0_b06a_cff7067d537f",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "actual": {
+        "x": 37250,
+        "y": 41954,
+        "width": 2400,
+        "height": 1998
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "974d96d1-9524-45a5-bc4f-4d70db675fce",
+      "archlangId": "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+      "elementType": "room",
+      "expected": {
+        "x": 39650,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "actual": {
+        "x": 39650,
+        "y": 43952,
+        "width": 4650,
+        "height": 2976
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "fcd445b4-7b80-4b3a-99fa-fddc66399da0",
+      "archlangId": "r_fcd445b4_7b80_4b3a_99fa_fddc66399da0",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "actual": {
+        "x": 37250,
+        "y": 43952,
+        "width": 2400,
+        "height": 1500
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "99603f11-d6c7-43e5-8db6-13921a66fe7a",
+      "archlangId": "r_99603f11_d6c7_43e5_8db6_13921a66fe7a",
+      "elementType": "room",
+      "expected": {
+        "x": 37250,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "actual": {
+        "x": 37250,
+        "y": 45452,
+        "width": 2400,
+        "height": 1476
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "0e344db3-18b1-494b-8668-6ca09f37ce68",
+      "archlangId": "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+      "elementType": "room",
+      "expected": {
+        "x": 32750,
+        "y": 30836,
+        "width": 4500,
+        "height": 6450
+      },
+      "actual": {
+        "x": 32750,
+        "y": 30836,
+        "width": 4500,
+        "height": 6450
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "eb55e04f-2d21-4a1b-b886-3bbb285fb246",
+      "archlangId": "balc_eb55e04f_2d21_4a1b_b886_3bbb285fb246",
+      "elementType": "balcony",
+      "expected": {
+        "x": 24200,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "actual": {
+        "x": 24200,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "edc80688-5302-47bb-8254-707dac6a5ce9",
+      "archlangId": "balc_edc80688_5302_47bb_8254_707dac6a5ce9",
+      "elementType": "balcony",
+      "expected": {
+        "x": 44300,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "actual": {
+        "x": 44300,
+        "y": 29717,
+        "width": 1500,
+        "height": 1666
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "9699c0c9-1863-440e-8e7d-76dd554ecf2c",
+      "archlangId": "balc_9699c0c9_1863_440e_8e7d_76dd554ecf2c",
+      "elementType": "balcony",
+      "expected": {
+        "x": 24200,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "actual": {
+        "x": 24200,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "ed246a4d-73f5-453d-999c-eeb8af9a507b",
+      "archlangId": "balc_ed246a4d_73f5_453d_999c_eeb8af9a507b",
+      "elementType": "balcony",
+      "expected": {
+        "x": 44300,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "actual": {
+        "x": 44300,
+        "y": 36811,
+        "width": 1500,
+        "height": 1987
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_01",
+      "archlangId": "d_flat_01_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "e0eb6b31-a873-456e-9328-b6af671077b7",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_e0eb6b31_a873_456e_9328_b6af671077b7"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_02",
+      "archlangId": "d_flat_01_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "e0eb6b31-a873-456e-9328-b6af671077b7",
+          "28061fcf-222a-4df9-9035-cb58295361b0"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_e0eb6b31_a873_456e_9328_b6af671077b7",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_03",
+      "archlangId": "d_flat_01_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "f56a2c5f-e50b-4a8e-9532-444c2d4df30c"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_04",
+      "archlangId": "d_flat_01_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_28061fcf_222a_4df9_9035_cb58295361b0",
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_05",
+      "archlangId": "d_flat_01_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "26d66294-4ead-4abe-9b86-2ef36829c80f"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_26d66294_4ead_4abe_9b86_2ef36829c80f",
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_06",
+      "archlangId": "d_flat_01_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "f56a2c5f-e50b-4a8e-9532-444c2d4df30c",
+          "40c35acf-19d3-4458-9b47-6923db163948"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_f56a2c5f_e50b_4a8e_9532_444c2d4df30c",
+          "r_40c35acf_19d3_4458_9b47_6923db163948"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_07",
+      "archlangId": "d_flat_01_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "39b0c0ee-6400-4ae8-8dd5-15d260cbb5a1"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+          "r_39b0c0ee_6400_4ae8_8dd5_15d260cbb5a1"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_08",
+      "archlangId": "d_flat_01_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "29931ad4-145b-4f21-9fd8-b3628c64415a",
+          "a25af4f0-4c78-4845-a970-46cfde92e059"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+          "r_a25af4f0_4c78_4845_a970_46cfde92e059"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_09",
+      "archlangId": "d_flat_01_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "b1ecd4e1-918c-415d-82ca-09bf0f135274",
+          "29931ad4-145b-4f21-9fd8-b3628c64415a"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_b1ecd4e1_918c_415d_82ca_09bf0f135274",
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_10",
+      "archlangId": "d_flat_01_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "29931ad4-145b-4f21-9fd8-b3628c64415a",
+          "67a38e01-3633-4be6-96f8-7610b8c9a2f9"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_29931ad4_145b_4f21_9fd8_b3628c64415a",
+          "r_67a38e01_3633_4be6_96f8_7610b8c9a2f9"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01_door_11",
+      "archlangId": "d_flat_01_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 1366,
+        "connectsRooms": [
+          "28061fcf-222a-4df9-9035-cb58295361b0",
+          "eb55e04f-2d21-4a1b-b886-3bbb285fb246"
+        ]
+      },
+      "actual": {
+        "width": 1366,
+        "between": [
+          "exterior",
+          "r_28061fcf_222a_4df9_9035_cb58295361b0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_01",
+      "archlangId": "d_flat_02_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_cda06784_b756_48f7_a2e6_e7c3cd730fab"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_02",
+      "archlangId": "d_flat_02_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "cda06784-b756-48f7-a2e6-e7c3cd730fab",
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_cda06784_b756_48f7_a2e6_e7c3cd730fab",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_03",
+      "archlangId": "d_flat_02_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "d6401b5f-3923-46f7-b545-82d441a50b5f"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_04",
+      "archlangId": "d_flat_02_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "965be242-b911-42d1-9714-631f4d4369de"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10",
+          "r_965be242_b911_42d1_9714_631f4d4369de"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_05",
+      "archlangId": "d_flat_02_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "9aa19998-1f63-463c-ac6b-2036f18c500d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_9aa19998_1f63_463c_ac6b_2036f18c500d",
+          "r_965be242_b911_42d1_9714_631f4d4369de"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_06",
+      "archlangId": "d_flat_02_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "d6401b5f-3923-46f7-b545-82d441a50b5f",
+          "bbe9c1d6-2c47-4eb9-91ca-6883d76b1a64"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_d6401b5f_3923_46f7_b545_82d441a50b5f",
+          "r_bbe9c1d6_2c47_4eb9_91ca_6883d76b1a64"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_07",
+      "archlangId": "d_flat_02_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "15880674-6456-4608-b8c4-e014bcd43408"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_965be242_b911_42d1_9714_631f4d4369de",
+          "r_15880674_6456_4608_b8c4_e014bcd43408"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_08",
+      "archlangId": "d_flat_02_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+          "af1d81d4-cbcf-4b23-ac63-26f2898be36e"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+          "r_af1d81d4_cbcf_4b23_ac63_26f2898be36e"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_09",
+      "archlangId": "d_flat_02_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "965be242-b911-42d1-9714-631f4d4369de",
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_965be242_b911_42d1_9714_631f4d4369de",
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_10",
+      "archlangId": "d_flat_02_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "4253c58e-89b7-4098-8e04-96c3e82adcfd",
+          "60249816-a377-463b-bfbe-dbbaaaba9eea"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_4253c58e_89b7_4098_8e04_96c3e82adcfd",
+          "r_60249816_a377_463b_bfbe_dbbaaaba9eea"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02_door_11",
+      "archlangId": "d_flat_02_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 1366,
+        "connectsRooms": [
+          "552dd6c9-a7dc-44c9-96b5-aa1f818c0a10",
+          "edc80688-5302-47bb-8254-707dac6a5ce9"
+        ]
+      },
+      "actual": {
+        "width": 1366,
+        "between": [
+          "exterior",
+          "r_552dd6c9_a7dc_44c9_96b5_aa1f818c0a10"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_01",
+      "archlangId": "d_flat_03_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+          "a3dda1c3-008e-43d1-b39d-89435fafc30b"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_a3dda1c3_008e_43d1_b39d_89435fafc30b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_02",
+      "archlangId": "d_flat_03_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_03",
+      "archlangId": "d_flat_03_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "b860ebaf-a13d-4657-8b5b-6af1c10c4179",
+          "f396afbd-1890-492c-939c-cb3eaea48419"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_b860ebaf_a13d_4657_8b5b_6af1c10c4179",
+          "r_f396afbd_1890_492c_939c_cb3eaea48419"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_04",
+      "archlangId": "d_flat_03_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "32492d3e-c587-4212-8886-5a7028b3de4c",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_32492d3e_c587_4212_8886_5a7028b3de4c"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_05",
+      "archlangId": "d_flat_03_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "32492d3e-c587-4212-8886-5a7028b3de4c",
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_32492d3e_c587_4212_8886_5a7028b3de4c",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_06",
+      "archlangId": "d_flat_03_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "1d213b0c-df0a-4276-bd54-d84c79e7557a"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_07",
+      "archlangId": "d_flat_03_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b",
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_08",
+      "archlangId": "d_flat_03_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "5c245632-6706-47f5-a029-1410381f9f4d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_5c245632_6706_47f5_a029_1410381f9f4d",
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_09",
+      "archlangId": "d_flat_03_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "1d213b0c-df0a-4276-bd54-d84c79e7557a",
+          "6a0a766f-5aa8-44aa-aad7-dcca9c32234a"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_1d213b0c_df0a_4276_bd54_d84c79e7557a",
+          "r_6a0a766f_5aa8_44aa_aad7_dcca9c32234a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_10",
+      "archlangId": "d_flat_03_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "aca60053-e6db-41e1-a8ad-e48355e6971b"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+          "r_aca60053_e6db_41e1_a8ad_e48355e6971b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_11",
+      "archlangId": "d_flat_03_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+          "ee70ac73-38aa-407d-aaf5-7078f9cd972a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+          "r_ee70ac73_38aa_407d_aaf5_7078f9cd972a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_12",
+      "archlangId": "d_flat_03_door_12",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "befea5e1-e7e0-4612-9d0c-37ccfc43e01b",
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_befea5e1_e7e0_4612_9d0c_37ccfc43e01b",
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_13",
+      "archlangId": "d_flat_03_door_13",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "5a6c8d91-b6c1-47b4-9c80-bee7abf4bc5d",
+          "a00374a2-ad34-478e-a7bd-dd76abad0841"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_5a6c8d91_b6c1_47b4_9c80_bee7abf4bc5d",
+          "r_a00374a2_ad34_478e_a7bd_dd76abad0841"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03_door_14",
+      "archlangId": "d_flat_03_door_14",
+      "elementType": "door",
+      "expected": {
+        "width": 1500,
+        "connectsRooms": [
+          "ac0b5595-0528-4b54-9550-f6dcfa20174b",
+          "9699c0c9-1863-440e-8e7d-76dd554ecf2c"
+        ]
+      },
+      "actual": {
+        "width": 1500,
+        "between": [
+          "exterior",
+          "r_ac0b5595_0528_4b54_9550_f6dcfa20174b"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_01",
+      "archlangId": "d_flat_04_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "c6b75427-2a50-435f-b52b-d33254d59713",
+          "1992db95-35e5-43ca-853b-d2e5b8abdd26"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_1992db95_35e5_43ca_853b_d2e5b8abdd26"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_02",
+      "archlangId": "d_flat_04_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "c6b75427-2a50-435f-b52b-d33254d59713"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_03",
+      "archlangId": "d_flat_04_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "c6b75427-2a50-435f-b52b-d33254d59713",
+          "e80b3d48-3845-4726-8a48-872c2bd0ef9a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_c6b75427_2a50_435f_b52b_d33254d59713",
+          "r_e80b3d48_3845_4726_8a48_872c2bd0ef9a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_04",
+      "archlangId": "d_flat_04_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+          "0e344db3-18b1-494b-8668-6ca09f37ce68"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68",
+          "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_05",
+      "archlangId": "d_flat_04_door_05",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0b56f411-52a1-473c-b5e2-461f0bc50ceb",
+          "d43418c1-4565-47ab-af1c-4d27302082be"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "r_0b56f411_52a1_473c_b5e2_461f0bc50ceb",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_06",
+      "archlangId": "d_flat_04_door_06",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_07",
+      "archlangId": "d_flat_04_door_07",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_d43418c1_4565_47ab_af1c_4d27302082be",
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_08",
+      "archlangId": "d_flat_04_door_08",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "1a6dda6d-3941-4d06-8ad6-037f4eeb8144"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_1a6dda6d_3941_4d06_8ad6_037f4eeb8144",
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_09",
+      "archlangId": "d_flat_04_door_09",
+      "elementType": "door",
+      "expected": {
+        "width": 800,
+        "connectsRooms": [
+          "0ebcd1a4-6fcf-4d2c-baeb-e5e80019b694",
+          "2e4673ca-02e3-404f-9dce-bce3ede13e41"
+        ]
+      },
+      "actual": {
+        "width": 800,
+        "between": [
+          "r_0ebcd1a4_6fcf_4d2c_baeb_e5e80019b694",
+          "r_2e4673ca_02e3_404f_9dce_bce3ede13e41"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_10",
+      "archlangId": "d_flat_04_door_10",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "09b2e973-79a5-45a0-b06a-cff7067d537f"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+          "r_09b2e973_79a5_45a0_b06a_cff7067d537f"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_11",
+      "archlangId": "d_flat_04_door_11",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "974d96d1-9524-45a5-bc4f-4d70db675fce",
+          "99603f11-d6c7-43e5-8db6-13921a66fe7a"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+          "r_99603f11_d6c7_43e5_8db6_13921a66fe7a"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_12",
+      "archlangId": "d_flat_04_door_12",
+      "elementType": "door",
+      "expected": {
+        "width": 900,
+        "connectsRooms": [
+          "3cebc815-f90e-4925-8686-ef0cd193f5b3",
+          "974d96d1-9524-45a5-bc4f-4d70db675fce"
+        ]
+      },
+      "actual": {
+        "width": 900,
+        "between": [
+          "r_3cebc815_f90e_4925_8686_ef0cd193f5b3",
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_13",
+      "archlangId": "d_flat_04_door_13",
+      "elementType": "door",
+      "expected": {
+        "width": 750,
+        "connectsRooms": [
+          "974d96d1-9524-45a5-bc4f-4d70db675fce",
+          "fcd445b4-7b80-4b3a-99fa-fddc66399da0"
+        ]
+      },
+      "actual": {
+        "width": 750,
+        "between": [
+          "r_974d96d1_9524_45a5_bc4f_4d70db675fce",
+          "r_fcd445b4_7b80_4b3a_99fa_fddc66399da0"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04_door_14",
+      "archlangId": "d_flat_04_door_14",
+      "elementType": "door",
+      "expected": {
+        "width": 1500,
+        "connectsRooms": [
+          "d43418c1-4565-47ab-af1c-4d27302082be",
+          "ed246a4d-73f5-453d-999c-eeb8af9a507b"
+        ]
+      },
+      "actual": {
+        "width": 1500,
+        "between": [
+          "exterior",
+          "r_d43418c1_4565_47ab_af1c_4d27302082be"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_01",
+      "archlangId": "d_core_door_01",
+      "elementType": "door",
+      "expected": {
+        "width": 1200,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "85851b04-2a9c-4560-8be2-ea5ff1fd71bc"
+        ]
+      },
+      "actual": {
+        "width": 1200,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_02",
+      "archlangId": "d_core_door_02",
+      "elementType": "door",
+      "expected": {
+        "width": 1200,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "b04d8a3f-4f51-4ba9-979b-a028fd322f54"
+        ]
+      },
+      "actual": {
+        "width": 1200,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_03",
+      "archlangId": "d_core_door_03",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "37de44b2-2eef-497f-8af9-617944b72142"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "core_door_04",
+      "archlangId": "d_core_door_04",
+      "elementType": "door",
+      "expected": {
+        "width": 1000,
+        "connectsRooms": [
+          "0e344db3-18b1-494b-8668-6ca09f37ce68",
+          "db865cd5-b6e3-4619-89d9-000e831a27f5"
+        ]
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_0e344db3_18b1_494b_8668_6ca09f37ce68"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_kitchen_E_1",
+      "archlangId": "win_flat_01__win_flat_01_kitchen_E_1",
+      "elementType": "window",
+      "expected": {
+        "width": 1633
+      },
+      "actual": {
+        "width": 1633
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_living_dining_S_2",
+      "archlangId": "win_flat_01__win_flat_01_living_dining_S_2",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_01__win_flat_01_master_bedroom_N_3",
+      "archlangId": "win_flat_01__win_flat_01_master_bedroom_N_3",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_kitchen_W_4",
+      "archlangId": "win_flat_02__win_flat_02_kitchen_W_4",
+      "elementType": "window",
+      "expected": {
+        "width": 1633
+      },
+      "actual": {
+        "width": 1633
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_living_dining_S_5",
+      "archlangId": "win_flat_02__win_flat_02_living_dining_S_5",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_02__win_flat_02_master_bedroom_N_6",
+      "archlangId": "win_flat_02__win_flat_02_master_bedroom_N_6",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_bedroom_2_N_7",
+      "archlangId": "win_flat_03__win_flat_03_bedroom_2_N_7",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_kitchen_E_8",
+      "archlangId": "win_flat_03__win_flat_03_kitchen_E_8",
+      "elementType": "window",
+      "expected": {
+        "width": 1913
+      },
+      "actual": {
+        "width": 1913
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_03__win_flat_03_master_bedroom_S_9",
+      "archlangId": "win_flat_03__win_flat_03_master_bedroom_S_9",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_bedroom_2_N_10",
+      "archlangId": "win_flat_04__win_flat_04_bedroom_2_N_10",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_kitchen_W_11",
+      "archlangId": "win_flat_04__win_flat_04_kitchen_W_11",
+      "elementType": "window",
+      "expected": {
+        "width": 1913
+      },
+      "actual": {
+        "width": 1913
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "flat_04__win_flat_04_master_bedroom_S_12",
+      "archlangId": "win_flat_04__win_flat_04_master_bedroom_S_12",
+      "elementType": "window",
+      "expected": {
+        "width": 2790
+      },
+      "actual": {
+        "width": 2790
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "CORE_VERTICALS",
+      "archlangId": "VERTICALS_SUMMARY",
+      "elementType": "stair",
+      "expected": {
+        "lifts": 2,
+        "stairs": 2
+      },
+      "actual": {
+        "lifts": 2,
+        "stairs": 2
+      },
+      "status": "PASS"
+    }
+  ],
+  "flatParity": {
+    "expectedCount": 4,
+    "actualCount": 4,
+    "expectedMix": {
+      "2BHK": 2,
+      "3BHK": 2
+    },
+    "actualMix": {
+      "2BHK": 2,
+      "3BHK": 2
+    },
+    "passed": true
+  },
+  "roomParity": {
+    "expectedTotal": 57,
+    "actualTotal": 47,
+    "passed": false
+  },
+  "wallParity": {
+    "expectedCount": 0,
+    "actualCount": 192,
+    "passed": true
+  },
+  "coreParity": {
+    "liftsPassed": true,
+    "stairsPassed": true,
+    "lobbyPassed": true,
+    "coreNotAssignedToPrivate": true
+  },
+  "metrics": {
+    "flatCountParity": true,
+    "apartmentMixParity": true,
+    "roomProgrammeParity": true,
+    "roomCountParity": false,
+    "wallCountParity": true,
+    "doorCountParity": true,
+    "windowCountParity": true,
+    "stairCountParity": true,
+    "liftCountParity": true,
+    "ownershipIntegrity": true,
+    "coreIsolation": true,
+    "coordinateAccuracy": true,
+    "dimensionAccuracy": true
+  },
+  "summary": {
+    "totalElements": 124,
+    "passedElements": 124,
+    "failedElements": 0
+  }
+}

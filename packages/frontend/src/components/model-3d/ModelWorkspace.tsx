@@ -23,6 +23,7 @@ interface ModelWorkspaceProps {
   readonly onSelectEntity: (entityType: string, entityId: string, floorId: string) => void;
   readonly onClearSelection: () => void;
   readonly onSwitchFloor: (floorId: string) => void;
+  readonly sunHour?: number;
 }
 
 const projector = new Building3DProjector();
@@ -33,7 +34,7 @@ function updateParameter(settings: Building3DProjectionSettings, key: keyof Buil
   return { ...settings, [key]: { value, provenance: 'USER_PROVIDED' } satisfies ProjectionParameter };
 }
 
-export const ModelWorkspace: React.FC<ModelWorkspaceProps> = ({ building, generationControl, onApplyBuilding, activeFloorId, selection, onSelectEntity, onClearSelection, onSwitchFloor }) => {
+export const ModelWorkspace: React.FC<ModelWorkspaceProps> = ({ building, generationControl, onApplyBuilding, activeFloorId, selection, onSelectEntity, onClearSelection, onSwitchFloor, sunHour }) => {
   const [coordinationMessage, setCoordinationMessage] = useState('');
   const [stairReviewOpen, setStairReviewOpen] = useState(false);
   const stairIssues = useMemo(() => stairModelIssues(building), [building]);
@@ -92,6 +93,8 @@ export const ModelWorkspace: React.FC<ModelWorkspaceProps> = ({ building, genera
       fitRequest={fitRequest}
       fitSite={fitSite}
       snapshotRequest={snapshotRequest}
+      sunHour={sunHour}
+      northAngleDeg={building.site.orientation}
       onSelect={handleSelect}
       onClearSelection={onClearSelection}
     />

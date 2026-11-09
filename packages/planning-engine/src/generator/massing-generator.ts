@@ -261,18 +261,39 @@ export class MassingGenerator {
     floorLevel: number,
   ): MassingFootprintPlan {
     const env = site.buildableEnvelope;
+    const stepX = env.x + Math.round(env.width * 0.52);
+    const stepOffset = Math.min(1200, Math.max(800, Math.round(env.depth * 0.08)));
+
+    // Stepped 8-point polygon with staggered wing and recessed/projecting articulation
     const points: Point[] = [
-      { x: env.x, y: env.y },
+      { x: env.x, y: env.y + stepOffset },
+      { x: stepX, y: env.y + stepOffset },
+      { x: stepX, y: env.y },
       { x: env.x + env.width, y: env.y },
-      { x: env.x + env.width, y: env.y + env.depth },
+      { x: env.x + env.width, y: env.y + env.depth - stepOffset },
+      { x: stepX, y: env.y + env.depth - stepOffset },
+      { x: stepX, y: env.y + env.depth },
       { x: env.x, y: env.y + env.depth },
     ];
+
+    const otsW = 1200;
+    const otsD = 1500;
+    const otsX = stepX - otsW;
+    const otsY = env.y + Math.round(env.depth * 0.45);
+    const otsPoly: Polygon = {
+      points: [
+        { x: otsX, y: otsY },
+        { x: otsX + otsW, y: otsY },
+        { x: otsX + otsW, y: otsY + otsD },
+        { x: otsX, y: otsY + otsD },
+      ],
+    };
 
     return {
       floorLevel,
       boundary: { points },
       boundingBox: { x: env.x, y: env.y, width: env.width, depth: env.depth },
-      otsWells: [],
+      otsWells: [{ id: 'recessed-ots-shaft', polygon: otsPoly, width: otsW, depth: otsD }],
       balconies: [],
       strategy,
     };

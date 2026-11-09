@@ -1,0 +1,48 @@
+plan "Contemporary 2BHK Residence" {
+  units mm
+  grid 1
+  paper A2 landscape
+  scale 1:100
+  north up
+  dims auto all
+
+  level 0 "Ground Floor" height 3000 {
+    # ── Walls ──
+    wall id=w_w_ext_north exterior thickness 200 { (0, 0) (12000, 0) }
+    wall id=w_w_ext_east exterior thickness 200 { (12000, 0) (12000, 10000) }
+    wall id=w_w_ext_south exterior thickness 200 { (12000, 10000) (0, 10000) }
+    wall id=w_w_ext_west exterior thickness 200 { (0, 10000) (0, 0) }
+
+    # ── Common Core Zone ──
+    zone common_core "Common Core" {
+    }
+
+    # ── Residential Flats ──
+    zone zone_101 "Flat 101" {
+      room id=r_r_foyer at (0, 0) size 2500x2000 label "Entrance Foyer" uses entry
+      room id=r_r_living at (2500, 0) size 5500x4000 label "Living Room" uses living
+      room id=r_r_dining at (8000, 0) size 4000x4000 label "Dining Space" uses dining
+      room id=r_r_kitchen at (8000, 4000) size 4000x3000 label "Kitchen" uses kitchen
+      room id=r_r_master_bed at (0, 4000) size 4000x4000 label "Master Bedroom" uses bedroom
+      room id=r_r_master_bath at (0, 8000) size 2500x2000 label "Master Ensuite" uses bath
+      room id=r_r_bed_2 at (4000, 4000) size 4000x4000 label "Second Bedroom" uses bedroom
+      room id=r_r_common_bath at (4000, 8000) size 2500x2000 label "Common Bathroom" uses bath
+      outdoor id=balc_r_balcony balcony at (2500, 8000) size 1500x2000 label "Living Balcony" rail all
+    }
+
+    # ── Doors ──
+    door id=d_d_entry at (1000, 0) width 1000 wall w_w_ext_north swing in
+
+    # ── Windows ──
+    window id=win_win_living at (4500, 0) width 2000 wall w_w_ext_north sill 800 head 2200
+    window id=win_win_master at (0, 5500) width 1500 wall w_w_ext_west sill 900 head 2100
+  }
+
+  title {
+    project "Contemporary 2BHK Residence"
+    drawn_by "AI Floor Planner"
+    date "2026-11-09"
+    number "AFP-BLDG-CAS"
+    revision "1"
+  }
+}

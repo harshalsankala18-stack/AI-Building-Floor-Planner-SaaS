@@ -6,7 +6,7 @@ import type { EditorSelection, Polygon } from '@ai-floor-planner/core';
 import { DoorType } from '@ai-floor-planner/core';
 import { computeStairSolids } from '@ai-floor-planner/geometry-engine';
 import { makeProjectionShape as makeShape } from './projection-shape';
-import { millimetersToSceneUnits, type Building3DProjection, type ProjectionSource } from '@ai-floor-planner/projection-3d';
+import { millimetersToSceneUnits, computeIndianSunVector, type Building3DProjection, type ProjectionSource } from '@ai-floor-planner/projection-3d';
 import { shouldRenderRoomProjection, type ModelCameraPreset, type ModelFloorMode, type ModelLayerVisibility, type ModelViewMode } from '../../services/projection-preferences';
 
 const MM_TO_M = millimetersToSceneUnits(1);
@@ -24,6 +24,8 @@ interface ThreeBuildingSceneProps {
   readonly fitRequest: number;
   readonly fitSite?: boolean;
   readonly snapshotRequest?: number;
+  readonly sunHour?: number;
+  readonly northAngleDeg?: number;
   readonly onSelect: (source: ProjectionSource) => void;
   readonly onClearSelection: () => void;
 }
@@ -74,6 +76,8 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
   fitRequest,
   fitSite = false,
   snapshotRequest = 0,
+  sunHour = 12,
+  northAngleDeg = 0,
   onSelect,
   onClearSelection,
 }) => {
@@ -110,6 +114,7 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
     controls.target.set(5, 2, 5);
     scene.add(new THREE.HemisphereLight(0xddeeff, 0x182235, 2.2));
     const keyLight = new THREE.DirectionalLight(0xffffff, 2.8);
+    keyLight.name = 'key-sun-light';
     keyLight.position.set(-12, 22, -8);
     keyLight.castShadow = true;
     scene.add(keyLight);
@@ -139,6 +144,18 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
       runtimeRef.current = null;
     };
   }, []);
+
+  useEffect(() => {
+    const runtime = runtimeRef.current;
+    if (!runtime) return;
+    const keyLight = runtime.scene.getObjectByName('key-sun-light') as THREE.DirectionalLight | null;
+    if (!keyLight) return;
+    const sun = computeIndianSunVector(sunHour, northAngleDeg);
+    const dist = 32;
+    keyLight.position.set(sun.direction.x * dist, Math.max(3.5, sun.direction.y * dist), sun.direction.z * dist);
+    keyLight.intensity = Math.max(0.6, Math.min(3.2, 1.2 + (sun.altitudeDeg / 90) * 1.8));
+    runtime.renderer.render(runtime.scene, runtime.camera);
+  }, [sunHour, northAngleDeg]);
 
   useEffect(() => {
     const runtime = runtimeRef.current;

@@ -220,4 +220,64 @@ describe('Phase 2 — Deterministic Stepped-Polygon CAD Engine (Instant Pipeline
       expect(win.id).not.toContain('_W_');
     }
   });
+
+  it('compiles with ArchLang and verifies geometry parity when enableArchLang is true', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'afp-archlang-cad-'));
+    const store = new ImageArtifactStore(dir);
+
+    const orchestrator = new GenerationOrchestrator({
+      provider: null,
+      store,
+      gemini: null,
+      interpreterKind: 'local-stub',
+      deterministicCadFirst: true,
+      enableArchLang: true,
+    });
+
+    const input: GenerationOrchestratorInput = {
+      projectId: 'proj-archlang-verify',
+      projectName: 'PMC ArchLang Verified Apartment',
+      projectType: 'apartment',
+      site: {
+        plotWidth: 35000,
+        plotDepth: 40000,
+        roadFacing: Direction.North,
+        setbacks: { front: 3000, rear: 2000, left: 2000, right: 2000 },
+      },
+      apartmentConfig: {
+        projectType: 'apartment',
+        jurisdiction: 'pune_pmc',
+        floorCount: 1,
+        flatsPerFloor: 2,
+        unitMix: [
+          { unitType: '2BHK', count: 1, carpetAreaSqFt: 750 },
+          { unitType: '3BHK', count: 1, carpetAreaSqFt: 1100 },
+        ],
+        commonCore: {
+          passengerLifts: 1,
+          serviceLifts: 0,
+          staircaseCount: 1,
+          fireStaircaseRequired: false,
+          commonLobby: true,
+        },
+        floorStrategy: 'TYPICAL',
+      },
+      candidateCount: 1,
+      seed: 42,
+    };
+
+    const result = await orchestrator.run(input);
+    fs.rmSync(dir, { recursive: true, force: true });
+
+    expect(result.success).toBe(true);
+    expect(result.candidates).toHaveLength(1);
+    const candidate = result.candidates[0]!;
+    expect(candidate.archlang).toBeDefined();
+    expect(candidate.archlang?.status).toBe('ACCEPTED');
+    expect(candidate.archlang?.parityReport?.passed).toBe(true);
+    expect(candidate.archlang?.svg).toContain('<svg');
+    expect(candidate.archlang?.dxf).toContain('SECTION');
+    expect(candidate.archlang?.provenance).toBeDefined();
+    expect(candidate.diagnostics.some(d => d.code === 'ARCHLANG_ACCEPTED')).toBe(true);
+  }, 30000);
 });

@@ -92,6 +92,9 @@ export interface RenderConfig {
   readonly showDimensions: boolean;
   readonly showRoomLabels: boolean;
   readonly showRoomAreas: boolean;
+  readonly showLabels?: boolean;
+  readonly showFurniture?: boolean;
+  readonly showZones?: boolean;
   readonly showNorthArrow: boolean;
   readonly showScaleBar: boolean;
   readonly showGrid: boolean;
@@ -229,6 +232,9 @@ export const DEFAULT_RENDER_CONFIG: Readonly<RenderConfig> = Object.freeze({
   showDimensions: true,
   showRoomLabels: true,
   showRoomAreas: true,
+  showLabels: true,
+  showFurniture: true,
+  showZones: true,
   showNorthArrow: true,
   showScaleBar: false,    // New feature — off by default for backward compat
   showGrid: true,
@@ -275,8 +281,11 @@ export function mergeConfig(overrides: DeepPartial<RenderConfig>): Readonly<Rend
 
     // Display options
     showDimensions: overrides.showDimensions ?? DEFAULT_RENDER_CONFIG.showDimensions,
-    showRoomLabels: overrides.showRoomLabels ?? DEFAULT_RENDER_CONFIG.showRoomLabels,
+    showRoomLabels: overrides.showRoomLabels ?? overrides.showLabels ?? DEFAULT_RENDER_CONFIG.showRoomLabels,
     showRoomAreas: overrides.showRoomAreas ?? DEFAULT_RENDER_CONFIG.showRoomAreas,
+    showLabels: overrides.showLabels ?? overrides.showRoomLabels ?? DEFAULT_RENDER_CONFIG.showLabels,
+    showFurniture: overrides.showFurniture ?? DEFAULT_RENDER_CONFIG.showFurniture,
+    showZones: overrides.showZones ?? DEFAULT_RENDER_CONFIG.showZones,
     showNorthArrow: overrides.showNorthArrow ?? DEFAULT_RENDER_CONFIG.showNorthArrow,
     showScaleBar: overrides.showScaleBar ?? DEFAULT_RENDER_CONFIG.showScaleBar,
     showGrid: overrides.showGrid ?? DEFAULT_RENDER_CONFIG.showGrid,

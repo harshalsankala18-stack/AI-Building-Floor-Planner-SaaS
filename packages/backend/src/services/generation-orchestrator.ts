@@ -77,6 +77,8 @@ import {
   renderStructuralPlan,
   type StructuralPlanRepresentation,
   adaptSchematicToBuilding,
+  compileBuildingWithArchLang,
+  type ArchLangExportResult,
 } from '@ai-floor-planner/ai-orchestration';
 import {
   type Building,
@@ -136,11 +138,14 @@ export interface GenerationOrchestratorInput {
   readonly roomCounts?: GenerationOrchestratorRoomCountsInput;
   readonly preferences?: GenerationOrchestratorPreferencesInput;
   readonly additionalPrompt?: string;
+  readonly enableArchLang?: boolean;
   readonly seed?: number;
   readonly candidateCount?: number;
   readonly projectType?: 'apartment' | 'residential_independent';
   readonly apartmentConfig?: ApartmentBriefConfig;
   readonly deterministicCadFirst?: boolean;
+  /** When true, compiles generated buildings with ArchLang and runs geometry parity checks. */
+  readonly enableArchLang?: boolean;
 }
 
 function verifyReferencePngDimensions(buf: Buffer, filename: string): void {
@@ -474,6 +479,7 @@ export interface OrchestratedCandidate {
    */
   /** Present in apartment concept mode: which controlled strategy this candidate is. */
   readonly concept?: CandidateConceptInfo;
+  readonly archlang?: ArchLangExportResult | null;
   readonly apartmentValidation?: {
     readonly source: 'IMAGE_INTERPRETATION' | 'DETERMINISTIC_SCHEMATIC';
     readonly stages: {
@@ -1012,6 +1018,19 @@ export class GenerationOrchestrator {
           },
         });
 
+        let archlangResult: ArchLangExportResult | null = null;
+        const shouldCompileArchLang = Boolean(this.deps.enableArchLang || input.enableArchLang);
+        if (shouldCompileArchLang) {
+          try {
+            archlangResult = await compileBuildingWithArchLang(building, {
+              generateDxf: true,
+            });
+            (building.metadata as any).archlang = archlangResult;
+          } catch (err) {
+            console.warn('[GenerationOrchestrator] ArchLang compilation error:', err);
+          }
+        }
+
         const pngBuf = renderSchematicPng512(schematic);
         const description = `Deterministic stepped-polygon CAD schematic: ${strategy.label} (${strategy.intent})`;
         const artifact = await this.deps.store.save(
@@ -1080,6 +1099,7 @@ export class GenerationOrchestrator {
           evaluationStatus: 'NOT_CONFIGURED',
           stages: candidateStages,
           building,
+          archlang: archlangResult,
           artifact,
           vastuReport: (building.metadata as any)?.vastuReport ?? schematic.vastuReport,
           validation: {
@@ -1096,6 +1116,17 @@ export class GenerationOrchestrator {
               severity: 'info',
               message: `Generated instantly using deterministic stepped CAD engine (${strategy.label}). Zero external image API calls.`,
             },
+            ...(archlangResult?.status === 'ACCEPTED' && archlangResult.parityReport?.passed
+              ? [{
+                  code: 'ARCHLANG_ACCEPTED',
+                  severity: 'info' as const,
+                  message: `ArchLang architectural compilation accepted with full geometry parity (Hash: ${archlangResult.sourceHash?.slice(0, 8)}).`,
+                }]
+              : [{
+                  code: 'ARCHLANG_FALLBACK',
+                  severity: 'warning' as const,
+                  message: `ArchLang compilation status: ${archlangResult?.status ?? 'UNAVAILABLE'}. Fallback to deterministic structural schematic active.`,
+                }]),
           ],
           rejectedReason: null,
           concept: {
@@ -1854,6 +1885,19 @@ export class GenerationOrchestrator {
         geminiEvaluation: fallbackGated.stage,
       };
 
+      let fallbackArchlangResult: ArchLangExportResult | null = null;
+      const shouldCompileArchLangFb = Boolean(this.deps.enableArchLang || input.enableArchLang);
+      if (plan.building && shouldCompileArchLangFb) {
+        try {
+          fallbackArchlangResult = await compileBuildingWithArchLang(plan.building, {
+            generateDxf: true,
+          });
+          (plan.building.metadata as any).archlang = fallbackArchlangResult;
+        } catch (err) {
+          console.warn('[GenerationOrchestrator] Fallback ArchLang compilation error:', err);
+        }
+      }
+
       const fallbackCandidateId = `cand_fallback_deterministic_${baseSeed}`;
       candidates.push({
         id: fallbackCandidateId,
@@ -1865,6 +1909,7 @@ export class GenerationOrchestrator {
         evaluationStatus: fallbackGated.status,
         stages: fallbackStages,
         building: plan.building,
+        archlang: fallbackArchlangResult,
         artifact: fallbackArtifact,
         vastuReport: (plan.building?.metadata as any)?.vastuReport ?? apartmentSchematic.vastuReport,
         validation: {
@@ -1878,6 +1923,9 @@ export class GenerationOrchestrator {
         evaluation: fallbackEvaluation,
         diagnostics: [
           { code: 'FALLBACK_DETERMINISTIC', severity: 'info', message: FALLBACK_USER_MESSAGE },
+          ...(fallbackArchlangResult?.status === 'ACCEPTED' && fallbackArchlangResult.parityReport?.passed
+            ? [{ code: 'ARCHLANG_ACCEPTED', severity: 'info' as const, message: 'ArchLang architectural drawing accepted with 100% parity.' }]
+            : [{ code: 'ARCHLANG_FALLBACK', severity: 'warning' as const, message: `ArchLang status: ${fallbackArchlangResult?.status ?? 'SKIPPED'}. Fallback active.` }]),
           ...plan.issues,
           ...(fallbackGated.status === 'UNAVAILABLE'
             ? [{ code: 'GEMINI_EVALUATION_UNAVAILABLE', severity: 'warning', message: `Gemini evaluation unavailable: ${fallbackGated.error ?? 'unknown error'}. NOT SCORED.` }]

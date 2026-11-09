@@ -8,7 +8,11 @@ import { serializeBuilding } from '@ai-floor-planner/core';
 import { getFloorContentBounds } from '@ai-floor-planner/geometry-engine';
 import { exportSVG } from '@ai-floor-planner/renderer';
 
-export type ExportFormat = 'svg' | 'pdf' | 'json';
+import {
+  buildingModelToArchLangSource,
+} from '@ai-floor-planner/ai-orchestration';
+
+export type ExportFormat = 'svg' | 'pdf' | 'json' | 'arch' | 'dxf' | 'png';
 
 export interface AdvancedExportSettings extends ExportOptions {
   readonly format: ExportFormat;
@@ -232,6 +236,114 @@ function makeJson(building: Building, settings: AdvancedExportSettings): string 
   }, null, 2);
 }
 
+export function generateMinimalDxf(building: Building, floorId?: string): string {
+  const floor = selectedFloor(building, floorId);
+  const lines: string[] = [
+    '0', 'SECTION',
+    '2', 'HEADER',
+    '9', '$ACADVER',
+    '1', 'AC1009',
+    '0', 'ENDSEC',
+    '0', 'SECTION',
+    '2', 'TABLES',
+    '0', 'TABLE',
+    '2', 'LAYER',
+    '70', '5',
+    '0', 'LAYER', '2', 'A-WALL-EXT', '70', '0', '62', '7', '6', 'CONTINUOUS', '0',
+    '0', 'LAYER', '2', 'A-WALL-INT', '70', '0', '62', '8', '6', 'CONTINUOUS', '0',
+    '0', 'LAYER', '2', 'A-DOOR', '70', '0', '62', '4', '6', 'CONTINUOUS', '0',
+    '0', 'LAYER', '2', 'A-GLAZ', '70', '0', '62', '5', '6', 'CONTINUOUS', '0',
+    '0', 'LAYER', '2', 'A-ROOM-LABELS', '70', '0', '62', '2', '6', 'CONTINUOUS', '0',
+    '0', 'ENDTAB',
+    '0', 'ENDSEC',
+    '0', 'SECTION',
+    '2', 'ENTITIES',
+  ];
+
+  for (const wall of floor.walls) {
+    const layer = wall.type === 'external' ? 'A-WALL-EXT' : 'A-WALL-INT';
+    lines.push(
+      '0', 'LINE',
+      '8', layer,
+      '10', wall.startPoint.x.toFixed(2),
+      '20', (-wall.startPoint.y).toFixed(2),
+      '30', '0.0',
+      '11', wall.endPoint.x.toFixed(2),
+      '21', (-wall.endPoint.y).toFixed(2),
+      '31', '0.0',
+    );
+  }
+
+  for (const door of floor.doors) {
+    lines.push(
+      '0', 'LINE',
+      '8', 'A-DOOR',
+      '10', door.position.x.toFixed(2),
+      '20', (-door.position.y).toFixed(2),
+      '30', '0.0',
+      '11', (door.position.x + door.width).toFixed(2),
+      '21', (-door.position.y).toFixed(2),
+      '31', '0.0',
+    );
+  }
+
+  for (const win of floor.windows) {
+    lines.push(
+      '0', 'LINE',
+      '8', 'A-GLAZ',
+      '10', win.position.x.toFixed(2),
+      '20', (-win.position.y).toFixed(2),
+      '30', '0.0',
+      '11', (win.position.x + win.width).toFixed(2),
+      '21', (-win.position.y).toFixed(2),
+      '31', '0.0',
+    );
+  }
+
+  for (const room of floor.rooms) {
+    lines.push(
+      '0', 'TEXT',
+      '8', 'A-ROOM-LABELS',
+      '10', (room.x + room.width / 2).toFixed(2),
+      '20', (-(room.y + room.height / 2)).toFixed(2),
+      '30', '0.0',
+      '40', '250.0',
+      '1', `${room.name} (${(room.area / 1_000_000).toFixed(1)}m2)`,
+    );
+  }
+
+  lines.push('0', 'ENDSEC', '0', 'EOF', '');
+  return lines.join('\n');
+}
+
+export function compileBuildingToArchLang(building: Building): string {
+  const metaSource = (building.metadata as any)?.archlang?.source;
+  if (metaSource && typeof metaSource === 'string') return metaSource;
+  return buildingModelToArchLangSource(building).source;
+}
+
+export function compileBuildingToDxf(building: Building, floorId?: string): string {
+  const metaDxf = (building.metadata as any)?.archlang?.dxf;
+  if (metaDxf && typeof metaDxf === 'string') return metaDxf;
+  return generateMinimalDxf(building, floorId);
+}
+
+export function exportBuildingAsArchLang(building: Building): { filename: string; content: string; mimeType: string } {
+  return {
+    filename: `${building.name || 'building'}.arch`,
+    content: compileBuildingToArchLang(building),
+    mimeType: 'text/plain',
+  };
+}
+
+export function exportBuildingAsDxf(building: Building): { filename: string; content: string; mimeType: string } {
+  return {
+    filename: `${building.name || 'building'}.dxf`,
+    content: compileBuildingToDxf(building),
+    mimeType: 'application/dxf',
+  };
+}
+
 export function createExportArtifact(
   building: Building,
   settings: AdvancedExportSettings,
@@ -240,17 +352,32 @@ export function createExportArtifact(
   if (errors.length > 0) throw new Error(errors.join(' '));
   selectedFloor(building, settings.floorId);
 
-  const content = settings.format === 'svg'
-    ? makeSvg(building, settings)
-    : settings.format === 'pdf'
-      ? makePdf(building, settings)
-      : makeJson(building, settings);
-  const mimeType = settings.format === 'svg'
-    ? 'image/svg+xml'
-    : settings.format === 'pdf'
-      ? 'application/pdf'
-      : 'application/json';
   const floor = selectedFloor(building, settings.floorId);
+  const archlangMeta = (building.metadata as any)?.archlang;
+
+  let content = '';
+  let mimeType = 'text/plain';
+
+  if (settings.format === 'svg') {
+    content = archlangMeta?.svg ?? makeSvg(building, settings);
+    mimeType = 'image/svg+xml';
+  } else if (settings.format === 'pdf') {
+    content = archlangMeta?.pdf ?? makePdf(building, settings);
+    mimeType = 'application/pdf';
+  } else if (settings.format === 'arch') {
+    content = compileBuildingToArchLang(building);
+    mimeType = 'text/plain';
+  } else if (settings.format === 'dxf') {
+    content = compileBuildingToDxf(building, settings.floorId);
+    mimeType = 'application/dxf';
+  } else if (settings.format === 'png') {
+    content = archlangMeta?.png ?? '';
+    mimeType = 'image/png';
+  } else {
+    content = makeJson(building, settings);
+    mimeType = 'application/json';
+  }
+
   const filename = `${cleanFilename(building.name)}_${cleanFilename(floor.name)}_r${cleanFilename(settings.revision)}.${settings.format}`;
   return {
     filename,
@@ -262,7 +389,18 @@ export function createExportArtifact(
 }
 
 export function downloadExportArtifact(artifact: ExportArtifact): void {
-  const blob = new Blob([artifact.content], { type: artifact.mimeType });
+  let blob: Blob;
+  if (artifact.extension === 'png' && typeof artifact.content === 'string' && /^[A-Za-z0-9+/=]+$/.test(artifact.content.trim())) {
+    const byteCharacters = atob(artifact.content.trim());
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    blob = new Blob([byteArray], { type: artifact.mimeType });
+  } else {
+    blob = new Blob([artifact.content], { type: artifact.mimeType });
+  }
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement('a');
   anchor.href = url;

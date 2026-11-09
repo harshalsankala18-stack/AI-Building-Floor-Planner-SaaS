@@ -69,6 +69,14 @@ export interface RecommendedRenderResolutions {
   readonly heightPx: number;
 }
 
+export interface StructuralColumn {
+  readonly id: string;
+  readonly bounds: LayoutRect;
+  readonly widthM: number;  // 0.23m
+  readonly lengthM: number; // 0.45m
+  readonly isFlush: boolean;
+}
+
 export interface StructuralPlanRepresentation {
   readonly version: 1;
   readonly unitsOfMeasure: 'metres';
@@ -76,6 +84,7 @@ export interface StructuralPlanRepresentation {
   readonly buildableBounds: LayoutRect;
   readonly buildingFootprint: LayoutRect;
   readonly outerBuildingWalls: readonly StructuralSegment2D[];
+  readonly columns: readonly StructuralColumn[];
   readonly flatBoundaries: readonly StructuralSpaceBoundary[];
   readonly commonCore: {
     readonly bounds: LayoutRect;
@@ -299,6 +308,7 @@ export function createStructuralPlanRepresentation(
     },
     buildingFootprint: fp,
     outerBuildingWalls,
+    columns: [],
     flatBoundaries,
     commonCore: {
       bounds: schematic.core.bounds,

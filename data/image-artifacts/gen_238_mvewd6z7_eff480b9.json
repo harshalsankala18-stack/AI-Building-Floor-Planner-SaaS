@@ -1,0 +1,15 @@
+{
+  "generationId": "gen_238_mvewd6z7_eff480b9",
+  "projectId": "proj_1792392739134",
+  "seed": 238,
+  "model": "stepped_polygon_cad_v1",
+  "provider": "deterministic_cad",
+  "promptVersion": 1,
+  "originalPrompt": "Deterministic stepped-polygon CAD schematic: Stepped L-Court / Daylight (Shallow flats with long facades and stepped orthogonal envelopes; living room and every bedroom on an external wall; deeper balconies.)",
+  "negativePrompt": "",
+  "width": 512,
+  "height": 512,
+  "mimeType": "image/png",
+  "generatedAt": "2026-10-19T06:52:32.270Z",
+  "latencyMs": 1
+}

@@ -16,9 +16,13 @@
   },
   "dependencies": {
     "@ai-floor-planner/core": "workspace:*",
-    "@ai-floor-planner/planning-engine": "workspace:*"
+    "@ai-floor-planner/planning-engine": "workspace:*",
+    "@chanmeng666/archlang": "1.57.0",
+    "@resvg/resvg-js": "^2.6.2",
+    "pdfkit": "^0.15.0"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.17.7",
     "typescript": "5.5.4",
     "vitest": "2.0.5"
   }

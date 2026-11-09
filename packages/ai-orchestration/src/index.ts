@@ -274,4 +274,32 @@ export {
   type RenderStructuralPlanOptions,
   type RenderStructuralPlanResult,
 } from './apartment/structural-renderer';
+export {
+  buildingModelToArchLangSource,
+  escapeArchLangString,
+  toArchLangId,
+  mapRoomTypeToArchLangUse,
+  deriveWallsFromFloorRooms,
+  ARCHLANG_ADAPTER_VERSION,
+  ARCHLANG_PACKAGE_VERSION,
+  type ArchLangAdapterOptions,
+  type ArchLangDiagnostic,
+  type ArchLangSerializationResult,
+} from './apartment/archlang-adapter';
+export {
+  validateGeometryParity,
+  type GeometryParityItem,
+  type GeometryParityReport,
+} from './apartment/archlang-parity-validator';
+export {
+  compileBuildingWithArchLang,
+  compileBuildingToArchLang,
+  compileBuildingToDxf,
+  lintApartmentCadGeometry,
+  type ArchLangExportResult,
+  type ArchLangCompileOptions,
+  type ArchLangPage,
+  type ArchLangProvenance,
+} from './apartment/archlang-compiler';
+
 

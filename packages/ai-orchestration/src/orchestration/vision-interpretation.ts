@@ -64,16 +64,19 @@ export async function interpretPlanImageWithGemini(
   options: InterpretPlanImageOptions,
 ): Promise<PlanInterpretationResponse> {
   if (provider && typeof (provider as any).complete === 'function') {
-    // If it's a test provider like RecordingProvider, call it so tests record requests
     const res = await provider.complete({
       taskType: 'image_interpretation' as any,
-      systemPrompt: 'Stubbed vision interpretation',
-      userPrompt: `Interpretation for plot ${options.plotWidthMm}x${options.plotDepthMm}${options.apartmentContext ? ` context: ${JSON.stringify(options.apartmentContext)}` : ''}${options.requirements ? ` requirements: ${JSON.stringify(options.requirements)}` : ''}`,
+      systemPrompt: 'Interpret the plan image faithfully. Never invent rooms or elements not present, and do not claim code compliance.',
+      userPrompt: `Interpretation for plot width ${options.plotWidthMm}mm, depth ${options.plotDepthMm}mm.${options.userPrompt ? ` Prompt: ${options.userPrompt}` : ''}${options.apartmentContext ? ` context: ${JSON.stringify(options.apartmentContext)}` : ''}${options.requirements ? ` requirements: ${JSON.stringify(options.requirements)}` : ''}`,
       images: [{ mimeType: options.imageMimeType, data: options.imageBase64 }],
-      responseSchema: APARTMENT_IMAGE_INTERPRETATION_SCHEMA,
+      responseFormat: 'json',
+      responseSchema: options.apartmentContext ? APARTMENT_IMAGE_INTERPRETATION_SCHEMA : IMAGE_INTERPRETATION_SCHEMA,
     });
+    if (!res.parsed || (typeof res.parsed === 'object' && Object.keys(res.parsed).length === 0)) {
+      throw new Error('No parsed interpretation returned by provider.');
+    }
     return {
-      parsed: res.parsed ?? {},
+      parsed: res.parsed,
       model: res.model ?? 'stubbed',
       latencyMs: res.latencyMs ?? 0,
       usage: res.usage ?? { promptTokens: 0, completionTokens: 0, totalTokens: 0 },

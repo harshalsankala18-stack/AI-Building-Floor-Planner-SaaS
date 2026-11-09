@@ -4,7 +4,18 @@ import { polygonArea } from '@ai-floor-planner/geometry-engine';
 import type { EditorContextValue } from '../../stores/editor-store';
 import { calculateFloorPlatePercentage } from '../../services/workspace-commands';
 
-export type WorkspaceLayer = 'rooms' | 'walls' | 'openings' | 'stairs' | 'dimensions' | 'grid' | 'validation' | 'siteZones';
+export type WorkspaceLayer =
+  | 'rooms'
+  | 'walls'
+  | 'openings'
+  | 'stairs'
+  | 'dimensions'
+  | 'grid'
+  | 'validation'
+  | 'siteZones'
+  | 'columns'
+  | 'furniture'
+  | 'vastuChakra';
 
 interface BuildingNavigatorProps {
   editor: EditorContextValue;

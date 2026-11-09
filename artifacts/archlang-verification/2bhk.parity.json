@@ -1,0 +1,763 @@
+{
+  "status": "PASS",
+  "passed": true,
+  "totalChecks": 17,
+  "passedChecks": 17,
+  "failedChecks": 0,
+  "expectedElements": 16,
+  "actualElements": 16,
+  "missingElements": [],
+  "unexpectedElements": [],
+  "duplicates": [],
+  "coordinateMismatches": [],
+  "dimensionMismatches": [],
+  "unsupportedElements": [],
+  "maximumCoordinateDriftMm": 0,
+  "items": [
+    {
+      "canonicalId": "FLAT_COUNT",
+      "archlangId": "ZONES_COUNT",
+      "elementType": "flat",
+      "expected": {
+        "flatCount": 1,
+        "mix": {
+          "UNKNOWN": 1
+        }
+      },
+      "actual": {
+        "flatCount": 1,
+        "mix": {
+          "UNKNOWN": 1
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "101",
+      "archlangId": "zone_101",
+      "elementType": "program",
+      "expected": {
+        "flatId": "101",
+        "unitType": "UNKNOWN",
+        "totalRooms": 8,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 2
+      },
+      "actual": {
+        "totalRooms": 8,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "COMMON_CORE_ISOLATION",
+      "archlangId": "COMMON_CORE_ZONE",
+      "elementType": "room",
+      "expected": {
+        "coreIsolated": true
+      },
+      "actual": {
+        "coreIsolated": true
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-foyer",
+      "archlangId": "r_r_foyer",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 0,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 0,
+        "y": 0,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-living",
+      "archlangId": "r_r_living",
+      "elementType": "room",
+      "expected": {
+        "x": 2500,
+        "y": 0,
+        "width": 5500,
+        "height": 4000
+      },
+      "actual": {
+        "x": 2500,
+        "y": 0,
+        "width": 5500,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-dining",
+      "archlangId": "r_r_dining",
+      "elementType": "room",
+      "expected": {
+        "x": 8000,
+        "y": 0,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 8000,
+        "y": 0,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-kitchen",
+      "archlangId": "r_r_kitchen",
+      "elementType": "room",
+      "expected": {
+        "x": 8000,
+        "y": 4000,
+        "width": 4000,
+        "height": 3000
+      },
+      "actual": {
+        "x": 8000,
+        "y": 4000,
+        "width": 4000,
+        "height": 3000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-master-bed",
+      "archlangId": "r_r_master_bed",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 0,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-master-bath",
+      "archlangId": "r_r_master_bath",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 0,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-bed-2",
+      "archlangId": "r_r_bed_2",
+      "elementType": "room",
+      "expected": {
+        "x": 4000,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 4000,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-common-bath",
+      "archlangId": "r_r_common_bath",
+      "elementType": "room",
+      "expected": {
+        "x": 4000,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 4000,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-balcony",
+      "archlangId": "balc_r_balcony",
+      "elementType": "balcony",
+      "expected": {
+        "x": 2500,
+        "y": 8000,
+        "width": 1500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 2500,
+        "y": 8000,
+        "width": 1500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d-entry",
+      "archlangId": "d_d_entry",
+      "elementType": "door",
+      "expected": {
+        "width": 1000
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_r_foyer"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "win-living",
+      "archlangId": "win_win_living",
+      "elementType": "window",
+      "expected": {
+        "width": 2000
+      },
+      "actual": {
+        "width": 2000
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "win-master",
+      "archlangId": "win_win_master",
+      "elementType": "window",
+      "expected": {
+        "width": 1500
+      },
+      "actual": {
+        "width": 1500
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "CORE_VERTICALS",
+      "archlangId": "VERTICALS_SUMMARY",
+      "elementType": "stair",
+      "expected": {
+        "lifts": 0,
+        "stairs": 0
+      },
+      "actual": {
+        "lifts": 0,
+        "stairs": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "WALL_COUNT",
+      "archlangId": "WALL_DECLARATIONS",
+      "elementType": "wall",
+      "expected": {
+        "count": 4
+      },
+      "actual": {
+        "count": 4
+      },
+      "status": "PASS"
+    }
+  ],
+  "checks": [
+    {
+      "canonicalId": "FLAT_COUNT",
+      "archlangId": "ZONES_COUNT",
+      "elementType": "flat",
+      "expected": {
+        "flatCount": 1,
+        "mix": {
+          "UNKNOWN": 1
+        }
+      },
+      "actual": {
+        "flatCount": 1,
+        "mix": {
+          "UNKNOWN": 1
+        }
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "101",
+      "archlangId": "zone_101",
+      "elementType": "program",
+      "expected": {
+        "flatId": "101",
+        "unitType": "UNKNOWN",
+        "totalRooms": 8,
+        "bedrooms": 2,
+        "bathrooms": 2,
+        "livingDining": 2
+      },
+      "actual": {
+        "totalRooms": 8,
+        "bedrooms": 2
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "COMMON_CORE_ISOLATION",
+      "archlangId": "COMMON_CORE_ZONE",
+      "elementType": "room",
+      "expected": {
+        "coreIsolated": true
+      },
+      "actual": {
+        "coreIsolated": true
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-foyer",
+      "archlangId": "r_r_foyer",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 0,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 0,
+        "y": 0,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-living",
+      "archlangId": "r_r_living",
+      "elementType": "room",
+      "expected": {
+        "x": 2500,
+        "y": 0,
+        "width": 5500,
+        "height": 4000
+      },
+      "actual": {
+        "x": 2500,
+        "y": 0,
+        "width": 5500,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-dining",
+      "archlangId": "r_r_dining",
+      "elementType": "room",
+      "expected": {
+        "x": 8000,
+        "y": 0,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 8000,
+        "y": 0,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-kitchen",
+      "archlangId": "r_r_kitchen",
+      "elementType": "room",
+      "expected": {
+        "x": 8000,
+        "y": 4000,
+        "width": 4000,
+        "height": 3000
+      },
+      "actual": {
+        "x": 8000,
+        "y": 4000,
+        "width": 4000,
+        "height": 3000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-master-bed",
+      "archlangId": "r_r_master_bed",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 0,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-master-bath",
+      "archlangId": "r_r_master_bath",
+      "elementType": "room",
+      "expected": {
+        "x": 0,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 0,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-bed-2",
+      "archlangId": "r_r_bed_2",
+      "elementType": "room",
+      "expected": {
+        "x": 4000,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "actual": {
+        "x": 4000,
+        "y": 4000,
+        "width": 4000,
+        "height": 4000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-common-bath",
+      "archlangId": "r_r_common_bath",
+      "elementType": "room",
+      "expected": {
+        "x": 4000,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 4000,
+        "y": 8000,
+        "width": 2500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "r-balcony",
+      "archlangId": "balc_r_balcony",
+      "elementType": "balcony",
+      "expected": {
+        "x": 2500,
+        "y": 8000,
+        "width": 1500,
+        "height": 2000
+      },
+      "actual": {
+        "x": 2500,
+        "y": 8000,
+        "width": 1500,
+        "height": 2000
+      },
+      "difference": {
+        "xDiff": 0,
+        "yDiff": 0,
+        "wDiff": 0,
+        "hDiff": 0,
+        "driftMm": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "d-entry",
+      "archlangId": "d_d_entry",
+      "elementType": "door",
+      "expected": {
+        "width": 1000
+      },
+      "actual": {
+        "width": 1000,
+        "between": [
+          "exterior",
+          "r_r_foyer"
+        ]
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "win-living",
+      "archlangId": "win_win_living",
+      "elementType": "window",
+      "expected": {
+        "width": 2000
+      },
+      "actual": {
+        "width": 2000
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "win-master",
+      "archlangId": "win_win_master",
+      "elementType": "window",
+      "expected": {
+        "width": 1500
+      },
+      "actual": {
+        "width": 1500
+      },
+      "difference": {
+        "widthDiff": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "CORE_VERTICALS",
+      "archlangId": "VERTICALS_SUMMARY",
+      "elementType": "stair",
+      "expected": {
+        "lifts": 0,
+        "stairs": 0
+      },
+      "actual": {
+        "lifts": 0,
+        "stairs": 0
+      },
+      "status": "PASS"
+    },
+    {
+      "canonicalId": "WALL_COUNT",
+      "archlangId": "WALL_DECLARATIONS",
+      "elementType": "wall",
+      "expected": {
+        "count": 4
+      },
+      "actual": {
+        "count": 4
+      },
+      "status": "PASS"
+    }
+  ],
+  "flatParity": {
+    "expectedCount": 1,
+    "actualCount": 1,
+    "expectedMix": {
+      "UNKNOWN": 1
+    },
+    "actualMix": {
+      "UNKNOWN": 1
+    },
+    "passed": true
+  },
+  "roomParity": {
+    "expectedTotal": 9,
+    "actualTotal": 8,
+    "passed": true
+  },
+  "wallParity": {
+    "expectedCount": 4,
+    "actualCount": 4,
+    "passed": true
+  },
+  "coreParity": {
+    "liftsPassed": true,
+    "stairsPassed": true,
+    "lobbyPassed": true,
+    "coreNotAssignedToPrivate": true
+  },
+  "metrics": {
+    "flatCountParity": true,
+    "apartmentMixParity": true,
+    "roomProgrammeParity": true,
+    "roomCountParity": true,
+    "wallCountParity": true,
+    "doorCountParity": true,
+    "windowCountParity": true,
+    "stairCountParity": true,
+    "liftCountParity": true,
+    "ownershipIntegrity": true,
+    "coreIsolation": true,
+    "coordinateAccuracy": true,
+    "dimensionAccuracy": true
+  },
+  "summary": {
+    "totalElements": 17,
+    "passedElements": 17,
+    "failedElements": 0
+  }
+}
