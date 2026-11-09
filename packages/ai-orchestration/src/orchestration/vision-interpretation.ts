@@ -80,7 +80,9 @@ export async function interpretPlanImageWithGemini(
       model: res.model ?? 'stubbed',
       latencyMs: res.latencyMs ?? 0,
       usage: res.usage ?? { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-      coordinateFrame: { kind: 'image_pixels' },
+      coordinateFrame: options.apartmentContext
+        ? { kind: 'normalized', width: APARTMENT_INTERPRETATION_FRAME.width, height: APARTMENT_INTERPRETATION_FRAME.height }
+        : { kind: 'image_pixels' },
     };
   }
   throw new Error('Gemini vision interpretation is disabled in this build.');

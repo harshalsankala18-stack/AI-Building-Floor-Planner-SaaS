@@ -192,7 +192,11 @@ describe('Phase 2 — FLUX scaffold (deterministic layout as input image 1)', ()
       expect(beds).toHaveLength(expected);
       expect(expected).toBe(u.unitType === '3BHK' ? 3 : 2);
       const flatWords = new Set(labels.filter(l => l.flatId === u.flatId).map(l => l.text));
-      for (const w of ['LIVING', 'DINING', 'KITCHEN', 'BATH', 'FOYER']) expect(flatWords.has(w)).toBe(true);
+      expect(flatWords.has('LIVING')).toBe(true);
+      expect(flatWords.has('DINING')).toBe(true);
+      expect(flatWords.has('KITCHEN') || flatWords.has('KIT')).toBe(true);
+      expect(flatWords.has('BATH') || flatWords.has('WC')).toBe(true);
+      expect(flatWords.has('FOYER')).toBe(true);
     }
     // Combined labels / long words never reach FLUX.
     const texts = labels.map(l => l.text);

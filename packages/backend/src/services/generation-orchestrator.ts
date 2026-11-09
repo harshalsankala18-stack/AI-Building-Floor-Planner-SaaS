@@ -90,6 +90,8 @@ import {
 } from '@ai-floor-planner/core';
 import {
   RequirementValidator,
+  validateCanonicalApartmentBuilding,
+  type ApartmentPlanExpectation,
 } from '@ai-floor-planner/planning-engine';
 import type { ImageArtifactStore, StoredImageArtifact } from './image-artifact-store.js';
 import { runExtractionPipeline } from './extraction-pipeline.js';
@@ -637,6 +639,13 @@ export interface GenerationOrchestratorResult {
   readonly apartmentSchematic?: DeterministicApartmentSchematic;
   readonly apartmentRulesProfile?: ApartmentRulesProfile;
   readonly apartmentManifest?: ApartmentGenerationManifest;
+  /** Multi-floor status report when requested floor count exceeds single-floor capability. */
+  readonly multiFloorStatus?: {
+    readonly requestedFloorCount: number;
+    readonly generatedFloorCount: number;
+    readonly status: 'SINGLE_FLOOR_PRODUCED' | 'MULTI_FLOOR_SUPPORTED';
+    readonly message: string;
+  };
   /** Source of the authoritative accepted candidate; null when nothing was accepted. */
   readonly candidateSource?: CandidateSource | null;
   /** Present when the deterministic fallback was exercised. */
@@ -1004,6 +1013,8 @@ export class GenerationOrchestrator {
           northAngleDeg,
         });
 
+        const floorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
+
         const building = adaptSchematicToBuilding(schematic, {
           projectId,
           projectName,
@@ -1017,6 +1028,7 @@ export class GenerationOrchestrator {
             leftSetback: spec.setbacksMm?.left,
             rightSetback: spec.setbacksMm?.right,
           },
+          plannedFloorCount: floorCount,
         });
 
         let archlangResult: ArchLangExportResult | null = null;
@@ -1080,23 +1092,103 @@ export class GenerationOrchestrator {
           distinctReferencesAvailable: null,
         });
 
+        // Authoritative validation
+        const schematicValid = schematic.layoutFits !== false && schematic.spatialChecks.every(c => c.status !== 'FAIL');
+        const manifestCheck = apartmentManifest
+          ? validateSchematicMatchesManifest(schematic, apartmentManifest)
+          : { matches: true, discrepancies: [], feasibilityFail: false };
+
+        const expectation: ApartmentPlanExpectation = apartmentManifest
+          ? {
+              flats: apartmentManifest.units.exactCount,
+              units: apartmentManifest.units.units.map(u => ({
+                label: u.label,
+                unitType: u.type,
+                bedrooms: u.bedrooms,
+                bathrooms: u.bathrooms,
+                livingRooms: u.livingRooms,
+                diningRooms: u.diningRooms,
+                kitchens: u.kitchens,
+                utilities: u.utilities,
+                balconies: u.balconies,
+              })),
+              lifts: apartmentManifest.commonCore.lifts,
+              stairs: apartmentManifest.commonCore.stairs,
+              commonLobby: apartmentManifest.commonCore.commonLobby,
+            }
+          : {
+              flats: schematic.units.length,
+              units: schematic.units.map(u => ({
+                label: u.flatLabel,
+                unitType: u.unitType,
+                bedrooms: u.rooms.filter(r => r.type === 'master_bedroom' || r.type === 'bedroom').length,
+                bathrooms: u.rooms.filter(r => r.type.includes('toilet')).length,
+                livingRooms: 1,
+                diningRooms: 1,
+                kitchens: 1,
+                utilities: 1,
+                balconies: 1,
+              })),
+              lifts: schematic.core.lifts.length,
+              stairs: schematic.core.stairs.length,
+              commonLobby: true,
+            };
+
+        const canonicalValidation = validateCanonicalApartmentBuilding(building, expectation);
+        const isCandidateValid = schematicValid && manifestCheck.matches && canonicalValidation.isValid;
+
         const candidateStages: PipelineStagesState = {
           imageGeneration: 'SKIPPED',
           imageArtifact: 'AVAILABLE',
           visualPreflight: 'SKIPPED',
           imageInterpretation: 'SKIPPED',
           imageTo2D: 'SUCCESS',
-          validation: 'SUCCESS',
+          validation: isCandidateValid ? 'SUCCESS' : 'FAILED',
           geminiEvaluation: 'SKIPPED',
         };
+
+        const candidateDiagnostics: { code: string; severity: string; message: string }[] = [
+          {
+            code: 'DETERMINISTIC_CAD',
+            severity: 'info',
+            message: `Generated instantly using deterministic stepped CAD engine (${strategy.label}). Zero external image API calls.`,
+          },
+          ...(floorCount > 1
+            ? [{
+                code: 'MULTI_FLOOR_NOT_IMPLEMENTED',
+                severity: 'warning' as const,
+                message: `Multi-floor apartment generation is not yet supported; requested ${floorCount} floors, but only a single typical floor plate was produced (level 0). Multi-floor stacking and vertical service riser continuity is scheduled for Phase 3.`,
+              }]
+            : []),
+          ...(archlangResult?.status === 'ACCEPTED' && archlangResult.parityReport?.passed
+            ? [{
+                code: 'ARCHLANG_ACCEPTED',
+                severity: 'info' as const,
+                message: `ArchLang architectural compilation accepted with full geometry parity (Hash: ${archlangResult.sourceHash?.slice(0, 8)}).`,
+              }]
+            : [{
+                code: 'ARCHLANG_FALLBACK',
+                severity: 'warning' as const,
+                message: `ArchLang compilation status: ${archlangResult?.status ?? 'UNAVAILABLE'}. Fallback to deterministic structural schematic active.`,
+              }]),
+        ];
+
+        const verificationIssues: { code: string; severity: string; message: string }[] = [
+          ...manifestCheck.discrepancies.map(d => ({
+            code: 'MANIFEST_MISMATCH',
+            severity: 'error' as const,
+            message: d,
+          })),
+          ...canonicalValidation.verificationIssues,
+        ];
 
         candidates.push({
           id: candidateId,
           seed: slotSeed,
-          status: 'ACCEPTED',
+          status: isCandidateValid ? 'ACCEPTED' : 'REJECTED',
           source: 'DETERMINISTIC_CAD',
           visualSource: 'DETERMINISTIC_SCHEMATIC',
-          rejectionStage: null,
+          rejectionStage: isCandidateValid ? null : 'HARD_VALIDATION',
           evaluationStatus: 'NOT_CONFIGURED',
           stages: candidateStages,
           building,
@@ -1104,32 +1196,17 @@ export class GenerationOrchestrator {
           artifact,
           vastuReport: (building.metadata as any)?.vastuReport ?? schematic.vastuReport,
           validation: {
-            isValid: true,
-            recommendedForEditing: true,
-            geometryHealthy: true,
-            overallScore: 95,
-            verificationIssues: [],
+            isValid: isCandidateValid,
+            recommendedForEditing: isCandidateValid,
+            geometryHealthy: canonicalValidation.geometryHealthy,
+            overallScore: isCandidateValid ? canonicalValidation.overallScore : null,
+            verificationIssues,
           },
           evaluation: null,
-          diagnostics: [
-            {
-              code: 'DETERMINISTIC_CAD',
-              severity: 'info',
-              message: `Generated instantly using deterministic stepped CAD engine (${strategy.label}). Zero external image API calls.`,
-            },
-            ...(archlangResult?.status === 'ACCEPTED' && archlangResult.parityReport?.passed
-              ? [{
-                  code: 'ARCHLANG_ACCEPTED',
-                  severity: 'info' as const,
-                  message: `ArchLang architectural compilation accepted with full geometry parity (Hash: ${archlangResult.sourceHash?.slice(0, 8)}).`,
-                }]
-              : [{
-                  code: 'ARCHLANG_FALLBACK',
-                  severity: 'warning' as const,
-                  message: `ArchLang compilation status: ${archlangResult?.status ?? 'UNAVAILABLE'}. Fallback to deterministic structural schematic active.`,
-                }]),
-          ],
-          rejectedReason: null,
+          diagnostics: candidateDiagnostics,
+          rejectedReason: isCandidateValid
+            ? null
+            : verificationIssues.map(i => i.message).join('; ') || 'Canonical model validation failed.',
           concept: {
             candidateNumber: strategy.candidateNumber,
             candidateCount: targetCount,
@@ -1146,29 +1223,43 @@ export class GenerationOrchestrator {
           apartmentValidation: {
             source: 'DETERMINISTIC_SCHEMATIC',
             stages: {
-              completeness: 'PASS',
-              manifestMatch: 'PASS',
-              structural: 'PASS',
-              canonicalGeometry: 'PASS',
-              geometryValidation: 'PASS',
+              completeness: schematic.layoutFits !== false ? 'PASS' : 'FAIL',
+              manifestMatch: manifestCheck.matches ? 'PASS' : 'FAIL',
+              structural: schematicValid ? 'PASS' : 'FAIL',
+              canonicalGeometry: canonicalValidation.geometryHealthy ? 'PASS' : 'FAIL',
+              geometryValidation: canonicalValidation.isValid ? 'PASS' : 'FAIL',
             },
           },
         });
       }
 
+      const anyCandidateAccepted = candidates.some(c => c.status === 'ACCEPTED');
+      const cadFloorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
+
       return {
-        success: true,
+        success: anyCandidateAccepted,
         projectId,
         requirements: spec,
         feasibility,
         candidates,
-        stages,
+        stages: {
+          ...stages,
+          validation: anyCandidateAccepted ? 'SUCCESS' : 'FAILED',
+        },
         latencyMs: Date.now() - startedAt,
         apartmentSchematic: candidates[0]?.building?.metadata?.apartmentSchematic as any ?? apartmentSchematic,
         apartmentRulesProfile,
         apartmentManifest,
-        candidateSource: 'DETERMINISTIC_CAD',
+        candidateSource: anyCandidateAccepted ? 'DETERMINISTIC_CAD' : null,
         conceptMode: true,
+        ...(cadFloorCount > 1 ? {
+          multiFloorStatus: {
+            requestedFloorCount: cadFloorCount,
+            generatedFloorCount: 1,
+            status: 'SINGLE_FLOOR_PRODUCED' as const,
+            message: `Multi-floor apartment generation is not yet supported; requested ${cadFloorCount} floors, but only a single typical floor plate was produced.`,
+          },
+        } : {}),
         conceptSlots,
         visualAttempts: {
           maxPerCandidate: 1,
@@ -1958,6 +2049,7 @@ export class GenerationOrchestrator {
     const rejectedAtPreflight = candidates.filter(c => c.rejectionStage === 'VISUAL_PREFLIGHT');
     const onlyPreflightRejections = candidates.length > 0 && rejectedAtPreflight.length === candidates.length;
 
+    const finalFloorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
     return {
       success: anyAccepted,
       projectId,
@@ -1970,6 +2062,14 @@ export class GenerationOrchestrator {
       apartmentRulesProfile,
       apartmentManifest,
       candidateSource: acceptedCandidate?.source ?? null,
+      ...(isApartment && finalFloorCount > 1 ? {
+        multiFloorStatus: {
+          requestedFloorCount: finalFloorCount,
+          generatedFloorCount: 1,
+          status: 'SINGLE_FLOOR_PRODUCED' as const,
+          message: `Multi-floor apartment generation is not yet supported; requested ${finalFloorCount} floors, but only a single typical floor plate was produced.`,
+        },
+      } : {}),
       visualAttempts: {
         maxPerCandidate: conceptMode ? 1 : preflightApplies ? maxVisualAttempts : 1,
         attempted: attemptSeeds.length,

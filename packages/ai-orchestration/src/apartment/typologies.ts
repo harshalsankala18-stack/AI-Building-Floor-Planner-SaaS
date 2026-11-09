@@ -25,6 +25,34 @@ export class UnsupportedUnitTypeError extends Error {
   }
 }
 
+export class InvalidCarpetAreaError extends Error {
+  readonly code = 'INVALID_CARPET_AREA';
+  constructor(public readonly field: string, public readonly value: unknown, message?: string) {
+    super(
+      message ??
+        `Invalid supplied carpet area for '${field}': ${String(value)}. Carpet area must be a finite, positive number.`,
+    );
+    this.name = 'InvalidCarpetAreaError';
+  }
+}
+
+export class InsufficientCarpetAreaError extends Error {
+  readonly code = 'INSUFFICIENT_CARPET_AREA';
+  constructor(
+    public readonly unitType: ApartmentUnitType,
+    public readonly targetCarpetAreaSqM: number,
+    public readonly requiredMinimumCarpetSqM: number,
+    public readonly deficitSqM: number,
+    message?: string,
+  ) {
+    super(
+      message ??
+        `Requested carpet area (${targetCarpetAreaSqM.toFixed(2)} m²) for ${unitType} is insufficient to accommodate mandatory room minimums plus internal circulation and wall allowances (minimum required: ${requiredMinimumCarpetSqM.toFixed(2)} m², deficit: ${deficitSqM.toFixed(2)} m²).`,
+    );
+    this.name = 'InsufficientCarpetAreaError';
+  }
+}
+
 /**
  * Normalizes input strings to canonical ApartmentUnitType with strict validation.
  * Handles case variations ('studio', '1bhk', '2bhk', '3bhk', '4bhk', 'Studio', '1BHK', etc.)
@@ -84,6 +112,8 @@ export interface UnitTypologyAllocationResult {
   readonly internalCirculationSqM: number;
   readonly internalWallsSqM: number;
   readonly usablePlanningBalanceSqM: number;
+  readonly requiredMinimumCarpetSqM?: number;
+  readonly isFeasible?: boolean;
   readonly rooms: readonly RoomAllocation[];
   readonly planningSequence: readonly string[];
 }
@@ -447,6 +477,17 @@ export function resolveAndValidateUnitMix(
       );
     }
 
+    if (item.carpetAreaSqM !== undefined && item.carpetAreaSqM !== null) {
+      if (typeof item.carpetAreaSqM !== 'number' || !Number.isFinite(item.carpetAreaSqM) || item.carpetAreaSqM <= 0) {
+        throw new InvalidCarpetAreaError(`unitMix[${i}].carpetAreaSqM`, item.carpetAreaSqM);
+      }
+    }
+    if (item.carpetAreaSqFt !== undefined && item.carpetAreaSqFt !== null) {
+      if (typeof item.carpetAreaSqFt !== 'number' || !Number.isFinite(item.carpetAreaSqFt) || item.carpetAreaSqFt <= 0) {
+        throw new InvalidCarpetAreaError(`unitMix[${i}].carpetAreaSqFt`, item.carpetAreaSqFt);
+      }
+    }
+
     totalCount += item.count;
     validatedItems.push({
       unitType: canonicalType,
@@ -470,6 +511,82 @@ export function resolveAndValidateUnitMix(
 
 // ─── Mathematical Spatial Allocation Model ───────────────────────────────────
 
+export interface CarpetAreaFeasibilityReport {
+  readonly feasible: boolean;
+  readonly unitType: ApartmentUnitType;
+  readonly targetCarpetAreaSqM: number;
+  readonly totalMandatoryMinimumsSqM: number;
+  readonly internalCirculationSqM: number;
+  readonly internalWallsSqM: number;
+  readonly requiredMinimumCarpetSqM: number;
+  readonly usablePlanningBalanceSqM: number;
+  readonly deficitSqM?: number;
+}
+
+export function checkCarpetAreaFeasibility(
+  unitType: ApartmentUnitType | string,
+  targetCarpetAreaSqM: number,
+  rulesProfile: ApartmentRulesProfile,
+): CarpetAreaFeasibilityReport {
+  const canonicalType = normalizeUnitType(unitType);
+  const template = TYPOLOGY_TEMPLATES[canonicalType]!;
+  let totalMandatoryMinimumsSqM = 0;
+  for (const rt of template.roomTemplates) {
+    let minArea = 1.5;
+    switch (rt.type) {
+      case 'master_bedroom':
+        minArea = rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM;
+        break;
+      case 'bedroom':
+        minArea = rulesProfile.habitableRoomMinimums.otherHabitableRoomMinSqM;
+        break;
+      case 'living_dining':
+        minArea = Math.max(12.0, rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM * 1.25);
+        break;
+      case 'kitchen':
+        minArea = rulesProfile.kitchenMinimums.minAreaSqM;
+        break;
+      case 'utility':
+        minArea = rulesProfile.utilityMinimums.minAreaSqM;
+        break;
+      case 'master_toilet':
+      case 'common_toilet':
+        minArea = rulesProfile.combinedToiletMinimums.minAreaSqM;
+        break;
+      case 'foyer':
+        minArea = 2.0;
+        break;
+      case 'puja':
+        minArea = 1.2;
+        break;
+      case 'balcony':
+        minArea = 2.5;
+        break;
+      default:
+        minArea = 1.5;
+    }
+    totalMandatoryMinimumsSqM += minArea;
+  }
+
+  const internalCirculationSqM = targetCarpetAreaSqM * 0.08;
+  const internalWallsSqM = targetCarpetAreaSqM * 0.07;
+  const requiredMinimumCarpetSqM = Number((totalMandatoryMinimumsSqM / 0.85).toFixed(2));
+  const rawBalance = targetCarpetAreaSqM - totalMandatoryMinimumsSqM - internalCirculationSqM - internalWallsSqM;
+  const feasible = rawBalance >= -1e-6;
+
+  return {
+    feasible,
+    unitType: canonicalType,
+    targetCarpetAreaSqM: Number(targetCarpetAreaSqM.toFixed(2)),
+    totalMandatoryMinimumsSqM: Number(totalMandatoryMinimumsSqM.toFixed(2)),
+    internalCirculationSqM: Number(internalCirculationSqM.toFixed(2)),
+    internalWallsSqM: Number(internalWallsSqM.toFixed(2)),
+    requiredMinimumCarpetSqM,
+    usablePlanningBalanceSqM: feasible ? Number(rawBalance.toFixed(2)) : 0,
+    ...(feasible ? {} : { deficitSqM: Number(Math.abs(rawBalance).toFixed(2)) }),
+  };
+}
+
 export function allocateApartmentUnitSpaces(options: {
   unitType: ApartmentUnitType | string;
   flatLabel?: string;
@@ -484,11 +601,32 @@ export function allocateApartmentUnitSpaces(options: {
     throw new UnsupportedUnitTypeError(String(unitType));
   }
 
+  // 1. Strict validation of supplied carpet areas:
+  // Reject zero, negative, NaN, and non-finite values with InvalidCarpetAreaError.
+  // Distinguish omitted (undefined / null) from invalid supplied values.
+  const hasSqM = options.targetCarpetAreaSqM !== undefined && options.targetCarpetAreaSqM !== null;
+  const hasSqFt = options.targetCarpetAreaSqFt !== undefined && options.targetCarpetAreaSqFt !== null;
+
+  if (hasSqM) {
+    const val = options.targetCarpetAreaSqM;
+    if (typeof val !== 'number' || !Number.isFinite(val) || val <= 0) {
+      throw new InvalidCarpetAreaError('targetCarpetAreaSqM', val);
+    }
+  }
+
+  if (hasSqFt) {
+    const val = options.targetCarpetAreaSqFt;
+    if (typeof val !== 'number' || !Number.isFinite(val) || val <= 0) {
+      throw new InvalidCarpetAreaError('targetCarpetAreaSqFt', val);
+    }
+  }
+
+  // 2. Precedence rule: targetCarpetAreaSqM takes precedence over targetCarpetAreaSqFt when both are supplied.
   let targetCarpetAreaSqM: number;
-  if (options.targetCarpetAreaSqM && options.targetCarpetAreaSqM > 0) {
-    targetCarpetAreaSqM = options.targetCarpetAreaSqM;
-  } else if (options.targetCarpetAreaSqFt && options.targetCarpetAreaSqFt > 0) {
-    targetCarpetAreaSqM = options.targetCarpetAreaSqFt * 0.092903;
+  if (hasSqM) {
+    targetCarpetAreaSqM = options.targetCarpetAreaSqM!;
+  } else if (hasSqFt) {
+    targetCarpetAreaSqM = options.targetCarpetAreaSqFt! * 0.092903;
   } else {
     targetCarpetAreaSqM = template.defaultCarpetAreaSqM;
   }
@@ -558,11 +696,21 @@ export function allocateApartmentUnitSpaces(options: {
     roomBaseMinimums.push({ template: rt, minArea, minWidth });
   }
 
-  const usablePlanningBalanceSqM = Math.max(
-    0,
-    targetCarpetAreaSqM - totalMandatoryMinimumsSqM - internalCirculationSqM - internalWallsSqM,
-  );
+  // 3. Feasibility check: mandatory minimums + internal circulation (8%) + internal walls (7%)
+  const requiredMinimumCarpetSqM = Number((totalMandatoryMinimumsSqM / (1 - 0.08 - 0.07)).toFixed(2));
+  const rawBalance = targetCarpetAreaSqM - totalMandatoryMinimumsSqM - internalCirculationSqM - internalWallsSqM;
 
+  if (rawBalance < -1e-6) {
+    const deficitSqM = Number(Math.abs(rawBalance).toFixed(2));
+    throw new InsufficientCarpetAreaError(
+      canonicalType,
+      Number(targetCarpetAreaSqM.toFixed(2)),
+      requiredMinimumCarpetSqM,
+      deficitSqM,
+    );
+  }
+
+  const usablePlanningBalanceSqM = Number(Math.max(0, rawBalance).toFixed(2));
   const totalWeight = template.roomTemplates.reduce((sum, r) => sum + r.weight, 0);
 
   const rooms: RoomAllocation[] = roomBaseMinimums.map(({ template: rt, minArea, minWidth }) => {
@@ -592,7 +740,9 @@ export function allocateApartmentUnitSpaces(options: {
     targetBuiltUpAreaSqFt,
     internalCirculationSqM: Number(internalCirculationSqM.toFixed(2)),
     internalWallsSqM: Number(internalWallsSqM.toFixed(2)),
-    usablePlanningBalanceSqM: Number(usablePlanningBalanceSqM.toFixed(2)),
+    usablePlanningBalanceSqM,
+    requiredMinimumCarpetSqM,
+    isFeasible: true,
     rooms,
     planningSequence: template.planningSequence,
   };

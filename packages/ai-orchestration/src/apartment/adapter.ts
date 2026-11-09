@@ -372,11 +372,14 @@ export function adaptSchematicToBuilding(
   options?: {
     projectId?: string;
     projectName?: string;
-    site?: Partial<ExtractionSite>;
+    site?: Partial<ExtractionSite> & { plannedFloorCount?: number };
+    plannedFloorCount?: number;
   },
 ): Building {
   const projectId = options?.projectId ?? 'project-cad';
   const projectName = options?.projectName ?? 'Apartment CAD Plan';
+  const requestedFloorCount = options?.plannedFloorCount ?? options?.site?.plannedFloorCount ?? 1;
+  const isMultiFloorRequested = requestedFloorCount > 1;
   const structure = schematicToApartmentStructure(schematic);
   const site = buildExtractionSite({
     plotWidthMm: options?.site?.plotWidth ?? Math.round(schematic.siteFootprint.width * 1000),
@@ -472,6 +475,17 @@ export function adaptSchematicToBuilding(
       otsShafts: schematic.units.flatMap(u => u.steppedPolygon?.otsShafts ?? []),
       balconies: schematic.units.flatMap(u => u.steppedPolygon?.balconies ?? []),
       vastuReport: schematic.vastuReport,
+      ...(isMultiFloorRequested
+        ? {
+            multiFloor: {
+              requestedFloorCount,
+              generatedFloorCount: 1,
+              status: 'SINGLE_FLOOR_PRODUCED' as const,
+              diagnosticCode: 'MULTI_FLOOR_NOT_IMPLEMENTED' as const,
+              message: `Multi-floor apartment generation is not yet supported; requested ${requestedFloorCount} floors, but only a single typical floor plate was produced.`,
+            },
+          }
+        : {}),
     },
     floors: [
       {

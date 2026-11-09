@@ -11,12 +11,17 @@
 
 import type { ApartmentBriefConfig } from '../types/apartment';
 import { type ApartmentRulesProfile, type ApartmentJurisdiction } from './jurisdiction';
-import type { DeterministicApartmentSchematic } from './schematic';
+import type {
+  DeterministicApartmentSchematic,
+  SchematicApartmentUnit,
+  SchematicRoomItem,
+} from './schematic';
 import {
   normalizeUnitType,
   getExpectedRoomProgramme,
   resolveAndValidateUnitMix,
   TYPOLOGY_TEMPLATES,
+  InvalidCarpetAreaError,
 } from './typologies';
 import { DEFAULT_APARTMENT_SETBACKS_MM } from './site-defaults';
 
@@ -199,9 +204,15 @@ export function buildApartmentGenerationManifest(
       const flatLabel = `FLAT ${unitIndex < 10 ? `0${unitIndex}` : unitIndex}`;
 
       let targetAreaSqM: number;
-      if (item.carpetAreaSqM && item.carpetAreaSqM > 0) {
+      if (item.carpetAreaSqM !== undefined && item.carpetAreaSqM !== null) {
+        if (typeof item.carpetAreaSqM !== 'number' || !Number.isFinite(item.carpetAreaSqM) || item.carpetAreaSqM <= 0) {
+          throw new InvalidCarpetAreaError('carpetAreaSqM', item.carpetAreaSqM);
+        }
         targetAreaSqM = item.carpetAreaSqM;
-      } else if (item.carpetAreaSqFt && item.carpetAreaSqFt > 0) {
+      } else if (item.carpetAreaSqFt !== undefined && item.carpetAreaSqFt !== null) {
+        if (typeof item.carpetAreaSqFt !== 'number' || !Number.isFinite(item.carpetAreaSqFt) || item.carpetAreaSqFt <= 0) {
+          throw new InvalidCarpetAreaError('carpetAreaSqFt', item.carpetAreaSqFt);
+        }
         targetAreaSqM = Number((item.carpetAreaSqFt * 0.092903).toFixed(2));
       } else {
         targetAreaSqM = TYPOLOGY_TEMPLATES[canonicalType]?.defaultCarpetAreaSqM ?? 70.0;
@@ -411,6 +422,72 @@ export function renderApartmentManifestText(manifest: ApartmentGenerationManifes
   return lines.join('\n');
 }
 
+export interface ClassifiedUnitRooms {
+  readonly bedrooms: number;
+  readonly bathrooms: number;
+  readonly livingRooms: number;
+  readonly diningRooms: number;
+  readonly kitchens: number;
+  readonly utilities: number;
+  readonly balconies: number;
+}
+
+/**
+ * Classifies rooms of an apartment unit strictly based on typed room properties (r.type),
+ * never relying on fragile label matching.
+ *
+ * Exact room-programme rules:
+ * - Studio: 0 separate bedrooms, 1 open living/sleeping suite (living_dining / studio_living),
+ *   1 bathroom, 1 kitchen/kitchenette, 0 dining rooms, 0 utilities, 1 balcony.
+ *   Studio's living/sleeping suite MUST NOT be counted as a dining room.
+ * - 1BHK–4BHK:
+ *   - Bedrooms: 1 (1BHK), 2 (2BHK), 3 (3BHK), 4 (4BHK)
+ *   - Bathrooms: 1 (1BHK), 2 (2BHK), 3 (3BHK), 4 (4BHK)
+ *   - Kitchen: 1
+ *   - Utility: 1
+ *   - Balcony: 1
+ *   - Living / Dining: A combined living_dining room satisfies both the living and dining requirements.
+ */
+export function classifySchematicUnitRooms(sUnit: SchematicApartmentUnit): ClassifiedUnitRooms {
+  const isStudio = normalizeUnitType(sUnit.unitType) === 'Studio';
+
+  // Gather unique rooms across rooms and balconies arrays (deduplicating by id if same instance present in both)
+  const roomMap = new Map<string, SchematicRoomItem>();
+  for (const r of sUnit.rooms ?? []) {
+    roomMap.set(r.id, r);
+  }
+  for (const b of sUnit.balconies ?? []) {
+    roomMap.set(b.id, b);
+  }
+  const allRooms = Array.from(roomMap.values());
+
+  const bedrooms = allRooms.filter(r => r.type === 'master_bedroom' || r.type === 'bedroom').length;
+  const bathrooms = allRooms.filter(
+    r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room' || r.type === 'toilet',
+  ).length;
+  const kitchens = allRooms.filter(r => r.type === 'kitchen' || r.type === 'kitchenette').length;
+  const livingRooms = allRooms.filter(
+    r => r.type === 'living_dining' || r.type === 'living' || r.type === 'studio_living',
+  ).length;
+
+  const diningRooms = isStudio
+    ? allRooms.filter(r => r.type === 'dining').length
+    : allRooms.filter(r => r.type === 'living_dining' || r.type === 'dining').length;
+
+  const utilities = allRooms.filter(r => r.type === 'utility').length;
+  const balconies = allRooms.filter(r => r.type === 'balcony').length;
+
+  return {
+    bedrooms,
+    bathrooms,
+    livingRooms,
+    diningRooms,
+    kitchens,
+    utilities,
+    balconies,
+  };
+}
+
 /**
  * Validates that the Deterministic Schematic strictly matches the Manifest before invoking FLUX (§8).
  * If the schematic and manifest disagree on flat count, unit mix, or core elements: STOP.
@@ -459,31 +536,46 @@ export function validateSchematicMatchesManifest(
     );
   }
 
-  // 5. Per-flat programme: exact bedroom count, bathroom count, kitchen, living
+  // 5. Per-flat programme: exact validation of all 7 categories (both missing and extra)
   for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
     const sUnit = schematic.units[i]!;
     const mUnit = manifest.units.units[i]!;
-    const rooms = [...sUnit.rooms, ...sUnit.balconies];
-    const bedrooms = rooms.filter(r => r.type === 'master_bedroom' || r.type === 'bedroom').length;
-    const baths = rooms.filter(
-      r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room' || r.type === 'toilet',
-    ).length;
-    const kitchens = rooms.filter(r => r.type === 'kitchen' || r.type === 'kitchenette').length;
-    const living = rooms.filter(
-      r => r.type === 'living_dining' || r.type === 'living' || r.type === 'studio_living',
-    ).length;
+    const actual = classifySchematicUnitRooms(sUnit);
 
-    if (bedrooms !== mUnit.bedrooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${bedrooms} bedroom(s); manifest requires ${mUnit.bedrooms}.`);
+    if (actual.bedrooms !== mUnit.bedrooms) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.bedrooms} bedroom(s); manifest requires ${mUnit.bedrooms}.`,
+      );
     }
-    if (baths !== mUnit.bathrooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${baths} bathroom(s); manifest requires ${mUnit.bathrooms}.`);
+    if (actual.bathrooms !== mUnit.bathrooms) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.bathrooms} bathroom(s); manifest requires ${mUnit.bathrooms}.`,
+      );
     }
-    if (kitchens !== mUnit.kitchens) {
-      discrepancies.push(`${sUnit.flatLabel} has ${kitchens} kitchen(s); manifest requires ${mUnit.kitchens}.`);
+    if (actual.kitchens !== mUnit.kitchens) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.kitchens} kitchen(s); manifest requires ${mUnit.kitchens}.`,
+      );
     }
-    if (living !== mUnit.livingRooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${living} living room(s); manifest requires ${mUnit.livingRooms}.`);
+    if (actual.livingRooms !== mUnit.livingRooms) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.livingRooms} living room(s); manifest requires ${mUnit.livingRooms}.`,
+      );
+    }
+    if (actual.diningRooms !== mUnit.diningRooms) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.diningRooms} dining area(s); manifest requires ${mUnit.diningRooms}.`,
+      );
+    }
+    if (actual.utilities !== mUnit.utilities) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.utilities} utility room(s); manifest requires ${mUnit.utilities}.`,
+      );
+    }
+    if (actual.balconies !== mUnit.balconies) {
+      discrepancies.push(
+        `${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.balconies} balcony/balconies; manifest requires ${mUnit.balconies}.`,
+      );
     }
   }
 
