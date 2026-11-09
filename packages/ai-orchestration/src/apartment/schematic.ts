@@ -7,6 +7,7 @@ import {
   type ApartmentUnitType,
   type UnitTypologyAllocationResult,
   allocateApartmentUnitSpaces,
+  resolveAndValidateUnitMix,
 } from './typologies';
 import { type ApartmentFloorType } from './floor-configuration';
 import { DEFAULT_APARTMENT_SETBACKS_M } from './site-defaults';
@@ -300,6 +301,8 @@ export function generateDeterministicApartmentSchematic(
   const buildableDepthM = Math.max(10, siteDepthM - setbacks.front - setbacks.rear);
   const buildable: Rect2D = { x: setbacks.left, y: setbacks.rear, width: buildableWidthM, height: buildableDepthM };
 
+  const resolvedMix = resolveAndValidateUnitMix(unitMix, flatsPerFloor);
+
   const flattenedFlats: Array<{
     flatLabel: string;
     unitType: ApartmentUnitType;
@@ -307,25 +310,18 @@ export function generateDeterministicApartmentSchematic(
     targetCarpetAreaSqFt?: number;
   }> = [];
   let flatIndex = 1;
-  for (const mixItem of unitMix) {
-    const count = mixItem.count || 1;
-    for (let c = 0; c < count; c++) {
-      if (flattenedFlats.length < flatsPerFloor) {
-        flattenedFlats.push({
-          flatLabel: `Flat ${String(flatIndex).padStart(2, '0')}`,
-          unitType: ((mixItem.unitType?.toUpperCase()) as ApartmentUnitType) || '2BHK',
-          targetCarpetAreaSqM: mixItem.carpetAreaSqM,
-          targetCarpetAreaSqFt: mixItem.carpetAreaSqFt,
-        });
-        flatIndex++;
-      }
+  for (const item of resolvedMix.items) {
+    for (let c = 0; c < item.count; c++) {
+      flattenedFlats.push({
+        flatLabel: `Flat ${String(flatIndex).padStart(2, '0')}`,
+        unitType: item.unitType,
+        targetCarpetAreaSqM: item.carpetAreaSqM,
+        targetCarpetAreaSqFt: item.carpetAreaSqFt,
+      });
+      flatIndex++;
     }
   }
-  while (flattenedFlats.length < flatsPerFloor) {
-    flattenedFlats.push({ flatLabel: `Flat ${String(flatIndex).padStart(2, '0')}`, unitType: '2BHK' });
-    flatIndex++;
-  }
-  const finalFlats = flattenedFlats.slice(0, flatsPerFloor);
+  const finalFlats = flattenedFlats;
 
   const passengerLifts = commonCoreConfig.passengerLifts ?? rulesProfile.liftRequirements.minPassengerLifts;
   const liftCount = Math.max(1, passengerLifts + (commonCoreConfig.serviceLifts ?? 0));
@@ -532,7 +528,10 @@ export function generateDeterministicApartmentSchematic(
     areaReport: plan.areaReport,
     layoutFits: plan.fits,
     layoutIssues: plan.issues,
-    layoutAdaptations: plan.adaptations,
+    layoutAdaptations: [
+      ...plan.adaptations,
+      ...(resolvedMix.wasDefaultApplied && resolvedMix.defaultExplanation ? [resolvedMix.defaultExplanation] : []),
+    ],
     vastuReport: schematicVastuReport,
     seed: plan.seed,
   };

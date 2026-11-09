@@ -10,9 +10,14 @@
  */
 
 import type { ApartmentBriefConfig } from '../types/apartment';
-import { type ApartmentRulesProfile, type ApartmentJurisdiction, getApartmentRulesProfile } from './jurisdiction';
+import { type ApartmentRulesProfile, type ApartmentJurisdiction } from './jurisdiction';
 import type { DeterministicApartmentSchematic } from './schematic';
-import { allocateApartmentUnitSpaces, type ApartmentUnitType } from './typologies';
+import {
+  normalizeUnitType,
+  getExpectedRoomProgramme,
+  resolveAndValidateUnitMix,
+  TYPOLOGY_TEMPLATES,
+} from './typologies';
 import { DEFAULT_APARTMENT_SETBACKS_MM } from './site-defaults';
 
 const SQM_TO_SQFT = 10.7639104;
@@ -130,7 +135,7 @@ export interface BuildApartmentManifestInput {
 export function buildApartmentGenerationManifest(
   input: BuildApartmentManifestInput,
 ): ApartmentGenerationManifest {
-  const { site, apartmentConfig, rulesProfile } = input;
+  const { site, apartmentConfig } = input;
   const setbacks = site.setbacksMm ?? DEFAULT_APARTMENT_SETBACKS_MM;
 
   const plotWidthM = site.plotWidthMm / 1000;
@@ -175,77 +180,47 @@ export function buildApartmentGenerationManifest(
     ruleProfile: 'National Building Code 2016 Baseline',
   };
 
-  const resolvedRulesProfile = rulesProfile ?? getApartmentRulesProfile(jurisdictionName, {
-    floorCount: apartmentConfig.floorCount,
-    tenementsPerFloor: apartmentConfig.flatsPerFloor,
-  });
+// Resolve and strictly validate the unit mix
+  const resolvedMix = resolveAndValidateUnitMix(
+    apartmentConfig.unitMix,
+    apartmentConfig.flatsPerFloor,
+  );
 
-  // Build individual units list from unit mix
+  // Build individual units list using canonical expected room programmes (independent from allocator)
   const unitsList: ApartmentUnitManifestItem[] = [];
   let unitIndex = 0;
 
-  for (const item of apartmentConfig.unitMix) {
-    const normType = (item.unitType.toUpperCase()) as ApartmentUnitType;
+  for (const item of resolvedMix.items) {
+    const canonicalType = item.unitType;
+    const programme = getExpectedRoomProgramme(canonicalType);
+
     for (let c = 0; c < item.count; c++) {
       unitIndex++;
       const flatLabel = `FLAT ${unitIndex < 10 ? `0${unitIndex}` : unitIndex}`;
 
-      // Allocate room spaces via typology engine
-      const allocation = allocateApartmentUnitSpaces({
-        unitType: normType,
-        targetCarpetAreaSqFt: item.carpetAreaSqFt,
-        rulesProfile: resolvedRulesProfile,
-        flatLabel,
-      });
-
-      const targetAreaSqM = allocation.targetCarpetAreaSqM;
+      let targetAreaSqM: number;
+      if (item.carpetAreaSqM && item.carpetAreaSqM > 0) {
+        targetAreaSqM = item.carpetAreaSqM;
+      } else if (item.carpetAreaSqFt && item.carpetAreaSqFt > 0) {
+        targetAreaSqM = Number((item.carpetAreaSqFt * 0.092903).toFixed(2));
+      } else {
+        targetAreaSqM = TYPOLOGY_TEMPLATES[canonicalType]?.defaultCarpetAreaSqM ?? 70.0;
+      }
       const targetAreaSqFt = Math.round(targetAreaSqM * SQM_TO_SQFT);
-
-      // Inventory room categories for this unit
-      let bedrooms = 0;
-      let bathrooms = 0;
-      let livingRooms = 0;
-      let diningRooms = 0;
-      let kitchens = 0;
-      let utilities = 0;
-      let balconies = 0;
-
-      for (const r of allocation.rooms) {
-        if (r.type === 'master_bedroom' || r.type === 'bedroom') bedrooms++;
-        else if (r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room') bathrooms++;
-        else if (r.type === 'living_dining') {
-          livingRooms++;
-          diningRooms++;
-        } else if (r.type === 'kitchen') kitchens++;
-        else if (r.type === 'utility') utilities++;
-        else if (r.type === 'balcony') balconies++;
-      }
-
-      // Default room minimums if typology was unspecified
-      if (bedrooms === 0) {
-        const parsed = parseInt(normType, 10);
-        bedrooms = isNaN(parsed) ? 2 : parsed;
-        bathrooms = Math.max(1, bedrooms);
-        livingRooms = 1;
-        diningRooms = 1;
-        kitchens = 1;
-        utilities = 1;
-        balconies = 1;
-      }
 
       unitsList.push({
         id: `unit_${unitIndex}`,
         label: flatLabel,
-        type: normType,
+        type: canonicalType,
         targetAreaSqFt,
         targetAreaSqM,
-        bedrooms,
-        bathrooms,
-        livingRooms,
-        diningRooms,
-        kitchens,
-        utilities,
-        balconies,
+        bedrooms: programme.bedrooms,
+        bathrooms: programme.bathrooms,
+        livingRooms: programme.livingRooms,
+        diningRooms: programme.diningRooms,
+        kitchens: programme.kitchens,
+        utilities: programme.utilities,
+        balconies: programme.balconies,
       });
     }
   }
@@ -345,7 +320,8 @@ export function buildApartmentGenerationManifest(
     },
     requirements: [
       `Generate EXACTLY ${unitsList.length} separate residential flats on this floor.`,
-      `Preserve the exact unit mix: ${apartmentConfig.unitMix.map(u => `${u.count} x ${u.unitType}`).join(', ')}.`,
+      `Preserve the exact unit mix: ${resolvedMix.items.map(u => `${u.count} x ${u.unitType}`).join(', ')}.`,
+      ...(resolvedMix.wasDefaultApplied && resolvedMix.defaultExplanation ? [resolvedMix.defaultExplanation] : []),
       `Generate EXACTLY ${liftsCount} lift(s) and EXACTLY ${stairsCount} staircase(s).`,
       'Include a central common lobby providing direct access to all flat entries.',
       'Flats must have clear boundary walls and independent front doors.',
@@ -462,7 +438,7 @@ export function validateSchematicMatchesManifest(
   for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
     const sUnit = schematic.units[i]!;
     const mUnit = manifest.units.units[i]!;
-    if (sUnit.unitType.toUpperCase() !== mUnit.type.toUpperCase()) {
+    if (normalizeUnitType(sUnit.unitType) !== normalizeUnitType(mUnit.type)) {
       discrepancies.push(
         `Unit ${i + 1} type mismatch: Schematic has "${sUnit.unitType}", but manifest requires "${mUnit.type}".`,
       );
@@ -483,18 +459,31 @@ export function validateSchematicMatchesManifest(
     );
   }
 
-  // 5. Per-flat programme (two-phase upgrade): nBHK ⇒ exactly n bedrooms, baths ≥ manifest.
+  // 5. Per-flat programme: exact bedroom count, bathroom count, kitchen, living
   for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
     const sUnit = schematic.units[i]!;
     const mUnit = manifest.units.units[i]!;
     const rooms = [...sUnit.rooms, ...sUnit.balconies];
     const bedrooms = rooms.filter(r => r.type === 'master_bedroom' || r.type === 'bedroom').length;
-    const baths = rooms.filter(r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room').length;
+    const baths = rooms.filter(
+      r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room' || r.type === 'toilet',
+    ).length;
+    const kitchens = rooms.filter(r => r.type === 'kitchen' || r.type === 'kitchenette').length;
+    const living = rooms.filter(
+      r => r.type === 'living_dining' || r.type === 'living' || r.type === 'studio_living',
+    ).length;
+
     if (bedrooms !== mUnit.bedrooms) {
       discrepancies.push(`${sUnit.flatLabel} has ${bedrooms} bedroom(s); manifest requires ${mUnit.bedrooms}.`);
     }
-    if (baths < mUnit.bathrooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${baths} bath(s); manifest requires ${mUnit.bathrooms}.`);
+    if (baths !== mUnit.bathrooms) {
+      discrepancies.push(`${sUnit.flatLabel} has ${baths} bathroom(s); manifest requires ${mUnit.bathrooms}.`);
+    }
+    if (kitchens !== mUnit.kitchens) {
+      discrepancies.push(`${sUnit.flatLabel} has ${kitchens} kitchen(s); manifest requires ${mUnit.kitchens}.`);
+    }
+    if (living !== mUnit.livingRooms) {
+      discrepancies.push(`${sUnit.flatLabel} has ${living} living room(s); manifest requires ${mUnit.livingRooms}.`);
     }
   }
 

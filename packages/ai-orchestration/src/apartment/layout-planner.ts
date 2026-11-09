@@ -530,7 +530,7 @@ function planUnitUV(
   const foyer = first('foyer') ?? synth('foyer', 'Entrance Foyer', 'foyer', 2.4, 1.2);
   const ld = first('living_dining') ?? synth('living_dining', 'Living & Dining Room', 'living_dining', 14, 3);
   const kitchen = first('kitchen') ?? synth('kitchen', 'Kitchen', 'kitchen', 6, 1.8);
-  const utility = first('utility') ?? synth('utility', 'Kitchen Utility (Dry Balcony)', 'utility', 2.4, 1.2);
+  const utility = first('utility');
   const master = first('master_bedroom');
   const others = all.filter(r => r.type === 'bedroom');
   const baths = all.filter(r => r.type === 'master_toilet' || r.type === 'common_toilet' || r.type === 'powder_room');

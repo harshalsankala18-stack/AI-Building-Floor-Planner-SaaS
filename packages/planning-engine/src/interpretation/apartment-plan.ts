@@ -207,7 +207,9 @@ export function normalizeApartmentUnitType(value: string): string {
 }
 
 function bhkBedrooms(unitType: string): number | null {
-  const match = /^(\d+)BHK$/.exec(normalizeApartmentUnitType(unitType));
+  const norm = normalizeApartmentUnitType(unitType);
+  if (norm === 'STUDIO') return 0;
+  const match = /^(\d+)BHK$/.exec(norm);
   return match ? Number(match[1]) : null;
 }
 
