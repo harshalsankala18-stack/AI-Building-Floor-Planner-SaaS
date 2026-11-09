@@ -44,11 +44,38 @@ if (typeof process.loadEnvFile === 'function') {
 
 const MAX_BODY_BYTES = 2_000_000;
 
-const CORS_HEADERS: Record<string, string> = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-};
+export function resolveCorsHeaders(
+  requestOrigin: string | undefined,
+  allowedOrigins: readonly string[],
+  isProduction: boolean,
+): Record<string, string> {
+  const headers: Record<string, string> = {
+    'Access-Control-Allow-Methods': 'GET,POST,OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+  };
+
+  if (!isProduction) {
+    if (allowedOrigins.includes('*')) {
+      headers['Access-Control-Allow-Origin'] = '*';
+      return headers;
+    }
+    headers['Access-Control-Allow-Origin'] = requestOrigin || '*';
+    if (requestOrigin) headers['Vary'] = 'Origin';
+    return headers;
+  }
+
+  if (!requestOrigin) {
+    return headers;
+  }
+
+  if (allowedOrigins.includes(requestOrigin)) {
+    headers['Access-Control-Allow-Origin'] = requestOrigin;
+    headers['Vary'] = 'Origin';
+    return headers;
+  }
+
+  return headers;
+}
 
 export function createImageProvider(config: ImageServiceConfig): ImageGenerationProvider | null {
   if (config.imageProviderKind === 'local-stub') return new LocalStubImageProvider();
@@ -453,8 +480,13 @@ export function createBackendServer(deps: ServerDeps): Server {
   return server;
 }
 
-function sendJson(response: ServerResponse, status: number, json: unknown): void {
-  response.writeHead(status, { 'Content-Type': 'application/json', ...CORS_HEADERS });
+function sendJson(
+  response: ServerResponse,
+  status: number,
+  json: unknown,
+  corsHeaders: Record<string, string> = {},
+): void {
+  response.writeHead(status, { 'Content-Type': 'application/json', ...corsHeaders });
   response.end(JSON.stringify(json));
 }
 
@@ -479,9 +511,23 @@ function readBody(request: IncomingMessage): Promise<string> {
 async function route(request: IncomingMessage, response: ServerResponse, deps: ServerDeps): Promise<void> {
   const url = new URL(request.url ?? '/', 'http://localhost');
   const method = request.method ?? 'GET';
+  const config = deps.config ?? resolveImageServiceConfig();
+  const isProduction = (process.env.NODE_ENV ?? 'development') === 'production';
+  const corsHeaders = resolveCorsHeaders(request.headers.origin, config.corsAllowedOrigins, isProduction);
+  const send = (status: number, json: unknown) => sendJson(response, status, json, corsHeaders);
 
   if (method === 'OPTIONS') {
-    response.writeHead(204, CORS_HEADERS);
+    if (request.headers.origin && !corsHeaders['Access-Control-Allow-Origin']) {
+      response.writeHead(403, { 'Content-Type': 'application/json' });
+      response.end(JSON.stringify({
+        error: {
+          code: 'CORS_FORBIDDEN',
+          message: `Origin ${request.headers.origin} is not allowed by CORS policy.`,
+        },
+      }));
+      return;
+    }
+    response.writeHead(204, corsHeaders);
     response.end();
     return;
   }
@@ -490,7 +536,7 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
     if (method === 'GET' && url.pathname === '/api/v1/health') {
       const config = deps.config ?? resolveImageServiceConfig();
       const health = await checkProviderHealth(config, deps);
-      sendJson(response, 200, health);
+      send(200, health);
       return;
     }
     if (method === 'POST' && (url.pathname === '/api/v1/generation/run' || url.pathname === '/api/generation/run')) {
@@ -499,7 +545,7 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response, 400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
         return;
       }
       const { GenerationOrchestrator } = await import('./services/generation-orchestrator.js');
@@ -511,7 +557,7 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
         deterministicCadFirst: deps.config?.deterministicCadFirst ?? true,
       });
       const result = await orchestrator.run(body as any);
-      sendJson(response, 200, result);
+      send(200, result);
       return;
     }
     if (method === 'POST' && (url.pathname === '/api/v1/generation/resume' || url.pathname === '/api/generation/resume')) {
@@ -520,7 +566,7 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response, 400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
         return;
       }
       const { GenerationOrchestrator } = await import('./services/generation-orchestrator.js');
@@ -532,7 +578,7 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
         deterministicCadFirst: deps.config?.deterministicCadFirst ?? true,
       });
       const result = await orchestrator.resumeFromArtifact(body as any);
-      sendJson(response, 200, result);
+      send(200, result);
       return;
     }
     if (method === 'POST' && url.pathname === '/api/v1/image/floor-plan') {
@@ -541,11 +587,11 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response, 400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
         return;
       }
       const result = await handleFloorPlanGeneration(body, deps);
-      sendJson(response, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === 'POST' && url.pathname === '/api/v1/image/interpret') {
@@ -554,11 +600,11 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response, 400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
         return;
       }
       const result = await handleImageInterpretation(body, deps);
-      sendJson(response, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === 'POST' && url.pathname === '/api/v1/architecture/evaluate') {
@@ -567,32 +613,32 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response, 400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
         return;
       }
       const result = await handleArchitecturalEvaluation(body, deps);
-      sendJson(response, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     const artifactMatch = url.pathname.match(/^\/api\/v1\/image\/artifacts\/([^/]+)$/);
     if (method === 'GET' && artifactMatch) {
       const result = await handleArtifactGet(decodeURIComponent(artifactMatch[1]!), deps.store);
-      sendJson(response, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === 'GET' && url.pathname === '/api/v1/image/artifacts') {
       const projectId = url.searchParams.get('projectId') ?? '';
       if (!projectId) {
-        sendJson(response, 400, { error: { code: 'INVALID_REQUEST', message: 'projectId query parameter is required.' } });
+        send(400, { error: { code: 'INVALID_REQUEST', message: 'projectId query parameter is required.' } });
         return;
       }
       sendJson(response, 200, { artifacts: await deps.store.listByProject(projectId) });
       return;
     }
-    sendJson(response, 404, { error: { code: 'NOT_FOUND', message: 'Unknown endpoint.' } });
+    send(404, { error: { code: 'NOT_FOUND', message: 'Unknown endpoint.' } });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unexpected server error.';
-    sendJson(response, message.includes('too large') ? 413 : 500, { error: { code: 'SERVER_ERROR', message } });
+    send(message.includes('too large') ? 413 : 500, { error: { code: 'SERVER_ERROR', message } });
   }
 }
 
@@ -610,6 +656,7 @@ export function startBackendServer(port?: number): { server: Server; config: Ima
   server.listen(port ?? config.port, () => {
     // Never log credential values — only their presence (PRD §36).
     console.log(`AI floor-planner backend listening on port ${port ?? config.port}`);
+    console.log(`CORS allowed origins: ${config.corsAllowedOrigins.length > 0 ? config.corsAllowedOrigins.join(', ') : (process.env.NODE_ENV === 'production' ? 'NONE (explicit origins required)' : 'local dev frontends')}`);
     const providerModel = config.imageProviderKind === 'pollinations' ? config.pollinationsImageModel : config.imageProviderKind === 'cloudflare' ? config.fluxModel : 'local-stub';
     const missing = config.imageProviderKind === 'pollinations' ? 'POLLINATIONS_API_KEY' : 'CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN';
     console.log(`Image provider: ${deps.provider ? `${deps.provider.name} configured (model ${providerModel})` : `${config.imageProviderKind} NOT CONFIGURED (set ${missing})`}`);

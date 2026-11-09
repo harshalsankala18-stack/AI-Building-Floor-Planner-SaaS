@@ -138,7 +138,6 @@ export interface GenerationOrchestratorInput {
   readonly roomCounts?: GenerationOrchestratorRoomCountsInput;
   readonly preferences?: GenerationOrchestratorPreferencesInput;
   readonly additionalPrompt?: string;
-  readonly enableArchLang?: boolean;
   readonly seed?: number;
   readonly candidateCount?: number;
   readonly projectType?: 'apartment' | 'residential_independent';
@@ -662,6 +661,8 @@ export interface GenerationOrchestratorDeps {
   readonly maxVisualAttempts?: number;
   /** When true, generates instant deterministic stepped CAD candidates, bypassing external image APIs. */
   readonly deterministicCadFirst?: boolean;
+  /** When true, compiles generated buildings with ArchLang and runs geometry parity checks. */
+  readonly enableArchLang?: boolean;
 }
 
 function resolveDirection(dir: Direction | string): Direction {
@@ -1019,7 +1020,7 @@ export class GenerationOrchestrator {
         });
 
         let archlangResult: ArchLangExportResult | null = null;
-        const shouldCompileArchLang = Boolean(this.deps.enableArchLang || input.enableArchLang);
+        const shouldCompileArchLang = Boolean(input.enableArchLang ?? this.deps.enableArchLang ?? false);
         if (shouldCompileArchLang) {
           try {
             archlangResult = await compileBuildingWithArchLang(building, {
@@ -1886,7 +1887,7 @@ export class GenerationOrchestrator {
       };
 
       let fallbackArchlangResult: ArchLangExportResult | null = null;
-      const shouldCompileArchLangFb = Boolean(this.deps.enableArchLang || input.enableArchLang);
+      const shouldCompileArchLangFb = Boolean(input.enableArchLang ?? this.deps.enableArchLang ?? false);
       if (plan.building && shouldCompileArchLangFb) {
         try {
           fallbackArchlangResult = await compileBuildingWithArchLang(plan.building, {

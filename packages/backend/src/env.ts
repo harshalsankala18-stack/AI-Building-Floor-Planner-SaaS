@@ -50,6 +50,16 @@ export interface ImageServiceConfig {
    * engine directly as the primary generator, bypassing raster image models.
    */
   readonly deterministicCadFirst: boolean;
+  /**
+   * Allowed CORS origins. In development, defaults to local dev frontends.
+   * In production, must be explicitly configured via CORS_ALLOWED_ORIGINS.
+   */
+  readonly corsAllowedOrigins: readonly string[];
+  /**
+   * ENABLE_ARCHLANG: defaults to false.
+   * When true, compiles generated buildings with ArchLang and runs geometry parity checks.
+   */
+  readonly enableArchLang: boolean;
 }
 
 export function cloudflareConfigured(config: Pick<ImageServiceConfig, 'cloudflareAccountId' | 'cloudflareApiToken'>): boolean {
@@ -73,6 +83,28 @@ function resolveImageProviderKind(env: NodeJS.ProcessEnv): ImageProviderKind {
   if (kind === 'gemini') return 'gemini';
   if (kind === 'pollinations') return 'pollinations';
   return 'cloudflare';
+}
+
+export function resolveCorsAllowedOrigins(env: NodeJS.ProcessEnv): readonly string[] {
+  const raw = (env.CORS_ALLOWED_ORIGINS ?? '').trim();
+  if (raw.length > 0) {
+    return raw
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+  }
+  const isProd = (env.NODE_ENV ?? 'development') === 'production';
+  if (!isProd) {
+    return [
+      'http://localhost:3000',
+      'http://127.0.0.1:3000',
+      'http://localhost:5173',
+      'http://127.0.0.1:5173',
+      'http://localhost:4173',
+      'http://127.0.0.1:4173',
+    ];
+  }
+  return [];
 }
 
 function positiveInt(value: string | undefined, fallback: number): number {
@@ -110,5 +142,7 @@ export function resolveImageServiceConfig(env: NodeJS.ProcessEnv = process.env):
     artifactDir: (env.IMAGE_ARTIFACT_DIR ?? '').trim()
       || path.join(process.cwd(), 'data', 'image-artifacts'),
     deterministicCadFirst: (env.DETERMINISTIC_CAD_FIRST ?? 'true').trim().toLowerCase() !== 'false' && (env.DETERMINISTIC_CAD_FIRST ?? 'true').trim() !== '0',
+    corsAllowedOrigins: resolveCorsAllowedOrigins(env),
+    enableArchLang: (env.ENABLE_ARCHLANG ?? 'false').trim().toLowerCase() === 'true' || (env.ENABLE_ARCHLANG ?? '0').trim() === '1',
   };
 }

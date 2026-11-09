@@ -260,7 +260,16 @@ describe('Phase 2 — Deterministic Stepped-Polygon CAD Engine (Instant Pipeline
           fireStaircaseRequired: false,
           commonLobby: true,
         },
-        floorStrategy: 'TYPICAL',
+        floorStrategy: 'typical',
+        parking: {
+          residentParkingCount: 2,
+          visitorParkingCount: 1,
+          twoWheelerParkingCount: 4,
+        },
+        amenities: {
+          groundSiteAmenities: [],
+          buildingAmenities: [],
+        },
       },
       candidateCount: 1,
       seed: 42,

@@ -1,3 +1,4 @@
+import { resolveApiBaseUrl, type ApiConfigEnv, type ApiUrlResolution } from './api-config';
 import type { Building, DesignRequirementSpecification, SpaceProgram } from '@ai-floor-planner/core';
 import type { RequirementParseResult, AIEditParseResult, FloorPlanImagePromptRequest, ApartmentBriefConfig } from '@ai-floor-planner/ai-orchestration';
 import {
@@ -79,15 +80,37 @@ export interface GenerationJobProgress {
 }
 
 export class BackendAPI {
-  private readonly baseUrl: string;
+  private readonly resolution: ApiUrlResolution;
   private readonly fetchImpl: typeof fetch;
 
   constructor(
-    baseUrl = 'http://127.0.0.1:4200',
+    baseUrl?: string,
     fetchImpl: typeof fetch = typeof window !== 'undefined' ? window.fetch.bind(window) : globalThis.fetch,
+    envOverride?: ApiConfigEnv,
   ) {
-    this.baseUrl = baseUrl.replace(/\/+$/, '');
+    this.resolution = resolveApiBaseUrl(baseUrl, envOverride);
     this.fetchImpl = fetchImpl;
+  }
+
+  public getBaseUrl(): string {
+    if (!this.resolution.baseUrl) {
+      throw (
+        this.resolution.error ??
+        new BackendError(
+          'MISSING_API_BASE_URL',
+          'Backend API URL is not configured. Please set VITE_API_BASE_URL in your deployment environment.',
+        )
+      );
+    }
+    return this.resolution.baseUrl;
+  }
+
+  public isConfigured(): boolean {
+    return this.resolution.isConfigured;
+  }
+
+  public getConfigurationError(): BackendError | undefined {
+    return this.resolution.error;
   }
 
   /**
@@ -100,8 +123,9 @@ export class BackendAPI {
    * instead of implying AI generation occurred.
    */
   async parseRequirementsDetailed(prompt: string): Promise<RequirementParseResult> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/ai/interpret-brief`, {
+      const response = await this.fetchImpl(`${baseUrl}/api/v1/ai/interpret-brief`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt }),
@@ -134,8 +158,9 @@ export class BackendAPI {
     building: Building,
     context?: { activeFloorId?: string; selectedRoomId?: string },
   ): Promise<AIEditParseResult> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/ai/edit-command`, {
+      const response = await this.fetchImpl(`${baseUrl}/api/v1/ai/edit-command`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ instruction, building, context }),
@@ -176,15 +201,17 @@ export class BackendAPI {
     request: FloorPlanImagePromptRequest,
     signal?: AbortSignal,
   ): Promise<StoredPlanImageArtifact> {
+    const baseUrl = this.getBaseUrl();
     let response: Response;
     try {
-      response = await this.fetchImpl(`${this.baseUrl}/api/v1/image/floor-plan`, {
+      response = await this.fetchImpl(`${baseUrl}/api/v1/image/floor-plan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, request }),
         ...(signal ? { signal } : {}),
       });
-    } catch {
+    } catch (cause) {
+      if (cause instanceof BackendError) throw cause;
       throw new BackendError(
         'IMAGE_BACKEND_UNAVAILABLE',
         'The image generation service is unreachable. Start the backend and try again.',
@@ -255,14 +282,16 @@ export class BackendAPI {
   }
 
   private async post(path: string, body: string, signal: AbortSignal | undefined, unavailableCode: string, unavailableMessage: string): Promise<Response> {
+    const baseUrl = this.getBaseUrl();
     try {
-      return await this.fetchImpl(`${this.baseUrl}${path}`, {
+      return await this.fetchImpl(`${baseUrl}${path}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body,
         ...(signal ? { signal } : {}),
       });
-    } catch {
+    } catch (cause) {
+      if (cause instanceof BackendError) throw cause;
       throw new BackendError(unavailableCode, unavailableMessage, undefined);
     }
   }
@@ -282,8 +311,31 @@ export class BackendAPI {
   }
 
   async checkHealth(): Promise<BackendHealthResponse> {
+    if (!this.resolution.isConfigured || !this.resolution.baseUrl) {
+      const detail = this.resolution.error?.message ?? 'Backend API URL is not configured (VITE_API_BASE_URL missing).';
+      return {
+        status: 'degraded',
+        imageProvider: 'not_configured',
+        cloudflare: {
+          configured: false,
+          reachable: false,
+          status: 'NOT_CONFIGURED',
+          model: '@cf/black-forest-labs/flux-2-klein-4b',
+          detail,
+        },
+        gemini: {
+          configured: false,
+          reachable: false,
+          status: 'NOT_CONFIGURED',
+          model: 'gemini-2.5-flash',
+          detail,
+        },
+      };
+    }
+
+    const baseUrl = this.resolution.baseUrl;
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/health`, {
+      const response = await this.fetchImpl(`${baseUrl}/api/v1/health`, {
         method: 'GET',
       });
       if (response.ok) {
@@ -300,14 +352,14 @@ export class BackendAPI {
         reachable: false,
         status: 'UNREACHABLE',
         model: '@cf/black-forest-labs/flux-2-klein-4b',
-        detail: 'Backend server is unreachable on port 4200',
+        detail: `Backend server at ${baseUrl} is unreachable.`,
       },
       gemini: {
         configured: false,
         reachable: false,
         status: 'UNREACHABLE',
-        model: 'gemini-3.6-flash',
-        detail: 'Backend server is unreachable on port 4200',
+        model: 'gemini-2.5-flash',
+        detail: `Backend server at ${baseUrl} is unreachable.`,
       },
     };
   }
@@ -316,8 +368,9 @@ export class BackendAPI {
     input: TwoAIGenerationInput,
     signal?: AbortSignal,
   ): Promise<TwoAIGenerationResult> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/generation/run`, {
+      const response = await this.fetchImpl(`${baseUrl}/api/v1/generation/run`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -339,7 +392,7 @@ export class BackendAPI {
       if (err instanceof BackendError) throw err;
       throw new BackendError(
         'BACKEND_UNAVAILABLE',
-        'Backend server is unreachable on port 4200. Start backend server or use deterministic generator.',
+        `Backend server at ${baseUrl} is unreachable. Check backend deployment or use deterministic generator.`,
       );
     }
   }
@@ -353,8 +406,9 @@ export class BackendAPI {
     },
     signal?: AbortSignal,
   ): Promise<TwoAIGenerationResult> {
+    const baseUrl = this.getBaseUrl();
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/generation/resume`, {
+      const response = await this.fetchImpl(`${baseUrl}/api/v1/generation/resume`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -376,7 +430,7 @@ export class BackendAPI {
       if (err instanceof BackendError) throw err;
       throw new BackendError(
         'BACKEND_UNAVAILABLE',
-        'Backend server is unreachable on port 4200. Start backend server or use deterministic generator.',
+        `Backend server at ${baseUrl} is unreachable. Check backend deployment or use deterministic generator.`,
       );
     }
   }
@@ -387,7 +441,9 @@ export class BackendAPI {
     onProgress?: (job: GenerationJobProgress) => void,
   ): Promise<GenerationWorkflowResult & { readonly requestHash: string }> {
     try {
-      const response = await this.fetchImpl(`${this.baseUrl}/api/v1/generation/generate`, {
+      if (this.isConfigured()) {
+        const baseUrl = this.getBaseUrl();
+        const response = await this.fetchImpl(`${baseUrl}/api/v1/generation/generate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(input),
@@ -395,7 +451,8 @@ export class BackendAPI {
       });
 
       if (response.ok) {
-        return (await response.json()) as GenerationWorkflowResult & { readonly requestHash: string };
+          return (await response.json()) as GenerationWorkflowResult & { readonly requestHash: string };
+        }
       }
     } catch {
       // Standalone client-side fallback

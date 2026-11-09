@@ -30,10 +30,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// packages/ai-orchestration/dist/providers/base.js
+// ../ai-orchestration/dist/providers/base.js
 var BaseAIProvider, AISafetyError;
 var init_base = __esm({
-  "packages/ai-orchestration/dist/providers/base.js"() {
+  "../ai-orchestration/dist/providers/base.js"() {
     "use strict";
     BaseAIProvider = class {
     };
@@ -48,10 +48,10 @@ var init_base = __esm({
   }
 });
 
-// packages/core/dist/types/enums.js
+// ../core/dist/types/enums.js
 var RoomType, Direction, DaylightLevel, PrivacyLevel, PreferenceLevel, AdjacencyStrength, WallType, DoorType, SwingDirection, WindowType, StairType, ColumnShape, ProjectStatus, ChangeSource, PlotShape, AITaskType;
 var init_enums = __esm({
-  "packages/core/dist/types/enums.js"() {
+  "../core/dist/types/enums.js"() {
     "use strict";
     (function(RoomType2) {
       RoomType2["ServiceShaft"] = "service_shaft";
@@ -172,10 +172,10 @@ var init_enums = __esm({
   }
 });
 
-// packages/core/dist/types/rendering.js
+// ../core/dist/types/rendering.js
 var RenderLayer;
 var init_rendering = __esm({
-  "packages/core/dist/types/rendering.js"() {
+  "../core/dist/types/rendering.js"() {
     "use strict";
     (function(RenderLayer2) {
       RenderLayer2["Grid"] = "grid";
@@ -195,10 +195,10 @@ var init_rendering = __esm({
   }
 });
 
-// packages/core/dist/types/design-intelligence.js
+// ../core/dist/types/design-intelligence.js
 var FunctionalZone, AdjacencyRelationType, HumanVerificationStatus;
 var init_design_intelligence = __esm({
-  "packages/core/dist/types/design-intelligence.js"() {
+  "../core/dist/types/design-intelligence.js"() {
     "use strict";
     (function(FunctionalZone2) {
       FunctionalZone2["Public"] = "public";
@@ -225,9 +225,9 @@ var init_design_intelligence = __esm({
   }
 });
 
-// packages/core/dist/types/index.js
+// ../core/dist/types/index.js
 var init_types = __esm({
-  "packages/core/dist/types/index.js"() {
+  "../core/dist/types/index.js"() {
     "use strict";
     init_enums();
     init_rendering();
@@ -235,7 +235,7 @@ var init_types = __esm({
   }
 });
 
-// packages/core/dist/models/id.js
+// ../core/dist/models/id.js
 function generateId() {
   if (seed !== null) {
     counter++;
@@ -246,17 +246,17 @@ function generateId() {
 }
 var seed, counter;
 var init_id = __esm({
-  "packages/core/dist/models/id.js"() {
+  "../core/dist/models/id.js"() {
     "use strict";
     seed = null;
     counter = 0;
   }
 });
 
-// packages/core/dist/models/errors.js
+// ../core/dist/models/errors.js
 var DomainError, InvalidDimensionError, InvalidCoordinateError;
 var init_errors = __esm({
-  "packages/core/dist/models/errors.js"() {
+  "../core/dist/models/errors.js"() {
     "use strict";
     DomainError = class extends Error {
       code;
@@ -281,10 +281,10 @@ var init_errors = __esm({
   }
 });
 
-// packages/core/dist/constants.js
+// ../core/dist/constants.js
 var DEFAULTS, TOLERANCES, MINIMUM_ROOM_AREAS, MINIMUM_DIMENSIONS;
 var init_constants = __esm({
-  "packages/core/dist/constants.js"() {
+  "../core/dist/constants.js"() {
     "use strict";
     DEFAULTS = {
       WALL_THICKNESS_EXTERNAL: 230,
@@ -370,7 +370,7 @@ var init_constants = __esm({
   }
 });
 
-// packages/core/dist/models/factory.js
+// ../core/dist/models/factory.js
 function assertFinite(field, value) {
   if (!Number.isFinite(value)) {
     throw new InvalidCoordinateError(field, value);
@@ -567,7 +567,7 @@ function createStair(params) {
   };
 }
 var init_factory = __esm({
-  "packages/core/dist/models/factory.js"() {
+  "../core/dist/models/factory.js"() {
     "use strict";
     init_types();
     init_constants();
@@ -576,44 +576,44 @@ var init_factory = __esm({
   }
 });
 
-// packages/core/dist/models/updaters.js
+// ../core/dist/models/updaters.js
 var init_updaters = __esm({
-  "packages/core/dist/models/updaters.js"() {
+  "../core/dist/models/updaters.js"() {
     "use strict";
     init_errors();
     init_factory();
   }
 });
 
-// packages/core/dist/models/validation.js
+// ../core/dist/models/validation.js
 var VALID_ROOM_TYPES;
 var init_validation = __esm({
-  "packages/core/dist/models/validation.js"() {
+  "../core/dist/models/validation.js"() {
     "use strict";
     init_types();
     VALID_ROOM_TYPES = new Set(Object.values(RoomType));
   }
 });
 
-// packages/core/dist/models/serialization.js
+// ../core/dist/models/serialization.js
 var init_serialization = __esm({
-  "packages/core/dist/models/serialization.js"() {
+  "../core/dist/models/serialization.js"() {
     "use strict";
     init_validation();
     init_errors();
   }
 });
 
-// packages/core/dist/models/versioning.js
+// ../core/dist/models/versioning.js
 var init_versioning = __esm({
-  "packages/core/dist/models/versioning.js"() {
+  "../core/dist/models/versioning.js"() {
     "use strict";
     init_id();
     init_serialization();
   }
 });
 
-// packages/core/dist/models/requirements-normalization.js
+// ../core/dist/models/requirements-normalization.js
 function asRecord(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -730,7 +730,7 @@ function normalizeDesignRequirementSpecification(input) {
 }
 var ROOM_TYPES, DIRECTIONS, PLOT_SHAPES, PREFERENCE_LEVELS;
 var init_requirements_normalization = __esm({
-  "packages/core/dist/models/requirements-normalization.js"() {
+  "../core/dist/models/requirements-normalization.js"() {
     "use strict";
     init_enums();
     ROOM_TYPES = new Set(Object.values(RoomType));
@@ -740,10 +740,10 @@ var init_requirements_normalization = __esm({
   }
 });
 
-// packages/core/dist/capabilities.js
+// ../core/dist/capabilities.js
 var BUILDING_CAPABILITIES, SUPPORTED_FLOOR_COUNTS;
 var init_capabilities = __esm({
-  "packages/core/dist/capabilities.js"() {
+  "../core/dist/capabilities.js"() {
     "use strict";
     BUILDING_CAPABILITIES = Object.freeze({
       minimumFloorCount: 1,
@@ -753,16 +753,16 @@ var init_capabilities = __esm({
   }
 });
 
-// packages/core/dist/models/site-intelligence.js
+// ../core/dist/models/site-intelligence.js
 var init_site_intelligence = __esm({
-  "packages/core/dist/models/site-intelligence.js"() {
+  "../core/dist/models/site-intelligence.js"() {
     "use strict";
     init_capabilities();
     init_types();
   }
 });
 
-// packages/core/dist/models/space-catalog.js
+// ../core/dist/models/space-catalog.js
 function definition(id, displayName, categories, group2, zone, minimumM2, preferredM2, options = {}) {
   const occupancy = options.occupancy ?? (categories[0] === "educational" ? "educational" : categories[0] === "commercial" ? "commercial" : "residential");
   return {
@@ -787,7 +787,7 @@ function definition(id, displayName, categories, group2, zone, minimumM2, prefer
 }
 var M2, R, C, E, residential, commercial, educational, SPACE_CATALOG, SPACE_PROGRAM_PRESETS;
 var init_space_catalog = __esm({
-  "packages/core/dist/models/space-catalog.js"() {
+  "../core/dist/models/space-catalog.js"() {
     "use strict";
     init_types();
     M2 = 1e6;
@@ -945,10 +945,10 @@ var init_space_catalog = __esm({
   }
 });
 
-// packages/core/dist/models/space-program.js
+// ../core/dist/models/space-program.js
 var CIRCULATION_RESERVE_RATIO, VERTICAL_CORE_RESERVE_RATIO, WALL_SERVICE_RESERVE_RATIO, TOTAL_RESERVE_RATIO, DERIVATION_MAP;
 var init_space_program = __esm({
-  "packages/core/dist/models/space-program.js"() {
+  "../core/dist/models/space-program.js"() {
     "use strict";
     init_types();
     init_site_intelligence();
@@ -979,10 +979,10 @@ var init_space_program = __esm({
   }
 });
 
-// packages/core/dist/models/footprint.js
+// ../core/dist/models/footprint.js
 var CIRCULATION_RATIO, CORE_RATIO, WALL_SERVICE_RATIO, USABLE_RATIO, FOOTPRINT_SHAPES;
 var init_footprint = __esm({
-  "packages/core/dist/models/footprint.js"() {
+  "../core/dist/models/footprint.js"() {
     "use strict";
     init_factory();
     init_site_intelligence();
@@ -1002,16 +1002,16 @@ var init_footprint = __esm({
   }
 });
 
-// packages/core/dist/models/generation-control.js
+// ../core/dist/models/generation-control.js
 var init_generation_control = __esm({
-  "packages/core/dist/models/generation-control.js"() {
+  "../core/dist/models/generation-control.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/models/index.js
+// ../core/dist/models/index.js
 var init_models = __esm({
-  "packages/core/dist/models/index.js"() {
+  "../core/dist/models/index.js"() {
     "use strict";
     init_id();
     init_errors();
@@ -1029,101 +1029,101 @@ var init_models = __esm({
   }
 });
 
-// packages/core/dist/editor/types.js
+// ../core/dist/editor/types.js
 var init_types2 = __esm({
-  "packages/core/dist/editor/types.js"() {
+  "../core/dist/editor/types.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/editor/history.js
+// ../core/dist/editor/history.js
 var init_history = __esm({
-  "packages/core/dist/editor/history.js"() {
+  "../core/dist/editor/history.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/editor/commands/selection-commands.js
+// ../core/dist/editor/commands/selection-commands.js
 var init_selection_commands = __esm({
-  "packages/core/dist/editor/commands/selection-commands.js"() {
+  "../core/dist/editor/commands/selection-commands.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/room-commands.js
+// ../core/dist/editor/commands/room-commands.js
 var init_room_commands = __esm({
-  "packages/core/dist/editor/commands/room-commands.js"() {
+  "../core/dist/editor/commands/room-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/door-commands.js
+// ../core/dist/editor/commands/door-commands.js
 var init_door_commands = __esm({
-  "packages/core/dist/editor/commands/door-commands.js"() {
+  "../core/dist/editor/commands/door-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/window-commands.js
+// ../core/dist/editor/commands/window-commands.js
 var init_window_commands = __esm({
-  "packages/core/dist/editor/commands/window-commands.js"() {
+  "../core/dist/editor/commands/window-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/delete-commands.js
+// ../core/dist/editor/commands/delete-commands.js
 var init_delete_commands = __esm({
-  "packages/core/dist/editor/commands/delete-commands.js"() {
+  "../core/dist/editor/commands/delete-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/batch-command.js
+// ../core/dist/editor/commands/batch-command.js
 var init_batch_command = __esm({
-  "packages/core/dist/editor/commands/batch-command.js"() {
+  "../core/dist/editor/commands/batch-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/replace-building-command.js
+// ../core/dist/editor/commands/replace-building-command.js
 var init_replace_building_command = __esm({
-  "packages/core/dist/editor/commands/replace-building-command.js"() {
+  "../core/dist/editor/commands/replace-building-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/update-site-command.js
+// ../core/dist/editor/commands/update-site-command.js
 var init_update_site_command = __esm({
-  "packages/core/dist/editor/commands/update-site-command.js"() {
+  "../core/dist/editor/commands/update-site-command.js"() {
     "use strict";
     init_factory();
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/floor-commands.js
+// ../core/dist/editor/commands/floor-commands.js
 var init_floor_commands = __esm({
-  "packages/core/dist/editor/commands/floor-commands.js"() {
+  "../core/dist/editor/commands/floor-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/index.js
+// ../core/dist/editor/commands/index.js
 var init_commands = __esm({
-  "packages/core/dist/editor/commands/index.js"() {
+  "../core/dist/editor/commands/index.js"() {
     "use strict";
     init_selection_commands();
     init_room_commands();
@@ -1137,9 +1137,9 @@ var init_commands = __esm({
   }
 });
 
-// packages/core/dist/editor/engine.js
+// ../core/dist/editor/engine.js
 var init_engine = __esm({
-  "packages/core/dist/editor/engine.js"() {
+  "../core/dist/editor/engine.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1147,9 +1147,9 @@ var init_engine = __esm({
   }
 });
 
-// packages/core/dist/editor/index.js
+// ../core/dist/editor/index.js
 var init_editor = __esm({
-  "packages/core/dist/editor/index.js"() {
+  "../core/dist/editor/index.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1158,32 +1158,32 @@ var init_editor = __esm({
   }
 });
 
-// packages/core/dist/architectural-review.js
+// ../core/dist/architectural-review.js
 var init_architectural_review = __esm({
-  "packages/core/dist/architectural-review.js"() {
+  "../core/dist/architectural-review.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/types/building-budget.js
+// ../core/dist/types/building-budget.js
 var init_building_budget = __esm({
-  "packages/core/dist/types/building-budget.js"() {
+  "../core/dist/types/building-budget.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/models/building-budget.js
+// ../core/dist/models/building-budget.js
 var init_building_budget2 = __esm({
-  "packages/core/dist/models/building-budget.js"() {
+  "../core/dist/models/building-budget.js"() {
     "use strict";
     init_space_program();
     init_site_intelligence();
   }
 });
 
-// packages/core/dist/models/reviewed-generation.js
+// ../core/dist/models/reviewed-generation.js
 var init_reviewed_generation = __esm({
-  "packages/core/dist/models/reviewed-generation.js"() {
+  "../core/dist/models/reviewed-generation.js"() {
     "use strict";
     init_building_budget2();
     init_space_program();
@@ -1191,9 +1191,9 @@ var init_reviewed_generation = __esm({
   }
 });
 
-// packages/core/dist/index.js
+// ../core/dist/index.js
 var init_dist = __esm({
-  "packages/core/dist/index.js"() {
+  "../core/dist/index.js"() {
     "use strict";
     init_types();
     init_models();
@@ -1207,10 +1207,10 @@ var init_dist = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/requirements/schema.js
+// ../ai-orchestration/dist/requirements/schema.js
 var REQUIREMENT_RESPONSE_SCHEMA, REQUIREMENT_EXTRACTION_PROMPT;
 var init_schema = __esm({
-  "packages/ai-orchestration/dist/requirements/schema.js"() {
+  "../ai-orchestration/dist/requirements/schema.js"() {
     "use strict";
     init_dist();
     REQUIREMENT_RESPONSE_SCHEMA = {
@@ -1316,7 +1316,7 @@ Never invent a site location, regulation, approval, or structural claim.`;
   }
 });
 
-// packages/ai-orchestration/dist/providers/http.js
+// ../ai-orchestration/dist/providers/http.js
 function asRecord2(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -1456,7 +1456,7 @@ function response(content, parsed, responseUsage, model, latencyMs) {
 }
 var HttpProviderError;
 var init_http = __esm({
-  "packages/ai-orchestration/dist/providers/http.js"() {
+  "../ai-orchestration/dist/providers/http.js"() {
     "use strict";
     init_base();
     HttpProviderError = class extends Error {
@@ -1476,9 +1476,9 @@ var init_http = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/openai.js
+// ../ai-orchestration/dist/providers/openai.js
 var init_openai = __esm({
-  "packages/ai-orchestration/dist/providers/openai.js"() {
+  "../ai-orchestration/dist/providers/openai.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1487,7 +1487,7 @@ var init_openai = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/gemini.js
+// ../ai-orchestration/dist/providers/gemini.js
 function extractHttpStatus(error) {
   if (error instanceof HttpProviderError)
     return error.status;
@@ -1572,7 +1572,7 @@ function buildGeminiParts(request) {
 }
 var DEFAULT_GEMINI_RETRY_POLICY, GeminiProvider, GEMINI_SUPPORTED_IMAGE_MIME_TYPES;
 var init_gemini = __esm({
-  "packages/ai-orchestration/dist/providers/gemini.js"() {
+  "../ai-orchestration/dist/providers/gemini.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1728,10 +1728,10 @@ var init_gemini = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/rule-based.js
+// ../ai-orchestration/dist/providers/rule-based.js
 var RuleBasedRequirementParser;
 var init_rule_based = __esm({
-  "packages/ai-orchestration/dist/providers/rule-based.js"() {
+  "../ai-orchestration/dist/providers/rule-based.js"() {
     "use strict";
     init_dist();
     RuleBasedRequirementParser = class {
@@ -1860,7 +1860,7 @@ var init_rule_based = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/requirements/validation.js
+// ../ai-orchestration/dist/requirements/validation.js
 function record(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -1960,13 +1960,13 @@ function validateRequirementPayload(payload, rawPrompt) {
   };
 }
 var init_validation2 = __esm({
-  "packages/ai-orchestration/dist/requirements/validation.js"() {
+  "../ai-orchestration/dist/requirements/validation.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/ai-orchestration/dist/editing/context.js
+// ../ai-orchestration/dist/editing/context.js
 function extractAIEditContext(building, activeFloorId, selectedRoomId) {
   const resolvedFloorId = activeFloorId && building.floors.some((floor) => floor.id === activeFloorId) ? activeFloorId : building.floors[0]?.id ?? "";
   const rooms = building.floors.flatMap((floor) => floor.rooms.map((room2) => ({
@@ -1997,12 +1997,12 @@ ${compact}`
   };
 }
 var init_context = __esm({
-  "packages/ai-orchestration/dist/editing/context.js"() {
+  "../ai-orchestration/dist/editing/context.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/editing/target-resolver.js
+// ../ai-orchestration/dist/editing/target-resolver.js
 function normalize(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -2065,7 +2065,7 @@ function resolveRoomTarget(building, query, activeFloorId, selectedRoomId) {
 }
 var TYPE_ALIASES;
 var init_target_resolver = __esm({
-  "packages/ai-orchestration/dist/editing/target-resolver.js"() {
+  "../ai-orchestration/dist/editing/target-resolver.js"() {
     "use strict";
     init_dist();
     TYPE_ALIASES = [
@@ -2088,7 +2088,7 @@ var init_target_resolver = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/parser.js
+// ../ai-orchestration/dist/editing/parser.js
 function unitToMm(value, unit3) {
   if (unit3?.startsWith("m") && unit3 !== "mm")
     return Math.round(value * 1e3);
@@ -2136,7 +2136,7 @@ function targetQueryFrom(command, building, options) {
 }
 var RuleBasedEditParser;
 var init_parser = __esm({
-  "packages/ai-orchestration/dist/editing/parser.js"() {
+  "../ai-orchestration/dist/editing/parser.js"() {
     "use strict";
     init_target_resolver();
     RuleBasedEditParser = class {
@@ -2213,10 +2213,10 @@ var init_parser = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/schema.js
+// ../ai-orchestration/dist/editing/schema.js
 var AI_EDIT_RESPONSE_SCHEMA, AI_EDIT_SYSTEM_PROMPT;
 var init_schema2 = __esm({
-  "packages/ai-orchestration/dist/editing/schema.js"() {
+  "../ai-orchestration/dist/editing/schema.js"() {
     "use strict";
     AI_EDIT_RESPONSE_SCHEMA = {
       type: "object",
@@ -2255,7 +2255,7 @@ Never claim that the edit is valid; deterministic geometry and constraint engine
   }
 });
 
-// packages/ai-orchestration/dist/editing/validation.js
+// ../ai-orchestration/dist/editing/validation.js
 function record2(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -2299,17 +2299,17 @@ function validateAIEditPayload(payload) {
 }
 var ACTIONS, DIRECTIONS2;
 var init_validation3 = __esm({
-  "packages/ai-orchestration/dist/editing/validation.js"() {
+  "../ai-orchestration/dist/editing/validation.js"() {
     "use strict";
     ACTIONS = /* @__PURE__ */ new Set(["resize_room", "move_room", "rename_room"]);
     DIRECTIONS2 = /* @__PURE__ */ new Set(["north", "south", "east", "west", "auto"]);
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/service.js
+// ../ai-orchestration/dist/orchestration/service.js
 var AIOrchestrationService;
 var init_service = __esm({
-  "packages/ai-orchestration/dist/orchestration/service.js"() {
+  "../ai-orchestration/dist/orchestration/service.js"() {
     "use strict";
     init_dist();
     init_rule_based();
@@ -2500,15 +2500,15 @@ ${context.promptSummary}`,
   }
 });
 
-// packages/ai-orchestration/dist/editing/command.js
+// ../ai-orchestration/dist/editing/command.js
 var init_command = __esm({
-  "packages/ai-orchestration/dist/editing/command.js"() {
+  "../ai-orchestration/dist/editing/command.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/planning-engine/dist/requirements/validator.js
+// ../planning-engine/dist/requirements/validator.js
 function areaFor(type) {
   return MIN_ROOM_AREAS_MM2[type] ?? MIN_ROOM_AREAS_MM2[RoomType.Custom];
 }
@@ -2517,7 +2517,7 @@ function isNonNegativeInteger(value) {
 }
 var MIN_ROOM_AREAS_MM2, CIRCULATION_AND_WALL_RATIO, RequirementValidator;
 var init_validator = __esm({
-  "packages/planning-engine/dist/requirements/validator.js"() {
+  "../planning-engine/dist/requirements/validator.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -2775,48 +2775,48 @@ var init_validator = __esm({
   }
 });
 
-// packages/planning-engine/dist/program/generator.js
+// ../planning-engine/dist/program/generator.js
 var init_generator = __esm({
-  "packages/planning-engine/dist/program/generator.js"() {
+  "../planning-engine/dist/program/generator.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/planning-engine/dist/graph/builder.js
+// ../planning-engine/dist/graph/builder.js
 var init_builder = __esm({
-  "packages/planning-engine/dist/graph/builder.js"() {
+  "../planning-engine/dist/graph/builder.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/geometry-engine/dist/errors.js
+// ../geometry-engine/dist/errors.js
 var init_errors2 = __esm({
-  "packages/geometry-engine/dist/errors.js"() {
+  "../geometry-engine/dist/errors.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/vector.js
+// ../geometry-engine/dist/vector.js
 var init_vector = __esm({
-  "packages/geometry-engine/dist/vector.js"() {
+  "../geometry-engine/dist/vector.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/line.js
+// ../geometry-engine/dist/line.js
 var init_line = __esm({
-  "packages/geometry-engine/dist/line.js"() {
+  "../geometry-engine/dist/line.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/point.js
+// ../geometry-engine/dist/point.js
 function distance(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -2865,16 +2865,16 @@ function pointsEqual(a, b, tolerance = TOLERANCES.LINEAR) {
   return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
 }
 var init_point = __esm({
-  "packages/geometry-engine/dist/point.js"() {
+  "../geometry-engine/dist/point.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/segment.js
+// ../geometry-engine/dist/segment.js
 var init_segment = __esm({
-  "packages/geometry-engine/dist/segment.js"() {
+  "../geometry-engine/dist/segment.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -2882,9 +2882,9 @@ var init_segment = __esm({
   }
 });
 
-// packages/geometry-engine/dist/rectangle.js
+// ../geometry-engine/dist/rectangle.js
 var init_rectangle = __esm({
-  "packages/geometry-engine/dist/rectangle.js"() {
+  "../geometry-engine/dist/rectangle.js"() {
     "use strict";
     init_dist();
     init_errors2();
@@ -2892,7 +2892,7 @@ var init_rectangle = __esm({
   }
 });
 
-// packages/geometry-engine/dist/polygon.js
+// ../geometry-engine/dist/polygon.js
 function polygonSignedArea(polygon) {
   const pts = polygon.points;
   const n2 = pts.length;
@@ -3036,7 +3036,7 @@ function edgesOverlap(a, b, tolerance) {
   return pointsEqual(a.start, b.start, tolerance) && pointsEqual(a.end, b.end, tolerance) || pointsEqual(a.start, b.end, tolerance) && pointsEqual(a.end, b.start, tolerance);
 }
 var init_polygon = __esm({
-  "packages/geometry-engine/dist/polygon.js"() {
+  "../geometry-engine/dist/polygon.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3045,9 +3045,9 @@ var init_polygon = __esm({
   }
 });
 
-// packages/geometry-engine/dist/curves.js
+// ../geometry-engine/dist/curves.js
 var init_curves = __esm({
-  "packages/geometry-engine/dist/curves.js"() {
+  "../geometry-engine/dist/curves.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3055,9 +3055,9 @@ var init_curves = __esm({
   }
 });
 
-// packages/geometry-engine/dist/room.js
+// ../geometry-engine/dist/room.js
 var init_room = __esm({
-  "packages/geometry-engine/dist/room.js"() {
+  "../geometry-engine/dist/room.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3065,9 +3065,9 @@ var init_room = __esm({
   }
 });
 
-// packages/geometry-engine/dist/plot.js
+// ../geometry-engine/dist/plot.js
 var init_plot = __esm({
-  "packages/geometry-engine/dist/plot.js"() {
+  "../geometry-engine/dist/plot.js"() {
     "use strict";
     init_dist();
     init_rectangle();
@@ -3076,10 +3076,10 @@ var init_plot = __esm({
   }
 });
 
-// packages/geometry-engine/dist/walls.js
+// ../geometry-engine/dist/walls.js
 var DEFAULT_WALL_CONFIG;
 var init_walls = __esm({
-  "packages/geometry-engine/dist/walls.js"() {
+  "../geometry-engine/dist/walls.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3093,9 +3093,9 @@ var init_walls = __esm({
   }
 });
 
-// packages/geometry-engine/dist/doors.js
+// ../geometry-engine/dist/doors.js
 var init_doors = __esm({
-  "packages/geometry-engine/dist/doors.js"() {
+  "../geometry-engine/dist/doors.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3105,9 +3105,9 @@ var init_doors = __esm({
   }
 });
 
-// packages/geometry-engine/dist/windows.js
+// ../geometry-engine/dist/windows.js
 var init_windows = __esm({
-  "packages/geometry-engine/dist/windows.js"() {
+  "../geometry-engine/dist/windows.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3116,9 +3116,9 @@ var init_windows = __esm({
   }
 });
 
-// packages/geometry-engine/dist/stairs.js
+// ../geometry-engine/dist/stairs.js
 var init_stairs = __esm({
-  "packages/geometry-engine/dist/stairs.js"() {
+  "../geometry-engine/dist/stairs.js"() {
     "use strict";
     init_rectangle();
     init_polygon();
@@ -3126,7 +3126,7 @@ var init_stairs = __esm({
   }
 });
 
-// packages/geometry-engine/dist/collision.js
+// ../geometry-engine/dist/collision.js
 function detectEntityCollision(polyA, idA, polyB, idB) {
   const overlapArea4 = polygonIntersectionArea(polyA, polyB);
   if (overlapArea4 > TOLERANCES.OVERLAP) {
@@ -3153,7 +3153,7 @@ function detectRoomCollisions(room2, otherRooms) {
   return results;
 }
 var init_collision = __esm({
-  "packages/geometry-engine/dist/collision.js"() {
+  "../geometry-engine/dist/collision.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3162,55 +3162,55 @@ var init_collision = __esm({
   }
 });
 
-// packages/geometry-engine/dist/snapping.js
+// ../geometry-engine/dist/snapping.js
 var init_snapping = __esm({
-  "packages/geometry-engine/dist/snapping.js"() {
+  "../geometry-engine/dist/snapping.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/area.js
+// ../geometry-engine/dist/area.js
 var init_area = __esm({
-  "packages/geometry-engine/dist/area.js"() {
+  "../geometry-engine/dist/area.js"() {
     "use strict";
     init_polygon();
   }
 });
 
-// packages/geometry-engine/dist/spatial-index/index.js
+// ../geometry-engine/dist/spatial-index/index.js
 var init_spatial_index = __esm({
-  "packages/geometry-engine/dist/spatial-index/index.js"() {
+  "../geometry-engine/dist/spatial-index/index.js"() {
     "use strict";
     init_rectangle();
   }
 });
 
-// packages/geometry-engine/dist/coordinates.js
+// ../geometry-engine/dist/coordinates.js
 var init_coordinates = __esm({
-  "packages/geometry-engine/dist/coordinates.js"() {
+  "../geometry-engine/dist/coordinates.js"() {
     "use strict";
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/floor-bounds.js
+// ../geometry-engine/dist/floor-bounds.js
 var init_floor_bounds = __esm({
-  "packages/geometry-engine/dist/floor-bounds.js"() {
+  "../geometry-engine/dist/floor-bounds.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/units.js
+// ../geometry-engine/dist/units.js
 var init_units = __esm({
-  "packages/geometry-engine/dist/units.js"() {
+  "../geometry-engine/dist/units.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/geometry-engine/dist/debug.js
+// ../geometry-engine/dist/debug.js
 var init_debug = __esm({
-  "packages/geometry-engine/dist/debug.js"() {
+  "../geometry-engine/dist/debug.js"() {
     "use strict";
     init_walls();
     init_doors();
@@ -3218,9 +3218,9 @@ var init_debug = __esm({
   }
 });
 
-// packages/geometry-engine/dist/index.js
+// ../geometry-engine/dist/index.js
 var init_dist2 = __esm({
-  "packages/geometry-engine/dist/index.js"() {
+  "../geometry-engine/dist/index.js"() {
     "use strict";
     init_errors2();
     init_vector();
@@ -3247,7 +3247,7 @@ var init_dist2 = __esm({
   }
 });
 
-// packages/planning-engine/dist/graph/scorer.js
+// ../planning-engine/dist/graph/scorer.js
 function sourceProgramItemId(itemId) {
   return itemId.replace(/_floor_\d+$/, "");
 }
@@ -3328,17 +3328,17 @@ function evaluateInstanceGraph(building, graph) {
   };
 }
 var init_scorer = __esm({
-  "packages/planning-engine/dist/graph/scorer.js"() {
+  "../planning-engine/dist/graph/scorer.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/evidence/architectural-closeout.js
+// ../planning-engine/dist/evidence/architectural-closeout.js
 var COMMON, TRANSITION, EXPOSURE;
 var init_architectural_closeout = __esm({
-  "packages/planning-engine/dist/evidence/architectural-closeout.js"() {
+  "../planning-engine/dist/evidence/architectural-closeout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3367,10 +3367,10 @@ var init_architectural_closeout = __esm({
   }
 });
 
-// packages/planning-engine/dist/evidence/architectural-evidence.js
+// ../planning-engine/dist/evidence/architectural-evidence.js
 var WET_TYPES, OUTDOOR_TYPES, ACCESS_TYPES, COMMON_TYPES;
 var init_architectural_evidence = __esm({
-  "packages/planning-engine/dist/evidence/architectural-evidence.js"() {
+  "../planning-engine/dist/evidence/architectural-evidence.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3393,7 +3393,7 @@ var init_architectural_evidence = __esm({
   }
 });
 
-// packages/planning-engine/dist/multi-floor/planner.js
+// ../planning-engine/dist/multi-floor/planner.js
 function roomProgramId(room2) {
   const tag = room2.tags.find((value) => value.startsWith("program:"));
   return tag ? sourceProgramItemId(tag.slice("program:".length)) : void 0;
@@ -3495,7 +3495,7 @@ function evaluateMultiFloorPlanning(building) {
 }
 var CORE_TYPES, GROUND_ANCHOR_TYPES;
 var init_planner = __esm({
-  "packages/planning-engine/dist/multi-floor/planner.js"() {
+  "../planning-engine/dist/multi-floor/planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3512,7 +3512,7 @@ var init_planner = __esm({
   }
 });
 
-// packages/planning-engine/dist/diagnostics/design-evaluator.js
+// ../planning-engine/dist/diagnostics/design-evaluator.js
 function evaluateDesign(building, options = {}) {
   const warnings = [];
   const observations = [];
@@ -4049,7 +4049,7 @@ function isInWest(point, bounds, orientation) {
   return rx < 0;
 }
 var init_design_evaluator = __esm({
-  "packages/planning-engine/dist/diagnostics/design-evaluator.js"() {
+  "../planning-engine/dist/diagnostics/design-evaluator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4058,10 +4058,10 @@ var init_design_evaluator = __esm({
   }
 });
 
-// packages/planning-engine/dist/repair/engine.js
+// ../planning-engine/dist/repair/engine.js
 var NON_REASSIGNABLE_TYPES;
 var init_engine2 = __esm({
-  "packages/planning-engine/dist/repair/engine.js"() {
+  "../planning-engine/dist/repair/engine.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4078,10 +4078,10 @@ var init_engine2 = __esm({
   }
 });
 
-// packages/planning-engine/dist/vastu/optimizer.js
+// ../planning-engine/dist/vastu/optimizer.js
 var EXCLUDED_TYPES;
 var init_optimizer = __esm({
-  "packages/planning-engine/dist/vastu/optimizer.js"() {
+  "../planning-engine/dist/vastu/optimizer.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4096,10 +4096,10 @@ var init_optimizer = __esm({
   }
 });
 
-// packages/planning-engine/dist/generator/structured-layout.js
+// ../planning-engine/dist/generator/structured-layout.js
 var LAYOUT_STRATEGIES;
 var init_structured_layout = __esm({
-  "packages/planning-engine/dist/generator/structured-layout.js"() {
+  "../planning-engine/dist/generator/structured-layout.js"() {
     "use strict";
     init_scorer();
     init_planner();
@@ -4149,18 +4149,18 @@ var init_structured_layout = __esm({
   }
 });
 
-// packages/planning-engine/dist/regions/orthogonal-decomposition.js
+// ../planning-engine/dist/regions/orthogonal-decomposition.js
 var init_orthogonal_decomposition = __esm({
-  "packages/planning-engine/dist/regions/orthogonal-decomposition.js"() {
+  "../planning-engine/dist/regions/orthogonal-decomposition.js"() {
     "use strict";
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/generator/polygon-layout.js
+// ../planning-engine/dist/generator/polygon-layout.js
 var CORE_TYPES2;
 var init_polygon_layout = __esm({
-  "packages/planning-engine/dist/generator/polygon-layout.js"() {
+  "../planning-engine/dist/generator/polygon-layout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4170,10 +4170,10 @@ var init_polygon_layout = __esm({
   }
 });
 
-// packages/planning-engine/dist/evidence/candidate-diversity.js
+// ../planning-engine/dist/evidence/candidate-diversity.js
 var FUNCTIONAL, DISTRIBUTION;
 var init_candidate_diversity = __esm({
-  "packages/planning-engine/dist/evidence/candidate-diversity.js"() {
+  "../planning-engine/dist/evidence/candidate-diversity.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4192,48 +4192,48 @@ var init_candidate_diversity = __esm({
   }
 });
 
-// packages/planning-engine/dist/site/site-planner.js
+// ../planning-engine/dist/site/site-planner.js
 var init_site_planner = __esm({
-  "packages/planning-engine/dist/site/site-planner.js"() {
+  "../planning-engine/dist/site/site-planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/site/site-analyzer.js
+// ../planning-engine/dist/site/site-analyzer.js
 var init_site_analyzer = __esm({
-  "packages/planning-engine/dist/site/site-analyzer.js"() {
+  "../planning-engine/dist/site/site-analyzer.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/massing-generator.js
+// ../planning-engine/dist/generator/massing-generator.js
 var init_massing_generator = __esm({
-  "packages/planning-engine/dist/generator/massing-generator.js"() {
+  "../planning-engine/dist/generator/massing-generator.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/architectural-layout-engine.js
+// ../planning-engine/dist/generator/architectural-layout-engine.js
 var init_architectural_layout_engine = __esm({
-  "packages/planning-engine/dist/generator/architectural-layout-engine.js"() {
+  "../planning-engine/dist/generator/architectural-layout-engine.js"() {
     "use strict";
     init_dist();
     init_planner();
   }
 });
 
-// packages/planning-engine/dist/strategy/design-strategy.js
+// ../planning-engine/dist/strategy/design-strategy.js
 var init_design_strategy = __esm({
-  "packages/planning-engine/dist/strategy/design-strategy.js"() {
+  "../planning-engine/dist/strategy/design-strategy.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/candidate-generator.js
+// ../planning-engine/dist/generator/candidate-generator.js
 var init_candidate_generator = __esm({
-  "packages/planning-engine/dist/generator/candidate-generator.js"() {
+  "../planning-engine/dist/generator/candidate-generator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4255,10 +4255,10 @@ var init_candidate_generator = __esm({
   }
 });
 
-// packages/planning-engine/dist/generation/workflow.js
+// ../planning-engine/dist/generation/workflow.js
 var GENERATION_STAGES;
 var init_workflow = __esm({
-  "packages/planning-engine/dist/generation/workflow.js"() {
+  "../planning-engine/dist/generation/workflow.js"() {
     "use strict";
     init_dist();
     init_design_evaluator();
@@ -4278,18 +4278,18 @@ var init_workflow = __esm({
   }
 });
 
-// packages/planning-engine/dist/generation/reviewed-workflow.js
+// ../planning-engine/dist/generation/reviewed-workflow.js
 var init_reviewed_workflow = __esm({
-  "packages/planning-engine/dist/generation/reviewed-workflow.js"() {
+  "../planning-engine/dist/generation/reviewed-workflow.js"() {
     "use strict";
     init_dist();
     init_workflow();
   }
 });
 
-// packages/planning-engine/dist/refinement/targeted-regeneration.js
+// ../planning-engine/dist/refinement/targeted-regeneration.js
 var init_targeted_regeneration = __esm({
-  "packages/planning-engine/dist/refinement/targeted-regeneration.js"() {
+  "../planning-engine/dist/refinement/targeted-regeneration.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4298,16 +4298,16 @@ var init_targeted_regeneration = __esm({
   }
 });
 
-// packages/planning-engine/dist/generator/stair-coordination.js
+// ../planning-engine/dist/generator/stair-coordination.js
 var init_stair_coordination = __esm({
-  "packages/planning-engine/dist/generator/stair-coordination.js"() {
+  "../planning-engine/dist/generator/stair-coordination.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-analysis.js
+// ../planning-engine/dist/interpretation/extraction-analysis.js
 function normalizationScales(metadata, site) {
   if (metadata.imageWidePixels <= 0 || metadata.imageTallPixels <= 0)
     return null;
@@ -4418,12 +4418,12 @@ function inspectExtractionStructure(plan) {
   return issues;
 }
 var init_extraction_analysis = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-analysis.js"() {
+  "../planning-engine/dist/interpretation/extraction-analysis.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-building.js
+// ../planning-engine/dist/interpretation/extraction-building.js
 function extractPlanToBuilding(extracted, site, projectId, name) {
   const diagnostics = [];
   const siteRect = { plotWidth: site.plotWidth, plotDepth: site.plotDepth };
@@ -4576,7 +4576,7 @@ function attachExtractedOpenings(building, extracted, site) {
 }
 var DOOR_TYPE;
 var init_extraction_building = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-building.js"() {
+  "../planning-engine/dist/interpretation/extraction-building.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -4591,7 +4591,7 @@ var init_extraction_building = __esm({
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-validation.js
+// ../planning-engine/dist/interpretation/extraction-validation.js
 function validateExtractedPlan(building, extracted, requirements) {
   const diagnostics = evaluateDesign(building, { requiredRoomTypes: ["living", "bedroom"] });
   const issues = [];
@@ -4659,7 +4659,7 @@ function validateExtractedPlan(building, extracted, requirements) {
   };
 }
 var init_extraction_validation = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-validation.js"() {
+  "../planning-engine/dist/interpretation/extraction-validation.js"() {
     "use strict";
     init_dist2();
     init_design_evaluator();
@@ -4668,7 +4668,7 @@ var init_extraction_validation = __esm({
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-parser.js
+// ../planning-engine/dist/interpretation/extraction-parser.js
 function asRecord3(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -4885,14 +4885,14 @@ function parseCoreElements(value, fallbackName, diagnostics) {
 }
 var DOOR_TYPES, SWINGS;
 var init_extraction_parser = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-parser.js"() {
+  "../planning-engine/dist/interpretation/extraction-parser.js"() {
     "use strict";
     DOOR_TYPES = /* @__PURE__ */ new Set(["single", "double", "sliding", "open_passage", "unknown"]);
     SWINGS = /* @__PURE__ */ new Set(["inward", "outward", "left", "right", "unknown"]);
   }
 });
 
-// packages/planning-engine/dist/interpretation/apartment-plan.js
+// ../planning-engine/dist/interpretation/apartment-plan.js
 function apartmentRoomRoles(label) {
   const n2 = ` ${label.toLowerCase().replace(/[_/&,.()-]+/g, " ").replace(/\s+/g, " ").trim()} `;
   const has = (...words) => words.some((w) => n2.includes(w));
@@ -5407,7 +5407,7 @@ function runApartmentPlanValidation(input) {
 }
 var APARTMENT_COMMON_FLAT_ID, CORE_ROLES, ROLE_ROOM_TYPE, FLAT_OVERLAP_TOLERANCE, ROOM_CONTAINMENT_MIN, CORE_INSIDE_FLAT_TOLERANCE, DAY_ROLES, DOOR_TYPE2;
 var init_apartment_plan = __esm({
-  "packages/planning-engine/dist/interpretation/apartment-plan.js"() {
+  "../planning-engine/dist/interpretation/apartment-plan.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -5448,9 +5448,9 @@ var init_apartment_plan = __esm({
   }
 });
 
-// packages/planning-engine/dist/index.js
+// ../planning-engine/dist/index.js
 var init_dist3 = __esm({
-  "packages/planning-engine/dist/index.js"() {
+  "../planning-engine/dist/index.js"() {
     "use strict";
     init_validator();
     init_generator();
@@ -5480,9 +5480,9 @@ var init_dist3 = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/planner.js
+// ../ai-orchestration/dist/editing/planner.js
 var init_planner2 = __esm({
-  "packages/ai-orchestration/dist/editing/planner.js"() {
+  "../ai-orchestration/dist/editing/planner.js"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -5491,16 +5491,16 @@ var init_planner2 = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/research/architectural-research-agent.js
+// ../ai-orchestration/dist/research/architectural-research-agent.js
 var init_architectural_research_agent = __esm({
-  "packages/ai-orchestration/dist/research/architectural-research-agent.js"() {
+  "../ai-orchestration/dist/research/architectural-research-agent.js"() {
     "use strict";
     init_dist();
     init_dist();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/jurisdiction.js
+// ../ai-orchestration/dist/apartment/jurisdiction.js
 function calculateMaharashtraParking(units, visitorPercent = 0.1) {
   let residentCars = 0;
   let twoWheelers = 0;
@@ -5854,12 +5854,12 @@ function getApartmentRulesProfile(jurisdiction, options = {}) {
   }
 }
 var init_jurisdiction = __esm({
-  "packages/ai-orchestration/dist/apartment/jurisdiction.js"() {
+  "../ai-orchestration/dist/apartment/jurisdiction.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/typologies.js
+// ../ai-orchestration/dist/apartment/typologies.js
 function allocateApartmentUnitSpaces(options) {
   const { unitType, flatLabel = "Flat 01", rulesProfile } = options;
   const normalizedType = String(unitType || "").trim().toUpperCase();
@@ -5961,7 +5961,7 @@ function allocateApartmentUnitSpaces(options) {
 }
 var TYPOLOGY_2BHK_TEMPLATE, TYPOLOGY_3BHK_TEMPLATE, TYPOLOGY_TEMPLATES;
 var init_typologies = __esm({
-  "packages/ai-orchestration/dist/apartment/typologies.js"() {
+  "../ai-orchestration/dist/apartment/typologies.js"() {
     "use strict";
     TYPOLOGY_2BHK_TEMPLATE = {
       unitType: "2BHK",
@@ -6039,10 +6039,10 @@ var init_typologies = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/site-defaults.js
+// ../ai-orchestration/dist/apartment/site-defaults.js
 var DEFAULT_APARTMENT_SETBACKS_MM, DEFAULT_APARTMENT_SETBACKS_M;
 var init_site_defaults = __esm({
-  "packages/ai-orchestration/dist/apartment/site-defaults.js"() {
+  "../ai-orchestration/dist/apartment/site-defaults.js"() {
     "use strict";
     DEFAULT_APARTMENT_SETBACKS_MM = {
       front: 3e3,
@@ -6059,7 +6059,7 @@ var init_site_defaults = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/manifest.js
+// ../ai-orchestration/dist/apartment/manifest.js
 function buildApartmentGenerationManifest(input) {
   const { site, apartmentConfig, rulesProfile } = input;
   const setbacks = site.setbacksMm ?? DEFAULT_APARTMENT_SETBACKS_MM;
@@ -6315,7 +6315,7 @@ function validateSchematicMatchesManifest(schematic, manifest) {
 }
 var SQM_TO_SQFT, M_TO_FT;
 var init_manifest = __esm({
-  "packages/ai-orchestration/dist/apartment/manifest.js"() {
+  "../ai-orchestration/dist/apartment/manifest.js"() {
     "use strict";
     init_jurisdiction();
     init_typologies();
@@ -6325,7 +6325,7 @@ var init_manifest = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/aspect-ratio.js
+// ../ai-orchestration/dist/orchestration/aspect-ratio.js
 function roundToStep(value, step) {
   return Math.round(value / step) * step;
 }
@@ -6347,7 +6347,7 @@ function computeAspectAdaptedDimensions(plotWidthM, plotDepthM) {
 }
 var MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX, OUTPUT_DIMENSION_STEP_PX, TARGET_PIXEL_BUDGET, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO;
 var init_aspect_ratio = __esm({
-  "packages/ai-orchestration/dist/orchestration/aspect-ratio.js"() {
+  "../ai-orchestration/dist/orchestration/aspect-ratio.js"() {
     "use strict";
     MIN_OUTPUT_DIMENSION_PX = 512;
     MAX_OUTPUT_DIMENSION_PX = 1536;
@@ -6358,7 +6358,7 @@ var init_aspect_ratio = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js
+// ../ai-orchestration/dist/orchestration/image-prompt-compiler.js
 function titleCase(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
@@ -6563,7 +6563,7 @@ function compileApartmentFloorPlanImagePrompt(input) {
 }
 var FLOOR_PLAN_PROMPT_VERSION, NEGATIVE_PROMPT, APARTMENT_NEGATIVE_PROMPT, APARTMENT_CONCEPT_ROOM_WORDS, APARTMENT_CONCEPT_CORE_WORDS;
 var init_image_prompt_compiler = __esm({
-  "packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
+  "../ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
     "use strict";
     init_manifest();
     init_aspect_ratio();
@@ -6575,10 +6575,10 @@ var init_image_prompt_compiler = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/image-generation.js
+// ../ai-orchestration/dist/providers/image-generation.js
 var ImageProviderError, DEFAULT_FLUX_MODEL, CloudflareImageProvider;
 var init_image_generation = __esm({
-  "packages/ai-orchestration/dist/providers/image-generation.js"() {
+  "../ai-orchestration/dist/providers/image-generation.js"() {
     "use strict";
     ImageProviderError = class _ImageProviderError extends Error {
       code;
@@ -6614,10 +6614,10 @@ var init_image_generation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/pollinations-image.js
+// ../ai-orchestration/dist/providers/pollinations-image.js
 var POLLINATIONS_PROVIDER_NAME, POLLINATIONS_BASE_URL, DEFAULT_POLLINATIONS_IMAGE_MODEL, PollinationsImageProvider;
 var init_pollinations_image = __esm({
-  "packages/ai-orchestration/dist/providers/pollinations-image.js"() {
+  "../ai-orchestration/dist/providers/pollinations-image.js"() {
     "use strict";
     init_image_generation();
     POLLINATIONS_PROVIDER_NAME = "pollinations";
@@ -6653,10 +6653,10 @@ var init_pollinations_image = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/gemini-image.js
+// ../ai-orchestration/dist/providers/gemini-image.js
 var DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_IMAGE_SIZE, GEMINI_IMAGE_PROVIDER_NAME, GeminiImageProvider;
 var init_gemini_image = __esm({
-  "packages/ai-orchestration/dist/providers/gemini-image.js"() {
+  "../ai-orchestration/dist/providers/gemini-image.js"() {
     "use strict";
     init_image_generation();
     DEFAULT_GEMINI_IMAGE_MODEL = "gemini-3-pro-image";
@@ -6697,7 +6697,7 @@ var init_gemini_image = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/image-quality-gate.js
+// ../ai-orchestration/dist/orchestration/image-quality-gate.js
 function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight = 1024) {
   const byteSize = imageBuffer.length;
   if (byteSize < 5e3) {
@@ -6759,19 +6759,19 @@ function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight 
   };
 }
 var init_image_quality_gate = __esm({
-  "packages/ai-orchestration/dist/orchestration/image-quality-gate.js"() {
+  "../ai-orchestration/dist/orchestration/image-quality-gate.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/floor-configuration.js
+// ../ai-orchestration/dist/apartment/floor-configuration.js
 var init_floor_configuration = __esm({
-  "packages/ai-orchestration/dist/apartment/floor-configuration.js"() {
+  "../ai-orchestration/dist/apartment/floor-configuration.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/layout-planner.js
+// ../ai-orchestration/dist/apartment/layout-planner.js
 function rectFromEdges(x0, y0, x1, y1) {
   const ax = r3(Math.min(x0, x1));
   const ay = r3(Math.min(y0, y1));
@@ -7636,7 +7636,7 @@ function buildAreaReport(units, lobby, lifts, stairs, shafts, footprint2, builda
 }
 var APARTMENT_CONCEPT_STRATEGIES, STRATEGY_PARAMS, COMMON_LOBBY_ID, r3, areaOf, sum, clamp2, LOBBY_NODE;
 var init_layout_planner = __esm({
-  "packages/ai-orchestration/dist/apartment/layout-planner.js"() {
+  "../ai-orchestration/dist/apartment/layout-planner.js"() {
     "use strict";
     init_dist();
     APARTMENT_CONCEPT_STRATEGIES = [
@@ -7769,7 +7769,7 @@ var init_layout_planner = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/polygon-layout.js
+// ../ai-orchestration/dist/apartment/polygon-layout.js
 function shoelaceAreaSqM(vertices) {
   let s = 0;
   const n2 = vertices.length;
@@ -7956,12 +7956,12 @@ function projectSitOutBalcony(params) {
   };
 }
 var init_polygon_layout2 = __esm({
-  "packages/ai-orchestration/dist/apartment/polygon-layout.js"() {
+  "../ai-orchestration/dist/apartment/polygon-layout.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/vastu.js
+// ../ai-orchestration/dist/apartment/vastu.js
 function computePolygonCentroid(vertices) {
   const n2 = vertices.length;
   if (n2 === 0)
@@ -8444,7 +8444,7 @@ function renderVastuChakraSvgOverlay(report, options = {}) {
 }
 var VASTU_16_ZONES;
 var init_vastu = __esm({
-  "packages/ai-orchestration/dist/apartment/vastu.js"() {
+  "../ai-orchestration/dist/apartment/vastu.js"() {
     "use strict";
     VASTU_16_ZONES = [
       { code: "N", traditionalName: "Kuber", label: "N", centerDeg: 0, startDeg: 348.75, endDeg: 11.25 },
@@ -8467,7 +8467,7 @@ var init_vastu = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/schematic.js
+// ../ai-orchestration/dist/apartment/schematic.js
 function selectBestVastuRoomPermutation(unitId, unitLabel, rooms, vertices, entrancePoint, northAngleDeg = 0) {
   const evalVastu = (candRooms) => {
     return evaluateUnitVastu({
@@ -8867,7 +8867,7 @@ function generateSchematicSvg(data) {
 }
 var esc;
 var init_schematic = __esm({
-  "packages/ai-orchestration/dist/apartment/schematic.js"() {
+  "../ai-orchestration/dist/apartment/schematic.js"() {
     "use strict";
     init_typologies();
     init_site_defaults();
@@ -8878,7 +8878,7 @@ var init_schematic = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/feasibility.js
+// ../ai-orchestration/dist/apartment/feasibility.js
 function validateIndianApartmentFeasibility(options) {
   const { site, floorCount, flatsPerFloor, unitMix, commonCore = {}, jurisdiction = "pune_pmc", floorStrategy = "typical" } = options;
   const conflicts = [];
@@ -9040,14 +9040,14 @@ function validateIndianApartmentFeasibility(options) {
   };
 }
 var init_feasibility = __esm({
-  "packages/ai-orchestration/dist/apartment/feasibility.js"() {
+  "../ai-orchestration/dist/apartment/feasibility.js"() {
     "use strict";
     init_jurisdiction();
     init_site_defaults();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/questionnaire.js
+// ../ai-orchestration/dist/apartment/questionnaire.js
 function checkApartmentCompleteness(config) {
   const missingFields = [];
   const questions = [];
@@ -9113,12 +9113,12 @@ function checkApartmentCompleteness(config) {
   };
 }
 var init_questionnaire = __esm({
-  "packages/ai-orchestration/dist/apartment/questionnaire.js"() {
+  "../ai-orchestration/dist/apartment/questionnaire.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/types/apartment.js
+// ../ai-orchestration/dist/types/apartment.js
 function validateApartmentFeasibility(site, config) {
   const detailed = validateIndianApartmentFeasibility({
     site,
@@ -9146,7 +9146,7 @@ function validateApartmentFeasibility(site, config) {
   };
 }
 var init_apartment = __esm({
-  "packages/ai-orchestration/dist/types/apartment.js"() {
+  "../ai-orchestration/dist/types/apartment.js"() {
     "use strict";
     init_jurisdiction();
     init_typologies();
@@ -9157,7 +9157,7 @@ var init_apartment = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/vision-interpretation.js
+// ../ai-orchestration/dist/orchestration/vision-interpretation.js
 async function interpretPlanImageWithGemini(provider, options) {
   if (provider && typeof provider.complete === "function") {
     const res = await provider.complete({
@@ -9183,7 +9183,7 @@ async function interpretPlanImageWithGemini(provider, options) {
 }
 var IMAGE_INTERPRETATION_SCHEMA, APARTMENT_IMAGE_INTERPRETATION_SCHEMA;
 var init_vision_interpretation = __esm({
-  "packages/ai-orchestration/dist/orchestration/vision-interpretation.js"() {
+  "../ai-orchestration/dist/orchestration/vision-interpretation.js"() {
     "use strict";
     IMAGE_INTERPRETATION_SCHEMA = {
       type: "object",
@@ -9203,7 +9203,7 @@ var init_vision_interpretation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/architectural-evaluation.js
+// ../ai-orchestration/dist/orchestration/architectural-evaluation.js
 async function evaluatePlanArchitecturally(provider, options) {
   const systemPrompt = [
     "You are a senior residential architect reviewing a validated floor plan.",
@@ -9253,7 +9253,7 @@ async function evaluatePlanArchitecturally(provider, options) {
 }
 var ARCHITECTURAL_EVALUATION_SCHEMA;
 var init_architectural_evaluation = __esm({
-  "packages/ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
+  "../ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
     "use strict";
     init_base();
     ARCHITECTURAL_EVALUATION_SCHEMA = {
@@ -9280,7 +9280,7 @@ var init_architectural_evaluation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/apartment-preflight.js
+// ../ai-orchestration/dist/orchestration/apartment-preflight.js
 async function runGeminiApartmentPreflight(aiProvider, imageBase64, expected, imageMimeType = "image/png") {
   const unitMixDesc = expected.unitMix && expected.unitMix.length > 0 ? ` (${expected.unitMix.map((u) => `${u.count} x ${u.unitType}`).join(", ")})` : "";
   const userPrompt = `Analyze the attached generated floor-plan image. The brief requires: ${expected.flatsPerFloor} flats per floor${unitMixDesc}, ${expected.liftCount} lift(s), ${expected.stairCount} staircase(s). Return structured JSON according to the schema.`;
@@ -9386,7 +9386,7 @@ function evaluateApartmentPreflight(detected, expected) {
 }
 var APARTMENT_PREFLIGHT_SCHEMA, APARTMENT_PREFLIGHT_PROMPT;
 var init_apartment_preflight = __esm({
-  "packages/ai-orchestration/dist/orchestration/apartment-preflight.js"() {
+  "../ai-orchestration/dist/orchestration/apartment-preflight.js"() {
     "use strict";
     APARTMENT_PREFLIGHT_SCHEMA = {
       type: "object",
@@ -9491,7 +9491,2046 @@ Return your exact structured findings following the JSON schema.
   }
 });
 
-// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
+// ../ai-orchestration/dist/apartment/schematic-renderer.js
+function crc32(buf) {
+  let crc = -1;
+  for (let i = 0; i < buf.length; i++) {
+    const byte = buf[i] ?? 0;
+    const lookup3 = table[(crc ^ byte) & 255] ?? 0;
+    crc = crc >>> 8 ^ lookup3;
+  }
+  return (crc ^ -1) >>> 0;
+}
+function makePngChunk(type, data) {
+  const typeBuf = Buffer.from(type, "ascii");
+  const lenBuf = Buffer.alloc(4);
+  lenBuf.writeUInt32BE(data.length, 0);
+  const crcBuf = Buffer.alloc(4);
+  const crcPayload = Buffer.concat([typeBuf, data]);
+  crcBuf.writeUInt32BE(crc32(crcPayload), 0);
+  return Buffer.concat([lenBuf, crcPayload, crcBuf]);
+}
+function getRoomAbbreviation(name, type) {
+  const norm = `${name} ${type}`.toLowerCase();
+  if (norm.includes("bath") || norm.includes("toilet") || norm.includes("powder"))
+    return { full: "BATH", short: "WC" };
+  if (type === "utility" || norm.includes("utility"))
+    return { full: "UTILITY", short: "UTIL" };
+  if (type === "passage" || norm.includes("passage"))
+    return { full: "PASSAGE", short: "PASS" };
+  if (type === "dress" || norm.includes("dressing"))
+    return { full: "DRESS", short: "DR" };
+  if (type === "store" || norm.includes("store"))
+    return { full: "STORE", short: "ST" };
+  if (type === "study" || norm.includes("study"))
+    return { full: "STUDY", short: "STDY" };
+  if (norm.includes("master") && norm.includes("bed"))
+    return { full: "MASTER BED", short: "M.BED" };
+  if (norm.includes("bed"))
+    return { full: "BEDROOM", short: "BED" };
+  if (norm.includes("living") && norm.includes("dining"))
+    return { full: "LIVING/DINING", short: "LIV/DIN" };
+  if (norm.includes("living"))
+    return { full: "LIVING", short: "LIV" };
+  if (norm.includes("dining"))
+    return { full: "DINING", short: "DIN" };
+  if (norm.includes("kitchen"))
+    return { full: "KITCHEN", short: "KIT" };
+  if (norm.includes("balcony") || norm.includes("terrace") || norm.includes("sit-out"))
+    return { full: "BALCONY", short: "BALC" };
+  if (norm.includes("utility") || norm.includes("wash") || norm.includes("dry"))
+    return { full: "UTILITY", short: "UTIL" };
+  if (norm.includes("pooja") || norm.includes("puja"))
+    return { full: "POOJA", short: "PUJA" };
+  if (norm.includes("foyer") || norm.includes("entry"))
+    return { full: "FOYER", short: "ENT" };
+  if (norm.includes("duct") || norm.includes("shaft") || norm.includes("ots"))
+    return { full: "DUCT", short: "DUCT" };
+  const fallback = name.toUpperCase().slice(0, 8);
+  return { full: fallback, short: fallback.slice(0, 4) };
+}
+function fluxConceptRoomLabel(name, type) {
+  const norm = `${name} ${type}`.toLowerCase();
+  if (norm.includes("bath") || norm.includes("toilet") || norm.includes("powder"))
+    return { lines: ["BATH"], fallback: ["WC"] };
+  if (type === "utility" || norm.includes("utility") || norm.includes("wash"))
+    return { lines: ["UTILITY"], fallback: ["UTIL"] };
+  if (type === "passage" || norm.includes("passage") || type === "dress" || norm.includes("dress"))
+    return null;
+  if (type === "store" || norm.includes("store"))
+    return null;
+  if (norm.includes("balcony") || norm.includes("terrace") || norm.includes("sit-out"))
+    return null;
+  if (norm.includes("duct") || norm.includes("shaft") || norm.includes("ots"))
+    return null;
+  if (type === "study" || norm.includes("study"))
+    return { lines: ["STUDY"], fallback: null };
+  if (norm.includes("pooja") || norm.includes("puja"))
+    return { lines: ["POOJA"], fallback: null };
+  if (norm.includes("bed"))
+    return { lines: ["BEDROOM"], fallback: ["BED"] };
+  if (norm.includes("living") && norm.includes("dining"))
+    return { lines: ["LIVING", "DINING"], fallback: null };
+  if (norm.includes("living"))
+    return { lines: ["LIVING"], fallback: null };
+  if (norm.includes("dining"))
+    return { lines: ["DINING"], fallback: null };
+  if (norm.includes("kitchen"))
+    return { lines: ["KITCHEN"], fallback: ["KIT"] };
+  if (norm.includes("foyer") || norm.includes("entry"))
+    return { lines: ["FOYER"], fallback: null };
+  return null;
+}
+function renderSchematicPng512(schematic, options = {}) {
+  const width = 512;
+  const height = 512;
+  const flux = options.mode === "flux_concept";
+  const emit2 = (label) => options.onLabel?.(label);
+  const rowSize = 1 + width * 4;
+  const raw = Buffer.alloc(height * rowSize, 255);
+  for (let y = 0; y < height; y++) {
+    raw[y * rowSize] = 0;
+  }
+  function setPixel(x, y, r, g, b) {
+    if (x < 0 || x >= width || y < 0 || y >= height)
+      return;
+    const offset = y * rowSize + 1 + x * 4;
+    raw[offset] = r;
+    raw[offset + 1] = g;
+    raw[offset + 2] = b;
+    raw[offset + 3] = 255;
+  }
+  function fillRect(rx, ry, rw, rh, r, g, b) {
+    const x0 = Math.max(0, Math.min(width - 1, Math.round(rx)));
+    const y0 = Math.max(0, Math.min(height - 1, Math.round(ry)));
+    const x1 = Math.max(0, Math.min(width - 1, Math.round(rx + rw)));
+    const y1 = Math.max(0, Math.min(height - 1, Math.round(ry + rh)));
+    for (let y = y0; y <= y1; y++) {
+      for (let x = x0; x <= x1; x++) {
+        setPixel(x, y, r, g, b);
+      }
+    }
+  }
+  function drawLine(x0, y0, x1, y1, r, g, b, thickness = 1) {
+    let px0 = Math.round(x0);
+    let py0 = Math.round(y0);
+    const px1 = Math.round(x1);
+    const py1 = Math.round(y1);
+    const dx = Math.abs(px1 - px0);
+    const dy = Math.abs(py1 - py0);
+    const sx = px0 < px1 ? 1 : -1;
+    const sy = py0 < py1 ? 1 : -1;
+    let err = dx - dy;
+    while (true) {
+      if (thickness <= 1) {
+        setPixel(px0, py0, r, g, b);
+      } else {
+        const rad = Math.floor(thickness / 2);
+        for (let ty = -rad; ty <= rad; ty++) {
+          for (let tx = -rad; tx <= rad; tx++) {
+            setPixel(px0 + tx, py0 + ty, r, g, b);
+          }
+        }
+      }
+      if (px0 === px1 && py0 === py1)
+        break;
+      const e2 = 2 * err;
+      if (e2 > -dy) {
+        err -= dy;
+        px0 += sx;
+      }
+      if (e2 < dx) {
+        err += dx;
+        py0 += sy;
+      }
+    }
+  }
+  function drawRectOutline(rx, ry, rw, rh, thickness = 1, r = 0, g = 0, b = 0) {
+    const x0 = Math.round(rx);
+    const y0 = Math.round(ry);
+    const x1 = Math.round(rx + rw);
+    const y1 = Math.round(ry + rh);
+    for (let t = 0; t < thickness; t++) {
+      drawLine(x0, y0 + t, x1, y0 + t, r, g, b, 1);
+      drawLine(x0, y1 - t, x1, y1 - t, r, g, b, 1);
+      drawLine(x0 + t, y0, x0 + t, y1, r, g, b, 1);
+      drawLine(x1 - t, y0, x1 - t, y1, r, g, b, 1);
+    }
+  }
+  function drawCross(rx, ry, rw, rh, r = 0, g = 0, b = 0, thickness = 1) {
+    const x0 = Math.round(rx);
+    const y0 = Math.round(ry);
+    const x1 = Math.round(rx + rw);
+    const y1 = Math.round(ry + rh);
+    drawLine(x0, y0, x1, y1, r, g, b, thickness);
+    drawLine(x1, y0, x0, y1, r, g, b, thickness);
+  }
+  function drawHatch(rx, ry, rw, rh, step = 5, horizontal = true, r = 0, g = 0, b = 0) {
+    const x0 = Math.round(rx);
+    const y0 = Math.round(ry);
+    const x1 = Math.round(rx + rw);
+    const y1 = Math.round(ry + rh);
+    if (horizontal) {
+      for (let y = y0 + step; y < y1; y += step) {
+        drawLine(x0, y, x1, y, r, g, b, 1);
+      }
+    } else {
+      for (let x = x0 + step; x < x1; x += step) {
+        drawLine(x, y0, x, y1, r, g, b, 1);
+      }
+    }
+  }
+  function measureTextWidth(text2, scale2 = 1) {
+    return text2.length * 6 * scale2;
+  }
+  function drawChar(ch, startX, startY, scale2 = 1, r = 0, g = 0, b = 0) {
+    const glyph = FONT_5X7[ch.toUpperCase()] ?? FONT_5X7[" "];
+    if (!glyph)
+      return;
+    for (let col = 0; col < 5; col++) {
+      const colByte = glyph[col] ?? 0;
+      for (let row = 0; row < 7; row++) {
+        if ((colByte & 1 << row) !== 0) {
+          if (scale2 === 1) {
+            setPixel(startX + col, startY + row, r, g, b);
+          } else {
+            for (let dy = 0; dy < scale2; dy++) {
+              for (let dx = 0; dx < scale2; dx++) {
+                setPixel(startX + col * scale2 + dx, startY + row * scale2 + dy, r, g, b);
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  function drawText2(text2, startX, startY, scale2 = 1, r = 0, g = 0, b = 0) {
+    let curX = startX;
+    for (let i = 0; i < text2.length; i++) {
+      drawChar(text2[i], curX, startY, scale2, r, g, b);
+      curX += 6 * scale2;
+    }
+  }
+  function drawTextCentered(text2, rx, ry, rw, rh, scale2 = 1, r = 0, g = 0, b = 0, withBackdrop = false) {
+    const textW = measureTextWidth(text2, scale2);
+    const textH = 7 * scale2;
+    const cx = Math.round(rx + (rw - textW) / 2);
+    const cy = Math.round(ry + (rh - textH) / 2);
+    if (withBackdrop) {
+      fillRect(cx - 2, cy - 2, textW + 4, textH + 4, 255, 255, 255);
+    }
+    drawText2(text2, cx, cy, scale2, r, g, b);
+  }
+  const boldWidth = (text2, s) => measureTextWidth(text2, s) + 1;
+  function drawBoldCentered(text2, rx, ry, rw, rh, s, gray = 0) {
+    const textW = boldWidth(text2, s);
+    const textH = 7 * s;
+    const cx = Math.round(rx + (rw - textW) / 2);
+    const cy = Math.round(ry + (rh - textH) / 2);
+    fillRect(cx - 2, cy - 2, textW + 4, textH + 4, 255, 255, 255);
+    drawText2(text2, cx, cy, s, gray, gray, gray);
+    drawText2(text2, cx + 1, cy, s, gray, gray, gray);
+  }
+  const LINE_GAP = 3;
+  const blockHeight = (lines, s) => lines.length * 7 * s + (lines.length - 1) * LINE_GAP;
+  function fitScale(lines, rw, rh, margin = 6, maxScale = 2) {
+    for (const s of [2, 1].filter((v) => v <= maxScale)) {
+      const w = Math.max(...lines.map((l) => boldWidth(l, s)));
+      if (w + margin <= rw && blockHeight(lines, s) + margin <= rh)
+        return s;
+    }
+    return 0;
+  }
+  function drawBoldLines(lines, rx, top, rw, s) {
+    let y = top;
+    for (const line3 of lines) {
+      drawBoldCentered(line3, rx, y, rw, 7 * s, s);
+      y += 7 * s + LINE_GAP;
+    }
+  }
+  const bf = schematic.buildingFootprint ?? { x: 0, y: 0, width: 24, height: 30 };
+  const targetCanvasPx = flux ? 460 : 430;
+  const scale = targetCanvasPx / Math.max(bf.width, bf.height);
+  const offsetX = Math.round((width - bf.width * scale) / 2 - bf.x * scale);
+  const offsetY = Math.round((height - bf.height * scale) / 2 - bf.y * scale);
+  const toPx = (mX, mY, mW, mH) => ({
+    x: offsetX + mX * scale,
+    y: offsetY + mY * scale,
+    w: mW * scale,
+    h: mH * scale
+  });
+  const spaceRects = /* @__PURE__ */ new Map();
+  if (schematic.core?.lobby)
+    spaceRects.set("core_lobby", schematic.core.lobby.bounds);
+  for (const lift2 of schematic.core?.lifts ?? [])
+    spaceRects.set(lift2.id, lift2.bounds);
+  for (const stair2 of schematic.core?.stairs ?? [])
+    spaceRects.set(stair2.id, stair2.bounds);
+  for (const u of schematic.units ?? [])
+    for (const rm of [...u.rooms ?? [], ...u.balconies ?? []])
+      spaceRects.set(rm.id, rm.bounds);
+  if (flux) {
+    renderFluxConceptBody();
+  } else {
+    if (schematic.core) {
+      if (schematic.core.lobby) {
+        const lb = schematic.core.lobby.bounds;
+        const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
+        drawRectOutline(lbp.x, lbp.y, lbp.w, lbp.h, 2, 0, 0, 0);
+        const vertical = lbp.h > lbp.w * 1.6;
+        const lobbyLabel = measureTextWidth("COMMON LOBBY", 1) + 4 <= lbp.w ? "COMMON LOBBY" : "LOBBY";
+        if (vertical && lobbyLabel === "LOBBY" && measureTextWidth("LOBBY", 1) + 4 > lbp.w) {
+          drawTextCentered("LBY", lbp.x, lbp.y, lbp.w, lbp.h, 1, 0, 0, 0, true);
+          emit2({ text: "LBY", kind: "core", spaceId: "core_lobby", scale: 1 });
+        } else {
+          drawTextCentered(lobbyLabel, lbp.x, lbp.y, lbp.w, lbp.h, 1, 0, 0, 0, true);
+          emit2({ text: lobbyLabel, kind: "core", spaceId: "core_lobby", scale: 1 });
+        }
+      }
+      (schematic.core.lifts ?? []).forEach((lift2, idx) => {
+        const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
+        fillRect(lp.x, lp.y, lp.w, lp.h, 255, 255, 255);
+        drawRectOutline(lp.x, lp.y, lp.w, lp.h, 2, 0, 0, 0);
+        drawCross(lp.x, lp.y, lp.w, lp.h, 0, 0, 0, 1);
+        const label = lift2.label || `LIFT 0${idx + 1}`;
+        const liftText = measureTextWidth(label, 1) + 2 <= lp.w ? label : `L${idx + 1}`;
+        drawTextCentered(liftText, lp.x, lp.y, lp.w, lp.h, 1, 0, 0, 0, true);
+        emit2({ text: liftText, kind: "core", spaceId: lift2.id, scale: 1 });
+      });
+      (schematic.core.stairs ?? []).forEach((stair2, idx) => {
+        const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
+        fillRect(sp.x, sp.y, sp.w, sp.h, 255, 255, 255);
+        drawRectOutline(sp.x, sp.y, sp.w, sp.h, 2, 0, 0, 0);
+        drawHatch(sp.x, sp.y, sp.w, sp.h, 5, sp.w >= sp.h, 60, 60, 60);
+        const label = `STAIR ${String(idx + 1).padStart(2, "0")}`;
+        const stairText = measureTextWidth(label, 1) + 2 <= sp.w ? label : `ST${idx + 1}`;
+        drawTextCentered(stairText, sp.x, sp.y, sp.w, sp.h, 1, 0, 0, 0, true);
+        emit2({ text: stairText, kind: "core", spaceId: stair2.id, scale: 1 });
+      });
+      (schematic.core.corridors ?? []).forEach((corr) => {
+        const crp = toPx(corr.bounds.x, corr.bounds.y, corr.bounds.width, corr.bounds.height);
+        drawRectOutline(crp.x, crp.y, crp.w, crp.h, 1, 100, 100, 100);
+      });
+      (schematic.core.serviceShafts ?? []).forEach((shaft) => {
+        const shp = toPx(shaft.bounds.x, shaft.bounds.y, shaft.bounds.width, shaft.bounds.height);
+        drawRectOutline(shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0);
+        drawCross(shp.x, shp.y, shp.w, shp.h, 120, 120, 120, 1);
+        if (measureTextWidth("DUCT", 1) + 4 <= shp.w && shp.h >= 10) {
+          drawTextCentered("DUCT", shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0, true);
+          emit2({ text: "DUCT", kind: "core", scale: 1 });
+        }
+      });
+    }
+    (schematic.units ?? []).forEach((u) => {
+      for (const rm of u.rooms ?? []) {
+        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
+        drawRectOutline(rp.x, rp.y, rp.w, rp.h, 1, 40, 40, 40);
+      }
+      for (const bal of u.balconies ?? []) {
+        const bp = toPx(bal.bounds.x, bal.bounds.y, bal.bounds.width, bal.bounds.height);
+        drawRectOutline(bp.x, bp.y, bp.w, bp.h, 1, 70, 70, 70);
+        drawHatch(bp.x, bp.y, bp.w, bp.h, 6, bp.w < bp.h, 200, 200, 200);
+        if (measureTextWidth("BALC", 1) + 4 <= bp.w && bp.h >= 10) {
+          drawTextCentered("BALC", bp.x, bp.y, bp.w, bp.h, 1, 40, 40, 40, true);
+          emit2({ text: "BALC", kind: "room", flatId: u.flatId, spaceId: bal.id, scale: 1 });
+        } else if (bp.h >= measureTextWidth("BALC", 1) + 4 && bp.w >= 9) {
+          drawTextCentered("B", bp.x, bp.y, bp.w, bp.h, 1, 40, 40, 40, true);
+          emit2({ text: "B", kind: "room", flatId: u.flatId, spaceId: bal.id, scale: 1 });
+        }
+      }
+      const body = u.bodyBounds ?? u.bounds;
+      const bdp = toPx(body.x, body.y, body.width, body.height);
+      drawRectOutline(bdp.x, bdp.y, bdp.w, bdp.h, 3, 0, 0, 0);
+    });
+    for (const door2 of schematic.doors ?? []) {
+      const dp = toPx(door2.bounds.x, door2.bounds.y, door2.bounds.width, door2.bounds.height);
+      const into = spaceRects.get(door2.connects[1]);
+      if (door2.wallAxis === "y") {
+        const cx = dp.x + dp.w / 2;
+        fillRect(cx - 2, dp.y + 1, 4, dp.h - 2, 255, 255, 255);
+        if (door2.doorType !== "open_passage" && into) {
+          const dir = (into.x + into.width / 2) * scale + offsetX > cx ? 1 : -1;
+          const hingeY = dp.y + 1;
+          drawLine(cx, hingeY, cx + dir * (dp.h - 2), hingeY, 0, 0, 0, 1);
+          drawLine(cx + dir * (dp.h - 2), hingeY, cx, dp.y + dp.h - 1, 150, 150, 150, 1);
+        }
+      } else {
+        const cy = dp.y + dp.h / 2;
+        fillRect(dp.x + 1, cy - 2, dp.w - 2, 4, 255, 255, 255);
+        if (door2.doorType !== "open_passage" && into) {
+          const dir = (into.y + into.height / 2) * scale + offsetY > cy ? 1 : -1;
+          const hingeX = dp.x + 1;
+          drawLine(hingeX, cy, hingeX, cy + dir * (dp.w - 2), 0, 0, 0, 1);
+          drawLine(hingeX, cy + dir * (dp.w - 2), dp.x + dp.w - 1, cy, 150, 150, 150, 1);
+        }
+      }
+    }
+    (schematic.units ?? []).forEach((u, i) => {
+      const body = u.bodyBounds ?? u.bounds;
+      const bdp = toPx(body.x, body.y, body.width, body.height);
+      const flatLabel = `FLAT ${String(i + 1).padStart(2, "0")}`;
+      const typeLabel = u.unitType ? u.unitType.toUpperCase() : "";
+      let flatLabelPlaced = false;
+      for (const rm of u.rooms ?? []) {
+        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
+        const { full, short: short2 } = getRoomAbbreviation(rm.name, rm.type);
+        if (rm.type === "living_dining" && rp.h >= 34 && measureTextWidth(flatLabel, 1) + 6 <= rp.w) {
+          const flatScale = measureTextWidth(flatLabel, 2) + 8 <= rp.w && rp.h >= 56 ? 2 : 1;
+          const roomText = measureTextWidth(full, 1) + 6 <= rp.w ? full : short2;
+          const blockH = 7 * flatScale + 4 + 7 + 5 + 7;
+          const top = rp.y + (rp.h - blockH) / 2;
+          drawTextCentered(flatLabel, rp.x, top, rp.w, 7 * flatScale, flatScale, 0, 0, 0, true);
+          drawTextCentered(typeLabel, rp.x, top + 7 * flatScale + 4, rp.w, 7, 1, 40, 40, 40, true);
+          drawTextCentered(roomText, rp.x, top + 7 * flatScale + 16, rp.w, 7, 1, 20, 20, 20, true);
+          emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: flatScale });
+          emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: 1 });
+          emit2({ text: roomText, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
+          flatLabelPlaced = true;
+          continue;
+        }
+        if (measureTextWidth(full, 1) + 6 <= rp.w && rp.h >= 12) {
+          drawTextCentered(full, rp.x, rp.y, rp.w, rp.h, 1, 20, 20, 20, true);
+          emit2({ text: full, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
+        } else if (measureTextWidth(short2, 1) + 4 <= rp.w && rp.h >= 10) {
+          drawTextCentered(short2, rp.x, rp.y, rp.w, rp.h, 1, 20, 20, 20, true);
+          emit2({ text: short2, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
+        }
+      }
+      if (!flatLabelPlaced) {
+        const text2 = `${flatLabel} ${typeLabel}`.trim();
+        drawTextCentered(text2, bdp.x, bdp.y + 4, bdp.w, 9, 1, 0, 0, 0, true);
+        emit2({ text: text2, kind: "flat", flatId: u.flatId, scale: 1 });
+      }
+    });
+  }
+  function renderFluxConceptBody() {
+    const core = schematic.core;
+    if (core?.lobby) {
+      const lb = core.lobby.bounds;
+      const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
+      fillRect(lbp.x, lbp.y, lbp.w, lbp.h, 226, 226, 226);
+      drawRectOutline(lbp.x, lbp.y, lbp.w, lbp.h, 3, 0, 0, 0);
+    }
+    for (const corr of core?.corridors ?? []) {
+      const crp = toPx(corr.bounds.x, corr.bounds.y, corr.bounds.width, corr.bounds.height);
+      fillRect(crp.x, crp.y, crp.w, crp.h, 226, 226, 226);
+      drawRectOutline(crp.x, crp.y, crp.w, crp.h, 1, 100, 100, 100);
+    }
+    for (const lift2 of core?.lifts ?? []) {
+      const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
+      fillRect(lp.x, lp.y, lp.w, lp.h, 255, 255, 255);
+      drawRectOutline(lp.x, lp.y, lp.w, lp.h, 3, 0, 0, 0);
+      drawCross(lp.x + 2, lp.y + 2, lp.w - 4, lp.h - 4, 0, 0, 0, 2);
+    }
+    for (const stair2 of core?.stairs ?? []) {
+      const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
+      fillRect(sp.x, sp.y, sp.w, sp.h, 255, 255, 255);
+      drawRectOutline(sp.x, sp.y, sp.w, sp.h, 3, 0, 0, 0);
+      const runVertical = sp.h >= sp.w;
+      const run = runVertical ? sp.h : sp.w;
+      const landing = Math.max(6, Math.round(run * 0.18));
+      if (runVertical) {
+        for (let y = sp.y + landing; y < sp.y + sp.h - 3; y += 5)
+          drawLine(sp.x + 2, y, sp.x + sp.w - 2, y, 40, 40, 40, 1);
+        drawLine(sp.x + sp.w / 2, sp.y + landing, sp.x + sp.w / 2, sp.y + sp.h - 2, 0, 0, 0, 2);
+        drawLine(sp.x + 2, sp.y + landing, sp.x + sp.w - 2, sp.y + landing, 0, 0, 0, 1);
+      } else {
+        for (let x = sp.x + landing; x < sp.x + sp.w - 3; x += 5)
+          drawLine(x, sp.y + 2, x, sp.y + sp.h - 2, 40, 40, 40, 1);
+        drawLine(sp.x + landing, sp.y + sp.h / 2, sp.x + sp.w - 2, sp.y + sp.h / 2, 0, 0, 0, 2);
+        drawLine(sp.x + landing, sp.y + 2, sp.x + landing, sp.y + sp.h - 2, 0, 0, 0, 1);
+      }
+    }
+    for (const shaft of core?.serviceShafts ?? []) {
+      const shp = toPx(shaft.bounds.x, shaft.bounds.y, shaft.bounds.width, shaft.bounds.height);
+      fillRect(shp.x, shp.y, shp.w, shp.h, 150, 150, 150);
+      drawRectOutline(shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0);
+    }
+    for (const u of schematic.units ?? []) {
+      for (const rm of u.rooms ?? []) {
+        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
+        drawRectOutline(rp.x, rp.y, rp.w, rp.h, 1, 0, 0, 0);
+      }
+      for (const bal of u.balconies ?? []) {
+        const bp = toPx(bal.bounds.x, bal.bounds.y, bal.bounds.width, bal.bounds.height);
+        drawRectOutline(bp.x, bp.y, bp.w, bp.h, 1, 70, 70, 70);
+        drawHatch(bp.x, bp.y, bp.w, bp.h, 4, bp.w < bp.h, 170, 170, 170);
+      }
+      const body = u.bodyBounds ?? u.bounds;
+      const bdp = toPx(body.x, body.y, body.width, body.height);
+      drawRectOutline(bdp.x, bdp.y, bdp.w, bdp.h, 4, 0, 0, 0);
+    }
+    for (const door2 of schematic.doors ?? []) {
+      const dp = toPx(door2.bounds.x, door2.bounds.y, door2.bounds.width, door2.bounds.height);
+      const into = spaceRects.get(door2.connects[1]);
+      const leaf = door2.kind === "flat_entrance" ? 3 : 1;
+      if (door2.wallAxis === "y") {
+        const cx = dp.x + dp.w / 2;
+        fillRect(cx - 3, dp.y + 1, 6, dp.h - 2, 255, 255, 255);
+        if (door2.doorType !== "open_passage" && into) {
+          const dir = (into.x + into.width / 2) * scale + offsetX > cx ? 1 : -1;
+          const hingeY = dp.y + 1;
+          drawLine(cx, hingeY, cx + dir * (dp.h - 2), hingeY, 0, 0, 0, leaf);
+          drawLine(cx + dir * (dp.h - 2), hingeY, cx, dp.y + dp.h - 1, 120, 120, 120, 1);
+        }
+      } else {
+        const cy = dp.y + dp.h / 2;
+        fillRect(dp.x + 1, cy - 3, dp.w - 2, 6, 255, 255, 255);
+        if (door2.doorType !== "open_passage" && into) {
+          const dir = (into.y + into.height / 2) * scale + offsetY > cy ? 1 : -1;
+          const hingeX = dp.x + 1;
+          drawLine(hingeX, cy, hingeX, cy + dir * (dp.w - 2), 0, 0, 0, leaf);
+          drawLine(hingeX, cy + dir * (dp.w - 2), dp.x + dp.w - 1, cy, 120, 120, 120, 1);
+        }
+      }
+    }
+    if (core?.lobby) {
+      const lb = core.lobby.bounds;
+      const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
+      const s = fitScale(["LOBBY"], lbp.w, lbp.h, 4);
+      if (s > 0) {
+        drawBoldLines(["LOBBY"], lbp.x, lbp.y + (lbp.h - 7 * s) / 2, lbp.w, s);
+        emit2({ text: "LOBBY", kind: "core", spaceId: "core_lobby", scale: s });
+      }
+    }
+    for (const lift2 of core?.lifts ?? []) {
+      const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
+      const s = fitScale(["LIFT"], lp.w, lp.h, 4);
+      if (s > 0) {
+        drawBoldLines(["LIFT"], lp.x, lp.y + (lp.h - 7 * s) / 2, lp.w, s);
+        emit2({ text: "LIFT", kind: "core", spaceId: lift2.id, scale: s });
+      }
+    }
+    for (const stair2 of core?.stairs ?? []) {
+      const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
+      const s = fitScale(["STAIR"], sp.w, sp.h, 4);
+      if (s > 0) {
+        drawBoldLines(["STAIR"], sp.x, sp.y + (sp.h - 7 * s) / 2, sp.w, s);
+        emit2({ text: "STAIR", kind: "core", spaceId: stair2.id, scale: s });
+      }
+    }
+    (schematic.units ?? []).forEach((u, i) => {
+      const flatLabel = `FLAT ${String(i + 1).padStart(2, "0")}`;
+      const typeLabel = u.unitType ? u.unitType.toUpperCase() : "";
+      const tagLines = typeLabel ? [flatLabel, typeLabel] : [flatLabel];
+      let tagPlaced = false;
+      for (const rm of u.rooms ?? []) {
+        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
+        const spec = fluxConceptRoomLabel(rm.name, rm.type);
+        const isLiving = rm.type === "living_dining" || rm.type === "living";
+        if (!tagPlaced && isLiving && spec) {
+          const tagScale = fitScale(tagLines, rp.w, rp.h * 0.6);
+          const roomScale = fitScale(spec.lines, rp.w, rp.h * 0.4, 6, 1);
+          if (tagScale > 0 && roomScale > 0) {
+            const tagH = blockHeight(tagLines, tagScale);
+            const roomH = blockHeight(spec.lines, roomScale);
+            const top = rp.y + (rp.h - (tagH + 8 + roomH)) / 2;
+            drawBoldLines(tagLines, rp.x, top, rp.w, tagScale);
+            drawBoldLines(spec.lines, rp.x, top + tagH + 8, rp.w, roomScale);
+            emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: tagScale });
+            if (typeLabel)
+              emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: tagScale });
+            for (const line3 of spec.lines)
+              emit2({ text: line3, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: roomScale });
+            tagPlaced = true;
+            continue;
+          }
+        }
+        if (!spec)
+          continue;
+        let lines = spec.lines;
+        let s = fitScale(lines, rp.w, rp.h, 6, 1);
+        if (s === 0 && spec.fallback) {
+          lines = spec.fallback;
+          s = fitScale(lines, rp.w, rp.h, 4, 1);
+        }
+        if (s === 0)
+          continue;
+        drawBoldLines(lines, rp.x, rp.y + (rp.h - blockHeight(lines, s)) / 2, rp.w, s);
+        for (const line3 of lines)
+          emit2({ text: line3, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: s });
+      }
+      if (!tagPlaced) {
+        const body = u.bodyBounds ?? u.bounds;
+        const bdp = toPx(body.x, body.y, body.width, body.height);
+        const text2 = `${flatLabel} ${typeLabel}`.trim();
+        drawBoldCentered(text2, bdp.x, bdp.y + 6, bdp.w, 7, 1);
+        emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: 1 });
+        if (typeLabel)
+          emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: 1 });
+      }
+    });
+  }
+  const naX = width - 35;
+  const naY = 15;
+  drawText2("N", naX, naY, 1, 0, 0, 0);
+  drawLine(naX + 2, naY + 8, naX + 2, naY + 22, 0, 0, 0, 1);
+  drawLine(naX + 2, naY + 8, naX - 1, naY + 12, 0, 0, 0, 1);
+  drawLine(naX + 2, naY + 8, naX + 5, naY + 12, 0, 0, 0, 1);
+  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
+  const ihdrData = Buffer.alloc(13);
+  ihdrData.writeUInt32BE(width, 0);
+  ihdrData.writeUInt32BE(height, 4);
+  ihdrData[8] = 8;
+  ihdrData[9] = 6;
+  ihdrData[10] = 0;
+  ihdrData[11] = 0;
+  ihdrData[12] = 0;
+  const ihdr = makePngChunk("IHDR", ihdrData);
+  const idat = makePngChunk("IDAT", import_node_zlib.default.deflateSync(raw));
+  const iend = makePngChunk("IEND", Buffer.alloc(0));
+  return Buffer.concat([signature, ihdr, idat, iend]);
+}
+var import_node_zlib, table, FONT_5X7;
+var init_schematic_renderer = __esm({
+  "../ai-orchestration/dist/apartment/schematic-renderer.js"() {
+    "use strict";
+    import_node_zlib = __toESM(require("node:zlib"));
+    table = new Int32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let k = 0; k < 8; k++) {
+        c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+      }
+      table[i] = c;
+    }
+    FONT_5X7 = {
+      " ": [0, 0, 0, 0, 0],
+      "!": [0, 0, 95, 0, 0],
+      "(": [0, 28, 34, 65, 0],
+      ")": [0, 65, 34, 28, 0],
+      "+": [8, 8, 62, 8, 8],
+      ",": [0, 80, 48, 0, 0],
+      "-": [8, 8, 8, 8, 8],
+      ".": [0, 96, 96, 0, 0],
+      "/": [32, 16, 8, 4, 2],
+      "0": [62, 81, 73, 69, 62],
+      "1": [0, 66, 127, 64, 0],
+      "2": [66, 97, 81, 73, 70],
+      "3": [33, 65, 69, 75, 49],
+      "4": [24, 20, 18, 127, 16],
+      "5": [39, 69, 69, 69, 57],
+      "6": [60, 74, 73, 73, 48],
+      "7": [1, 113, 9, 5, 3],
+      "8": [54, 73, 73, 73, 54],
+      "9": [6, 73, 73, 41, 30],
+      ":": [0, 54, 54, 0, 0],
+      "[": [0, 127, 65, 65, 0],
+      "]": [0, 65, 65, 127, 0],
+      "A": [126, 17, 17, 17, 126],
+      "B": [127, 73, 73, 73, 54],
+      "C": [62, 65, 65, 65, 34],
+      "D": [127, 65, 65, 34, 28],
+      "E": [127, 73, 73, 73, 65],
+      "F": [127, 9, 9, 9, 1],
+      "G": [62, 65, 73, 73, 122],
+      "H": [127, 8, 8, 8, 127],
+      "I": [0, 65, 127, 65, 0],
+      "J": [32, 64, 65, 63, 1],
+      "K": [127, 8, 20, 34, 65],
+      "L": [127, 64, 64, 64, 64],
+      "M": [127, 2, 12, 2, 127],
+      "N": [127, 4, 8, 16, 127],
+      "O": [62, 65, 65, 65, 62],
+      "P": [127, 9, 9, 9, 6],
+      "Q": [62, 65, 81, 33, 94],
+      "R": [127, 9, 25, 41, 70],
+      "S": [70, 73, 73, 73, 49],
+      "T": [1, 1, 127, 1, 1],
+      "U": [63, 64, 64, 64, 63],
+      "V": [31, 32, 64, 32, 31],
+      "W": [127, 32, 24, 32, 127],
+      "X": [99, 20, 8, 20, 99],
+      "Y": [7, 8, 112, 8, 7],
+      "Z": [97, 81, 73, 69, 67]
+    };
+  }
+});
+
+// ../ai-orchestration/dist/apartment/reference-library.js
+function resolveApartmentReferenceBucket(projectType, flatsPerFloor) {
+  if (projectType === "residential_independent") {
+    return "villa";
+  }
+  switch (flatsPerFloor) {
+    case 1:
+      return "flats_1";
+    case 2:
+      return "flats_2";
+    case 3:
+      return "flats_3";
+    case 4:
+      return "flats_4";
+    case 6:
+      return "flats_6";
+    default:
+      return null;
+  }
+}
+function selectReferenceCandidates(_bucket, availableFiles, maxCount) {
+  const sorted3 = [...availableFiles].sort((a, b) => a.id.localeCompare(b.id));
+  const requestedIds = sorted3.map((f) => f.id);
+  const selected = sorted3.slice(0, Math.max(0, maxCount));
+  return { selected, requestedIds };
+}
+function finalizeReferenceSelection(bucket, requestedIds, selectedIds, attachedIds, drops, distinctReferencesAvailable) {
+  let status;
+  if (bucket === null || requestedIds.length === 0) {
+    status = "EMPTY";
+  } else if (attachedIds.length === 0) {
+    status = drops.length > 0 ? "FAILED" : "EMPTY";
+  } else if (attachedIds.length < selectedIds.length) {
+    status = "PARTIAL";
+  } else {
+    status = "AVAILABLE";
+  }
+  return {
+    bucket,
+    requestedReferenceIds: requestedIds,
+    selectedReferenceIds: selectedIds,
+    attachedReferenceIds: attachedIds,
+    drops,
+    status,
+    ...distinctReferencesAvailable !== void 0 ? { distinctReferencesAvailable } : {}
+  };
+}
+var init_reference_library = __esm({
+  "../ai-orchestration/dist/apartment/reference-library.js"() {
+    "use strict";
+  }
+});
+
+// ../ai-orchestration/dist/apartment/adapter.js
+function apartmentExpectationFromManifest(manifest) {
+  return {
+    flats: manifest.units.exactCount,
+    units: manifest.units.units.map((u) => ({
+      label: u.label,
+      unitType: u.type,
+      bedrooms: u.bedrooms,
+      bathrooms: u.bathrooms,
+      livingRooms: u.livingRooms,
+      diningRooms: u.diningRooms,
+      kitchens: u.kitchens,
+      utilities: u.utilities,
+      balconies: u.balconies
+    })),
+    lifts: manifest.commonCore.lifts,
+    stairs: manifest.commonCore.stairs,
+    commonLobby: manifest.commonCore.commonLobby
+  };
+}
+function apartmentInterpretationContextFromManifest(manifest) {
+  const mix = /* @__PURE__ */ new Map();
+  for (const u of manifest.units.units)
+    mix.set(u.type, (mix.get(u.type) ?? 0) + 1);
+  return {
+    flatsPerFloor: manifest.units.exactCount,
+    unitMix: [...mix.entries()].map(([unitType, count]) => ({ unitType, count })),
+    lifts: manifest.commonCore.lifts,
+    stairs: manifest.commonCore.stairs,
+    commonLobby: manifest.commonCore.commonLobby
+  };
+}
+function generateWindowsForApartmentSchematic(schematic) {
+  const openings = [];
+  let winId = 1;
+  for (const unit3 of schematic.units) {
+    const flatId = unit3.flatId;
+    const stepped = unit3.steppedPolygon;
+    const openFacades = new Set(stepped?.openFacades ?? ["N", "S", "E"]);
+    const deadWalls = new Set(stepped?.deadWalls ?? ["W"]);
+    const otsShafts = stepped?.otsShafts ?? [];
+    const ub = mm(unit3.bodyBounds);
+    for (const room2 of [...unit3.rooms, ...unit3.balconies]) {
+      const rm = mm(room2.bounds);
+      const isBath = room2.type === "master_toilet" || room2.type === "common_toilet" || room2.type === "powder_room";
+      const isHabitable3 = room2.type === "living_dining" || room2.type === "living" || room2.type === "dining" || room2.type === "kitchen" || room2.type === "master_bedroom" || room2.type === "bedroom" || room2.type === "study";
+      if (isBath) {
+        let placedOnOts = false;
+        for (const ots of otsShafts) {
+          const ob = mm(ots.bounds);
+          const xOverlap = Math.min(rm.x + rm.width, ob.x + ob.width) - Math.max(rm.x, ob.x);
+          const yOverlap = Math.min(rm.y + rm.height, ob.y + ob.height) - Math.max(rm.y, ob.y);
+          if (xOverlap > 300 && Math.abs(rm.y - (ob.y + ob.height)) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
+              kind: "window",
+              rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+            placedOnOts = true;
+            break;
+          } else if (xOverlap > 300 && Math.abs(rm.y + rm.height - ob.y) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
+              kind: "window",
+              rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y + rm.height - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+            placedOnOts = true;
+            break;
+          } else if (yOverlap > 300 && Math.abs(rm.x - (ob.x + ob.width)) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
+              kind: "window",
+              rect: { x: rm.x - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+            placedOnOts = true;
+            break;
+          } else if (yOverlap > 300 && Math.abs(rm.x + rm.width - ob.x) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
+              kind: "window",
+              rect: { x: rm.x + rm.width - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+            placedOnOts = true;
+            break;
+          }
+        }
+        if (!placedOnOts) {
+          if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_${winId++}`,
+              kind: "window",
+              rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+          } else if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
+            openings.push({
+              id: `${flatId}__win_${room2.id}_${winId++}`,
+              kind: "window",
+              rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y + rm.height - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
+              adjacentRoomId: `${flatId}__${room2.id}`
+            });
+          }
+        }
+      } else if (isHabitable3) {
+        if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
+          openings.push({
+            id: `${flatId}__win_${room2.id}_N_${winId++}`,
+            kind: "window",
+            rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
+            adjacentRoomId: `${flatId}__${room2.id}`
+          });
+        }
+        if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
+          openings.push({
+            id: `${flatId}__win_${room2.id}_S_${winId++}`,
+            kind: "window",
+            rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y + rm.height - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
+            adjacentRoomId: `${flatId}__${room2.id}`
+          });
+        }
+        if (openFacades.has("E") && !deadWalls.has("E") && Math.abs(rm.x + rm.width - (ub.x + ub.width)) <= 200) {
+          openings.push({
+            id: `${flatId}__win_${room2.id}_E_${winId++}`,
+            kind: "window",
+            rect: { x: rm.x + rm.width - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
+            adjacentRoomId: `${flatId}__${room2.id}`
+          });
+        }
+        if (openFacades.has("W") && !deadWalls.has("W") && Math.abs(rm.x - ub.x) <= 200) {
+          openings.push({
+            id: `${flatId}__win_${room2.id}_W_${winId++}`,
+            kind: "window",
+            rect: { x: rm.x - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
+            adjacentRoomId: `${flatId}__${room2.id}`
+          });
+        }
+      }
+    }
+  }
+  return openings;
+}
+function schematicToApartmentStructure(schematic) {
+  const structureId = /* @__PURE__ */ new Map();
+  for (const unit3 of schematic.units) {
+    for (const room2 of [...unit3.rooms, ...unit3.balconies]) {
+      structureId.set(room2.id, `${unit3.flatId}__${room2.id}`);
+    }
+  }
+  const sid = (id) => structureId.get(id) ?? id;
+  const doorOpenings = (schematic.doors ?? []).map((door2) => {
+    const a = sid(door2.connects[0]);
+    const b = sid(door2.connects[1]);
+    const lobbyId = schematic.core.lobby ? "core_lobby" : null;
+    return {
+      id: door2.id,
+      kind: "door",
+      rect: mm(door2.bounds),
+      adjacentRoomId: door2.kind === "flat_entrance" && a === lobbyId ? b : a,
+      doorType: door2.doorType,
+      swingDirection: door2.swing,
+      connects: [a, b],
+      isFlatEntrance: door2.kind === "flat_entrance"
+    };
+  });
+  const windowOpenings = generateWindowsForApartmentSchematic(schematic);
+  const openings = [...doorOpenings, ...windowOpenings];
+  const fp = mm(schematic.buildingFootprint);
+  const boundary = [
+    { x: fp.x - 50, y: fp.y - 50 },
+    { x: fp.x + fp.width + 50, y: fp.y - 50 },
+    { x: fp.x + fp.width + 50, y: fp.y + fp.height + 50 },
+    { x: fp.x - 50, y: fp.y + fp.height + 50 }
+  ];
+  return {
+    source: "DETERMINISTIC_SCHEMATIC",
+    boundary,
+    flats: schematic.units.map((unit3) => ({
+      id: unit3.flatId,
+      label: unit3.flatLabel,
+      unitType: unit3.unitType,
+      rect: mm(unit3.bounds),
+      rooms: [...unit3.rooms, ...unit3.balconies].map((room2) => ({
+        id: `${unit3.flatId}__${room2.id}`,
+        name: room2.name,
+        type: room2.type,
+        rect: mm(room2.bounds)
+      }))
+    })),
+    commonRooms: [],
+    ungroupedRooms: [],
+    lifts: schematic.core.lifts.map((l) => common(l.id, l.label, l.bounds)),
+    stairs: schematic.core.stairs.map((s) => common(s.id, s.label, s.bounds)),
+    lobbies: schematic.core.lobby ? [common("core_lobby", schematic.core.lobby.label, schematic.core.lobby.bounds)] : [],
+    corridors: schematic.core.corridors.map((c, i) => common(`corridor_${i + 1}`, c.label, c.bounds)),
+    shafts: schematic.core.serviceShafts.map((s, i) => common(`shaft_${i + 1}`, s.label, s.bounds)),
+    openings
+  };
+}
+function buildExtractionSite(input) {
+  const front = input.setbacksMm?.front ?? 3e3;
+  const rear = input.setbacksMm?.rear ?? 2e3;
+  const left = input.setbacksMm?.left ?? 2e3;
+  const right = input.setbacksMm?.right ?? 2e3;
+  return {
+    plotWidth: input.plotWidthMm,
+    plotDepth: input.plotDepthMm,
+    frontSetback: front,
+    rearSetback: rear,
+    leftSetback: left,
+    rightSetback: right,
+    roadFacing: (input.roadFacing ?? "north").toString().toLowerCase(),
+    orientation: input.orientationDegrees ?? 0
+  };
+}
+function adaptSchematicToBuilding(schematic, options) {
+  const projectId = options?.projectId ?? "project-cad";
+  const projectName = options?.projectName ?? "Apartment CAD Plan";
+  const structure = schematicToApartmentStructure(schematic);
+  const site = buildExtractionSite({
+    plotWidthMm: options?.site?.plotWidth ?? Math.round(schematic.siteFootprint.width * 1e3),
+    plotDepthMm: options?.site?.plotDepth ?? Math.round(schematic.siteFootprint.height * 1e3),
+    setbacksMm: {
+      front: Math.round(schematic.setbacks.front * 1e3),
+      rear: Math.round(schematic.setbacks.rear * 1e3),
+      left: Math.round(schematic.setbacks.left * 1e3),
+      right: Math.round(schematic.setbacks.right * 1e3)
+    },
+    roadFacing: options?.site?.roadFacing ?? "north",
+    orientationDegrees: options?.site?.orientation ?? 0
+  });
+  const { building } = apartmentStructureToBuilding(structure, site, projectId, projectName);
+  const floor = building.floors[0];
+  const walls = [];
+  const edgeMap = /* @__PURE__ */ new Map();
+  for (const room2 of floor.rooms) {
+    const x0 = room2.x;
+    const y0 = room2.y;
+    const x1 = room2.x + room2.width;
+    const y1 = room2.y + room2.height;
+    const segments = [
+      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
+      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
+      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
+      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } }
+    ];
+    for (const seg of segments) {
+      const k = seg.start.x === seg.end.x ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}` : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
+      const entry = edgeMap.get(k);
+      if (entry) {
+        entry.roomIds.push(room2.id);
+      } else {
+        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room2.id] });
+      }
+    }
+  }
+  for (const [, edge] of edgeMap) {
+    const isInternal = edge.roomIds.length >= 2;
+    const wallType = isInternal ? WallType.Internal : WallType.External;
+    const thickness = isInternal ? 100 : 200;
+    walls.push(createWall({
+      floorId: floor.id,
+      startPoint: edge.start,
+      endPoint: edge.end,
+      type: wallType,
+      thickness,
+      roomIds: edge.roomIds
+    }));
+  }
+  const stairs = schematic.core.stairs.map((st) => createStair({
+    floorId: floor.id,
+    type: StairType.UShaped,
+    x: Math.round(st.bounds.x * 1e3),
+    y: Math.round(st.bounds.y * 1e3),
+    width: Math.round(st.bounds.width * 1e3),
+    length: Math.round(st.bounds.height * 1e3),
+    riserCount: 16,
+    riserHeight: 175,
+    treadDepth: 250,
+    direction: Direction.North,
+    connectsFloors: [0, 1]
+  }));
+  return {
+    ...building,
+    metadata: {
+      ...building.metadata,
+      apartmentSchematic: schematic,
+      steppedPolygons: schematic.units.map((u) => ({
+        flatId: u.flatId,
+        flatLabel: u.flatLabel,
+        steppedPolygon: u.steppedPolygon
+      })),
+      otsShafts: schematic.units.flatMap((u) => u.steppedPolygon?.otsShafts ?? []),
+      balconies: schematic.units.flatMap((u) => u.steppedPolygon?.balconies ?? []),
+      vastuReport: schematic.vastuReport
+    },
+    floors: [
+      {
+        ...floor,
+        walls,
+        stairs
+      }
+    ]
+  };
+}
+var mm, common;
+var init_adapter = __esm({
+  "../ai-orchestration/dist/apartment/adapter.js"() {
+    "use strict";
+    init_dist();
+    init_dist3();
+    mm = (r) => ({
+      x: Math.round(r.x * 1e3),
+      y: Math.round(r.y * 1e3),
+      width: Math.round((r.x + r.width) * 1e3) - Math.round(r.x * 1e3),
+      height: Math.round((r.y + r.height) * 1e3) - Math.round(r.y * 1e3)
+    });
+    common = (id, name, bounds) => ({
+      id,
+      name,
+      rect: mm(bounds),
+      assignedFlatId: null
+    });
+  }
+});
+
+// ../ai-orchestration/dist/apartment/structural-representation.js
+var init_structural_representation = __esm({
+  "../ai-orchestration/dist/apartment/structural-representation.js"() {
+    "use strict";
+  }
+});
+
+// ../ai-orchestration/dist/apartment/deterministic-planner.js
+var init_deterministic_planner = __esm({
+  "../ai-orchestration/dist/apartment/deterministic-planner.js"() {
+    "use strict";
+    init_dist3();
+    init_schematic();
+    init_manifest();
+    init_jurisdiction();
+    init_adapter();
+    init_structural_representation();
+    init_site_defaults();
+  }
+});
+
+// ../ai-orchestration/dist/apartment/structural-renderer.js
+function validateStructuralPlanRepresentation(rep) {
+  const errors = [];
+  if (!rep) {
+    errors.push("StructuralPlanRepresentation is null or undefined.");
+    return { valid: false, errors };
+  }
+  if (rep.version !== 1) {
+    errors.push(`Unsupported representation version: ${rep.version}`);
+  }
+  if (!rep.buildingFootprint || rep.buildingFootprint.width <= 0 || rep.buildingFootprint.height <= 0) {
+    errors.push("Invalid or empty buildingFootprint.");
+  }
+  if (!rep.outerBuildingWalls || rep.outerBuildingWalls.length < 4) {
+    errors.push("Outer building walls missing or incomplete (expected at least 4 segments).");
+  }
+  if (!rep.flatBoundaries || rep.flatBoundaries.length === 0) {
+    errors.push("No flat boundaries defined.");
+  }
+  if (!rep.commonCore || !rep.commonCore.lobby) {
+    errors.push("Common core lobby missing.");
+  }
+  if (!rep.doors || rep.doors.length === 0) {
+    errors.push("No doors or openings defined in structural representation.");
+  }
+  return { valid: errors.length === 0, errors };
+}
+function computeStructuralBoundingBox(rep) {
+  let minX = rep.buildingFootprint.x;
+  let minY = rep.buildingFootprint.y;
+  let maxX = rep.buildingFootprint.x + rep.buildingFootprint.width;
+  let maxY = rep.buildingFootprint.y + rep.buildingFootprint.height;
+  for (const b of rep.balconies) {
+    minX = Math.min(minX, b.bounds.x);
+    minY = Math.min(minY, b.bounds.y);
+    maxX = Math.max(maxX, b.bounds.x + b.bounds.width);
+    maxY = Math.max(maxY, b.bounds.y + b.bounds.height);
+  }
+  for (const wall2 of rep.outerBuildingWalls) {
+    minX = Math.min(minX, wall2.start.x, wall2.end.x);
+    minY = Math.min(minY, wall2.start.y, wall2.end.y);
+    maxX = Math.max(maxX, wall2.start.x, wall2.end.x);
+    maxY = Math.max(maxY, wall2.start.y, wall2.end.y);
+  }
+  for (const u of rep.flatBoundaries) {
+    minX = Math.min(minX, u.bounds.x);
+    minY = Math.min(minY, u.bounds.y);
+    maxX = Math.max(maxX, u.bounds.x + u.bounds.width);
+    maxY = Math.max(maxY, u.bounds.y + u.bounds.height);
+  }
+  const width = Math.max(1, maxX - minX);
+  const height = Math.max(1, maxY - minY);
+  return { minX, minY, maxX, maxY, width, height };
+}
+function computeViewTransform(bbox, options = {}) {
+  const targetLongSidePx = options.targetLongSidePx ?? 2048;
+  const minShortSidePx = options.minShortSidePx ?? 512;
+  const marginFraction = options.marginFraction ?? 0.06;
+  const aspect = bbox.width / bbox.height;
+  let canvasWidth;
+  let canvasHeight;
+  if (aspect >= 1) {
+    canvasWidth = targetLongSidePx;
+    canvasHeight = Math.round(targetLongSidePx / aspect);
+  } else {
+    canvasHeight = targetLongSidePx;
+    canvasWidth = Math.round(targetLongSidePx * aspect);
+  }
+  canvasWidth = Math.max(minShortSidePx, Math.round(canvasWidth / 16) * 16);
+  canvasHeight = Math.max(minShortSidePx, Math.round(canvasHeight / 16) * 16);
+  const marginX = canvasWidth * marginFraction;
+  const marginY = canvasHeight * marginFraction;
+  const usableWidth = canvasWidth - 2 * marginX;
+  const usableHeight = canvasHeight - 2 * marginY;
+  const scale = Math.min(usableWidth / bbox.width, usableHeight / bbox.height);
+  const renderedWidth = bbox.width * scale;
+  const renderedHeight = bbox.height * scale;
+  const offsetX = (canvasWidth - renderedWidth) / 2 - bbox.minX * scale;
+  const offsetY = (canvasHeight - renderedHeight) / 2 - bbox.minY * scale;
+  return {
+    canvasWidth,
+    canvasHeight,
+    scale,
+    offsetX,
+    offsetY,
+    toScreenX: (worldX) => worldX * scale + offsetX,
+    toScreenY: (worldY) => worldY * scale + offsetY
+  };
+}
+function crc322(buf) {
+  let crc = -1;
+  for (let i = 0; i < buf.length; i++) {
+    const byte = buf[i] ?? 0;
+    const lookup3 = CRC_TABLE[(crc ^ byte) & 255] ?? 0;
+    crc = crc >>> 8 ^ lookup3;
+  }
+  return (crc ^ -1) >>> 0;
+}
+function makePngChunk2(type, data) {
+  const typeBuf = Buffer.from(type, "ascii");
+  const lenBuf = Buffer.alloc(4);
+  lenBuf.writeUInt32BE(data.length, 0);
+  const crcBuf = Buffer.alloc(4);
+  const crcPayload = Buffer.concat([typeBuf, data]);
+  crcBuf.writeUInt32BE(crc322(crcPayload), 0);
+  return Buffer.concat([lenBuf, crcPayload, crcBuf]);
+}
+function renderStructuralPlan(rep, options = {}) {
+  const validation = validateStructuralPlanRepresentation(rep);
+  if (!validation.valid) {
+    throw new InvalidStructuralPlanError(validation.errors);
+  }
+  const bbox = computeStructuralBoundingBox(rep);
+  const vt = computeViewTransform(bbox, options);
+  const { canvasWidth, canvasHeight, scale, toScreenX, toScreenY } = vt;
+  const baseStroke = Math.max(1, (canvasWidth + canvasHeight) / 1e3);
+  const outerWallStroke = Math.max(3, Math.round(baseStroke * 1.6));
+  const flatBoundaryStroke = Math.max(2, Math.round(baseStroke * 1.2));
+  const partyWallStroke = Math.max(2, Math.round(baseStroke * 1));
+  const roomPartitionStroke = Math.max(1, Math.round(baseStroke * 0.7));
+  const coreStroke = Math.max(2, Math.round(baseStroke * 0.9));
+  const stairTreadStroke = Math.max(1, Math.round(baseStroke * 0.4));
+  const doorStroke = Math.max(1, Math.round(baseStroke * 0.7));
+  const rasterizer = new StructuralRasterizer(canvasWidth, canvasHeight);
+  const COL_CANVAS = { r: 255, g: 255, b: 255 };
+  const COL_LOBBY_FILL = { r: 243, g: 244, b: 246 };
+  const COL_BALCONY_FILL = { r: 250, g: 250, b: 250 };
+  const COL_WALL_OUTER = { r: 17, g: 24, b: 39 };
+  const COL_WALL_PARTY = { r: 31, g: 41, b: 55 };
+  const COL_WALL_INTERIOR = { r: 55, g: 65, b: 81 };
+  const COL_DOOR = { r: 31, g: 41, b: 55 };
+  const COL_DOOR_ARC = { r: 107, g: 114, b: 128 };
+  const COL_CORE_DETAIL = { r: 75, g: 85, b: 99 };
+  const COL_DUCT_HATCH = { r: 156, g: 163, b: 175 };
+  const svgElements = [];
+  const lobbyB = rep.commonCore.lobby.bounds;
+  const lobbySx = toScreenX(lobbyB.x);
+  const lobbySy = toScreenY(lobbyB.y);
+  const lobbySw = lobbyB.width * scale;
+  const lobbySh = lobbyB.height * scale;
+  rasterizer.fillRect(lobbySx, lobbySy, lobbySw, lobbySh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
+  svgElements.push(`<rect class="common-lobby" x="${lobbySx.toFixed(1)}" y="${lobbySy.toFixed(1)}" width="${lobbySw.toFixed(1)}" height="${lobbySh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${coreStroke}" />`);
+  for (const c of rep.commonCore.circulationBoundaries) {
+    const csx = toScreenX(c.bounds.x);
+    const csy = toScreenY(c.bounds.y);
+    const csw = c.bounds.width * scale;
+    const csh = c.bounds.height * scale;
+    rasterizer.fillRect(csx, csy, csw, csh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
+    svgElements.push(`<rect class="common-corridor" x="${csx.toFixed(1)}" y="${csy.toFixed(1)}" width="${csw.toFixed(1)}" height="${csh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${coreStroke}" />`);
+  }
+  for (const bal of rep.balconies) {
+    const bsx = toScreenX(bal.bounds.x);
+    const bsy = toScreenY(bal.bounds.y);
+    const bsw = bal.bounds.width * scale;
+    const bsh = bal.bounds.height * scale;
+    rasterizer.fillRect(bsx, bsy, bsw, bsh, COL_BALCONY_FILL.r, COL_BALCONY_FILL.g, COL_BALCONY_FILL.b);
+    rasterizer.drawRectOutline(bsx, bsy, bsw, bsh, Math.max(1, Math.round(roomPartitionStroke * 0.8)), COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b);
+    svgElements.push(`<rect class="balcony" x="${bsx.toFixed(1)}" y="${bsy.toFixed(1)}" width="${bsw.toFixed(1)}" height="${bsh.toFixed(1)}" fill="#FAFAFA" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(roomPartitionStroke * 0.8))}" stroke-dasharray="4,2" />`);
+  }
+  for (const room2 of rep.roomBoundaries) {
+    const rsx = toScreenX(room2.bounds.x);
+    const rsy = toScreenY(room2.bounds.y);
+    const rsw = room2.bounds.width * scale;
+    const rsh = room2.bounds.height * scale;
+    rasterizer.fillRect(rsx, rsy, rsw, rsh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
+    rasterizer.drawRectOutline(rsx, rsy, rsw, rsh, roomPartitionStroke, COL_WALL_INTERIOR.r, COL_WALL_INTERIOR.g, COL_WALL_INTERIOR.b);
+    svgElements.push(`<rect class="room-partition" x="${rsx.toFixed(1)}" y="${rsy.toFixed(1)}" width="${rsw.toFixed(1)}" height="${rsh.toFixed(1)}" fill="#FFFFFF" stroke="#374151" stroke-width="${roomPartitionStroke}" />`);
+  }
+  for (const flat of rep.flatBoundaries) {
+    const fsx = toScreenX(flat.bounds.x);
+    const fsy = toScreenY(flat.bounds.y);
+    const fsw = flat.bounds.width * scale;
+    const fsh = flat.bounds.height * scale;
+    rasterizer.drawRectOutline(fsx, fsy, fsw, fsh, flatBoundaryStroke, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b);
+    svgElements.push(`<rect class="flat-boundary" x="${fsx.toFixed(1)}" y="${fsy.toFixed(1)}" width="${fsw.toFixed(1)}" height="${fsh.toFixed(1)}" fill="none" stroke="#1F2937" stroke-width="${flatBoundaryStroke}" />`);
+  }
+  for (const part of rep.majorPartitions) {
+    if (part.classification === "party_wall") {
+      const x0 = toScreenX(part.start.x);
+      const y0 = toScreenY(part.start.y);
+      const x1 = toScreenX(part.end.x);
+      const y1 = toScreenY(part.end.y);
+      rasterizer.drawLine(x0, y0, x1, y1, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, partyWallStroke);
+      svgElements.push(`<line class="party-wall" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${partyWallStroke}" />`);
+    }
+  }
+  for (const s of rep.commonCore.stairs) {
+    const sx = toScreenX(s.bounds.x);
+    const sy = toScreenY(s.bounds.y);
+    const sw = s.bounds.width * scale;
+    const sh = s.bounds.height * scale;
+    rasterizer.fillRect(sx, sy, sw, sh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
+    rasterizer.drawRectOutline(sx, sy, sw, sh, coreStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
+    svgElements.push(`<rect class="stair-well" x="${sx.toFixed(1)}" y="${sy.toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" fill="#FFFFFF" stroke="#111827" stroke-width="${coreStroke}" />`);
+    if (sh >= sw) {
+      const midX = sx + sw / 2;
+      const landingH = Math.min(sh * 0.22, 1.2 * scale);
+      rasterizer.drawLine(midX, sy + landingH, midX, sy + sh, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, coreStroke);
+      svgElements.push(`<line class="stair-divider" x1="${midX.toFixed(1)}" y1="${(sy + landingH).toFixed(1)}" x2="${midX.toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#1F2937" stroke-width="${coreStroke}" />`);
+      rasterizer.drawLine(sx, sy + landingH, sx + sw, sy + landingH, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(stairTreadStroke * 1.2)));
+      svgElements.push(`<line class="stair-landing" x1="${sx.toFixed(1)}" y1="${(sy + landingH).toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${(sy + landingH).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
+      const treadCount2 = 9;
+      const treadStep = (sh - landingH) / (treadCount2 + 1);
+      for (let t = 1; t <= treadCount2; t++) {
+        const ty = sy + landingH + t * treadStep;
+        rasterizer.drawLine(sx, ty, midX - 2, ty, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
+        rasterizer.drawLine(midX + 2, ty, sx + sw, ty, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
+        svgElements.push(`<line class="stair-tread" x1="${sx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(midX - 2).toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`, `<line class="stair-tread" x1="${(midX + 2).toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
+      }
+    } else {
+      const midY = sy + sh / 2;
+      const landingW = Math.min(sw * 0.22, 1.2 * scale);
+      rasterizer.drawLine(sx + landingW, midY, sx + sw, midY, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, coreStroke);
+      svgElements.push(`<line class="stair-divider" x1="${(sx + landingW).toFixed(1)}" y1="${midY.toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${midY.toFixed(1)}" stroke="#1F2937" stroke-width="${coreStroke}" />`);
+      rasterizer.drawLine(sx + landingW, sy, sx + landingW, sy + sh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(stairTreadStroke * 1.2)));
+      svgElements.push(`<line class="stair-landing" x1="${(sx + landingW).toFixed(1)}" y1="${sy.toFixed(1)}" x2="${(sx + landingW).toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
+      const treadCount2 = 9;
+      const treadStep = (sw - landingW) / (treadCount2 + 1);
+      for (let t = 1; t <= treadCount2; t++) {
+        const tx = sx + landingW + t * treadStep;
+        rasterizer.drawLine(tx, sy, tx, midY - 2, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
+        rasterizer.drawLine(tx, midY + 2, tx, sy + sh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
+        svgElements.push(`<line class="stair-tread" x1="${tx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(midY - 2).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`, `<line class="stair-tread" x1="${tx.toFixed(1)}" y1="${(midY + 2).toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
+      }
+    }
+  }
+  for (const l of rep.commonCore.lifts) {
+    const lx = toScreenX(l.bounds.x);
+    const ly = toScreenY(l.bounds.y);
+    const lw = l.bounds.width * scale;
+    const lh = l.bounds.height * scale;
+    rasterizer.fillRect(lx, ly, lw, lh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
+    rasterizer.drawRectOutline(lx, ly, lw, lh, coreStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
+    rasterizer.drawCross(lx, ly, lw, lh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(coreStroke * 0.75)));
+    svgElements.push(`<rect class="lift-shaft" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" width="${lw.toFixed(1)}" height="${lh.toFixed(1)}" fill="#FFFFFF" stroke="#111827" stroke-width="${coreStroke}" />`, `<line class="lift-cross" x1="${lx.toFixed(1)}" y1="${ly.toFixed(1)}" x2="${(lx + lw).toFixed(1)}" y2="${(ly + lh).toFixed(1)}" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(coreStroke * 0.75))}" />`, `<line class="lift-cross" x1="${(lx + lw).toFixed(1)}" y1="${ly.toFixed(1)}" x2="${lx.toFixed(1)}" y2="${(ly + lh).toFixed(1)}" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(coreStroke * 0.75))}" />`);
+  }
+  for (const d of rep.commonCore.ducts) {
+    const dx = toScreenX(d.bounds.x);
+    const dy = toScreenY(d.bounds.y);
+    const dw = d.bounds.width * scale;
+    const dh = d.bounds.height * scale;
+    rasterizer.fillRect(dx, dy, dw, dh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
+    rasterizer.drawRectOutline(dx, dy, dw, dh, Math.max(1, Math.round(coreStroke * 0.7)), COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b);
+    rasterizer.drawLine(dx, dy, dx + dw, dy + dh, COL_DUCT_HATCH.r, COL_DUCT_HATCH.g, COL_DUCT_HATCH.b, 1);
+    svgElements.push(`<rect class="service-duct" x="${dx.toFixed(1)}" y="${dy.toFixed(1)}" width="${dw.toFixed(1)}" height="${dh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${Math.max(1, Math.round(coreStroke * 0.7))}" />`, `<line class="duct-slash" x1="${dx.toFixed(1)}" y1="${dy.toFixed(1)}" x2="${(dx + dw).toFixed(1)}" y2="${(dy + dh).toFixed(1)}" stroke="#9CA3AF" stroke-width="1.5" />`);
+  }
+  const fp = rep.buildingFootprint;
+  const fpx = toScreenX(fp.x);
+  const fpy = toScreenY(fp.y);
+  const fpw = fp.width * scale;
+  const fph = fp.height * scale;
+  rasterizer.drawRectOutline(fpx, fpy, fpw, fph, outerWallStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
+  svgElements.push(`<rect class="outer-building-boundary" x="${fpx.toFixed(1)}" y="${fpy.toFixed(1)}" width="${fpw.toFixed(1)}" height="${fph.toFixed(1)}" fill="none" stroke="#111827" stroke-width="${outerWallStroke}" stroke-linejoin="miter" stroke-linecap="square" />`);
+  for (const door2 of rep.doors) {
+    const cx = toScreenX(door2.center.x);
+    const cy = toScreenY(door2.center.y);
+    const dWidthPx = door2.widthM * scale;
+    const isEntrance = door2.kind === "flat_entrance";
+    const dStroke = isEntrance ? Math.max(2, Math.round(doorStroke * 1.3)) : doorStroke;
+    if (door2.wallAxis === "x") {
+      const x0 = cx - dWidthPx / 2;
+      const x1 = cx + dWidthPx / 2;
+      rasterizer.drawLine(x0, cy, x1, cy, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b, outerWallStroke + 2);
+      svgElements.push(`<line class="door-opening-cut" x1="${x0.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#FFFFFF" stroke-width="${outerWallStroke + 2}" />`);
+      if (door2.doorType === "open_passage") {
+        rasterizer.drawLine(x0, cy - 4, x0, cy + 4, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        rasterizer.drawLine(x1, cy - 4, x1, cy + 4, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        svgElements.push(`<line class="jamb" x1="${x0.toFixed(1)}" y1="${(cy - 4).toFixed(1)}" x2="${x0.toFixed(1)}" y2="${(cy + 4).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="jamb" x1="${x1.toFixed(1)}" y1="${(cy - 4).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${(cy + 4).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
+      } else if (door2.doorType === "sliding") {
+        const half = dWidthPx * 0.55;
+        rasterizer.drawLine(x0, cy - 2, x0 + half, cy - 2, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        rasterizer.drawLine(x1 - half, cy + 2, x1, cy + 2, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        svgElements.push(`<line class="sliding-panel" x1="${x0.toFixed(1)}" y1="${(cy - 2).toFixed(1)}" x2="${(x0 + half).toFixed(1)}" y2="${(cy - 2).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="sliding-panel" x1="${(x1 - half).toFixed(1)}" y1="${(cy + 2).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${(cy + 2).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
+      } else {
+        const signY = door2.swing === "outward" ? -1 : 1;
+        const leafTipX = x0;
+        const leafTipY = cy + signY * dWidthPx;
+        rasterizer.drawLine(x0, cy, leafTipX, leafTipY, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        const startRad = 0;
+        const endRad = signY > 0 ? Math.PI / 2 : -Math.PI / 2;
+        rasterizer.drawArc(x0, cy, dWidthPx, Math.min(startRad, endRad), Math.max(startRad, endRad), COL_DOOR_ARC.r, COL_DOOR_ARC.g, COL_DOOR_ARC.b, 1, true);
+        const sweepFlag = signY > 0 ? 1 : 0;
+        svgElements.push(`<line class="door-leaf" x1="${x0.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${leafTipX.toFixed(1)}" y2="${leafTipY.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<path class="door-arc" d="M ${x1.toFixed(1)} ${cy.toFixed(1)} A ${dWidthPx.toFixed(1)} ${dWidthPx.toFixed(1)} 0 0 ${sweepFlag} ${leafTipX.toFixed(1)} ${leafTipY.toFixed(1)}" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-dasharray="4,3" />`);
+      }
+    } else {
+      const y0 = cy - dWidthPx / 2;
+      const y1 = cy + dWidthPx / 2;
+      rasterizer.drawLine(cx, y0, cx, y1, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b, outerWallStroke + 2);
+      svgElements.push(`<line class="door-opening-cut" x1="${cx.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${cx.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#FFFFFF" stroke-width="${outerWallStroke + 2}" />`);
+      if (door2.doorType === "open_passage") {
+        rasterizer.drawLine(cx - 4, y0, cx + 4, y0, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        rasterizer.drawLine(cx - 4, y1, cx + 4, y1, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        svgElements.push(`<line class="jamb" x1="${(cx - 4).toFixed(1)}" y1="${y0.toFixed(1)}" x2="${(cx + 4).toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="jamb" x1="${(cx - 4).toFixed(1)}" y1="${y1.toFixed(1)}" x2="${(cx + 4).toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
+      } else if (door2.doorType === "sliding") {
+        const half = dWidthPx * 0.55;
+        rasterizer.drawLine(cx - 2, y0, cx - 2, y0 + half, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        rasterizer.drawLine(cx + 2, y1 - half, cx + 2, y1, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        svgElements.push(`<line class="sliding-panel" x1="${(cx - 2).toFixed(1)}" y1="${y0.toFixed(1)}" x2="${(cx - 2).toFixed(1)}" y2="${(y0 + half).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="sliding-panel" x1="${(cx + 2).toFixed(1)}" y1="${(y1 - half).toFixed(1)}" x2="${(cx + 2).toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
+      } else {
+        const signX = door2.swing === "outward" ? -1 : 1;
+        const leafTipX = cx + signX * dWidthPx;
+        const leafTipY = y0;
+        rasterizer.drawLine(cx, y0, leafTipX, leafTipY, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
+        const startRad = Math.PI / 2;
+        const endRad = signX > 0 ? 0 : Math.PI;
+        rasterizer.drawArc(cx, y0, dWidthPx, Math.min(startRad, endRad), Math.max(startRad, endRad), COL_DOOR_ARC.r, COL_DOOR_ARC.g, COL_DOOR_ARC.b, 1, true);
+        const sweepFlag = signX > 0 ? 0 : 1;
+        svgElements.push(`<line class="door-leaf" x1="${cx.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${leafTipX.toFixed(1)}" y2="${leafTipY.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<path class="door-arc" d="M ${cx.toFixed(1)} ${y1.toFixed(1)} A ${dWidthPx.toFixed(1)} ${dWidthPx.toFixed(1)} 0 0 ${sweepFlag} ${leafTipX.toFixed(1)} ${leafTipY.toFixed(1)}" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-dasharray="4,3" />`);
+      }
+    }
+  }
+  if (options.debug) {
+    const debugSvg = [];
+    for (const room2 of rep.roomBoundaries) {
+      const rx = toScreenX(room2.bounds.x + room2.bounds.width / 2);
+      const ry = toScreenY(room2.bounds.y + room2.bounds.height / 2);
+      debugSvg.push(`<text x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" font-family="monospace" font-size="12" fill="#DC2626" text-anchor="middle" dominant-baseline="middle">${room2.id}</text>`);
+    }
+    for (const flat of rep.flatBoundaries) {
+      const fx = toScreenX(flat.bounds.x + 1);
+      const fy = toScreenY(flat.bounds.y + 1);
+      debugSvg.push(`<text x="${fx.toFixed(1)}" y="${fy.toFixed(1)}" font-family="monospace" font-size="14" font-weight="bold" fill="#2563EB">${flat.id}</text>`);
+    }
+    svgElements.push(`<g id="debug-overlay">${debugSvg.join("")}</g>`);
+  }
+  const svgContent = [
+    `<?xml version="1.0" encoding="UTF-8"?>`,
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvasWidth} ${canvasHeight}" width="${canvasWidth}" height="${canvasHeight}">`,
+    `  <rect width="100%" height="100%" fill="#FFFFFF" />`,
+    `  <g id="structural-geometry">`,
+    `    ${svgElements.join("\n    ")}`,
+    `  </g>`,
+    `</svg>`
+  ].join("\n");
+  const pngBuffer = rasterizer.toPng();
+  const hash = import_node_crypto.default.createHash("sha256").update(pngBuffer).digest("hex");
+  return {
+    png: pngBuffer,
+    svg: svgContent,
+    width: canvasWidth,
+    height: canvasHeight,
+    boundingBox: bbox,
+    rendererVersion: STRUCTURAL_RENDERER_VERSION,
+    hash,
+    sourceRepresentationId: `structural_v${rep.version}`
+  };
+}
+var import_node_crypto, import_node_zlib2, STRUCTURAL_RENDERER_VERSION, InvalidStructuralPlanError, CRC_TABLE, StructuralRasterizer;
+var init_structural_renderer = __esm({
+  "../ai-orchestration/dist/apartment/structural-renderer.js"() {
+    "use strict";
+    import_node_crypto = __toESM(require("node:crypto"));
+    import_node_zlib2 = __toESM(require("node:zlib"));
+    STRUCTURAL_RENDERER_VERSION = "1.0.0";
+    InvalidStructuralPlanError = class extends Error {
+      code = "INVALID_STRUCTURAL_PLAN";
+      errors;
+      constructor(errors) {
+        super(`Invalid StructuralPlanRepresentation: ${errors.join("; ")}`);
+        this.name = "InvalidStructuralPlanError";
+        this.errors = errors;
+      }
+    };
+    CRC_TABLE = new Int32Array(256);
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let k = 0; k < 8; k++) {
+        c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
+      }
+      CRC_TABLE[i] = c;
+    }
+    StructuralRasterizer = class {
+      width;
+      height;
+      rowSize;
+      raw;
+      constructor(width, height) {
+        this.width = width;
+        this.height = height;
+        this.rowSize = 1 + width * 4;
+        this.raw = Buffer.alloc(height * this.rowSize, 255);
+        for (let y = 0; y < height; y++) {
+          this.raw[y * this.rowSize] = 0;
+        }
+      }
+      setPixel(x, y, r, g, b) {
+        const px = Math.round(x);
+        const py = Math.round(y);
+        if (px < 0 || px >= this.width || py < 0 || py >= this.height)
+          return;
+        const offset = py * this.rowSize + 1 + px * 4;
+        this.raw[offset] = r;
+        this.raw[offset + 1] = g;
+        this.raw[offset + 2] = b;
+        this.raw[offset + 3] = 255;
+      }
+      fillRect(rx, ry, rw, rh, r, g, b) {
+        const x0 = Math.max(0, Math.min(this.width - 1, Math.round(rx)));
+        const y0 = Math.max(0, Math.min(this.height - 1, Math.round(ry)));
+        const x1 = Math.max(0, Math.min(this.width - 1, Math.round(rx + rw)));
+        const y1 = Math.max(0, Math.min(this.height - 1, Math.round(ry + rh)));
+        for (let y = y0; y <= y1; y++) {
+          for (let x = x0; x <= x1; x++) {
+            this.setPixel(x, y, r, g, b);
+          }
+        }
+      }
+      drawRectOutline(rx, ry, rw, rh, thickness, r, g, b) {
+        const x0 = Math.round(rx);
+        const y0 = Math.round(ry);
+        const x1 = Math.round(rx + rw);
+        const y1 = Math.round(ry + rh);
+        this.drawLine(x0, y0, x1, y0, r, g, b, thickness);
+        this.drawLine(x1, y0, x1, y1, r, g, b, thickness);
+        this.drawLine(x1, y1, x0, y1, r, g, b, thickness);
+        this.drawLine(x0, y1, x0, y0, r, g, b, thickness);
+      }
+      drawLine(x0, y0, x1, y1, r, g, b, thickness = 1) {
+        let px0 = Math.round(x0);
+        let py0 = Math.round(y0);
+        const px1 = Math.round(x1);
+        const py1 = Math.round(y1);
+        const dx = Math.abs(px1 - px0);
+        const dy = Math.abs(py1 - py0);
+        const sx = px0 < px1 ? 1 : -1;
+        const sy = py0 < py1 ? 1 : -1;
+        let err = dx - dy;
+        const rad = Math.max(0, Math.floor(thickness / 2));
+        while (true) {
+          if (thickness <= 1) {
+            this.setPixel(px0, py0, r, g, b);
+          } else {
+            for (let ty = -rad; ty <= rad; ty++) {
+              for (let tx = -rad; tx <= rad; tx++) {
+                this.setPixel(px0 + tx, py0 + ty, r, g, b);
+              }
+            }
+          }
+          if (px0 === px1 && py0 === py1)
+            break;
+          const e2 = 2 * err;
+          if (e2 > -dy) {
+            err -= dy;
+            px0 += sx;
+          }
+          if (e2 < dx) {
+            err += dx;
+            py0 += sy;
+          }
+        }
+      }
+      drawCross(rx, ry, rw, rh, r, g, b, thickness = 1) {
+        const x0 = Math.round(rx);
+        const y0 = Math.round(ry);
+        const x1 = Math.round(rx + rw);
+        const y1 = Math.round(ry + rh);
+        this.drawLine(x0, y0, x1, y1, r, g, b, thickness);
+        this.drawLine(x1, y0, x0, y1, r, g, b, thickness);
+      }
+      drawArc(cx, cy, radius, startAngleRad, endAngleRad, r, g, b, thickness = 1, dashed = false) {
+        const steps = Math.max(20, Math.round(radius * 1.5));
+        const angleRange = endAngleRad - startAngleRad;
+        for (let i = 0; i <= steps; i++) {
+          if (dashed && Math.floor(i / 4) % 2 === 1)
+            continue;
+          const angle = startAngleRad + angleRange * i / steps;
+          const px = cx + radius * Math.cos(angle);
+          const py = cy + radius * Math.sin(angle);
+          this.setPixel(px, py, r, g, b);
+          if (thickness > 1) {
+            const rad = Math.floor(thickness / 2);
+            for (let ty = -rad; ty <= rad; ty++) {
+              for (let tx = -rad; tx <= rad; tx++) {
+                this.setPixel(px + tx, py + ty, r, g, b);
+              }
+            }
+          }
+        }
+      }
+      toPng() {
+        const ihdr = Buffer.alloc(13);
+        ihdr.writeUInt32BE(this.width, 0);
+        ihdr.writeUInt32BE(this.height, 4);
+        ihdr[8] = 8;
+        ihdr[9] = 6;
+        ihdr[10] = 0;
+        ihdr[11] = 0;
+        ihdr[12] = 0;
+        const compressed = import_node_zlib2.default.deflateSync(this.raw, { level: 1 });
+        return Buffer.concat([
+          Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+          makePngChunk2("IHDR", ihdr),
+          makePngChunk2("IDAT", compressed),
+          makePngChunk2("IEND", Buffer.alloc(0))
+        ]);
+      }
+    };
+  }
+});
+
+// ../ai-orchestration/dist/apartment/archlang-adapter.js
+function computeSourceHash(text2) {
+  try {
+    const nodeCrypto = typeof require === "function" ? require("node:crypto") : globalThis.crypto;
+    if (nodeCrypto && typeof nodeCrypto.createHash === "function") {
+      return nodeCrypto.createHash("sha256").update(text2, "utf8").digest("hex");
+    }
+  } catch {
+  }
+  let h1 = 2166136261;
+  let h2 = 2654435769;
+  for (let i = 0; i < text2.length; i++) {
+    const ch = text2.charCodeAt(i);
+    h1 = Math.imul(h1 ^ ch, 16777619);
+    h2 = Math.imul(h2 ^ ch >>> 4, 2166136261);
+  }
+  return (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0");
+}
+function escapeArchLangString(value) {
+  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, " ").trim();
+}
+function toArchLangId(prefix, rawId) {
+  const clean = rawId.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^_+|_+$/g, "");
+  return `${prefix}_${clean || "item"}`;
+}
+function mapRoomTypeToArchLangUse(type) {
+  const typeStr = String(type).toLowerCase();
+  if (typeStr.includes("bed"))
+    return "bedroom";
+  if (typeStr.includes("bath") || typeStr.includes("toilet") || typeStr.includes("wc"))
+    return "bath";
+  if (typeStr.includes("kitchen"))
+    return "kitchen";
+  if (typeStr.includes("dining"))
+    return "dining";
+  if (typeStr.includes("living") || typeStr.includes("drawing") || typeStr.includes("family"))
+    return "living";
+  switch (type) {
+    case RoomType.Bedroom:
+    case RoomType.ServantQuarter:
+      return "bedroom";
+    case RoomType.Bathroom:
+      return "bath";
+    case RoomType.Living:
+    case RoomType.Drawing:
+    case RoomType.FamilyLiving:
+      return "living";
+    case RoomType.Dining:
+      return "dining";
+    case RoomType.Kitchen:
+      return "kitchen";
+    case RoomType.Utility:
+      return "utility";
+    case RoomType.Storage:
+    case RoomType.Dressing:
+      return "storage";
+    case RoomType.Study:
+      return "office";
+    case RoomType.Foyer:
+    case RoomType.Porch:
+      return "entry";
+    case RoomType.Corridor:
+      return "circulation";
+    case RoomType.Parking:
+      return "garage";
+    case RoomType.Balcony:
+    case RoomType.Terrace:
+      return "circulation";
+    case RoomType.Pooja:
+    case RoomType.Custom:
+    default:
+      return "living";
+  }
+}
+function deriveWallsFromFloorRooms(rooms) {
+  const edgeMap = /* @__PURE__ */ new Map();
+  for (const room2 of rooms) {
+    const x0 = Math.round(room2.x);
+    const y0 = Math.round(room2.y);
+    const x1 = Math.round(room2.x + room2.width);
+    const y1 = Math.round(room2.y + room2.height);
+    const segments = [
+      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
+      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
+      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
+      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } }
+    ];
+    for (const seg of segments) {
+      const isVert = seg.start.x === seg.end.x;
+      const k = isVert ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}` : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
+      const existing = edgeMap.get(k);
+      if (existing) {
+        existing.roomIds.push(room2.id);
+      } else {
+        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room2.id] });
+      }
+    }
+  }
+  const result = [];
+  for (const [, edge] of edgeMap) {
+    const isExternal = edge.roomIds.length < 2;
+    result.push({
+      start: edge.start,
+      end: edge.end,
+      roomIds: edge.roomIds,
+      isExternal
+    });
+  }
+  return result;
+}
+function pointDistanceToSegment(p, a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const l2 = dx * dx + dy * dy;
+  if (l2 === 0)
+    return Math.hypot(p.x - a.x, p.y - a.y);
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
+  t = Math.max(0, Math.min(1, t));
+  const projX = a.x + t * dx;
+  const projY = a.y + t * dy;
+  return Math.hypot(p.x - projX, p.y - projY);
+}
+function findHostWall(pos, walls, toleranceMm = 300) {
+  let closest2 = null;
+  for (const w of walls) {
+    const d = pointDistanceToSegment(pos, w.startPoint, w.endPoint);
+    if (d <= toleranceMm && (!closest2 || d < closest2.distance)) {
+      closest2 = { id: w.id, distance: d };
+    }
+  }
+  return closest2;
+}
+function buildingModelToArchLangSource(building, options) {
+  const diagnostics = [];
+  const lines = [];
+  const paperSize = options?.paperSize ?? "A2";
+  const orientation = options?.orientation ?? "landscape";
+  const scale = options?.scale ?? "1:100";
+  const gridMm = options?.gridMm ?? 1;
+  const autoDims = options?.autoDims ?? "all";
+  const includeTitleBlock = options?.includeTitleBlock ?? true;
+  const roomMap = /* @__PURE__ */ new Map();
+  const wallMap = /* @__PURE__ */ new Map();
+  const doorMap = /* @__PURE__ */ new Map();
+  const windowMap = /* @__PURE__ */ new Map();
+  const stairMap = /* @__PURE__ */ new Map();
+  const elevatorMap = /* @__PURE__ */ new Map();
+  const columnMap = /* @__PURE__ */ new Map();
+  const balconyMap = /* @__PURE__ */ new Map();
+  const shaftMap = /* @__PURE__ */ new Map();
+  let northDir = "up";
+  const orientationDeg = building.site?.orientation ?? 0;
+  if (orientationDeg >= 45 && orientationDeg < 135)
+    northDir = "right";
+  else if (orientationDeg >= 135 && orientationDeg < 225)
+    northDir = "down";
+  else if (orientationDeg >= 225 && orientationDeg < 315)
+    northDir = "left";
+  const safeProjectName = escapeArchLangString(building.name || "Architectural Apartment Plan");
+  lines.push(`plan "${safeProjectName}" {`);
+  lines.push(`  units mm`);
+  lines.push(`  grid ${gridMm}`);
+  lines.push(`  paper ${paperSize} ${orientation}`);
+  lines.push(`  scale ${scale}`);
+  lines.push(`  north ${northDir}`);
+  if (autoDims !== "none") {
+    lines.push(`  dims auto ${autoDims}`);
+  }
+  const floors = building.floors.length > 0 ? building.floors : [
+    {
+      id: "default_floor",
+      buildingId: building.id,
+      level: 0,
+      name: "Ground Floor",
+      floorHeight: 3e3,
+      boundary: { points: [] },
+      rooms: [],
+      walls: [],
+      doors: [],
+      windows: [],
+      stairs: [],
+      columns: []
+    }
+  ];
+  for (const floor of floors) {
+    const floorHeight = floor.floorHeight || 3e3;
+    const safeFloorName = escapeArchLangString(floor.name || `Level ${floor.level}`);
+    lines.push(`
+  level ${floor.level} "${safeFloorName}" height ${floorHeight} {`);
+    let activeWalls = [];
+    if (floor.walls && floor.walls.length > 0) {
+      activeWalls = floor.walls.map((w) => ({
+        id: w.id,
+        startPoint: { x: Math.round(w.startPoint.x), y: Math.round(w.startPoint.y) },
+        endPoint: { x: Math.round(w.endPoint.x), y: Math.round(w.endPoint.y) },
+        thickness: w.thickness > 0 ? Math.round(w.thickness) : w.type === WallType.External ? 200 : 100,
+        type: w.type
+      }));
+    } else {
+      const derived = deriveWallsFromFloorRooms(floor.rooms);
+      activeWalls = derived.map((d, idx) => ({
+        id: `wall_${floor.level}_${idx + 1}`,
+        startPoint: d.start,
+        endPoint: d.end,
+        thickness: d.isExternal ? 200 : 100,
+        type: d.isExternal ? WallType.External : WallType.Internal
+      }));
+    }
+    lines.push(`    # \u2500\u2500 Walls \u2500\u2500`);
+    for (const wall2 of activeWalls) {
+      const len2 = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+      if (len2 <= 0) {
+        diagnostics.push({
+          stage: "SERIALIZATION",
+          code: "DEGENERATE_WALL_SKIPPED",
+          severity: "warning",
+          message: `Wall ${wall2.id} has length 0 and was omitted.`,
+          elementId: wall2.id
+        });
+        continue;
+      }
+      const archWallId = toArchLangId("w", wall2.id);
+      wallMap.set(wall2.id, archWallId);
+      const category = wall2.type === WallType.External ? "exterior" : "partition";
+      lines.push(`    wall id=${archWallId} ${category} thickness ${wall2.thickness} { (${wall2.startPoint.x}, ${wall2.startPoint.y}) (${wall2.endPoint.x}, ${wall2.endPoint.y}) }`);
+    }
+    const flatsMap = /* @__PURE__ */ new Map();
+    const commonRooms = [];
+    const coreLifts = [];
+    const coreStairs = [];
+    const coreShafts = [];
+    const unzonedBalconies = [];
+    for (const room2 of floor.rooms) {
+      const tags = room2.tags ?? [];
+      if (room2.type === RoomType.Lift || tags.includes("core:lift")) {
+        coreLifts.push(room2);
+        continue;
+      }
+      if (room2.type === RoomType.Staircase || tags.includes("core:stair")) {
+        coreStairs.push(room2);
+        continue;
+      }
+      if (room2.type === RoomType.ServiceShaft || tags.includes("core:shaft")) {
+        coreShafts.push(room2);
+        continue;
+      }
+      if (room2.type === RoomType.Balcony || tags.includes("balcony")) {
+        const flatTag2 = tags.find((t) => t.startsWith("flat:"));
+        if (flatTag2) {
+          const flatId = flatTag2.slice(5);
+          const existing = flatsMap.get(flatId);
+          const label = room2.name.startsWith("Flat") ? room2.name.split(" ").slice(0, 2).join(" ") : `Flat ${flatId.toUpperCase()}`;
+          if (existing) {
+            existing.balconies.push(room2);
+          } else {
+            flatsMap.set(flatId, { label, rooms: [], balconies: [room2] });
+          }
+        } else {
+          unzonedBalconies.push(room2);
+        }
+        continue;
+      }
+      const flatTag = tags.find((t) => t.startsWith("flat:"));
+      if (flatTag) {
+        const flatId = flatTag.slice(5);
+        const existing = flatsMap.get(flatId);
+        const label = room2.name.startsWith("Flat") ? room2.name.split(" ").slice(0, 2).join(" ") : `Flat ${flatId.toUpperCase()}`;
+        if (existing) {
+          existing.rooms.push(room2);
+        } else {
+          flatsMap.set(flatId, { label, rooms: [room2], balconies: [] });
+        }
+      } else {
+        commonRooms.push(room2);
+      }
+    }
+    lines.push(`
+    # \u2500\u2500 Common Core Zone \u2500\u2500`);
+    lines.push(`    zone common_core "Common Core" {`);
+    for (const room2 of commonRooms) {
+      const archRoomId = toArchLangId("r", room2.id);
+      roomMap.set(room2.id, archRoomId);
+      const use = mapRoomTypeToArchLangUse(room2.type);
+      const safeLabel = escapeArchLangString(room2.name);
+      lines.push(`      room id=${archRoomId} at (${Math.round(room2.x)}, ${Math.round(room2.y)}) size ${Math.round(room2.width)}x${Math.round(room2.height)} label "${safeLabel}" uses ${use}`);
+    }
+    for (const lift2 of coreLifts) {
+      const archLiftId = toArchLangId("elev", lift2.id);
+      elevatorMap.set(lift2.id, archLiftId);
+      lines.push(`      elevator id=${archLiftId} at (${Math.round(lift2.x)}, ${Math.round(lift2.y)}) size ${Math.round(lift2.width)}x${Math.round(lift2.height)}`);
+    }
+    const stairsToRender = floor.stairs.length > 0 ? floor.stairs : coreStairs.map((s) => ({
+      id: s.id,
+      floorId: floor.id,
+      x: s.x,
+      y: s.y,
+      width: s.width,
+      length: s.height,
+      direction: "north",
+      connectsFloors: [floor.level, floor.level + 1]
+    }));
+    for (const stair2 of stairsToRender) {
+      const archStairId = toArchLangId("stair", stair2.id);
+      stairMap.set(stair2.id, archStairId);
+      const dir = floor.level === 0 ? "up" : "down";
+      lines.push(`      stair id=${archStairId} at (${Math.round(stair2.x)}, ${Math.round(stair2.y)}) size ${Math.round(stair2.width)}x${Math.round(stair2.length)} dir ${dir}`);
+    }
+    for (const shaft of coreShafts) {
+      const archShaftId = toArchLangId("void", shaft.id);
+      shaftMap.set(shaft.id, archShaftId);
+      lines.push(`      void id=${archShaftId} at (${Math.round(shaft.x)}, ${Math.round(shaft.y)}) size ${Math.round(shaft.width)}x${Math.round(shaft.height)}`);
+    }
+    lines.push(`    }`);
+    lines.push(`
+    # \u2500\u2500 Residential Flats \u2500\u2500`);
+    for (const [flatId, flatData] of flatsMap) {
+      const zoneId = toArchLangId("zone", flatId);
+      const safeFlatLabel = escapeArchLangString(flatData.label);
+      lines.push(`    zone ${zoneId} "${safeFlatLabel}" {`);
+      for (const room2 of flatData.rooms) {
+        const archRoomId = toArchLangId("r", room2.id);
+        roomMap.set(room2.id, archRoomId);
+        const use = mapRoomTypeToArchLangUse(room2.type);
+        const safeLabel = escapeArchLangString(room2.name);
+        lines.push(`      room id=${archRoomId} at (${Math.round(room2.x)}, ${Math.round(room2.y)}) size ${Math.round(room2.width)}x${Math.round(room2.height)} label "${safeLabel}" uses ${use}`);
+      }
+      for (const balc of flatData.balconies) {
+        const archBalcId = toArchLangId("balc", balc.id);
+        balconyMap.set(balc.id, archBalcId);
+        const safeLabel = escapeArchLangString(balc.name || "Balcony");
+        lines.push(`      outdoor id=${archBalcId} balcony at (${Math.round(balc.x)}, ${Math.round(balc.y)}) size ${Math.round(balc.width)}x${Math.round(balc.height)} label "${safeLabel}" rail all`);
+      }
+      lines.push(`    }`);
+    }
+    lines.push(`
+    # \u2500\u2500 Doors \u2500\u2500`);
+    for (const door2 of floor.doors) {
+      let hostWallId = wallMap.get(door2.wallId);
+      let posX = Math.round(door2.position.x);
+      let posY = Math.round(door2.position.y);
+      if (!hostWallId || !wallMap.has(door2.wallId)) {
+        const nearest = findHostWall({ x: posX, y: posY }, activeWalls);
+        if (nearest) {
+          hostWallId = wallMap.get(nearest.id) ?? nearest.id;
+        }
+      }
+      if (!hostWallId) {
+        diagnostics.push({
+          stage: "SERIALIZATION",
+          code: "DOOR_HOST_WALL_NOT_FOUND",
+          severity: "error",
+          message: `Door ${door2.id} has no valid host wall near (${posX}, ${posY}).`,
+          elementId: door2.id
+        });
+        continue;
+      }
+      const archDoorId = toArchLangId("d", door2.id);
+      doorMap.set(door2.id, archDoorId);
+      let kindWord2 = "";
+      let motionClause = "";
+      if (door2.type === DoorType.Sliding) {
+        kindWord2 = "sliding ";
+        motionClause = "slide right";
+      } else if (door2.type === DoorType.Folding) {
+        kindWord2 = "bifold ";
+      } else if (door2.type === DoorType.Double) {
+        kindWord2 = "double ";
+        if (door2.swingDirection === SwingDirection.Outward)
+          motionClause = "swing out";
+        else
+          motionClause = "swing in";
+      } else {
+        if (door2.swingDirection === SwingDirection.Outward)
+          motionClause = "swing out";
+        else if (door2.swingDirection === SwingDirection.Inward)
+          motionClause = "swing in";
+        else if (door2.swingDirection === SwingDirection.Left)
+          motionClause = "hinge left";
+        else if (door2.swingDirection === SwingDirection.Right)
+          motionClause = "hinge right";
+        else
+          motionClause = "swing in";
+      }
+      const doorWidth = Math.max(600, Math.round(door2.width));
+      lines.push(`    door id=${archDoorId} ${kindWord2}at (${posX}, ${posY}) width ${doorWidth} wall ${hostWallId} ${motionClause}`.trimEnd());
+    }
+    lines.push(`
+    # \u2500\u2500 Windows \u2500\u2500`);
+    for (const win of floor.windows) {
+      let hostWallId = wallMap.get(win.wallId);
+      const posX = Math.round(win.position.x);
+      const posY = Math.round(win.position.y);
+      if (!hostWallId || !wallMap.has(win.wallId)) {
+        const nearest = findHostWall({ x: posX, y: posY }, activeWalls);
+        if (nearest) {
+          hostWallId = wallMap.get(nearest.id) ?? nearest.id;
+        }
+      }
+      if (!hostWallId) {
+        diagnostics.push({
+          stage: "SERIALIZATION",
+          code: "WINDOW_HOST_WALL_NOT_FOUND",
+          severity: "error",
+          message: `Window ${win.id} has no valid host wall near (${posX}, ${posY}).`,
+          elementId: win.id
+        });
+        continue;
+      }
+      const archWinId = toArchLangId("win", win.id);
+      windowMap.set(win.id, archWinId);
+      const winWidth = Math.max(500, Math.round(win.width));
+      const sillClause = win.sillHeight ? ` sill ${Math.round(win.sillHeight)}` : "";
+      const headClause = win.height ? ` head ${Math.round((win.sillHeight ?? 900) + win.height)}` : "";
+      lines.push(`    window id=${archWinId} at (${posX}, ${posY}) width ${winWidth} wall ${hostWallId}${sillClause}${headClause}`);
+    }
+    if (floor.columns && floor.columns.length > 0) {
+      lines.push(`
+    # \u2500\u2500 Columns \u2500\u2500`);
+      for (const col of floor.columns) {
+        const archColId = toArchLangId("col", col.id);
+        columnMap.set(col.id, archColId);
+        const colWidth = Math.round(col.width ?? col.dimensions?.width ?? 300);
+        const colDepth = Math.round(col.depth ?? col.dimensions?.depth ?? 300);
+        lines.push(`    column id=${archColId} at (${Math.round(col.position.x)}, ${Math.round(col.position.y)}) size ${colWidth}x${colDepth}`);
+      }
+    }
+    if (unzonedBalconies.length > 0) {
+      lines.push(`
+    # \u2500\u2500 Unzoned Balconies \u2500\u2500`);
+      for (const b of unzonedBalconies) {
+        const archBalcId = toArchLangId("balc", b.id);
+        balconyMap.set(b.id, archBalcId);
+        const safeLabel = escapeArchLangString(b.name || "Balcony");
+        lines.push(`    outdoor id=${archBalcId} balcony at (${Math.round(b.x)}, ${Math.round(b.y)}) size ${Math.round(b.width)}x${Math.round(b.height)} label "${safeLabel}" rail all`);
+      }
+    }
+    lines.push(`  }`);
+  }
+  if (includeTitleBlock) {
+    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
+    lines.push(`
+  title {`);
+    lines.push(`    project "${safeProjectName}"`);
+    lines.push(`    drawn_by "AI Floor Planner"`);
+    lines.push(`    date "${today}"`);
+    lines.push(`    number "AFP-${building.id.slice(0, 8).toUpperCase()}"`);
+    lines.push(`    revision "1"`);
+    lines.push(`  }`);
+  }
+  lines.push(`}`);
+  lines.push("");
+  const source = lines.join("\n");
+  const sourceHash = computeSourceHash(source);
+  return {
+    source,
+    sourceHash,
+    diagnostics,
+    elementIdMap: {
+      rooms: roomMap,
+      walls: wallMap,
+      doors: doorMap,
+      windows: windowMap,
+      stairs: stairMap,
+      elevators: elevatorMap,
+      columns: columnMap,
+      balconies: balconyMap,
+      shafts: shaftMap
+    }
+  };
+}
+var ARCHLANG_ADAPTER_VERSION, ARCHLANG_PACKAGE_VERSION;
+var init_archlang_adapter = __esm({
+  "../ai-orchestration/dist/apartment/archlang-adapter.js"() {
+    "use strict";
+    init_dist();
+    ARCHLANG_ADAPTER_VERSION = "1.0.0";
+    ARCHLANG_PACKAGE_VERSION = "1.57.0";
+  }
+});
+
+// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
 function fnv1a(s) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -31468,7 +33507,7 @@ function grossInternalArea(walls) {
   if (tree === null) return { ok: false, reason: "no-closed-exterior-ring" };
   if (tree === "too-much-work") return { ok: false, reason: "too-much-work" };
   const { outline, signed, parent, children } = tree;
-  let mm22 = 0;
+  let mm222 = 0;
   let buildings = 0;
   for (let i = 0; i < outline.length; i++) {
     if (parent[i] !== -1 || !(signed[i] > 0)) continue;
@@ -31482,12 +33521,12 @@ function grossInternalArea(walls) {
         if (children[court].length > 0) return { ok: false, reason: "nested-exterior-rings" };
       area3 -= Math.abs(signed[c]);
     }
-    mm22 += area3;
+    mm222 += area3;
     buildings++;
   }
   if (buildings === 0) return { ok: false, reason: "no-closed-exterior-ring" };
-  if (!Number.isFinite(mm22) || mm22 < 0) return { ok: false, reason: "inconsistent" };
-  return { ok: true, mm2: mm22, buildings };
+  if (!Number.isFinite(mm222) || mm222 < 0) return { ok: false, reason: "inconsistent" };
+  return { ok: true, mm2: mm222, buildings };
 }
 function wallBodyPoint(w) {
   const s = segmentsOfWall(w).find((x) => x.a.x !== x.b.x || x.a.y !== x.b.y || x.arc);
@@ -31925,7 +33964,7 @@ function layerSymmetry(f, recs) {
   return {
     ...classify(els),
     // The verified fixed point — only when some element fixes it (see the module header).
-    ...els.length > 1 ? { centre: { x: mm(f.c2.x / 4), y: mm(f.c2.y / 4) } } : {},
+    ...els.length > 1 ? { centre: { x: mm2(f.c2.x / 4), y: mm2(f.c2.y / 4) } } : {},
     elements: els.map((g) => toSpelling(g)),
     exact: f.exact
   };
@@ -32261,7 +34300,7 @@ function repeatsOf(rooms, furniture2) {
       out.push({
         kind: "translate",
         count: run.length,
-        step: { x: mm((b.x - a.x) * unit3), y: mm((b.y - a.y) * unit3) },
+        step: { x: mm2((b.x - a.x) * unit3), y: mm2((b.y - a.y) * unit3) },
         ids: run.map((m) => m.id)
       });
     }
@@ -32299,13 +34338,13 @@ function repeatsOf(rooms, furniture2) {
         const first = span[0].i;
         const members = chain2.slice(first, first + span.length + 1);
         const ls = span.map((e) => lines[e.i]);
-        const period = mm((ls[1] - ls[0]) * unit3);
+        const period = mm2((ls[1] - ls[0]) * unit3);
         out.push({
           kind: "mirror",
           count: members.length,
           axis,
           step: axis === "x" ? { x: period, y: 0 } : { x: 0, y: period },
-          lines: ls.map((l) => mm(l / 2 * unit3)),
+          lines: ls.map((l) => mm2(l / 2 * unit3)),
           ids: members.map((m) => m.id)
         });
       }
@@ -33533,9 +35572,9 @@ function buildLintContext(ir, rules, building = NO_BUILDING, onSkip = DROP_SKIP)
 }
 function axisLine2(s) {
   if (s.arc) return " (curved)";
-  if (s.a.x === s.b.x && s.a.y !== s.b.y) return ` at x ${mm2(s.a.x)}`;
-  if (s.a.y === s.b.y && s.a.x !== s.b.x) return ` at y ${mm2(s.a.y)}`;
-  return ` from (${mm2(s.a.x)}, ${mm2(s.a.y)}) to (${mm2(s.b.x)}, ${mm2(s.b.y)})`;
+  if (s.a.x === s.b.x && s.a.y !== s.b.y) return ` at x ${mm22(s.a.x)}`;
+  if (s.a.y === s.b.y && s.a.x !== s.b.x) return ` at y ${mm22(s.a.y)}`;
+  return ` from (${mm22(s.a.x)}, ${mm22(s.a.y)}) to (${mm22(s.b.x)}, ${mm22(s.b.y)})`;
 }
 function openingName(ctx, el2) {
   const { between } = connectorConnection(el2, ctx.roomRects, ctx.rules.tolMm);
@@ -33639,10 +35678,10 @@ function wideOpeningBlocked(o, ctx) {
     severity: "warning",
     code: "W_DOORWAY_BLOCKED",
     ...ctx.at(o),
-    message: `${name[0].toUpperCase()}${name.slice(1)} is blocked \u2014 "${gn}"${others > 0 ? ` and ${others} other piece${others > 1 ? "s" : ""}` : ""} in its ${mm2(ctx.rules.doorwayLandingMm)} mm approach leave${others > 0 ? "" : "s"} ${mm2(block.stretch)} mm of its ${mm2(o.width)} mm clear, under the ${mm2(DOORWAY_WIDTH_MM)} mm a doorway needs (${mm2(short2)} mm short).`,
+    message: `${name[0].toUpperCase()}${name.slice(1)} is blocked \u2014 "${gn}"${others > 0 ? ` and ${others} other piece${others > 1 ? "s" : ""}` : ""} in its ${mm22(ctx.rules.doorwayLandingMm)} mm approach leave${others > 0 ? "" : "s"} ${mm22(block.stretch)} mm of its ${mm22(o.width)} mm clear, under the ${mm22(DOORWAY_WIDTH_MM)} mm a doorway needs (${mm22(short2)} mm short).`,
     hints: [
-      `Move ${ref} out of the opening's approach (${mm2(ctx.rules.doorwayLandingMm)} mm past each face of the wall) or along it, so ${mm2(DOORWAY_WIDTH_MM)} mm of the opening stays clear \u2014 \`${CLI_NAME} repair\` clears the whole approach.`,
-      o._derived ? "The opening is derived by `open between` and spans the rooms' shared edge, so the pieces are what move." : `Or widen the opening, or move it along its wall (\`on <wall> at <pos>\`), so a ${mm2(DOORWAY_WIDTH_MM)} mm stretch of it misses ${ref}.`
+      `Move ${ref} out of the opening's approach (${mm22(ctx.rules.doorwayLandingMm)} mm past each face of the wall) or along it, so ${mm22(DOORWAY_WIDTH_MM)} mm of the opening stays clear \u2014 \`${CLI_NAME} repair\` clears the whole approach.`,
+      o._derived ? "The opening is derived by `open between` and spans the rooms' shared edge, so the pieces are what move." : `Or widen the opening, or move it along its wall (\`on <wall> at <pos>\`), so a ${mm22(DOORWAY_WIDTH_MM)} mm stretch of it misses ${ref}.`
     ]
   };
 }
@@ -33809,11 +35848,11 @@ function blockDiffers(v, b, level) {
   }
   if (Math.abs(v.width - b.width) > VERTEX_EPS) {
     return {
-      why: `its flights are ${mm2(b.width)} mm wide there and ${mm2(v.width)} mm here`,
+      why: `its flights are ${mm22(b.width)} mm wide there and ${mm22(v.width)} mm here`,
       hint: `Draw \`${v.id}\` at one \`width\` on both storeys, ${copy}`
     };
   }
-  const place2 = (r) => `(${mm2(r.x)},${mm2(r.y)}) size ${mm2(r.w)}x${mm2(r.h)}`;
+  const place2 = (r) => `(${mm22(r.x)},${mm22(r.y)}) size ${mm22(r.w)}x${mm22(r.h)}`;
   const at2 = here.findIndex((r, i) => {
     const o = there[i];
     return [r.x - o.x, r.y - o.y, r.w - o.w, r.h - o.h].some((d) => Math.abs(d) > VERTEX_EPS);
@@ -34184,15 +36223,15 @@ function leastRun(v, rise, rules, need) {
   return short2.lengthen.reduce((n2, l) => n2 + (l.to - l.from), runLength2(v));
 }
 function limitMm(x) {
-  if (Number.isInteger(x)) return `${mm2(x)} mm`;
+  if (Number.isInteger(x)) return `${mm22(x)} mm`;
   const quarters = x / 25.4 * 4;
   if (x >= 25.4 && Math.abs(quarters - Math.round(quarters)) < 1e-9) {
     const q2 = Math.round(quarters);
     const whole = Math.floor(q2 / 4);
     const frac2 = ["", "\xBC", "\xBD", "\xBE"][q2 % 4];
-    return `${mm2(x)} mm (${whole > 0 ? whole : ""}${frac2} in)`;
+    return `${mm22(x)} mm (${whole > 0 ? whole : ""}${frac2} in)`;
   }
-  return `about ${mm2(x)} mm`;
+  return `about ${mm22(x)} mm`;
 }
 function stairZones(f) {
   return f.stairs.flatMap((sf) => {
@@ -34556,11 +36595,11 @@ function namedClause(doors, width, ctx, view) {
   if (doors === null) return "";
   const same = doors.every((e) => Math.round(e.estimatedClearWidth) === width);
   const list = doors.map(
-    (e) => `${connectorPhrase(e, ctx, view)}${same ? "" : ` (${mm2(Math.round(e.estimatedClearWidth))} mm clear)`}`
+    (e) => `${connectorPhrase(e, ctx, view)}${same ? "" : ` (${mm22(Math.round(e.estimatedClearWidth))} mm clear)`}`
   );
-  if (list.length === 1) return ` \u2014 the bottleneck is ${list[0]}, ${mm2(width)} mm clear`;
+  if (list.length === 1) return ` \u2014 the bottleneck is ${list[0]}, ${mm22(width)} mm clear`;
   const joined2 = `${list.slice(0, -1).join(", ")}, and ${list[list.length - 1]}`;
-  return ` \u2014 the bottlenecks are ${joined2}${same ? `, each ${mm2(width)} mm clear` : ""}: widen them together`;
+  return ` \u2014 the bottlenecks are ${joined2}${same ? `, each ${mm22(width)} mm clear` : ""}: widen them together`;
 }
 function lintStoreys(ir, levels, tolMm) {
   const storeyIrs = levels.length > 0 ? levels.map((l) => l.ir) : [ir];
@@ -37532,7 +39571,7 @@ function wcHint(f, m, near, need, world, ctx, obstacle2, movable) {
     return `"${f.id}"'s centreline is ${d.available} mm from ${obstacle2} (${figure}): slide it ${d.short} mm along its back wall, away from ${obstacle2}, and its other side still keeps ${d.required} mm${orMove}.`;
   const width = 2 * m.half + near.m.measured + far.measured;
   const other = far.by !== null ? obstaclePhrase(far.by, ctx).hint : "its other side";
-  return `"${f.id}"'s centreline is ${d.available} mm from ${obstacle2} (${figure}), and the space across it, from ${obstacle2} to ${other}, is ${mm2(width)} mm, under the ${mm2(2 * need)} mm a WC needs: move it to a wider run${movable ? `, or move ${obstacle2}` : ""}.`;
+  return `"${f.id}"'s centreline is ${d.available} mm from ${obstacle2} (${figure}), and the space across it, from ${obstacle2} to ${other}, is ${mm22(width)} mm, under the ${mm22(2 * need)} mm a WC needs: move it to a wider run${movable ? `, or move ${obstacle2}` : ""}.`;
 }
 function lowUnitSlide(f, band3, cover, ctx) {
   const { w, d } = band3;
@@ -37545,8 +39584,8 @@ function lowUnitSlide(f, band3, cover, ctx) {
   };
   const toStart = Math.ceil(cover.hi + w.width / 2);
   const toEnd = Math.ceil(w.width / 2 - cover.lo);
-  const start = `slide it ${mm2(toStart)} mm along the wall past the window's start (its end nearer the wall's first point)`;
-  const end = `slide it ${mm2(toEnd)} mm along the wall past the window's end (its end nearer the wall's last point)`;
+  const start = `slide it ${mm22(toStart)} mm along the wall past the window's start (its end nearer the wall's first point)`;
+  const end = `slide it ${mm22(toEnd)} mm along the wall past the window's end (its end nearer the wall's last point)`;
   const ways = [
     [-toStart, start],
     [toEnd, end]
@@ -37657,8 +39696,8 @@ function sizeTurnHint(size, walled, g, anchored) {
 }
 function axisLine3(s) {
   if (s.arc) return "";
-  if (s.a.x === s.b.x && s.a.y !== s.b.y) return ` at x ${mm2(s.a.x)}`;
-  if (s.a.y === s.b.y && s.a.x !== s.b.x) return ` at y ${mm2(s.a.y)}`;
+  if (s.a.x === s.b.x && s.a.y !== s.b.y) return ` at x ${mm22(s.a.x)}`;
+  if (s.a.y === s.b.y && s.a.x !== s.b.x) return ` at y ${mm22(s.a.y)}`;
   return "";
 }
 function collisionHint(f, fr, hit, ctx) {
@@ -37687,7 +39726,7 @@ function collisionHint(f, fr, hit, ctx) {
   const half2 = (hi - lo) / 2;
   const written = ag.offset ?? len2 / 2;
   if (Math.abs(written - centre) > 1) return generic;
-  const run = `\`offset\` is the distance along "${host.wallId}" to the piece's CENTRE, not its edge: at ${mm2(centre)} this ${mm2(hi - lo)} mm piece spans ${mm2(lo)}\u2013${mm2(hi)} along it, through ${wallRef(ctx.ir.walls, hit)}`;
+  const run = `\`offset\` is the distance along "${host.wallId}" to the piece's CENTRE, not its edge: at ${mm22(centre)} this ${mm22(hi - lo)} mm piece spans ${mm22(lo)}\u2013${mm22(hi)} along it, through ${wallRef(ctx.ir.walls, hit)}`;
   const hd = hit.arc ? null : unitOf2(hit);
   if (hd !== null && Math.abs(hd.x * d.x + hd.y * d.y) > 1 - 1e-9)
     return `${run}, which runs along it: reduce the piece's depth.`;
@@ -37733,7 +39772,7 @@ function collisionHint(f, fr, hit, ctx) {
     return placementClear(ctx, moved2, f.category, f.rotate ?? 0, f);
   };
   const valid = [...new Set(raw)].filter(clear).sort((a, b) => Math.abs(a - centre) - Math.abs(b - centre) || a - b);
-  if (valid.length > 0) return `${run}. \`offset ${mm2(valid[0])}\` clears it.`;
+  if (valid.length > 0) return `${run}. \`offset ${mm22(valid[0])}\` clears it.`;
   const where = f.room !== void 0 ? ` inside "${f.room}"` : "";
   return `${run}, and no position along "${host.wallId}"${where} clears every wall: move it to another wall or shorten it.`;
 }
@@ -37748,10 +39787,10 @@ function listOf3(names) {
 }
 function runWords(p, q2) {
   if (Math.abs(p.x - q2.x) < EPS2)
-    return `on the line x ${mm2(p.x)}, y ${mm2(Math.min(p.y, q2.y))}\u2013${mm2(Math.max(p.y, q2.y))}`;
+    return `on the line x ${mm22(p.x)}, y ${mm22(Math.min(p.y, q2.y))}\u2013${mm22(Math.max(p.y, q2.y))}`;
   if (Math.abs(p.y - q2.y) < EPS2)
-    return `on the line y ${mm2(p.y)}, x ${mm2(Math.min(p.x, q2.x))}\u2013${mm2(Math.max(p.x, q2.x))}`;
-  return `from (${mm2(p.x)}, ${mm2(p.y)}) to (${mm2(q2.x)}, ${mm2(q2.y)})`;
+    return `on the line y ${mm22(p.y)}, x ${mm22(Math.min(p.x, q2.x))}\u2013${mm22(Math.max(p.x, q2.x))}`;
+  return `from (${mm22(p.x)}, ${mm22(p.y)}) to (${mm22(q2.x)}, ${mm22(q2.y)})`;
 }
 function clipStrip(poly, across3, half2) {
   let pts = [...poly];
@@ -37975,9 +40014,9 @@ function aKind(category) {
   return /^[aeiou]/.test(w) ? `an ${w}` : `a ${w}`;
 }
 function wallLineWords(s) {
-  if (s.a.x === s.b.x && s.a.y !== s.b.y) return `on the line x ${mm2(s.a.x)}`;
-  if (s.a.y === s.b.y && s.a.x !== s.b.x) return `on the line y ${mm2(s.a.y)}`;
-  return `from (${mm2(s.a.x)}, ${mm2(s.a.y)}) to (${mm2(s.b.x)}, ${mm2(s.b.y)})`;
+  if (s.a.x === s.b.x && s.a.y !== s.b.y) return `on the line x ${mm22(s.a.x)}`;
+  if (s.a.y === s.b.y && s.a.x !== s.b.x) return `on the line y ${mm22(s.a.y)}`;
+  return `from (${mm22(s.a.x)}, ${mm22(s.a.y)}) to (${mm22(s.b.x)}, ${mm22(s.b.y)})`;
 }
 function shortEnds(ctx) {
   const known = SHORT_ENDS.get(ctx);
@@ -38112,9 +40151,9 @@ function junctionLookup(ctx) {
 }
 function runCoord(seg, s) {
   const p = segmentPointAlong(seg, s);
-  if (!seg.arc && seg.a.y === seg.b.y) return `x ${mm2(p.x)}`;
-  if (!seg.arc && seg.a.x === seg.b.x) return `y ${mm2(p.y)}`;
-  return `(${mm2(p.x)}, ${mm2(p.y)})`;
+  if (!seg.arc && seg.a.y === seg.b.y) return `x ${mm22(p.x)}`;
+  if (!seg.arc && seg.a.x === seg.b.x) return `y ${mm22(p.y)}`;
+  return `(${mm22(p.x)}, ${mm22(p.y)})`;
 }
 function runSpan(seg, lo, hi) {
   const a = runCoord(seg, lo);
@@ -38122,7 +40161,7 @@ function runSpan(seg, lo, hi) {
   if (a.startsWith("(")) return `${a}\u2013${b}`;
   const axis = a.slice(0, 2);
   const [p, q2] = [a.slice(2), b.slice(2)].map(Number).sort((m, k) => m - k);
-  return `${axis}${mm2(p)}\u2013${mm2(q2)}`;
+  return `${axis}${mm22(p)}\u2013${mm22(q2)}`;
 }
 function moveUnit(o, all) {
   const leaves = [
@@ -38216,7 +40255,7 @@ function wallPosition(ctx, seg, s) {
 function placeClause(ctx, o, at2, s) {
   const rel = o.el._relation ? relationalClause(o.el._relation, ctx.rooms, at2) : void 0;
   if (rel !== void 0) return rel;
-  return o.el._placement === "attached" && !isDerivedWall(ctx.ir.walls, o.seg) ? `on ${o.seg.wallId} at ${mm2(wallPosition(ctx, o.seg, s))}` : `at (${mm2(at2.x)}, ${mm2(at2.y)})`;
+  return o.el._placement === "attached" && !isDerivedWall(ctx.ir.walls, o.seg) ? `on ${o.seg.wallId} at ${mm22(wallPosition(ctx, o.seg, s))}` : `at (${mm22(at2.x)}, ${mm22(at2.y)})`;
 }
 function joined(ctx, between) {
   const names = between.filter((x) => x !== "").map((id) => {
@@ -38265,17 +40304,17 @@ function moveHints(ctx, o, all, js, what, check = servesSame(ctx)) {
     const result2 = check(m.placed.map((p) => ({ el: p.leaf.el, at: p.at })));
     if (result2 === null) continue;
     const near = nearestNib(m.lo, m.hi, js);
-    const leaves = near === null ? "" : `, ${mm2(near.nib)} mm from ${near.j.boundary ? "the edge of the nearest open boundary" : "the nearest meeting wall's face"}`;
+    const leaves = near === null ? "" : `, ${mm22(near.nib)} mm from ${near.j.boundary ? "the edge of the nearest open boundary" : "the nearest meeting wall's face"}`;
     const clause = (p) => `\`${placeClause(ctx, p.leaf, p.at, p.s)}\``;
     const edit = o.el._instance !== void 0 ? "" : pair ? ` \u2014 ${m.placed.map((p) => `${clause(p)} for "${p.leaf.el.id}"`).join(" and ")}` : ` \u2014 ${clause(m.placed[0])}`;
     out.push(
-      `Move ${subject2} ${mm2(m.shift)} mm along the wall ${towards(o.seg, dir)}, to ${runSpan(o.seg, m.lo, m.hi)}${leaves}; that position was checked clear of every junction and opening on the run, and ${pair ? "the pair" : "it"} ${result2}${edit}.`
+      `Move ${subject2} ${mm22(m.shift)} mm along the wall ${towards(o.seg, dir)}, to ${runSpan(o.seg, m.lo, m.hi)}${leaves}; that position was checked clear of every junction and opening on the run, and ${pair ? "the pair" : "it"} ${result2}${edit}.`
     );
   }
   if (out.length === 0) {
     const free = widestStretch(u, ks);
     out.push(
-      `No position along this run clears it and still serves the same rooms. ${free > 0 ? `The longest clear stretch of wall it overlaps, after the nibs and mullions, is ${mm2(free)} mm, against its ${mm2(u.hi - u.lo)} mm span.` : "No stretch of wall it overlaps is clear once the nibs and mullions are kept."} Move it to another wall the same rooms share, or move the wall that meets it.`
+      `No position along this run clears it and still serves the same rooms. ${free > 0 ? `The longest clear stretch of wall it overlaps, after the nibs and mullions, is ${mm22(free)} mm, against its ${mm22(u.hi - u.lo)} mm span.` : "No stretch of wall it overlaps is clear once the nibs and mullions are kept."} Move it to another wall the same rooms share, or move the wall that meets it.`
     );
   }
   if (o.el._instance !== void 0)
@@ -38578,8 +40617,8 @@ function ownBudget(b) {
   return { ...b, attributionMeasures: { left: 0, storeys: 0 } };
 }
 function netAreaM2(ctx, r) {
-  const mm22 = memoRoomNetAreaMm2(r, storeyNetAreaBands(ctx.ir.walls));
-  return mm22 === void 0 ? void 0 : Math.round(mm22 / 1e6 * 100) / 100;
+  const mm222 = memoRoomNetAreaMm2(r, storeyNetAreaBands(ctx.ir.walls));
+  return mm222 === void 0 ? void 0 : Math.round(mm222 / 1e6 * 100) / 100;
 }
 function roomHasWindow(ctx, r) {
   return ctx.windows.some((win) => windowServesRoom(win, r.id, ctx.roomRects, ctx.rules.tolMm, ctx.wallSegs));
@@ -39144,7 +41183,7 @@ function boundsOfRing(ring) {
   return { x0, y0, x1, y1 };
 }
 function sillPhrase(windows) {
-  const lowest = mm2(windows.reduce((least, w) => Math.min(least, w.sill), Infinity));
+  const lowest = mm22(windows.reduce((least, w) => Math.min(least, w.sill), Infinity));
   return windows.length === 1 ? `the window there has its sill at ${lowest} mm` : `the lowest of the ${windows.length} windows there has its sill at ${lowest} mm`;
 }
 function isHabitable(r) {
@@ -40256,9 +42295,9 @@ function compile(source, opts = {}) {
   }
   return result2;
 }
-var import_meta, MODEL_RANGE_MM, MAX_ANGLE_DEG, drawnDecimal, plainDecimal, fmt0, fmt2, fmt3, fmt4, IMPERIAL_MESSAGE, isDigit, isIdentStart, isIdentPart, lexCache, LEX_CACHE_MAX, NORTH_DIRS, AUTO_DIMS_MODES, ARC_DIRS, REL_DIRS, AXIS_ALIGNS, REL_DIR_AXIS, REL_ALIGN_CENTERS, REL_ALIGNS, USE_KINDS, FURNITURE_ANCHORS, DIM_REFS, VERTICAL_DIRS, OUTDOOR_KINDS, RAIL_EDGES, RAIL_SIDES, FENCE_STYLES, STRIP_DIRS, LEVEL_SHARED_KINDS, TITLE_FIELD_KEY, SCHEDULE_SUBJECTS, COMPASS_DIRECTIONS, HEMISPHERES, fallbacks, BUDGET_SUBSTITUTE, BIN_PREC, BIN_OP, RANGE_PREC, MAX_NEST_DEPTH, exprDepth, heights, tooDeep, NUM0, MAX_RANGE, MAX_CALL_DEPTH, EVAL_UNITS, EXPAND_UNITS, MAX_STACK_UNITS, EXPAND_RESERVE, stackUse, reported, MAX_EVAL_STEPS, DIAGNOSTIC_STEPS, meter, StepLimitSignal, datumReader, bodyReader, builtinDispatch, XML_ILLEGAL, PLAIN_UNSAFE, REPLACEMENT, DEFAULT_THEME, ALIASES, THEMES, STYLE_KEYS, STYLE_KINDS, STYLE_KEYS_INVERSE, BAD_VALUE, ids, next, STOREY_HEIGHT, DOOR_HEAD, WINDOW_SILL, WINDOW_HEAD, MAX_HEIGHT, ARC_STEP_DEG, ARC_MIN_STEPS, ARC_PIECE_DEG, TAU, deg, ARC_QUANTUM, radiusText, diameterText, MAX_CELLS_PER_BOX, MAX_SAFE_CELL, GridIndex, VERTEX_EPS, MAX_Y_BANDS, LABEL_GRID, LABEL_REFINE_ROUNDS, LABEL_REFINE_STEPS, RING_READS_PER_STEP, sub, add, mul, length, normal, emptyBounds, dimSwapped, DIM_INSIDE_EPS, segBox, WallGrid, RENDER_PASSES, EXTRA_THIN_RATIO, MITER_LIMIT, DIM_TICK, PARALLEL_SIN, cross2, dot2, perp, sub2, TAU2, Y_MONOTONE_MEMO, edgeStart, edgeEnd, reverseLoop, KEY_SCALE, SNAP_MM, PointInterner, tessellateLoops, asWallLike, faceStart, faceEnd, faceToEdge, mapArcFace, along, positive, KNOWN_MATERIALS, DEFAULT_MATERIAL, GROUND_MATERIALS, FLOOR_MATERIALS, GRAVEL_STONES, GRAVEL_GRIT, GRASS_TUFTS, MULCH_CHIPS, DECK_JOINTS, TARMAC_SPECKS, hairline, META, GROUND_SWATCH_FRAME, REACH_FACTOR, MIN_LOOP_AREA, MERGE_SIN, byTag, edgeBBox, inGrownBox, boxesOverlap, byOwnership, edgeLength, edgeDist, outDir, inDir, turn, bandBBox, loopsToPolygons, boxesOverlap2, key, lineOfRun, numbered, rectilinear, runRect, RING_DUST_MM, HINTS, TITLE_FIELDS, KEYWORDS, WALL_STATUSES, DOOR_ENUMS, DOOR_HINGE_NEAR, DOOR_SWING_BUILDING, DOOR_KINDS, DOOR_KIND_CLAUSES, WINDOW_KINDS, WINDOW_KIND_HINGED, enumList, NUM_LITERAL, RULES, STATEMENT_STARTS, KEEP_WORDS, KEEP_GRADES, wall, dashedPattern, MAX_RAIL_POSTS, SYMBOL_INK_MIX, isLoopList, OVAL_MAX_ASPECT, shortSide, centerOf, CABINET_PITCH_MM, MAX_DIVISIONS, PILLOW_TWO_ASPECT, WARDROBE_FRONT, WARDROBE_DOOR_PITCH, WARDROBE_MAX_BAYS, WARDROBE_HANGER_PITCH, WARDROBE_HANGER_BAY, WARDROBE_RAIL_INSET, short, UPHOLSTERY_RADIUS, SEAT_BACK_BAND, DINING_BAND, CHAIR_PITCH, CHAIR_TUCK, SQ5, COS72, COS36, SIN72, SIN36, STAR_SPOKES, MEETING_BAND, CHAIR_PITCH2, CHAIR_TUCK2, POD_BAND, POD_TUCK, pill, HEDGE_MAX_LOBES, GRILL_BARS, PATIO_BAND, PATIO_PITCH, PATIO_TUCK, TRAMPOLINE_SPRINGS, PALM_FRONDS, PALM_LEAFLETS, FIXTURE_FAMILIES, FIXTURE_CATEGORIES, CANONICAL_FIXTURES, FAMILY_OF, M, FIXTURE_FAMILY_MATERIALS, PROBE_RECT, PROBE_SIZES, SHEET_WORDS, SHEET_DECIMAL_KEY, MAX_SHEET_WORD, SHORT_WORDS, MAX_SHORT_WORD, vocabularyKeys, sheetTextKeys, keySet, isSheetTextKey, ENGLISH, PLAIN_SHEET_TEXT, concat, group, indent, line, hardline, DATUM_WORDS, COMPASS_DATUM_ALIASES, EDGE_WORDS, NUM02, SEGMENT_COMPASS_WORDS, SEGMENT_SELECT_RE, fail, listOf, BIN_PREC2, RANGE_PREC2, ptStr, atStr, clamp22, EM_PER_CHAR, ROBOTO_ASCII, ROBOTO_LATIN1, HELVETICA_BOLD_ASCII, HELVETICA_BOLD_LATIN1, UNITS_PER_EM, wider, DIM_TEXT_GAP, LABEL_LINE_PITCH, LABEL_NAME_RISE, LABEL_AREA_DROP, SEPARATOR, REL_DIRS2, REL_ALIGN_SET, USE_SET, axisHint, room, pt, openingLead2, STATEMENT_EXPRS, PARALLEL_SIN2, MEET_TOL_MM, FLUSH_MM, JUNCTION_EPS, JUNCTION_NIB_DEFAULTS, dot, cross, sub3, unitOf, sameSeg, atFreeEnd, datumDiag, rectOf, tileOf, edgesOf, standsOn, lineText, alongText, extent, cornerDiag, CORNER_HINT, ONE_WALL_HINT, DEMOLISHED_HINT, spanText, OFFSET_NOT_AXIS, GLAZING_GAP, SILL_PROJECTION, SILL_HORN, HINGE_MARK_REACH, HINGE_MARK_SPREAD, TILT_MARK_RADIUS, SLIDE_MARK_REACH, SLIDE_MARK_SHARE, SLIDE_HEAD_LENGTH, SLIDE_HEAD_SPREAD, windowEl, PANEL_PROJECTION_DEPTH, PANEL_PROJECTION_MAX_MM, SLIDE_MARK_REACH2, SLIDE_HEAD_LENGTH2, DEFAULT_OPEN, LEAF_SLAB_MM, LEAF_SLAB_MAX_FRACTION, clamp01, door, opening, TIE_NUDGE, keyNum, pt2, CATALOG, CATALOG_CATEGORIES, el, D4_ELEMENTS, at, D4_IDENTITY, D4_HALF_TURN, MATRICES, SIDES_CW, SIDE_NORMAL, OPPOSITE_SIDE, LETTERS_CW, LETTER_SIDE, SIDE_LETTER, BACK_EDGE_DEG, TURNS, OPPOSITE, standoff, TAU3, corners, inBox, DOORWAY_WIDTH_MM, RECT_EDGES, FIXTURE_WALL_TOL_MM, ANCHOR_BACK_EDGES, COUNT_SIZES, ANCHOR_SET, furniture, dim, column, VERTICAL_KINDS, KIND_SET, inkOf, TREAD_GOING_MM, MIN_TREADS, STAIR_LAYER, ELEVATOR_LAYER, MAX_RUN_TREADS, overlapsArea, stair, elevator, escalator, ROOF_LAYER, PARALLEL_SIN3, roof, PLANTING_LAYER, SITE_LAYER, BALCONY_LAYER, OUTDOOR_LAYERS, GROUND, outdoor, RAIL_NEIGHBOURS, VOID_LAYER, VOID_RAIL_LAYER, railCount, voidEl, POST_PITCH, MITRE_MIN, MIN_POSTS, MAX_POSTS, fence, BODY_CLAUSES, wallsFromRooms, BUILTIN_DEFS, BUILTIN_REGISTRY, BUILTIN_RUNTIME, PKG_SPEC, bindingsByDef, SIDE_OF, AXIS_LETTERS, BUBBLE_DIA, BUBBLE_LABEL, AXIS_LEAD, BUBBLE_GAP, NULL_WORLD, num2, BUILTINS, BUILTIN_NAMES, USE_NOUN, PLACE, capFirst, tokensOf, USE_VOCABULARY, FALLBACK_USE_VOCABULARY, PREPARED_USE, PREPARED_DAY_NURSERY, PREPARED_FALLBACK, PREPARED_OPEN_AIR, NON_RESIDENTIAL_VOCABULARY, PREPARED_NON_RESIDENTIAL, MAX_KEEPS, MAX_KEEP_TARGETS, halfOf, keepHalfOf, halfOfCentre, mmText, mmNumber, MESSAGE_TAIL, keepRefsOf, FORM_WORDS, EDGE_ORDER, codeList, axisWord, signWord, wallNoun, isRefusal, NOTHING_MOVED, RunIndex, STACKED_KINDS, KIND_NOUN, MAX_DEPTH, MAX_ITERATIONS, MAX_ELEMENTS, rootZoneFrame, zoneOf, Scope, resolveCache, RESOLVE_CACHE_MAX, levelPlanCache, levelsCache, datumTablesOfIr, instanceBodiesOfIr, stepsSpent, keepStateOfIr, stackedResultsOfIr, stackedStepsOfIr, DERIVED_ELEMENTS_PER_ROOM, DRAWN_LIMIT, gridOverlapHint, MAX_OVERLAP_PAIRS_LISTED, BITS, BITS16, numCompare, BOOLEAN, MIN_PLUS, MAX_MIN, MAX_NET_CURVES, TAU4, boxesMeet, ON_MM, T_EPS, ends, PROBE_MM, MAX_NET_PROBE_WORK, DEFAULT_TOL, roomRing, ROOM_CONTAINMENT_SLACK_MM, isOpenAir, isBedroom, isWetRoom, isKitchen, isGarage, isCirculation, EXTERIOR_NODE, DEFAULT_CLEAR_ALLOWANCE_MM, JAMB_PROBE_INSET_MM, leavesOf, joins, BANDS_MAX, bandsMemo, roomMemo, exact, wallKey, roomKey, CLEARANCE, COLLIDE_MIN, FRACTIONS, W_OUTSIDE, W_OBSTACLE, W_PLACED, W_DISTANCE, BoxSums, DIRECT_TAIL, GRID_SAFE, runLength, centredIn, WRAP_TRIES, tagOf, TAG_PRIMITIVES, tagFont, MAX_CELLS, MAX_PROBE, ObstacleGrid, r2, ROW_H, FONT, COL_NO, COL_NAME, COL_AREA, COL_NET, PAD_AREA_W, AREA_COL, LEGEND_SWATCH, LEGEND_NAME, COL_TAG, COL_ROOMS, COL_WIDTH, COL_TYPE, COL_TYPE_CHARS, COL_HAND, NOTES_NO, NOTES_TEXT, charsIn, wordsColumn, legendKey, NOTE_LINE_CHARS, ROOMS_CELL_CHARS, MAX_NOTE_LINES, isMark, isHigh, isLow, CUT_LOOKBACK, cutAt2, clip, TABLE_GAP, scheduleRowCount, legendRowCount, openingRowCount, noteLines, notesRowCount, tableRowsHeight, BOLD, cellOf, colLeft, GAP_F, SCALEBAR_HGT_F, SCALEBAR_FS_F, SCALEBAR_LABEL_F, SCALEBAR_TARGET_F, TITLE_W_F, TITLE_ROW_F, TITLE_FS_F, NICE_LENGTHS, scaleBarLabel, REACH_LAYERS, PAPER_SIZES, PAPER_ORIENTATIONS, PAPER_MM, SHEET_MM, CHAIN_BASE, CHAIN_STEP, CHAIN_SLOTS, DIM_BAND_FONTS, DIM_BAND_MM, AUTO_SCALE_DENOMINATORS, FIXED_STATEMENT_STARTS, ParseError, parseCache, PARSE_CACHE_MAX, ID_SPANS, Parser, USE_SET2, SIDES, SIDE_AXIS, SIDE_OUT, spanGap, TICK_TOL, FACINGS, SYMBOLIC_FACINGS, PROPERTY_LAYER, ARC_STEPS, HEIGHT_STEPS, MAX_FIT_WORK, fitWork, W_BURIED, BURIED_STEPS, W_TIER, isSymbolElement, boxOf2, centred, shifted, moved, offCentre, LAST_RANK, text, DEFAULT_BODY_RADIUS_MM, MIN_CELL_MM, MAX_CELLS2, MAX_GRID_CELLS, isLivingOrDining, r22, clamp32, LANDING_PROBE_MM, inBox2, FRAME_QUANTUM_MM, snapToFrame, snapPoint, NO_ELEMENTS, D4_MATS, bboxCentre, MAX_FACE_WALL_SEGMENTS, MAX_ENCLOSURE_FACES, MAX_WALL_CONTACTS, MAX_LOOPS_PER_CELL, FACE_BUDGET_CAPS, segmentCount, inBox3, piecesBound, roomCurveCount, roomBoxOf, MAX_GROSS_AREA_TESTS, segmentCount2, TREES, DOUBLE_BED_MIN_WIDTH_MM, DEFAULT_RULESET, LINT_PROFILES, DEFERRED_PROFILE_NUMBERS, ADVISORY_CODE_PROFILES, LINT_PROFILE_NAMES, hasOwn, EPS, WALL_BODY_SLACK_MM, isStraightRun, END_ALONG, END_ACROSS, END_STATIONS, NONE, DIAGONAL_TOL, hinged, ENTRY_USES, PRIVATE_USES, PUBLIC_USES, SERVICE_USES, pk, act, unitMm, mm, MAX_SYMMETRY_COORD, AXIS_OF_K, gcd, usesLabel, tidy, boxRing, HAND_SIZES, lessYX, r4, MAX_CONTACTS_LISTED, MAX_CONTACT_PROBES, EDGES, cmp, lineKey, key2, BUILTINS2, datumRoom, sorted, MAX_KEEP_PATHS, sorted2, GRADE_RANK, SOURCE_RANK, onLattice, onGrid, EDGE_AXIS, Potentials, namesIn, spanKey, ROOM_TYPES2, USE_TO_ROOM_TYPE, USE_PRIORITY, ROOM_TYPE_TO_USE, USE_SET3, ROOM_TYPE_SET, POINT_SCHEMA, WALL_POINT_SCHEMA, INSTANCE_MARKER, PLAN_JSON_SCHEMA, mm2, WALL_COLLISION_SLACK_MM, shortfall, isWc, isServiceCounter, isCookingSurface, CUT, isShort, isFloorLength, isLowUnit, lowUnitCover, NO_BUILDING, DROP_SKIP, wallPhrase2, openBoundaryPhrase, KIND_WORD, CLI_NAME, swingObstructed, doorwayBlocked, pocketRun, POCKET_RUN_RATIO, doorClearance, doorNearCorner, COLLINEAR_TURN_RAD, angleBetween, leafAcrossDoorway, leafTooWide, exitApproachBlocked, stairUnmatched, SHAFT_MIN_OVERLAP_SHARE, sameBlock, shaftFootprintMismatch, word, pct, FOOT_DOOR_CLEAR_MM, NON_DWELLING_LANDING_MM, MAX_STAIR_WORK, rectOf3, runLength2, inset, STAIR_HEADROOM_MM, landingDepth, FACTS, pieceCount2, ownPieces, swingOverStair, stairNoLanding, stairSideEntry, stairHeadVoid, goingFor, MAX_RISER_TRIES, goingsIn, stairTooSteep, landingCount, landingWords, furnitureOnStair, capitalise, modelCache, nearestCache, gridCache, walkView, fullView, narrowHints, narrowRemedies, MAX_ATTRIBUTION_MEASURES, setKey, widenedClear, edgeLeaves, pairOf, hopsCache, pathTooNarrow, circuitousPath, len, have, want, obstacle, roomKey2, MAX_FACE_CURVES, r24, mm3, byText, MAX_WASTE_PCT, DESCRIBE_FACTS, r25, CAPTION_ROOM_CAP, netField, isUnderlayPiece, mkDim, sidePt, witnessPt, chainOffset, EMPTY_LABELS, DEFAULT_DRAW_COST, MAX_DRAW_UNITS, AXIS_PRIMITIVES, SQRT2, SQRT3, SQRT6, ISO, COS_PSI, SIN_PSI, AXON, lift, ringOf, GLAZING_FRACTION, VIEW_LAYERS, VIEW_LAYER_NAMES, pt3, cap, dashAttr, sheetMm, MAX_IMPORT_LEVELS, E2, W, ERROR_CATALOG, ERROR_CODES, PAD_X, PAD_Y, TITLE_FS, SUB_FS, CODE_FS, MSG_FS, FIX_FS, MSG_LH, FIX_LH, CHIP_LINE_H, ROW_PAD, ROW_GAP, ACCENT_W, ROW_INNER_X, ERROR_ACCENT, WARN_ACCENT, SKIP_WHY, ENCLOSURE_CAP_WHY, dimInside, dimOverlap, openingNotDimensioned, UNIT_UM, dimTextMismatch, pointWords, ONCE_PER_PLACEMENT_CODES, dot3, overlaps, USE_PHRASE, aliasMatch, MAX_ANNOTATION_WORK, annotationOverlap, titleOverflow, symbolWithId, idAuthored, roomRef, doorWithId, pointInRoomFloor, orList, emptyBox, boxesMeet2, MIN_CELL_MM2, MAX_CELLS_ROOM, MAX_GRID_CELLS_ROOM, TIE_MM, roomNoClearPath, EDGE_ANCHORS, wcName, wcSideClearance, ACCESSIBLE_RE, NEGATED_RE, SIDE_WALL_REACH_MM, accessibleWcSideWall, furnitureOverWindow, hobUnderWindow, hobFridgeGap, pieceName, furnClearDeclared, SEATS, TABLES, seatFacingAway, oblong, footprintTransposed, ADULT_BEDS, bedUndersized, ADD_DOOR, NO_WAY_IN, kindWord, landsOnNoRoom, noEntrance, furnitureOverlap, furnClearance, fixtureFloating, fixtureBackToRoom, fixtureWrongRoom, furnitureWallCollision, OPEN_PLAN, BOUNDARY_FIXTURES, RUN_PROBE_MM, MIN_INSIDE_SHARE, DEFAULT_PARTITION_MM, EPS2, SAME_LINE_MM, boxesNear, boundaryNoWall, CAP_OF, FACES, facesOf2, floorUnassigned, roomOutsideShell, levelWords, END_SCAN_STEP_MM, MAX_WALL_GAP_SCAN_MM, SHORT_ENDS, wallEndShort, gapsLength, NO_SHELL, exteriorRingOpen, WHAT, furnitureOnVoid, EPS3, dot4, cross5, sub4, unitOf3, NO_OPEN_BOUNDARIES, cornerReported, junctionsFor, nibNeed, reached, cap2, ratioWords, distinct, hits, towards, idHint, openingAtJunction, openingOverlap, connectorAmbiguous, wet, kitchen, zoned, FURNISH_TABLE, familyOf, servedBy, DEFINING, WASH_WITH, NOUN, useNoun, itemWords, MAX_HINT_VERIFICATIONS, MAX_HINT_WALK_ROOMS, said, BASELINE, SPENT, VERIFYING, WET_FIX, KITCHEN_FIX, areaM2, GROSS_AREA_HINT, CAR_BAY_WIDTH_MM, GARAGE_DOOR_SINGLE_MM, GARAGE_DOOR_DOUBLE_MM, GARAGE_DOOR_SOURCE, PARKED_CATEGORIES, noun, USE_FLOOR_NOUN, USE_WIDTH_NOUN, BED_CATEGORIES, GARAGE_DEPTH_SOURCE, asksWidths, readsBeds, USE_FLOOR_SOURCE, perRoomRules, ENTRY_HINT, DOUBLE_HINT, PUBLIC_USES2, HABITABLE_USES, SUITE_USES, CIRCULATION_USES, NOUN2, NIBS_MM, FRONT_DOOR_MM, CORRIDOR_MM, ENTRY_LOBBY_MM, mm4, hasAny, joins2, KITCHEN_FAMILIES, quoted, saysNoun, hq, quotedStart, roomViaPrivate, wetRoomDoor, entranceIntoPrivate, reachability, HABITABLE, OUTSIDE_PROBE_MM, habitableNoWindow, spoken, roomMissingDefining, outdoorOverlapsRoom, balconyNoDoor, stopsAboveFloor, shutToWalking, windowRef, roomNotEquatorFacing, LINT_RULES, LINT_CODE_LAYERS, LINT_CODE_STAGES, statementKey, APPLY_RANK, RESERVED, CONCEPTS, INF, FACING_VALUES, FACINGS2, INTENT_JSON_SCHEMA, AUTHORING_STAGES, RANK, COMPILE_WARNING_STAGES, INTENT_CODE_STAGES, ELEMENT_KIND_STAGES, TASTE_ADVICE, ONE, clampP, cross7, log2Ceil, MAX_EVIDENCE, HABITABLE_USES2, isHabitable2, EvidenceList, TASTE_SKIP_WHY, irRoomsOf, ringSize, plural2, levelOf2, BED_WORDS, r9Judges, r18Judges, r9Ramp, minRectCriterionCost, R9, R18, R16_CORNER, R17_GAP, IRC_R303_1, TASTE_PROFILES, TASTE_PROFILE_SOURCES, TASTE_PROFILE_NAMES, STAIR_SAFETY_CODES, MAX_PIECE_CHECKS_PER_ROOM, MAX_SET_CHECKS_PER_ROOM, MAX_CHECKS_PER_ROOM, RULESETS, LANDING_MM, EXIT_PUSH, EXIT_MM, SWING_MM, WC_SIDE_MM, NOT_GATED_DRAFTING, FINISH_STAGES, FINISH_STAGES_AVAILABLE, FINISH_STAGE_ORDER, USUAL_SIZES, STRICTER_PROFILES, PNG_PREVIEW_WIDTH, CONTEXT_BUNDLE_KB, STARTER_MAX_UNITS, CONTEXT_LEVELS, EXPORT_FORMATS, JSON_FLAG, QUIET_FLAG, EXPECTED_HASH_FLAG, OUT_FLAG, FMT_FLAG, SCALE_FLAG, COLS_FLAG, CHARSET_FLAG, WIDTH_FLAG, OVERLAY_FLAG, ERROR_SVG_FLAG, ERROR_SVG_FLAG_COMPILE, ACCESSIBLE_FLAG, ACC_ID_PREFIX_FLAG, FROM_JSON_FLAG, GRAPH_FLAG, AT_FLAG, INTENT_FLAG, FEEDBACK_FLAG, BRIEF_FLAG, TASTE_FLAG, LEVEL_FLAG, INSTALL_FLAG, ROOM_FLAG, ZONE_FLAG, FACTS_FLAG, WASTE_FLAG, SELECT_FLAG, CODE_FLAG, SEVERITY_FLAG, SECTION_FLAG, CONTEXT_LEVEL_FLAG, VIEW_FLAG, COMPILE_FLAGS, COMPILE_ONLY_FLAGS, COMMANDS, MANIFEST_COMMAND_NAMES, SETTING_KW, CAP_HEIGHT, intoFrame, DxfBuilder, AIA_LAYERS, VIEW_LAYER_COLORS, LTYPES, PLAIN_WALL_LAYER, WALL_CLASS_LAYERS, wallLayerOf, NEW_WALL_LAYER, DEMO_WALL_LAYER, standingLayerOf, DIM_STYLE, blockName, BlockTable, BUNDLED_FONT_FAMILY, CJK_FONT_PACKAGE, fontPathCache, cjkCache, cjkOverride, coverageCache, NAMED_LIMIT, PT_PER_MM, PDF_EPOCH_MS, ROBOTO_ONLY, cache, CACHE_MAX;
+var import_meta, MODEL_RANGE_MM, MAX_ANGLE_DEG, drawnDecimal, plainDecimal, fmt0, fmt2, fmt3, fmt4, IMPERIAL_MESSAGE, isDigit, isIdentStart, isIdentPart, lexCache, LEX_CACHE_MAX, NORTH_DIRS, AUTO_DIMS_MODES, ARC_DIRS, REL_DIRS, AXIS_ALIGNS, REL_DIR_AXIS, REL_ALIGN_CENTERS, REL_ALIGNS, USE_KINDS, FURNITURE_ANCHORS, DIM_REFS, VERTICAL_DIRS, OUTDOOR_KINDS, RAIL_EDGES, RAIL_SIDES, FENCE_STYLES, STRIP_DIRS, LEVEL_SHARED_KINDS, TITLE_FIELD_KEY, SCHEDULE_SUBJECTS, COMPASS_DIRECTIONS, HEMISPHERES, fallbacks, BUDGET_SUBSTITUTE, BIN_PREC, BIN_OP, RANGE_PREC, MAX_NEST_DEPTH, exprDepth, heights, tooDeep, NUM0, MAX_RANGE, MAX_CALL_DEPTH, EVAL_UNITS, EXPAND_UNITS, MAX_STACK_UNITS, EXPAND_RESERVE, stackUse, reported, MAX_EVAL_STEPS, DIAGNOSTIC_STEPS, meter, StepLimitSignal, datumReader, bodyReader, builtinDispatch, XML_ILLEGAL, PLAIN_UNSAFE, REPLACEMENT, DEFAULT_THEME, ALIASES, THEMES, STYLE_KEYS, STYLE_KINDS, STYLE_KEYS_INVERSE, BAD_VALUE, ids, next, STOREY_HEIGHT, DOOR_HEAD, WINDOW_SILL, WINDOW_HEAD, MAX_HEIGHT, ARC_STEP_DEG, ARC_MIN_STEPS, ARC_PIECE_DEG, TAU, deg, ARC_QUANTUM, radiusText, diameterText, MAX_CELLS_PER_BOX, MAX_SAFE_CELL, GridIndex, VERTEX_EPS, MAX_Y_BANDS, LABEL_GRID, LABEL_REFINE_ROUNDS, LABEL_REFINE_STEPS, RING_READS_PER_STEP, sub, add, mul, length, normal, emptyBounds, dimSwapped, DIM_INSIDE_EPS, segBox, WallGrid, RENDER_PASSES, EXTRA_THIN_RATIO, MITER_LIMIT, DIM_TICK, PARALLEL_SIN, cross2, dot2, perp, sub2, TAU2, Y_MONOTONE_MEMO, edgeStart, edgeEnd, reverseLoop, KEY_SCALE, SNAP_MM, PointInterner, tessellateLoops, asWallLike, faceStart, faceEnd, faceToEdge, mapArcFace, along, positive, KNOWN_MATERIALS, DEFAULT_MATERIAL, GROUND_MATERIALS, FLOOR_MATERIALS, GRAVEL_STONES, GRAVEL_GRIT, GRASS_TUFTS, MULCH_CHIPS, DECK_JOINTS, TARMAC_SPECKS, hairline, META, GROUND_SWATCH_FRAME, REACH_FACTOR, MIN_LOOP_AREA, MERGE_SIN, byTag, edgeBBox, inGrownBox, boxesOverlap, byOwnership, edgeLength, edgeDist, outDir, inDir, turn, bandBBox, loopsToPolygons, boxesOverlap2, key, lineOfRun, numbered, rectilinear, runRect, RING_DUST_MM, HINTS, TITLE_FIELDS, KEYWORDS, WALL_STATUSES, DOOR_ENUMS, DOOR_HINGE_NEAR, DOOR_SWING_BUILDING, DOOR_KINDS, DOOR_KIND_CLAUSES, WINDOW_KINDS, WINDOW_KIND_HINGED, enumList, NUM_LITERAL, RULES, STATEMENT_STARTS, KEEP_WORDS, KEEP_GRADES, wall, dashedPattern, MAX_RAIL_POSTS, SYMBOL_INK_MIX, isLoopList, OVAL_MAX_ASPECT, shortSide, centerOf, CABINET_PITCH_MM, MAX_DIVISIONS, PILLOW_TWO_ASPECT, WARDROBE_FRONT, WARDROBE_DOOR_PITCH, WARDROBE_MAX_BAYS, WARDROBE_HANGER_PITCH, WARDROBE_HANGER_BAY, WARDROBE_RAIL_INSET, short, UPHOLSTERY_RADIUS, SEAT_BACK_BAND, DINING_BAND, CHAIR_PITCH, CHAIR_TUCK, SQ5, COS72, COS36, SIN72, SIN36, STAR_SPOKES, MEETING_BAND, CHAIR_PITCH2, CHAIR_TUCK2, POD_BAND, POD_TUCK, pill, HEDGE_MAX_LOBES, GRILL_BARS, PATIO_BAND, PATIO_PITCH, PATIO_TUCK, TRAMPOLINE_SPRINGS, PALM_FRONDS, PALM_LEAFLETS, FIXTURE_FAMILIES, FIXTURE_CATEGORIES, CANONICAL_FIXTURES, FAMILY_OF, M, FIXTURE_FAMILY_MATERIALS, PROBE_RECT, PROBE_SIZES, SHEET_WORDS, SHEET_DECIMAL_KEY, MAX_SHEET_WORD, SHORT_WORDS, MAX_SHORT_WORD, vocabularyKeys, sheetTextKeys, keySet, isSheetTextKey, ENGLISH, PLAIN_SHEET_TEXT, concat, group, indent, line, hardline, DATUM_WORDS, COMPASS_DATUM_ALIASES, EDGE_WORDS, NUM02, SEGMENT_COMPASS_WORDS, SEGMENT_SELECT_RE, fail, listOf, BIN_PREC2, RANGE_PREC2, ptStr, atStr, clamp22, EM_PER_CHAR, ROBOTO_ASCII, ROBOTO_LATIN1, HELVETICA_BOLD_ASCII, HELVETICA_BOLD_LATIN1, UNITS_PER_EM, wider, DIM_TEXT_GAP, LABEL_LINE_PITCH, LABEL_NAME_RISE, LABEL_AREA_DROP, SEPARATOR, REL_DIRS2, REL_ALIGN_SET, USE_SET, axisHint, room, pt, openingLead2, STATEMENT_EXPRS, PARALLEL_SIN2, MEET_TOL_MM, FLUSH_MM, JUNCTION_EPS, JUNCTION_NIB_DEFAULTS, dot, cross, sub3, unitOf, sameSeg, atFreeEnd, datumDiag, rectOf, tileOf, edgesOf, standsOn, lineText, alongText, extent, cornerDiag, CORNER_HINT, ONE_WALL_HINT, DEMOLISHED_HINT, spanText, OFFSET_NOT_AXIS, GLAZING_GAP, SILL_PROJECTION, SILL_HORN, HINGE_MARK_REACH, HINGE_MARK_SPREAD, TILT_MARK_RADIUS, SLIDE_MARK_REACH, SLIDE_MARK_SHARE, SLIDE_HEAD_LENGTH, SLIDE_HEAD_SPREAD, windowEl, PANEL_PROJECTION_DEPTH, PANEL_PROJECTION_MAX_MM, SLIDE_MARK_REACH2, SLIDE_HEAD_LENGTH2, DEFAULT_OPEN, LEAF_SLAB_MM, LEAF_SLAB_MAX_FRACTION, clamp01, door, opening, TIE_NUDGE, keyNum, pt2, CATALOG, CATALOG_CATEGORIES, el, D4_ELEMENTS, at, D4_IDENTITY, D4_HALF_TURN, MATRICES, SIDES_CW, SIDE_NORMAL, OPPOSITE_SIDE, LETTERS_CW, LETTER_SIDE, SIDE_LETTER, BACK_EDGE_DEG, TURNS, OPPOSITE, standoff, TAU3, corners, inBox, DOORWAY_WIDTH_MM, RECT_EDGES, FIXTURE_WALL_TOL_MM, ANCHOR_BACK_EDGES, COUNT_SIZES, ANCHOR_SET, furniture, dim, column, VERTICAL_KINDS, KIND_SET, inkOf, TREAD_GOING_MM, MIN_TREADS, STAIR_LAYER, ELEVATOR_LAYER, MAX_RUN_TREADS, overlapsArea, stair, elevator, escalator, ROOF_LAYER, PARALLEL_SIN3, roof, PLANTING_LAYER, SITE_LAYER, BALCONY_LAYER, OUTDOOR_LAYERS, GROUND, outdoor, RAIL_NEIGHBOURS, VOID_LAYER, VOID_RAIL_LAYER, railCount, voidEl, POST_PITCH, MITRE_MIN, MIN_POSTS, MAX_POSTS, fence, BODY_CLAUSES, wallsFromRooms, BUILTIN_DEFS, BUILTIN_REGISTRY, BUILTIN_RUNTIME, PKG_SPEC, bindingsByDef, SIDE_OF, AXIS_LETTERS, BUBBLE_DIA, BUBBLE_LABEL, AXIS_LEAD, BUBBLE_GAP, NULL_WORLD, num2, BUILTINS, BUILTIN_NAMES, USE_NOUN, PLACE, capFirst, tokensOf, USE_VOCABULARY, FALLBACK_USE_VOCABULARY, PREPARED_USE, PREPARED_DAY_NURSERY, PREPARED_FALLBACK, PREPARED_OPEN_AIR, NON_RESIDENTIAL_VOCABULARY, PREPARED_NON_RESIDENTIAL, MAX_KEEPS, MAX_KEEP_TARGETS, halfOf, keepHalfOf, halfOfCentre, mmText, mmNumber, MESSAGE_TAIL, keepRefsOf, FORM_WORDS, EDGE_ORDER, codeList, axisWord, signWord, wallNoun, isRefusal, NOTHING_MOVED, RunIndex, STACKED_KINDS, KIND_NOUN, MAX_DEPTH, MAX_ITERATIONS, MAX_ELEMENTS, rootZoneFrame, zoneOf, Scope, resolveCache, RESOLVE_CACHE_MAX, levelPlanCache, levelsCache, datumTablesOfIr, instanceBodiesOfIr, stepsSpent, keepStateOfIr, stackedResultsOfIr, stackedStepsOfIr, DERIVED_ELEMENTS_PER_ROOM, DRAWN_LIMIT, gridOverlapHint, MAX_OVERLAP_PAIRS_LISTED, BITS, BITS16, numCompare, BOOLEAN, MIN_PLUS, MAX_MIN, MAX_NET_CURVES, TAU4, boxesMeet, ON_MM, T_EPS, ends, PROBE_MM, MAX_NET_PROBE_WORK, DEFAULT_TOL, roomRing, ROOM_CONTAINMENT_SLACK_MM, isOpenAir, isBedroom, isWetRoom, isKitchen, isGarage, isCirculation, EXTERIOR_NODE, DEFAULT_CLEAR_ALLOWANCE_MM, JAMB_PROBE_INSET_MM, leavesOf, joins, BANDS_MAX, bandsMemo, roomMemo, exact, wallKey, roomKey, CLEARANCE, COLLIDE_MIN, FRACTIONS, W_OUTSIDE, W_OBSTACLE, W_PLACED, W_DISTANCE, BoxSums, DIRECT_TAIL, GRID_SAFE, runLength, centredIn, WRAP_TRIES, tagOf, TAG_PRIMITIVES, tagFont, MAX_CELLS, MAX_PROBE, ObstacleGrid, r2, ROW_H, FONT, COL_NO, COL_NAME, COL_AREA, COL_NET, PAD_AREA_W, AREA_COL, LEGEND_SWATCH, LEGEND_NAME, COL_TAG, COL_ROOMS, COL_WIDTH, COL_TYPE, COL_TYPE_CHARS, COL_HAND, NOTES_NO, NOTES_TEXT, charsIn, wordsColumn, legendKey, NOTE_LINE_CHARS, ROOMS_CELL_CHARS, MAX_NOTE_LINES, isMark, isHigh, isLow, CUT_LOOKBACK, cutAt2, clip, TABLE_GAP, scheduleRowCount, legendRowCount, openingRowCount, noteLines, notesRowCount, tableRowsHeight, BOLD, cellOf, colLeft, GAP_F, SCALEBAR_HGT_F, SCALEBAR_FS_F, SCALEBAR_LABEL_F, SCALEBAR_TARGET_F, TITLE_W_F, TITLE_ROW_F, TITLE_FS_F, NICE_LENGTHS, scaleBarLabel, REACH_LAYERS, PAPER_SIZES, PAPER_ORIENTATIONS, PAPER_MM, SHEET_MM, CHAIN_BASE, CHAIN_STEP, CHAIN_SLOTS, DIM_BAND_FONTS, DIM_BAND_MM, AUTO_SCALE_DENOMINATORS, FIXED_STATEMENT_STARTS, ParseError, parseCache, PARSE_CACHE_MAX, ID_SPANS, Parser, USE_SET2, SIDES, SIDE_AXIS, SIDE_OUT, spanGap, TICK_TOL, FACINGS, SYMBOLIC_FACINGS, PROPERTY_LAYER, ARC_STEPS, HEIGHT_STEPS, MAX_FIT_WORK, fitWork, W_BURIED, BURIED_STEPS, W_TIER, isSymbolElement, boxOf2, centred, shifted, moved, offCentre, LAST_RANK, text, DEFAULT_BODY_RADIUS_MM, MIN_CELL_MM, MAX_CELLS2, MAX_GRID_CELLS, isLivingOrDining, r22, clamp32, LANDING_PROBE_MM, inBox2, FRAME_QUANTUM_MM, snapToFrame, snapPoint, NO_ELEMENTS, D4_MATS, bboxCentre, MAX_FACE_WALL_SEGMENTS, MAX_ENCLOSURE_FACES, MAX_WALL_CONTACTS, MAX_LOOPS_PER_CELL, FACE_BUDGET_CAPS, segmentCount, inBox3, piecesBound, roomCurveCount, roomBoxOf, MAX_GROSS_AREA_TESTS, segmentCount2, TREES, DOUBLE_BED_MIN_WIDTH_MM, DEFAULT_RULESET, LINT_PROFILES, DEFERRED_PROFILE_NUMBERS, ADVISORY_CODE_PROFILES, LINT_PROFILE_NAMES, hasOwn, EPS, WALL_BODY_SLACK_MM, isStraightRun, END_ALONG, END_ACROSS, END_STATIONS, NONE, DIAGONAL_TOL, hinged, ENTRY_USES, PRIVATE_USES, PUBLIC_USES, SERVICE_USES, pk, act, unitMm, mm2, MAX_SYMMETRY_COORD, AXIS_OF_K, gcd, usesLabel, tidy, boxRing, HAND_SIZES, lessYX, r4, MAX_CONTACTS_LISTED, MAX_CONTACT_PROBES, EDGES, cmp, lineKey, key2, BUILTINS2, datumRoom, sorted, MAX_KEEP_PATHS, sorted2, GRADE_RANK, SOURCE_RANK, onLattice, onGrid, EDGE_AXIS, Potentials, namesIn, spanKey, ROOM_TYPES2, USE_TO_ROOM_TYPE, USE_PRIORITY, ROOM_TYPE_TO_USE, USE_SET3, ROOM_TYPE_SET, POINT_SCHEMA, WALL_POINT_SCHEMA, INSTANCE_MARKER, PLAN_JSON_SCHEMA, mm22, WALL_COLLISION_SLACK_MM, shortfall, isWc, isServiceCounter, isCookingSurface, CUT, isShort, isFloorLength, isLowUnit, lowUnitCover, NO_BUILDING, DROP_SKIP, wallPhrase2, openBoundaryPhrase, KIND_WORD, CLI_NAME, swingObstructed, doorwayBlocked, pocketRun, POCKET_RUN_RATIO, doorClearance, doorNearCorner, COLLINEAR_TURN_RAD, angleBetween, leafAcrossDoorway, leafTooWide, exitApproachBlocked, stairUnmatched, SHAFT_MIN_OVERLAP_SHARE, sameBlock, shaftFootprintMismatch, word, pct, FOOT_DOOR_CLEAR_MM, NON_DWELLING_LANDING_MM, MAX_STAIR_WORK, rectOf3, runLength2, inset, STAIR_HEADROOM_MM, landingDepth, FACTS, pieceCount2, ownPieces, swingOverStair, stairNoLanding, stairSideEntry, stairHeadVoid, goingFor, MAX_RISER_TRIES, goingsIn, stairTooSteep, landingCount, landingWords, furnitureOnStair, capitalise, modelCache, nearestCache, gridCache, walkView, fullView, narrowHints, narrowRemedies, MAX_ATTRIBUTION_MEASURES, setKey, widenedClear, edgeLeaves, pairOf, hopsCache, pathTooNarrow, circuitousPath, len, have, want, obstacle, roomKey2, MAX_FACE_CURVES, r24, mm3, byText, MAX_WASTE_PCT, DESCRIBE_FACTS, r25, CAPTION_ROOM_CAP, netField, isUnderlayPiece, mkDim, sidePt, witnessPt, chainOffset, EMPTY_LABELS, DEFAULT_DRAW_COST, MAX_DRAW_UNITS, AXIS_PRIMITIVES, SQRT2, SQRT3, SQRT6, ISO, COS_PSI, SIN_PSI, AXON, lift, ringOf, GLAZING_FRACTION, VIEW_LAYERS, VIEW_LAYER_NAMES, pt3, cap, dashAttr, sheetMm, MAX_IMPORT_LEVELS, E2, W, ERROR_CATALOG, ERROR_CODES, PAD_X, PAD_Y, TITLE_FS, SUB_FS, CODE_FS, MSG_FS, FIX_FS, MSG_LH, FIX_LH, CHIP_LINE_H, ROW_PAD, ROW_GAP, ACCENT_W, ROW_INNER_X, ERROR_ACCENT, WARN_ACCENT, SKIP_WHY, ENCLOSURE_CAP_WHY, dimInside, dimOverlap, openingNotDimensioned, UNIT_UM, dimTextMismatch, pointWords, ONCE_PER_PLACEMENT_CODES, dot3, overlaps, USE_PHRASE, aliasMatch, MAX_ANNOTATION_WORK, annotationOverlap, titleOverflow, symbolWithId, idAuthored, roomRef, doorWithId, pointInRoomFloor, orList, emptyBox, boxesMeet2, MIN_CELL_MM2, MAX_CELLS_ROOM, MAX_GRID_CELLS_ROOM, TIE_MM, roomNoClearPath, EDGE_ANCHORS, wcName, wcSideClearance, ACCESSIBLE_RE, NEGATED_RE, SIDE_WALL_REACH_MM, accessibleWcSideWall, furnitureOverWindow, hobUnderWindow, hobFridgeGap, pieceName, furnClearDeclared, SEATS, TABLES, seatFacingAway, oblong, footprintTransposed, ADULT_BEDS, bedUndersized, ADD_DOOR, NO_WAY_IN, kindWord, landsOnNoRoom, noEntrance, furnitureOverlap, furnClearance, fixtureFloating, fixtureBackToRoom, fixtureWrongRoom, furnitureWallCollision, OPEN_PLAN, BOUNDARY_FIXTURES, RUN_PROBE_MM, MIN_INSIDE_SHARE, DEFAULT_PARTITION_MM, EPS2, SAME_LINE_MM, boxesNear, boundaryNoWall, CAP_OF, FACES, facesOf2, floorUnassigned, roomOutsideShell, levelWords, END_SCAN_STEP_MM, MAX_WALL_GAP_SCAN_MM, SHORT_ENDS, wallEndShort, gapsLength, NO_SHELL, exteriorRingOpen, WHAT, furnitureOnVoid, EPS3, dot4, cross5, sub4, unitOf3, NO_OPEN_BOUNDARIES, cornerReported, junctionsFor, nibNeed, reached, cap2, ratioWords, distinct, hits, towards, idHint, openingAtJunction, openingOverlap, connectorAmbiguous, wet, kitchen, zoned, FURNISH_TABLE, familyOf, servedBy, DEFINING, WASH_WITH, NOUN, useNoun, itemWords, MAX_HINT_VERIFICATIONS, MAX_HINT_WALK_ROOMS, said, BASELINE, SPENT, VERIFYING, WET_FIX, KITCHEN_FIX, areaM2, GROSS_AREA_HINT, CAR_BAY_WIDTH_MM, GARAGE_DOOR_SINGLE_MM, GARAGE_DOOR_DOUBLE_MM, GARAGE_DOOR_SOURCE, PARKED_CATEGORIES, noun, USE_FLOOR_NOUN, USE_WIDTH_NOUN, BED_CATEGORIES, GARAGE_DEPTH_SOURCE, asksWidths, readsBeds, USE_FLOOR_SOURCE, perRoomRules, ENTRY_HINT, DOUBLE_HINT, PUBLIC_USES2, HABITABLE_USES, SUITE_USES, CIRCULATION_USES, NOUN2, NIBS_MM, FRONT_DOOR_MM, CORRIDOR_MM, ENTRY_LOBBY_MM, mm4, hasAny, joins2, KITCHEN_FAMILIES, quoted, saysNoun, hq, quotedStart, roomViaPrivate, wetRoomDoor, entranceIntoPrivate, reachability, HABITABLE, OUTSIDE_PROBE_MM, habitableNoWindow, spoken, roomMissingDefining, outdoorOverlapsRoom, balconyNoDoor, stopsAboveFloor, shutToWalking, windowRef, roomNotEquatorFacing, LINT_RULES, LINT_CODE_LAYERS, LINT_CODE_STAGES, statementKey, APPLY_RANK, RESERVED, CONCEPTS, INF, FACING_VALUES, FACINGS2, INTENT_JSON_SCHEMA, AUTHORING_STAGES, RANK, COMPILE_WARNING_STAGES, INTENT_CODE_STAGES, ELEMENT_KIND_STAGES, TASTE_ADVICE, ONE, clampP, cross7, log2Ceil, MAX_EVIDENCE, HABITABLE_USES2, isHabitable2, EvidenceList, TASTE_SKIP_WHY, irRoomsOf, ringSize, plural2, levelOf2, BED_WORDS, r9Judges, r18Judges, r9Ramp, minRectCriterionCost, R9, R18, R16_CORNER, R17_GAP, IRC_R303_1, TASTE_PROFILES, TASTE_PROFILE_SOURCES, TASTE_PROFILE_NAMES, STAIR_SAFETY_CODES, MAX_PIECE_CHECKS_PER_ROOM, MAX_SET_CHECKS_PER_ROOM, MAX_CHECKS_PER_ROOM, RULESETS, LANDING_MM, EXIT_PUSH, EXIT_MM, SWING_MM, WC_SIDE_MM, NOT_GATED_DRAFTING, FINISH_STAGES, FINISH_STAGES_AVAILABLE, FINISH_STAGE_ORDER, USUAL_SIZES, STRICTER_PROFILES, PNG_PREVIEW_WIDTH, CONTEXT_BUNDLE_KB, STARTER_MAX_UNITS, CONTEXT_LEVELS, EXPORT_FORMATS, JSON_FLAG, QUIET_FLAG, EXPECTED_HASH_FLAG, OUT_FLAG, FMT_FLAG, SCALE_FLAG, COLS_FLAG, CHARSET_FLAG, WIDTH_FLAG, OVERLAY_FLAG, ERROR_SVG_FLAG, ERROR_SVG_FLAG_COMPILE, ACCESSIBLE_FLAG, ACC_ID_PREFIX_FLAG, FROM_JSON_FLAG, GRAPH_FLAG, AT_FLAG, INTENT_FLAG, FEEDBACK_FLAG, BRIEF_FLAG, TASTE_FLAG, LEVEL_FLAG, INSTALL_FLAG, ROOM_FLAG, ZONE_FLAG, FACTS_FLAG, WASTE_FLAG, SELECT_FLAG, CODE_FLAG, SEVERITY_FLAG, SECTION_FLAG, CONTEXT_LEVEL_FLAG, VIEW_FLAG, COMPILE_FLAGS, COMPILE_ONLY_FLAGS, COMMANDS, MANIFEST_COMMAND_NAMES, SETTING_KW, CAP_HEIGHT, intoFrame, DxfBuilder, AIA_LAYERS, VIEW_LAYER_COLORS, LTYPES, PLAIN_WALL_LAYER, WALL_CLASS_LAYERS, wallLayerOf, NEW_WALL_LAYER, DEMO_WALL_LAYER, standingLayerOf, DIM_STYLE, blockName, BlockTable, BUNDLED_FONT_FAMILY, CJK_FONT_PACKAGE, fontPathCache, cjkCache, cjkOverride, coverageCache, NAMED_LIMIT, PT_PER_MM, PDF_EPOCH_MS, ROBOTO_ONLY, cache, CACHE_MAX;
 var init_chunk_5DBZH6KB = __esm({
-  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
+  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
     import_meta = {};
     MODEL_RANGE_MM = 33554432;
     MAX_ANGLE_DEG = MODEL_RANGE_MM;
@@ -49437,7 +51476,7 @@ var init_chunk_5DBZH6KB = __esm({
       return { x: a * p.x + b * p.y + 0, y: c * p.x + d * p.y + 0 };
     };
     unitMm = (exact2) => exact2 ? 0.5 : 5e-5;
-    mm = (v) => Number(fmt4(v));
+    mm2 = (v) => Number(fmt4(v));
     MAX_SYMMETRY_COORD = 2e300;
     AXIS_OF_K = ["x", "antidiag", "y", "diag"];
     gcd = (a, b) => {
@@ -50135,7 +52174,7 @@ var init_chunk_5DBZH6KB = __esm({
         }
       }
     };
-    mm2 = (n2) => fmt2(Math.round(n2));
+    mm22 = (n2) => fmt2(Math.round(n2));
     WALL_COLLISION_SLACK_MM = 30;
     shortfall = (required, available) => Math.max(0, required - available);
     isWc = (category) => canonicalFixture(category) === "wc";
@@ -50207,7 +52246,7 @@ var init_chunk_5DBZH6KB = __esm({
           const writtenSwing = g !== null && det(g) < 0 ? d.swing === "in" ? "out" : "in" : d.swing;
           const derived = d.host !== null && isDerivedWall(ir.walls, d.host);
           const place2 = d._relation ? relationText(d._relation) : derived ? "at (x,y)" : "on <wall> at <pos>";
-          const placeWidth = d._relation ? mm2(d.width) : "<mm>";
+          const placeWidth = d._relation ? mm22(d.width) : "<mm>";
           out.push({
             severity: "warning",
             code: "W_SWING_OBSTRUCTED",
@@ -50220,7 +52259,7 @@ var init_chunk_5DBZH6KB = __esm({
               // Only a width strictly under the door's own, recomputed and proved clear, is
               // quoted; with no such width (not even 1 mm) the hint is left out.
               ...narrowTo === null ? [] : [
-                narrowTo >= min ? `Narrow the door to ${mm2(narrowTo)} mm or less, which still clears the ${mm2(min)} mm minimum.` : `Narrowing the door is not a fix here \u2014 the leaf would have to drop to ${mm2(narrowTo)} mm, under the ${mm2(min)} mm minimum passable width.`
+                narrowTo >= min ? `Narrow the door to ${mm22(narrowTo)} mm or less, which still clears the ${mm22(min)} mm minimum.` : `Narrowing the door is not a fix here \u2014 the leaf would have to drop to ${mm22(narrowTo)} mm, under the ${mm22(min)} mm minimum passable width.`
               ],
               // The remedy is named by the property that solves THIS warning (a panel that sweeps nothing)
               // and by statements the author can paste, not as a vague suggestion.
@@ -50254,10 +52293,10 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_DOORWAY_BLOCKED",
             ...ctx.at(d),
-            message: `Doorway is blocked \u2014 the approach needs ${mm2(depth)} mm clear on each side but "${gn}" leaves ${mm2(gap)} mm (${mm2(short2)} mm short).`,
+            message: `Doorway is blocked \u2014 the approach needs ${mm22(depth)} mm clear on each side but "${gn}" leaves ${mm22(gap)} mm (${mm22(short2)} mm short).`,
             hints: [
-              `Move "${gn}" ${mm2(short2)} mm clear of the opening \u2014 \`${CLI_NAME} repair\` computes the smallest clearing shift.`,
-              `Or shrink it by ${mm2(short2)} mm on the axis facing the door, so it stops ${mm2(depth)} mm short of the opening.`,
+              `Move "${gn}" ${mm22(short2)} mm clear of the opening \u2014 \`${CLI_NAME} repair\` computes the smallest clearing shift.`,
+              `Or shrink it by ${mm22(short2)} mm on the axis facing the door, so it stops ${mm22(depth)} mm short of the opening.`,
               `Or move the door along its wall (\`on <wall> at <pos>\`) so its landing misses "${gn}".`
             ]
           });
@@ -50278,10 +52317,10 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_DOORWAY_BLOCKED",
             ...ctx.at(o),
-            message: `${name[0].toUpperCase()}${name.slice(1)} is blocked \u2014 the approach needs ${mm2(depth)} mm clear on each side but "${gn}" leaves ${mm2(gap)} mm (${mm2(short2)} mm short).`,
+            message: `${name[0].toUpperCase()}${name.slice(1)} is blocked \u2014 the approach needs ${mm22(depth)} mm clear on each side but "${gn}" leaves ${mm22(gap)} mm (${mm22(short2)} mm short).`,
             hints: [
-              `Move ${ref} ${mm2(short2)} mm clear of the opening \u2014 \`${CLI_NAME} repair\` computes the smallest clearing shift.`,
-              `Or shrink it by ${mm2(short2)} mm on the axis facing the opening, so it stops ${mm2(depth)} mm short of the wall's face.`,
+              `Move ${ref} ${mm22(short2)} mm clear of the opening \u2014 \`${CLI_NAME} repair\` computes the smallest clearing shift.`,
+              `Or shrink it by ${mm22(short2)} mm on the axis facing the opening, so it stops ${mm22(depth)} mm short of the wall's face.`,
               o._derived ? "The opening is derived by `open between` and spans the rooms' shared edge, so the piece is what moves." : `Or move the opening along its wall (\`on <wall> at <pos>\`) so its landing misses ${ref}.`
             ]
           });
@@ -50318,7 +52357,7 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_POCKET_RUN",
             ...at2(d),
-            message: `Pocket door has nowhere to slide \u2014 it needs ${mm2(need)} mm of clear wall past the ${side} jamb but only ${mm2(have2)} mm is available on ${wallNamed(ctx, seg)} (${mm2(shortfall(need, have2))} mm short).`,
+            message: `Pocket door has nowhere to slide \u2014 it needs ${mm22(need)} mm of clear wall past the ${side} jamb but only ${mm22(have2)} mm is available on ${wallNamed(ctx, seg)} (${mm22(shortfall(need, have2))} mm short).`,
             hints: [
               `Slide it the other way \u2014 \`slide ${reversed}\`${reverseFits ? " (that run is long enough)" : " \u2014 though that run is no longer"}.`,
               "Or move the door along its wall (`on <wall> at <pos>`) so the pocket lands on solid wall.",
@@ -50348,8 +52387,8 @@ var init_chunk_5DBZH6KB = __esm({
               severity: "warning",
               code: "W_DOOR_CLEARANCE",
               ...at2(d),
-              message: `Door is a glazed sliding door that leaves ${mm2(leaf)} mm to walk through (under the ${rules.minDoorWidthMm} mm minimum nominal width): one panel of two moves.`,
-              hints: [`Widen it to at least ${mm2(2 * rules.minDoorWidthMm)} mm, two ${rules.minDoorWidthMm} mm panels.`]
+              message: `Door is a glazed sliding door that leaves ${mm22(leaf)} mm to walk through (under the ${rules.minDoorWidthMm} mm minimum nominal width): one panel of two moves.`,
+              hints: [`Widen it to at least ${mm22(2 * rules.minDoorWidthMm)} mm, two ${rules.minDoorWidthMm} mm panels.`]
             });
             continue;
           }
@@ -50358,8 +52397,8 @@ var init_chunk_5DBZH6KB = __esm({
               severity: "warning",
               code: "W_DOOR_CLEARANCE",
               ...at2(d),
-              message: `Door is a double door whose leaves are each ${mm2(leaf)} mm wide (under the ${rules.minDoorWidthMm} mm minimum nominal width): a person passes through one leaf.`,
-              hints: [`Widen it to at least ${mm2(2 * rules.minDoorWidthMm)} mm, two ${rules.minDoorWidthMm} mm leaves.`]
+              message: `Door is a double door whose leaves are each ${mm22(leaf)} mm wide (under the ${rules.minDoorWidthMm} mm minimum nominal width): a person passes through one leaf.`,
+              hints: [`Widen it to at least ${mm22(2 * rules.minDoorWidthMm)} mm, two ${rules.minDoorWidthMm} mm leaves.`]
             });
             continue;
           }
@@ -50393,9 +52432,9 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_DOOR_NEAR_CORNER",
             ...at2(d),
-            message: `Door leaves too little wall at a corner \u2014 the nib between its jamb and the corner at (${mm2(worst.corner.x)}, ${mm2(worst.corner.y)}) of ${wallPhrase2(seg)} should be at least ${mm2(need)} mm, the wall's own thickness, but measures ${mm2(worst.have)} mm (${mm2(short2)} mm short).`,
+            message: `Door leaves too little wall at a corner \u2014 the nib between its jamb and the corner at (${mm22(worst.corner.x)}, ${mm22(worst.corner.y)}) of ${wallPhrase2(seg)} should be at least ${mm22(need)} mm, the wall's own thickness, but measures ${mm22(worst.have)} mm (${mm22(short2)} mm short).`,
             hints: [
-              d._relation ? `Move the door ${mm2(short2)} mm further from that corner along the wall: the position in \`${relationText(d._relation)}\` is the one number to change.` : isDerivedWall(ir.walls, seg) ? `Move the door ${mm2(short2)} mm further from that corner along the wall: its \`at (x,y)\` is the one position to change.` : `Move the door ${mm2(short2)} mm further from that corner \u2014 \`on ${seg.wallId} at <pos>\` measures along the run, so the position is the one number to change.`,
+              d._relation ? `Move the door ${mm22(short2)} mm further from that corner along the wall: the position in \`${relationText(d._relation)}\` is the one number to change.` : isDerivedWall(ir.walls, seg) ? `Move the door ${mm22(short2)} mm further from that corner along the wall: its \`at (x,y)\` is the one position to change.` : `Move the door ${mm22(short2)} mm further from that corner \u2014 \`on ${seg.wallId} at <pos>\` measures along the run, so the position is the one number to change.`,
               isDerivedWall(ir.walls, seg) ? "Or move the rooms so the corner moves away from the jamb: the wall is derived from them." : `Or lengthen wall "${seg.wallId}" past the door, so the corner moves away from the jamb instead.`,
               "Narrowing the leaf would also close the gap and is deliberately NOT offered as a fix: rewriting the width you asked for to satisfy a checker is constraint laundering, and it heads toward `W_DOOR_CLEARANCE`."
             ]
@@ -50460,10 +52499,10 @@ var init_chunk_5DBZH6KB = __esm({
               severity: "warning",
               code: "W_LEAF_ACROSS_DOORWAY",
               ...at2(a),
-              message: `In ${ctx.nameOf(room2)}, the open leaf of ${toA} parks ${mm2(hit.depth)} mm in front of ${toB} and leaves ${mm2(hit.free)} mm of its ${mm2(b.width)} mm doorway clear (${mm2(need)} mm needed), so one door must be shut to use the other.`,
+              message: `In ${ctx.nameOf(room2)}, the open leaf of ${toA} parks ${mm22(hit.depth)} mm in front of ${toB} and leaves ${mm22(hit.free)} mm of its ${mm22(b.width)} mm doorway clear (${mm22(need)} mm needed), so one door must be shut to use the other.`,
               hints: [
                 a.doorKind === "double" ? `Open ${refA} to the other side of its wall (flip its \`swing\`).` : `Hang ${refA} on its other jamb (flip its \`hinge\`)${flipClears ? ", which parks the leaf clear of this doorway" : ""}, or open it to the other side of its wall (flip its \`swing\`).`,
-                `Or move ${refA} or ${refB} along its wall until the open leaf stands at least ${mm2(depth)} mm clear of the doorway's face, or beside it.`,
+                `Or move ${refA} or ${refB} along its wall until the open leaf stands at least ${mm22(depth)} mm clear of the doorway's face, or beside it.`,
                 `Or make ${refA} a \`sliding\` or \`pocket\` door, which parks no leaf in the room.`
               ]
             });
@@ -50491,14 +52530,14 @@ var init_chunk_5DBZH6KB = __esm({
           if (leaf <= max) continue;
           const name = openingName(ctx, d);
           const ref = d._idAuthored === true ? `door "${d.id}"` : name;
-          const what = kind === "double" ? `a double door whose leaves are each ${mm2(leaf)} mm wide` : `one hinged leaf ${mm2(leaf)} mm wide`;
+          const what = kind === "double" ? `a double door whose leaves are each ${mm22(leaf)} mm wide` : `one hinged leaf ${mm22(leaf)} mm wide`;
           out.push({
             severity: "warning",
             code: "W_LEAF_TOO_WIDE",
             ...ctx.at(d),
-            message: `${name[0].toUpperCase()}${name.slice(1)} is ${what}; a swinging leaf is at most ${mm2(max)} mm (${mm2(leaf - max)} mm over), wider than a door is made to hang and swing.`,
+            message: `${name[0].toUpperCase()}${name.slice(1)} is ${what}; a swinging leaf is at most ${mm22(max)} mm (${mm22(leaf - max)} mm over), wider than a door is made to hang and swing.`,
             hints: [
-              kind === "double" ? `Narrow ${ref} to ${mm2(atMost(2 * max))} mm or less (\`width ${mm2(atMost(2 * max))}\`), or keep the width and make it a \`sliding\` or \`bifold\` door, or a cased \`opening\` if it needs no door.` : `Make ${ref} a pair of leaves, \`door double \u2026 width ${mm2(d.width)}\` (each leaf ${mm2(d.width / 2)} mm${d.width / 2 > max ? `, still over ${mm2(max)}: narrow it to ${mm2(atMost(2 * max))} mm or less too` : ""}), or narrow it to ${mm2(atMost(max))} mm or less, or make it a \`sliding\` or \`bifold\` door, or a cased \`opening\` if it needs no door.`
+              kind === "double" ? `Narrow ${ref} to ${mm22(atMost(2 * max))} mm or less (\`width ${mm22(atMost(2 * max))}\`), or keep the width and make it a \`sliding\` or \`bifold\` door, or a cased \`opening\` if it needs no door.` : `Make ${ref} a pair of leaves, \`door double \u2026 width ${mm22(d.width)}\` (each leaf ${mm22(d.width / 2)} mm${d.width / 2 > max ? `, still over ${mm22(max)}: narrow it to ${mm22(atMost(2 * max))} mm or less too` : ""}), or narrow it to ${mm22(atMost(max))} mm or less, or make it a \`sliding\` or \`bifold\` door, or a cased \`opening\` if it needs no door.`
             ]
           });
         }
@@ -50545,11 +52584,11 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_EXIT_APPROACH_BLOCKED",
             ...ctx.at(d),
-            message: `"${gn}" stands ${mm2(gap)} mm inside ${name} and leaves ${mm2(block.stretch)} mm of its ${mm2(d.width)} mm width clear: a way out needs ${mm2(depth)} mm of clear floor in front of it, ${d.width > need ? `${mm2(need)} mm wide` : "the door's full width"}.`,
+            message: `"${gn}" stands ${mm22(gap)} mm inside ${name} and leaves ${mm22(block.stretch)} mm of its ${mm22(d.width)} mm width clear: a way out needs ${mm22(depth)} mm of clear floor in front of it, ${d.width > need ? `${mm22(need)} mm wide` : "the door's full width"}.`,
             hints: [
-              `Move ${ref} ${mm2(short2)} mm further from the wall, so it stands ${mm2(depth)} mm clear of the doorway, or slide it along the wall clear of the door's span.`,
+              `Move ${ref} ${mm22(short2)} mm further from the wall, so it stands ${mm22(depth)} mm clear of the doorway, or slide it along the wall clear of the door's span.`,
               `Or move ${doorRef} along its wall (\`on <wall> at <pos>\`) so the floor in front of it is clear.`,
-              `The ${mm2(depth)} mm is the clear landing inside an exterior door: the International Residential Code R311.3's 36 in (914 mm) by default; under \`accessibility-advisory\`, the 2010 ADA Standards' Table 404.2.4.1 front approach, 1220 mm on the push side and 1525 mm on the pull side.`
+              `The ${mm22(depth)} mm is the clear landing inside an exterior door: the International Residential Code R311.3's 36 in (914 mm) by default; under \`accessibility-advisory\`, the 2010 ADA Standards' Table 404.2.4.1 front approach, 1220 mm on the push side and 1525 mm on the pull side.`
             ]
           });
         }
@@ -50640,7 +52679,7 @@ var init_chunk_5DBZH6KB = __esm({
             ...at2(v),
             message: `The ${name} ${placeAt({ x: r.x + r.w / 2, y: r.y + r.h / 2 })} on level ${ir.level} does not stand over the run it continues from level ${below.level}: ${why}.`,
             hints: [
-              `${hint ?? `Draw \`${v.id}\` with the same footprint on both storeys: on level ${below.level} it is at (${mm2(b.x)},${mm2(b.y)}) size ${mm2(b.w)}x${mm2(b.h)}, here at (${mm2(a.x)},${mm2(a.y)}) size ${mm2(a.w)}x${mm2(a.h)}`}. If they are two different runs, give them different ids.`
+              `${hint ?? `Draw \`${v.id}\` with the same footprint on both storeys: on level ${below.level} it is at (${mm22(b.x)},${mm22(b.y)}) size ${mm22(b.w)}x${mm22(b.h)}, here at (${mm22(a.x)},${mm22(a.y)}) size ${mm22(a.w)}x${mm22(a.h)}`}. If they are two different runs, give them different ids.`
             ]
           });
         }
@@ -50648,7 +52687,7 @@ var init_chunk_5DBZH6KB = __esm({
       }
     };
     word = (k) => k === "elevator" ? "an elevator" : k === "escalator" ? "an escalator" : "a stair";
-    pct = (share) => `${mm2(share * 100)}%`;
+    pct = (share) => `${mm22(share * 100)}%`;
     FOOT_DOOR_CLEAR_MM = 400;
     NON_DWELLING_LANDING_MM = 1200;
     MAX_STAIR_WORK = 2e6;
@@ -50701,7 +52740,7 @@ var init_chunk_5DBZH6KB = __esm({
             }
             if (hit === null) continue;
             const headNeed = sf.needs[sf.landings.findIndex((l) => l.end === "head")] ?? sf.needs[0];
-            const where = hit === "flight" ? "its open leaf sweeps the flight itself" : hit === "mid" ? `its open leaf sweeps ${sf.well ? "the stairwell" : "a landing between the flights"}` : hit === "head" ? `its open leaf sweeps the landing at the head of the flight, the ${mm2(headNeed)} mm a person steps off onto` : dwelling ? `its open leaf comes within ${mm2(FOOT_DOOR_CLEAR_MM)} mm of the bottom step, the clear space a door at the foot of a flight must leave across its width` : "its open leaf sweeps the landing at the foot of the flight, which no door of a building other than a dwelling may swing across";
+            const where = hit === "flight" ? "its open leaf sweeps the flight itself" : hit === "mid" ? `its open leaf sweeps ${sf.well ? "the stairwell" : "a landing between the flights"}` : hit === "head" ? `its open leaf sweeps the landing at the head of the flight, the ${mm22(headNeed)} mm a person steps off onto` : dwelling ? `its open leaf comes within ${mm22(FOOT_DOOR_CLEAR_MM)} mm of the bottom step, the clear space a door at the foot of a flight must leave across its width` : "its open leaf sweeps the landing at the foot of the flight, which no door of a building other than a dwelling may swing across";
             const clears = (alt) => {
               const sws = doorLeaves(alt);
               return sws.length > 0 && sws.every((sw) => swingHit(sw, d.head, sf, ctx) === null);
@@ -50760,7 +52799,7 @@ var init_chunk_5DBZH6KB = __esm({
                 ...ctx.at(v),
                 message: `${capitalise(stairName(v, ctx))} has too short a landing between its flights: ${what}, where ${asks} needs ${m.required} mm (${m.short} mm short).`,
                 hints: [
-                  wall2 === null ? `Lengthen the landing between the flights of \`${v.id}\` so it runs at least ${m.required} mm along each flight it joins (its \`size\`, with the flights moved so they still touch it), on every storey it is drawn on.` : `Move ${wall2} clear of the landing between the flights of \`${v.id}\`, or move the stair, so ${m.required} mm, ${mm2(l.width)} mm wide, stands clear along each flight the landing joins.`
+                  wall2 === null ? `Lengthen the landing between the flights of \`${v.id}\` so it runs at least ${m.required} mm along each flight it joins (its \`size\`, with the flights moved so they still touch it), on every storey it is drawn on.` : `Move ${wall2} clear of the landing between the flights of \`${v.id}\`, or move the stair, so ${m.required} mm, ${mm22(l.width)} mm wide, stands clear along each flight the landing joins.`
                 ]
               });
               return;
@@ -50771,7 +52810,7 @@ var init_chunk_5DBZH6KB = __esm({
               ...ctx.at(v),
               message: `${capitalise(stairName(v, ctx))} has no landing at its ${l.end}: ${what}, where a landing as long as the flight is wide needs ${m.required} mm (${m.short} mm short).`,
               hints: [
-                `Move or shorten \`${v.id}\`${blocker} so ${m.required} mm of floor, ${mm2(l.width)} mm wide, stands clear beyond its ${l.end}; a flight is stepped off straight ahead, not into a wall or a turn.`
+                `Move or shorten \`${v.id}\`${blocker} so ${m.required} mm of floor, ${mm22(l.width)} mm wide, stands clear beyond its ${l.end}; a flight is stepped off straight ahead, not into a wall or a turn.`
               ]
             });
           });
@@ -50877,7 +52916,7 @@ var init_chunk_5DBZH6KB = __esm({
               ...ctx.at(v),
               message: `A void opens on the landing at the head of ${stairName(v, ctx)}: the floor ends ${m.available} mm past the top step, where a person stepping off the flight needs ${m.required} mm (${m.short} mm short).`,
               hints: [
-                `Move the void \`${hole.id}\` clear of the ${m.required} \xD7 ${mm2(l.width)} mm landing beyond the head of \`${v.id}\` (beside the stairwell, or drawn as the stairwell itself), or shrink it.`
+                `Move the void \`${hole.id}\` clear of the ${m.required} \xD7 ${mm22(l.width)} mm landing beyond the head of \`${v.id}\` (beside the stairwell, or drawn as the stairwell itself), or shrink it.`
               ]
             });
           });
@@ -50911,7 +52950,7 @@ var init_chunk_5DBZH6KB = __esm({
           if (short2 === "undecided") ctx.skip("block-stair");
           if (short2 === "undecided" || short2 === null && run + VERTEX_EPS >= need.run) continue;
           const limits = ctx.rules.stairMaxPitchRatio === null ? "riser and going limits come" : "riser, going and pitch limits come";
-          const going = mm2(Math.ceil(need.going - VERTEX_EPS));
+          const going = mm22(Math.ceil(need.going - VERTEX_EPS));
           const atMost = `at ${limitMm(ctx.rules.stairMaxRiseMm)} a riser at most that is`;
           if (short2 !== null) {
             const risers = short2.held.reduce((n2, x) => n2 + x + 1, 0);
@@ -50924,7 +52963,7 @@ var init_chunk_5DBZH6KB = __esm({
               severity: "warning",
               code: "W_STAIR_TOO_STEEP",
               ...ctx.at(v),
-              message: `${capitalise(stairName(v, ctx))} is too steep: its flights' ${mm2(run)} mm run must climb the ${mm2(rise)} mm storey, and ${atMost} ${need.risers} risers, ${need.goings} goings and ${landingWords(v)}, each going at least ${going} mm, but the flights hold only ${short2.held.join(" + ")} whole goings, which makes ${risers} risers of ${limitMm(rise / risers)} (${owed === 1 ? "1 going" : `${owed} goings`} short).`,
+              message: `${capitalise(stairName(v, ctx))} is too steep: its flights' ${mm22(run)} mm run must climb the ${mm22(rise)} mm storey, and ${atMost} ${need.risers} risers, ${need.goings} goings and ${landingWords(v)}, each going at least ${going} mm, but the flights hold only ${short2.held.join(" + ")} whole goings, which makes ${risers} risers of ${limitMm(rise / risers)} (${owed === 1 ? "1 going" : `${owed} goings`} short).`,
               hints: [
                 `Lengthen ${owed === 1 ? `one flight of \`${v.id}\` ${each[0]}` : `${owed} flights of \`${v.id}\`, ${each.join(" and ")}`} on every storey it is drawn on (each flight's \`size\`), or correct the storey \`height\` if it is wrong; the ${limits} from the lint profile (\`--profile\`).`
               ]
@@ -50936,7 +52975,7 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_STAIR_TOO_STEEP",
             ...ctx.at(v),
-            message: isBlockStair(v) ? `${capitalise(stairName(v, ctx))} is too steep: its flights' ${mm2(run)} mm run must climb the ${mm2(rise)} mm storey, and ${atMost} ${need.risers} risers, ${need.goings} goings and ${landingWords(v)}, each going at least ${going} mm, so ${m.required} mm of flights (${m.short} mm short).` : `${capitalise(stairName(v, ctx))} is too steep: its ${mm2(run)} mm run must climb the ${mm2(rise)} mm storey, and ${atMost} ${need.risers} risers and ${need.goings} goings of at least ${going} mm, a ${m.required} mm run (${m.short} mm short).`,
+            message: isBlockStair(v) ? `${capitalise(stairName(v, ctx))} is too steep: its flights' ${mm22(run)} mm run must climb the ${mm22(rise)} mm storey, and ${atMost} ${need.risers} risers, ${need.goings} goings and ${landingWords(v)}, each going at least ${going} mm, so ${m.required} mm of flights (${m.short} mm short).` : `${capitalise(stairName(v, ctx))} is too steep: its ${mm22(run)} mm run must climb the ${mm22(rise)} mm storey, and ${atMost} ${need.risers} risers and ${need.goings} goings of at least ${going} mm, a ${m.required} mm run (${m.short} mm short).`,
             hints: [
               isBlockStair(v) ? `Lengthen the flights of \`${v.id}\` to at least ${m.required} mm between them on every storey it is drawn on (each flight's \`size\`), or correct the storey \`height\` if it is wrong; the ${limits} from the lint profile (\`--profile\`).` : `Lengthen \`${v.id}\` along its flight to at least ${m.required} mm on every storey it is drawn on (its \`size\`), or correct the storey \`height\` if it is wrong, or draw it as one block stair, \`stair dir up width \u2026 { flight \u2026 landing \u2026 flight \u2026 }\`, where a landing replaces one going; flights drawn as separate stairs are still each judged against the whole storey; the ${limits} from the lint profile (\`--profile\`).`
             ]
@@ -50981,15 +53020,15 @@ var init_chunk_5DBZH6KB = __esm({
             if (hit === void 0) continue;
             const name = piece.label ?? piece.category;
             const r = hit.rect;
-            const span = `x ${mm2(r.x)}\u2013${mm2(r.x + r.w)}, y ${mm2(r.y)}\u2013${mm2(r.y + r.h)}`;
+            const span = `x ${mm22(r.x)}\u2013${mm22(r.x + r.w)}, y ${mm22(r.y)}\u2013${mm22(r.y + r.h)}`;
             const stair2 = stairName(sf.v, ctx);
             const { ox, oy } = rectOverlapAmounts(foot, r);
-            const covered = `Furniture "${name}" stands on ${stair2}: it covers ${mm2(ox)} \xD7 ${mm2(oy)} mm of`;
+            const covered = `Furniture "${name}" stands on ${stair2}: it covers ${mm22(ox)} \xD7 ${mm22(oy)} mm of`;
             out.push({
               severity: "warning",
               code: "W_FURNITURE_ON_STAIR",
               ...ctx.at(piece),
-              message: hit.where === "flight" ? `${covered} ${sf.well ? "the stairwell" : `the flight, where less than ${mm2(STAIR_HEADROOM_MM)} mm of headroom is left`}.` : hit.where === "mid" ? `${covered} ${sf.well ? "the stairwell" : "a landing between the flights"}.` : `Furniture "${name}" stands on the landing at the ${hit.where} of ${stair2}: a landing as long as the flight is wide, ${mm2(sf.needs[hit.landing])} mm, stays clear of furniture.`,
+              message: hit.where === "flight" ? `${covered} ${sf.well ? "the stairwell" : `the flight, where less than ${mm22(STAIR_HEADROOM_MM)} mm of headroom is left`}.` : hit.where === "mid" ? `${covered} ${sf.well ? "the stairwell" : "a landing between the flights"}.` : `Furniture "${name}" stands on the landing at the ${hit.where} of ${stair2}: a landing as long as the flight is wide, ${mm22(sf.needs[hit.landing])} mm, stays clear of furniture.`,
               hints: [
                 hit.where === "flight" ? `Move or resize it so it clears ${sf.well ? `the stairwell of \`${sf.v.id}\`` : `the part of \`${sf.v.id}\` with too little headroom to stand under`} (${span}), or move the stair.` : hit.where === "mid" ? `Move or resize it so it clears ${sf.well ? "the stairwell" : "the landing"} of \`${sf.v.id}\` (${span}), or move the stair.` : `Move or resize it so it clears the floor beyond the ${hit.where} of \`${sf.v.id}\` (${span}), or move the stair.`
               ]
@@ -51007,15 +53046,15 @@ var init_chunk_5DBZH6KB = __esm({
     fullView = (ctx) => ({ from: "nearest", access: ctx.access(), ways: null });
     narrowHints = (min, doors, ctx, view, unreached) => [...narrowRemedies(min, doors, ctx), ...mainEntranceHint(ctx, view, unreached)];
     narrowRemedies = (min, doors, ctx) => doors === null ? [
-      `Widen the tightest door/opening on the way to at least ${mm2(min)} mm.`,
-      `Or move the furniture pinching the route so ${mm2(min)} mm of clear width survives.`,
+      `Widen the tightest door/opening on the way to at least ${mm22(min)} mm.`,
+      `Or move the furniture pinching the route so ${mm22(min)} mm of clear width survives.`,
       "Or add a second way in (another door or a leafless `opening`) so the pinch is avoidable."
     ] : [
       ...doors.map(
-        (e) => `Widen ${openingClauseById(ctx.ir.elements, e.doorId) ? `the opening ${openingClauseById(ctx.ir.elements, e.doorId)} derives (give it a \`width\`)` : `${e.kind} "${e.doorId}"`} to \`width ${mm2(clearingWidth(e, ctx))}\` (now ${mm2(e.nominalWidth)}${edgeLeaves(e, ctx) === 2 ? `; ${pairOf(e, ctx).name}, so each ${pairOf(e, ctx).leaf} is ${mm2(clearingWidth(e, ctx) / 2)}: a person passes through one` : ""})${doors.length > 1 ? "" : `, which lets the walk clear the ${mm2(min)} mm minimum`}.`
+        (e) => `Widen ${openingClauseById(ctx.ir.elements, e.doorId) ? `the opening ${openingClauseById(ctx.ir.elements, e.doorId)} derives (give it a \`width\`)` : `${e.kind} "${e.doorId}"`} to \`width ${mm22(clearingWidth(e, ctx))}\` (now ${mm22(e.nominalWidth)}${edgeLeaves(e, ctx) === 2 ? `; ${pairOf(e, ctx).name}, so each ${pairOf(e, ctx).leaf} is ${mm22(clearingWidth(e, ctx) / 2)}: a person passes through one` : ""})${doors.length > 1 ? "" : `, which lets the walk clear the ${mm22(min)} mm minimum`}.`
       ),
       // A set is what was measured; that it needs every member is not claimed.
-      ...doors.length > 1 ? [`With these widened together the walk clears the ${mm2(min)} mm minimum.`] : [],
+      ...doors.length > 1 ? [`With these widened together the walk clears the ${mm22(min)} mm minimum.`] : [],
       "Or add a second way in (another door or a leafless `opening`) so the pinch is avoidable."
     ];
     MAX_ATTRIBUTION_MEASURES = 2;
@@ -51083,7 +53122,7 @@ var init_chunk_5DBZH6KB = __esm({
           const sealed2 = seals.walk.get(r.id);
           if (sealed2 === void 0) return null;
           const tail = "the room is reached only through its own door from outside";
-          const message = sealed2 > 0 ? `From the main entrance the walk to ${nameOf2(r)} squeezes to ${mm2(sealed2)} mm and stops there (${mm2(shortfall(min, sealed2))} mm below the ${mm2(min)} mm minimum); ${tail}.` : `From the main entrance the walk to ${nameOf2(r)} is blocked: furniture and its clearances leave no gap at all (0 mm against the ${mm2(min)} mm minimum); ${tail}.`;
+          const message = sealed2 > 0 ? `From the main entrance the walk to ${nameOf2(r)} squeezes to ${mm22(sealed2)} mm and stops there (${mm22(shortfall(min, sealed2))} mm below the ${mm22(min)} mm minimum); ${tail}.` : `From the main entrance the walk to ${nameOf2(r)} is blocked: furniture and its clearances leave no gap at all (0 mm against the ${mm22(min)} mm minimum); ${tail}.`;
           const ids2 = (own3.get(r.id) ?? []).map((id) => `\`${id}\``).join(", ");
           return {
             severity: "warning",
@@ -51100,7 +53139,7 @@ var init_chunk_5DBZH6KB = __esm({
           const wayIn = blockedOf(r.id);
           if (wayIn !== void 0) {
             warned.add(r.id);
-            const message = wayIn > 0 ? `The walk from the entrance to ${nameOf2(r)} squeezes to ${mm2(wayIn)} mm and stops there \u2014 no way in is wider, so no route reaches the room (${mm2(shortfall(min, wayIn))} mm below the ${mm2(min)} mm minimum).` : `The walk from the entrance to ${nameOf2(r)} is blocked: furniture and its clearances leave no gap at all (0 mm against the ${mm2(min)} mm minimum).`;
+            const message = wayIn > 0 ? `The walk from the entrance to ${nameOf2(r)} squeezes to ${mm22(wayIn)} mm and stops there \u2014 no way in is wider, so no route reaches the room (${mm22(shortfall(min, wayIn))} mm below the ${mm22(min)} mm minimum).` : `The walk from the entrance to ${nameOf2(r)} is blocked: furniture and its clearances leave no gap at all (0 mm against the ${mm22(min)} mm minimum).`;
             out.push({
               severity: "warning",
               code: "W_PATH_TOO_NARROW",
@@ -51127,7 +53166,7 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_PATH_TOO_NARROW",
             ...at2(r),
-            message: `The walk from the entrance to ${nameOf2(r)} squeezes to ${mm2(rc.bottleneckClearWidthMm)} mm (${mm2(shortfall(min, rc.bottleneckClearWidthMm))} mm below the ${mm2(min)} mm minimum)${namedClause(doors, rc.bottleneckClearWidthMm, ctx, viewOf(r.id))}.`,
+            message: `The walk from the entrance to ${nameOf2(r)} squeezes to ${mm22(rc.bottleneckClearWidthMm)} mm (${mm22(shortfall(min, rc.bottleneckClearWidthMm))} mm below the ${mm22(min)} mm minimum)${namedClause(doors, rc.bottleneckClearWidthMm, ctx, viewOf(r.id))}.`,
             hints: narrowHints(min, doors, ctx, viewOf(r.id), unreached)
           });
         }
@@ -51143,7 +53182,7 @@ var init_chunk_5DBZH6KB = __esm({
             severity: "warning",
             code: "W_PATH_TOO_NARROW",
             ...at2(from),
-            message: `The route from ${nameOf2(from)} to ${to ? nameOf2(to) : "another room"} squeezes to ${mm2(w)} mm (${mm2(shortfall(min, w))} mm below the ${mm2(min)} mm minimum).`,
+            message: `The route from ${nameOf2(from)} to ${to ? nameOf2(to) : "another room"} squeezes to ${mm22(w)} mm (${mm22(shortfall(min, w))} mm below the ${mm22(min)} mm minimum).`,
             // A route runs room to room: where the walk starts says nothing about it.
             hints: narrowRemedies(min, null, ctx)
           });
@@ -51188,7 +53227,7 @@ var init_chunk_5DBZH6KB = __esm({
         return out;
       }
     };
-    len = (x) => Number(mm2(x));
+    len = (x) => Number(mm22(x));
     have = (x) => Number(deficitMm(0, x).available);
     want = (x) => Number(deficitMm(x, 0).required);
     obstacle = (o) => o.kind === "furniture" ? { kind: "furniture", id: o.piece.id } : o.kind === "wall" ? { kind: "wall", id: o.seg.wallId } : { kind: "swing", id: o.door.id };
@@ -51204,7 +53243,7 @@ var init_chunk_5DBZH6KB = __esm({
     DESCRIBE_FACTS = ["symmetry", "syntax", "depends", "clearances", "quantities"];
     r25 = (n2) => Math.round(n2 * 100) / 100;
     CAPTION_ROOM_CAP = 8;
-    netField = (mm22) => mm22 === void 0 ? {} : { net_area_m2: r25(mm22 / 1e6) };
+    netField = (mm222) => mm222 === void 0 ? {} : { net_area_m2: r25(mm222 / 1e6) };
     isUnderlayPiece = (el2) => el2.kind === "furniture" && isUnderlay(el2.category);
     mkDim = (from, to, offset, text2) => ({
       kind: "dim",
@@ -53707,15 +55746,15 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
           }
           if (far !== null && m.half + far.measured <= max + VERTEX_EPS) continue;
           const name = subject(f, wcName(f), ctx);
-          const figure = `the ruleset's \`wcAccessibleSideWallMaxMm\` is ${mm2(max)} mm, centreline to a side wall's face`;
+          const figure = `the ruleset's \`wcAccessibleSideWallMaxMm\` is ${mm22(max)} mm, centreline to a side wall's face`;
           if (far === null) {
             out.push({
               severity: "warning",
               code: "W_ACCESSIBLE_WC_SIDE_WALL",
               ...ctx.at(f),
-              message: `${name} has no side wall within ${mm2(SIDE_WALL_REACH_MM)} mm of its centreline; an accessible WC needs one within ${mm2(max)} mm, for a grab rail and a side transfer.`,
+              message: `${name} has no side wall within ${mm22(SIDE_WALL_REACH_MM)} mm of its centreline; an accessible WC needs one within ${mm22(max)} mm, for a grab rail and a side transfer.`,
               hints: [
-                `"${f.id}" has no wall beside it (${figure}): move it into a corner, its centreline ${mm2(max)} mm or less from the side wall.`
+                `"${f.id}" has no wall beside it (${figure}): move it into a corner, its centreline ${mm22(max)} mm or less from the side wall.`
               ]
             });
             continue;
@@ -53726,9 +55765,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             severity: "warning",
             code: "W_ACCESSIBLE_WC_SIDE_WALL",
             ...ctx.at(f),
-            message: `${name} has its centreline ${mm2(at2)} mm from the nearer side wall; an accessible WC needs one within ${mm2(max)} mm, for a grab rail and a side transfer (${mm2(at2 - max)} mm too far).`,
+            message: `${name} has its centreline ${mm22(at2)} mm from the nearer side wall; an accessible WC needs one within ${mm22(max)} mm, for a grab rail and a side transfer (${mm22(at2 - max)} mm too far).`,
             hints: [
-              `"${f.id}"'s centreline is ${mm2(at2)} mm from ${wall2.hint} (${figure}): slide it at least ${mm2(at2 - max)} mm along its back wall toward ${wall2.hint}, its centreline no nearer that wall than \`wcSideClearanceMm\`.`
+              `"${f.id}"'s centreline is ${mm22(at2)} mm from ${wall2.hint} (${figure}): slide it at least ${mm22(at2 - max)} mm along its back wall toward ${wall2.hint}, its centreline no nearer that wall than \`wcSideClearanceMm\`.`
             ]
           });
         }
@@ -53764,9 +55803,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
                 severity: "warning",
                 code: "W_FURNITURE_OVER_WINDOW",
                 ...ctx.at(f),
-                message: `${subject(f, name, ctx)} stands against ${mm2(cover.covered)} mm of a ${mm2(w.width)} mm floor-length window, so the glass is not clear to the floor there.`,
+                message: `${subject(f, name, ctx)} stands against ${mm22(cover.covered)} mm of a ${mm22(w.width)} mm floor-length window, so the glass is not clear to the floor there.`,
                 hints: [
-                  `${capFirst(pieceRef(f, ctx))} stands against ${mm2(cover.covered)} mm of ${w._idAuthored === true ? `window "${w.id}"` : `the ${mm2(w.width)} mm window`} on ${wallRef(ctx.ir.walls, w.host)}: ${slide ?? "stand it away from the glass"}, or raise the window's \`sill\` above it, or move the window.`
+                  `${capFirst(pieceRef(f, ctx))} stands against ${mm22(cover.covered)} mm of ${w._idAuthored === true ? `window "${w.id}"` : `the ${mm22(w.width)} mm window`} on ${wallRef(ctx.ir.walls, w.host)}: ${slide ?? "stand it away from the glass"}, or raise the window's \`sill\` above it, or move the window.`
                 ]
               });
               continue;
@@ -53777,9 +55816,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
               severity: "warning",
               code: "W_FURNITURE_OVER_WINDOW",
               ...ctx.at(f),
-              message: `${subject(f, name, ctx)} stands in front of ${mm2(cover.covered)} mm of a ${mm2(w.width)} mm window: a tall unit against the glass blocks its light and view.`,
+              message: `${subject(f, name, ctx)} stands in front of ${mm22(cover.covered)} mm of a ${mm22(w.width)} mm window: a tall unit against the glass blocks its light and view.`,
               hints: [
-                `"${f.id}" covers ${mm2(cover.covered)} mm of window "${w.id}" on ${wallRef(ctx.ir.walls, w.host)}: slide it ${mm2(Math.min(toStart, toEnd))} mm along the wall past the window's ${toStart <= toEnd ? "start" : "end"} (its end nearer the wall's ${toStart <= toEnd ? "first" : "last"} point), or move the window${isFloorLength(w) ? "" : `, or stand a unit no higher than the sill (${mm2(w.sill)} mm) there instead`}.`
+                `"${f.id}" covers ${mm22(cover.covered)} mm of window "${w.id}" on ${wallRef(ctx.ir.walls, w.host)}: slide it ${mm22(Math.min(toStart, toEnd))} mm along the wall past the window's ${toStart <= toEnd ? "start" : "end"} (its end nearer the wall's ${toStart <= toEnd ? "first" : "last"} point), or move the window${isFloorLength(w) ? "" : `, or stand a unit no higher than the sill (${mm22(w.sill)} mm) there instead`}.`
               ]
             });
           }
@@ -53811,9 +55850,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
               severity: "warning",
               code: "W_HOB_UNDER_WINDOW",
               ...ctx.at(f),
-              message: `${subject(f, name, ctx)} stands under ${mm2(cover.covered)} mm of a ${mm2(w.width)} mm window: a cooking surface under a window puts its curtain or blind over the flames, and the reach to open it across the burners.`,
+              message: `${subject(f, name, ctx)} stands under ${mm22(cover.covered)} mm of a ${mm22(w.width)} mm window: a cooking surface under a window puts its curtain or blind over the flames, and the reach to open it across the burners.`,
               hints: [
-                `${capFirst(pieceRef(f, ctx))} stands under ${mm2(cover.covered)} mm of ${w._idAuthored === true ? `window "${w.id}"` : `the ${mm2(w.width)} mm window`} on ${wallRef(ctx.ir.walls, w.host)}: slide it ${mm2(Math.min(toStart, toEnd))} mm along the wall past the window's ${toStart <= toEnd ? "start" : "end"} (its end nearer the wall's ${toStart <= toEnd ? "first" : "last"} point) and stand the sink or a worktop under the window, or move the window.`
+                `${capFirst(pieceRef(f, ctx))} stands under ${mm22(cover.covered)} mm of ${w._idAuthored === true ? `window "${w.id}"` : `the ${mm22(w.width)} mm window`} on ${wallRef(ctx.ir.walls, w.host)}: slide it ${mm22(Math.min(toStart, toEnd))} mm along the wall past the window's ${toStart <= toEnd ? "start" : "end"} (its end nearer the wall's ${toStart <= toEnd ? "first" : "last"} point) and stand the sink or a worktop under the window, or move the window.`
               ]
             });
           }
@@ -53880,9 +55919,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
               severity: "warning",
               ...zone === "front" ? { code: "W_FURN_CLEAR_FRONT" } : { code: "W_FURN_CLEAR_SIDES" },
               ...at2(f),
-              message: `The ${pieceName(f)}${inRoomPhrase(f, ctx)} needs ${mm2(declared)} mm clear ${where}, but ${o.prose} leaves ${mm2(m.measured)} mm (${mm2(declared - m.measured)} mm short).`,
+              message: `The ${pieceName(f)}${inRoomPhrase(f, ctx)} needs ${mm22(declared)} mm clear ${where}, but ${o.prose} leaves ${mm22(m.measured)} mm (${mm22(declared - m.measured)} mm short).`,
               hints: [
-                `Move ${o.hint} or "${f.id}" ${mm2(declared - m.measured)} mm apart, or lower \`clear ${zone}\` on "${f.id}" if less will do.`
+                `Move ${o.hint} or "${f.id}" ${mm22(declared - m.measured)} mm apart, or lower \`clear ${zone}\` on "${f.id}" if less will do.`
               ]
             });
           }
@@ -53972,12 +56011,12 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
           const swap = exact2 ? f._sizeSwap : void 0;
           const turnable = f._againstWall === void 0 && f._relation === void 0;
           const ref = f._idAuthored === true ? `"${f.id}"` : `the ${name}${inRoomPhrase(f, ctx, true)}`;
-          const shape = wide ? `a ${f.category} is wider than it is deep (${mm2(fp.along)} \xD7 ${mm2(fp.depth)} mm), so its long side is drawn as its depth` : `a ${f.category} is deeper than it is wide (${mm2(fp.along)} \xD7 ${mm2(fp.depth)} mm), so its long side is drawn along its back`;
+          const shape = wide ? `a ${f.category} is wider than it is deep (${mm22(fp.along)} \xD7 ${mm22(fp.depth)} mm), so its long side is drawn as its depth` : `a ${f.category} is deeper than it is wide (${mm22(fp.along)} \xD7 ${mm22(fp.depth)} mm), so its long side is drawn along its back`;
           out.push({
             severity: "warning",
             code: "W_FOOTPRINT_TRANSPOSED",
             ...ctx.at(f),
-            message: `The ${name}${where} is drawn turned a quarter: its symbol is ${mm2(s.w)} mm along its back and ${mm2(s.h)} mm deep, but ${shape}.`,
+            message: `The ${name}${where} is drawn turned a quarter: its symbol is ${mm22(s.w)} mm along its back and ${mm22(s.h)} mm deep, but ${shape}.`,
             hints: [
               `Swap the two sides of \`size\` on ${ref}${swap ? ` (\`size ${swap.text}\`)` : ""}` + (turnable ? ", or keep the size and turn the symbol a quarter: add 90 to its `rotate` or take 90 from it, whichever puts its back where it belongs." : wide || backsOntoWall(f.category) ? "; the wall it backs onto states its turn." : `; \`against\` always backs a piece onto the wall. ${sideOnRecipe(f, ctx.frameOf(f))}`)
             ],
@@ -54015,17 +56054,17 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
           const short2 = [];
           if (minLength !== null && length2 < minLength) {
             const of = minLength === DEFAULT_RULESET.bedMinLengthMm ? "the shortest standard bed (a UK single, 90 \xD7 190 cm; Which? UK bed sizes)" : "`bedMinLengthMm`";
-            short2.push(`${mm2(length2)} mm long, under the ${mm2(minLength)} mm of ${of}: ${mm2(minLength - length2)} mm short`);
+            short2.push(`${mm22(length2)} mm long, under the ${mm22(minLength)} mm of ${of}: ${mm22(minLength - length2)} mm short`);
           }
           if (minWidth !== null && width < minWidth) {
             const of = minWidth === DEFAULT_RULESET.bedMinWidthMm ? "the narrowest standard bed (a UK small single, 75 \xD7 190 cm; Which? UK bed sizes)" : "`bedMinWidthMm`";
-            short2.push(`${mm2(width)} mm wide, under the ${mm2(minWidth)} mm of ${of}: ${mm2(minWidth - width)} mm short`);
+            short2.push(`${mm22(width)} mm wide, under the ${mm22(minWidth)} mm of ${of}: ${mm22(minWidth - width)} mm short`);
           }
           if (short2.length === 0) continue;
           const name = f.label ?? f.category;
           const want2 = [
-            minLength !== null ? `${mm2(minLength)} mm long` : "",
-            minWidth !== null ? `${mm2(minWidth)} mm wide` : ""
+            minLength !== null ? `${mm22(minLength)} mm long` : "",
+            minWidth !== null ? `${mm22(minWidth)} mm wide` : ""
           ].filter((s) => s !== "");
           out.push({
             severity: "warning",
@@ -54115,12 +56154,12 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
                 severity: "warning",
                 code: "W_FURN_CLEARANCE",
                 ...at2(f),
-                message: `Fixture "${fn}" needs ${mm2(clear)} mm of clear space in front but "${gn}" leaves ${mm2(gap)} mm (${mm2(short2)} mm short).`,
+                message: `Fixture "${fn}" needs ${mm22(clear)} mm of clear space in front but "${gn}" leaves ${mm22(gap)} mm (${mm22(short2)} mm short).`,
                 hints: [
-                  `Move "${gn}" ${mm2(short2)} mm further from the front of "${fn}".`,
-                  `Or shrink "${gn}" by ${mm2(short2)} mm on the axis facing "${fn}".`,
+                  `Move "${gn}" ${mm22(short2)} mm further from the front of "${fn}".`,
+                  `Or shrink "${gn}" by ${mm22(short2)} mm on the axis facing "${fn}".`,
                   `Or turn "${fn}" (\`rotate 0|90|180|270\`) so its front faces clear floor \u2014 its back must stay on a wall.`,
-                  `Or move "${fn}" to a wall run with ${mm2(clear)} mm of free floor in front of it.`
+                  `Or move "${fn}" to a wall run with ${mm22(clear)} mm of free floor in front of it.`
                 ]
               });
               break;
@@ -54254,7 +56293,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
               severity: "warning",
               code: "W_FURNITURE_WALL_COLLISION",
               ...at2(f),
-              message: `Furniture "${name}" penetrates ${where ? "the" : /^[aeiou]/i.test(hit.category) ? "an" : "a"} ${hit.category} wall${where} \u2014 ${mm2(depth)} mm into its ${mm2(hit.thickness)} mm thickness.`,
+              message: `Furniture "${name}" penetrates ${where ? "the" : /^[aeiou]/i.test(hit.category) ? "an" : "a"} ${hit.category} wall${where} \u2014 ${mm22(depth)} mm into its ${mm22(hit.thickness)} mm thickness.`,
               hints: [collisionHint(f, fr, hit, ctx)]
             });
           }
@@ -54308,9 +56347,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             const na = ctx.nameOf(a);
             const nb = ctx.nameOf(b);
             const reason = (it) => worst.connector ? `A door or opening on the run joins them, but through ${it} they are one space, so privacy and enclosure are read as if it were walled.` : `Through ${it} they are one space that anyone walks through, but no door or opening joins them in the plan, so routes, privacy and enclosure are read as if it were walled.`;
-            const message = worst.bare && Math.abs(gapLen - run.len) <= EPS2 ? `${capFirst(na)} and ${nb} have no wall between them: they meet along ${mm2(run.len)} mm ${runWords(run.p, run.q)} with no wall, door or opening anywhere on it, wider than a ${mm2(max)} mm doorway. ${reason("that boundary")}` : `The boundary between ${na} and ${nb} is open for ${mm2(gapLen)} mm (${runWords(g0, g1).replace(/^on the line /, "")}), wider than a ${mm2(max)} mm doorway: they meet along ${mm2(run.len)} mm ${runWords(run.p, run.q)}, and that stretch has no wall, door or opening. ${reason("that stretch")}`;
+            const message = worst.bare && Math.abs(gapLen - run.len) <= EPS2 ? `${capFirst(na)} and ${nb} have no wall between them: they meet along ${mm22(run.len)} mm ${runWords(run.p, run.q)} with no wall, door or opening anywhere on it, wider than a ${mm22(max)} mm doorway. ${reason("that boundary")}` : `The boundary between ${na} and ${nb} is open for ${mm22(gapLen)} mm (${runWords(g0, g1).replace(/^on the line /, "")}), wider than a ${mm22(max)} mm doorway: they meet along ${mm22(run.len)} mm ${runWords(run.p, run.q)}, and that stretch has no wall, door or opening. ${reason("that stretch")}`;
             const thick = run.sep > EPS2 ? run.sep : Number.isFinite(thinnest) ? thinnest : DEFAULT_PARTITION_MM;
-            const stmt = `wall partition thickness ${mm2(thick)} { (${mm2(g0.x)},${mm2(g0.y)}) (${mm2(g1.x)},${mm2(g1.y)}) }`;
+            const stmt = `wall partition thickness ${mm22(thick)} { (${mm22(g0.x)},${mm22(g0.y)}) (${mm22(g1.x)},${mm22(g1.y)}) }`;
             out.push({
               severity: "warning",
               code: "W_BOUNDARY_NO_WALL",
@@ -54419,7 +56458,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
           if (!o || o.area / 1e6 < ctx.rules.minOutsideShellM2 - EPS2) continue;
           if (o.inFaces < MIN_INSIDE_SHARE * o.gross) continue;
           const m22 = fmt2(Math.round(o.area / 1e4) / 100);
-          const depth = o.depth >= 0.5 ? `, up to ${mm2(o.depth)} mm past their outer face` : "";
+          const depth = o.depth >= 0.5 ? `, up to ${mm22(o.depth)} mm past their outer face` : "";
           out.push({
             severity: "warning",
             code: "W_ROOM_OUTSIDE_SHELL",
@@ -54460,7 +56499,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             severity: "warning",
             code: "W_WALL_END_SHORT",
             ...ctx.at(w),
-            message: `${capFirst(aKind(w.category))} ${wallLineWords(mine)} ends ${mm2(gap)} mm short of ${aKind(other.category)} ${wallLineWords(target)}${level}, as drawn. The two do not meet, so the plan shows a slit of ${mm2(gap)} mm between them and the walls do not close.`,
+            message: `${capFirst(aKind(w.category))} ${wallLineWords(mine)} ends ${mm22(gap)} mm short of ${aKind(other.category)} ${wallLineWords(target)}${level}, as drawn. The two do not meet, so the plan shows a slit of ${mm22(gap)} mm between them and the walls do not close.`,
             hints: [
               `Extend the end of the ${wallKindWords(w.category)} to the face of the ${wallKindWords(other.category)}, or into it so they join; if the slit is a real opening, draw a door or an \`opening\` there instead.`,
               ...ids2.length > 0 ? [`The walls are ${ids2.join(" and ")}.`] : []
@@ -54505,20 +56544,20 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             severity: "warning",
             code: "W_EXTERIOR_RING_OPEN",
             ...ctx.at(end.wall),
-            message: `The exterior walls do not close: a run stops at (${mm2(end.at.x)}, ${mm2(end.at.y)})${level} with no wall to meet there, ${NO_SHELL}.`,
+            message: `The exterior walls do not close: a run stops at (${mm22(end.at.x)}, ${mm22(end.at.y)})${level} with no wall to meet there, ${NO_SHELL}.`,
             hints: ["Carry the wall on until it meets another wall.", ...ringHints([end.wall])]
           }));
         }
         return gaps.map(([a, b]) => {
           const [p, q2] = [a.at, b.at].sort((m, k) => Math.round(m.x) - Math.round(k.x) || m.y - k.y);
           const span = Math.sqrt(squaredGap(p, q2));
-          const stmt = `wall exterior thickness ${mm2(a.wall.thickness)} { (${mm2(p.x)},${mm2(p.y)}) (${mm2(q2.x)},${mm2(q2.y)}) }`;
+          const stmt = `wall exterior thickness ${mm22(a.wall.thickness)} { (${mm22(p.x)},${mm22(p.y)}) (${mm22(q2.x)},${mm22(q2.y)}) }`;
           const axial = Math.abs(p.x - q2.x) < EPS2 || Math.abs(p.y - q2.y) < EPS2;
           return {
             severity: "warning",
             code: "W_EXTERIOR_RING_OPEN",
             ...ctx.at(a.wall),
-            message: `The exterior walls do not close: their ends stop ${mm2(span)} mm apart ${runWords(p, q2)}, centreline to centreline${level}. No wall joins them, ${NO_SHELL}.`,
+            message: `The exterior walls do not close: their ends stop ${mm22(span)} mm apart ${runWords(p, q2)}, centreline to centreline${level}. No wall joins them, ${NO_SHELL}.`,
             hints: [
               axial ? `Draw the missing run, e.g. \`${stmt}\`, or carry one wall on to meet the other.` : "Carry the walls on until their ends meet.",
               ...ringHints([a.wall, b.wall])
@@ -54564,9 +56603,9 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
               severity: "warning",
               code: "W_FURNITURE_ON_VOID",
               ...ctx.at(piece),
-              message: `Furniture "${piece.label ?? piece.category}" stands on ${what.noun} ${where}: it covers ${mm2(ox)} \xD7 ${mm2(oy)} mm of ${what.of}, and there is no floor there to stand on.`,
+              message: `Furniture "${piece.label ?? piece.category}" stands on ${what.noun} ${where}: it covers ${mm22(ox)} \xD7 ${mm22(oy)} mm of ${what.of}, and there is no floor there to stand on.`,
               hints: [
-                `Move or resize it so it clears \`${g.of.id}\` (x ${mm2(r.x)}\u2013${mm2(r.x + r.w)}, y ${mm2(r.y)}\u2013${mm2(r.y + r.h)}), or move the ${g.of.kind === "void" ? "void" : g.of.kind === "elevator" ? "lift" : "escalator"}.`
+                `Move or resize it so it clears \`${g.of.id}\` (x ${mm22(r.x)}\u2013${mm22(r.x + r.w)}, y ${mm22(r.y)}\u2013${mm22(r.y + r.h)}), or move the ${g.of.kind === "void" ? "void" : g.of.kind === "elevator" ? "lift" : "escalator"}.`
               ]
             });
           }
@@ -54593,7 +56632,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
     hits = (k, lo, hi) => k.lo < hi - EPS3 && k.hi > lo + EPS3;
     towards = (seg, dir) => {
       const p = dir > 0 ? seg.b : seg.a;
-      return `towards (${mm2(p.x)}, ${mm2(p.y)})`;
+      return `towards (${mm22(p.x)}, ${mm22(p.y)})`;
     };
     idHint = (ctx, el2) => {
       const on = wallRef(ctx.ir.walls, el2.host ?? { wallId: "" });
@@ -54647,7 +56686,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             const lo = Math.max(j.lo, o.lo);
             const hi = Math.min(j.hi, o.hi);
             facts.push(
-              j.boundary ? `${openBoundaryPhrase(j.wall)}${freeEndOf(j) && `${freeEndOf(j)},`} lies inside its span (${span}; it is measured over ${runSpan(o.seg, j.lo, j.hi)}, ${mm2(hi - lo)} mm of the opening)` : `${wallPhrase2(j.wall)} stands inside its span (${span}; that wall occupies ${runSpan(o.seg, j.lo, j.hi)}, ${mm2(hi - lo)} mm of the opening)`
+              j.boundary ? `${openBoundaryPhrase(j.wall)}${freeEndOf(j) && `${freeEndOf(j)},`} lies inside its span (${span}; it is measured over ${runSpan(o.seg, j.lo, j.hi)}, ${mm22(hi - lo)} mm of the opening)` : `${wallPhrase2(j.wall)} stands inside its span (${span}; that wall occupies ${runSpan(o.seg, j.lo, j.hi)}, ${mm22(hi - lo)} mm of the opening)`
             );
           }
           for (const [side, at2] of [
@@ -54659,10 +56698,10 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             const face = j.hi <= o.lo + EPS3 ? j.hi : j.lo;
             const met = j.boundary ? `edge of ${openBoundaryPhrase(j.wall)}` : `face of ${wallPhrase2(j.wall)}`;
             facts.push(
-              `its jamb at ${runCoord(o.seg, at2)} is ${mm2(side.nib)} mm from the ${met} (at ${runCoord(o.seg, face)})${freeEndOf(j)}`
+              `its jamb at ${runCoord(o.seg, at2)} is ${mm22(side.nib)} mm from the ${met} (at ${runCoord(o.seg, face)})${freeEndOf(j)}`
             );
           }
-          const reason = inside.length > 0 ? inside.every((j) => j.boundary) ? "The wall stops at that boundary, so the opening's frame has no wall to close on there." : "A wall standing inside an opening is a pier in it, and the opening's frame has no jamb to close on." : `A jamb needs at least ${mm2(need)} mm of wall beside it (the larger of ${mm2(ctx.rules.minJunctionNibMm)} mm and ${ratioWords(ctx.rules.junctionNibThicknessRatio)} this wall's ${mm2(o.seg.thickness)} mm thickness) to carry its frame or lining.`;
+          const reason = inside.length > 0 ? inside.every((j) => j.boundary) ? "The wall stops at that boundary, so the opening's frame has no wall to close on there." : "A wall standing inside an opening is a pier in it, and the opening's frame has no jamb to close on." : `A jamb needs at least ${mm22(need)} mm of wall beside it (the larger of ${mm22(ctx.rules.minJunctionNibMm)} mm and ${ratioWords(ctx.rules.junctionNibThicknessRatio)} this wall's ${mm22(o.seg.thickness)} mm thickness) to carry its frame or lining.`;
           const accept = allFree ? "Accept it if the end of the wall is detailed to carry the frame." : inside.length > 0 ? o.el.kind === "window" ? "Accept it if the glazing is meant to run past the junction, with the meeting wall stopping on a mullion." : o.el.kind === "opening" ? "Accept it if the meeting wall is a screen that stops short of the opening's head." : null : "Accept it if the frame is meant to be fixed into the meeting wall itself (a flush corner detail).";
           out.push({
             severity: "warning",
@@ -54704,7 +56743,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             const kL = KIND_WORD[later2.el.kind];
             const kE = KIND_WORD[earlier.el.kind];
             const spans = `this ${kL} spans ${runSpan(later2.seg, later2.lo, later2.hi)} and the ${kE} ${runSpan(later2.seg, e.lo, e.hi)}`;
-            const fact = overlap > EPS3 ? `${spans}, so ${mm2(overlap)} mm of wall is claimed by both` : `${spans}, leaving a ${mm2(-overlap)} mm pier between them, under the ${mm2(min)} mm of a mullion`;
+            const fact = overlap > EPS3 ? `${spans}, so ${mm22(overlap)} mm of wall is claimed by both` : `${spans}, leaving a ${mm22(-overlap)} mm pier between them, under the ${mm22(min)} mm of a mullion`;
             const reason = overlap > EPS3 ? "Two openings cannot share a length of wall: one cuts through the other's frame." : "A pier thinner than a mullion has no room for the two frames that meet on it.";
             const hints = [
               ...moveHints(ctx, later2, all, jsOf(later2), `this ${kL}`),
@@ -54765,7 +56804,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             const f = faces[i];
             const nm = sideName(i);
             if (f.cover.length > 1) {
-              sides.push(`${nm} spans ${f.cover.map((x) => `${label(x.id)} (${mm2(x.mm)} mm)`).join(" and ")}`);
+              sides.push(`${nm} spans ${f.cover.map((x) => `${label(x.id)} (${mm22(x.mm)} mm)`).join(" and ")}`);
             } else if (f.holders.length > 1) {
               sides.push(`${nm} is centred on the boundary between ${list(f.holders)}`);
             } else if (f.cover.length === 1) {
@@ -55097,7 +57136,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
                 severity: "warning",
                 code: "W_GARAGE_TOO_NARROW",
                 ...at2(r),
-                message: `${capFirst(nameOf2(r, "garage"))} is ${mm2(have2)} mm across its short side, under the ${mm2(need)} mm ${bays} bay${bays === 1 ? "" : "s"} need (${drawn}) \u2014 ${mm2(shortfall(need, have2))} mm short.`,
+                message: `${capFirst(nameOf2(r, "garage"))} is ${mm22(have2)} mm across its short side, under the ${mm22(need)} mm ${bays} bay${bays === 1 ? "" : "s"} need (${drawn}) \u2014 ${mm22(shortfall(need, have2))} mm short.`,
                 hints: [
                   `A parking bay wants ${CAR_BAY_WIDTH_MM} mm of clear width \u2014 body plus a door opening each side.`,
                   cars > 1 ? "Widen the room, or park fewer cars in it." : "Widen the room, or drop the `uses garage` tag if it is not one."
@@ -55729,7 +57768,7 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
     };
     stopsAboveFloor = (w) => w._sillAuthored === true && w.sill > 0;
     shutToWalking = (w) => w.windowKind === "fixed" || w.windowKind === "tilt";
-    windowRef = (w) => w._idAuthored === true ? `window \`${w.id}\`` : `the ${mm2(w.width)} mm window`;
+    windowRef = (w) => w._idAuthored === true ? `window \`${w.id}\`` : `the ${mm22(w.width)} mm window`;
     roomNotEquatorFacing = {
       name: "room-not-equator-facing",
       family: "orientation",
@@ -57851,494 +59890,14 @@ ${body}`;
   }
 });
 
-// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
+// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
 var init_dist4 = __esm({
-  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
+  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
     init_chunk_5DBZH6KB();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/archlang-adapter.js
-function computeSourceHash(text2) {
-  try {
-    const nodeCrypto = typeof require === "function" ? require("node:crypto") : globalThis.crypto;
-    if (nodeCrypto && typeof nodeCrypto.createHash === "function") {
-      return nodeCrypto.createHash("sha256").update(text2, "utf8").digest("hex");
-    }
-  } catch {
-  }
-  let h1 = 2166136261;
-  let h2 = 2654435769;
-  for (let i = 0; i < text2.length; i++) {
-    const ch = text2.charCodeAt(i);
-    h1 = Math.imul(h1 ^ ch, 16777619);
-    h2 = Math.imul(h2 ^ ch >>> 4, 2166136261);
-  }
-  return (h1 >>> 0).toString(16).padStart(8, "0") + (h2 >>> 0).toString(16).padStart(8, "0");
-}
-function escapeArchLangString(value) {
-  return value.replace(/\\/g, "\\\\").replace(/"/g, '\\"').replace(/\r?\n/g, " ").trim();
-}
-function toArchLangId(prefix, rawId) {
-  const clean = rawId.replace(/[^a-zA-Z0-9_]/g, "_").replace(/^_+|_+$/g, "");
-  return `${prefix}_${clean || "item"}`;
-}
-function mapRoomTypeToArchLangUse(type) {
-  const typeStr = String(type).toLowerCase();
-  if (typeStr.includes("bed"))
-    return "bedroom";
-  if (typeStr.includes("bath") || typeStr.includes("toilet") || typeStr.includes("wc"))
-    return "bath";
-  if (typeStr.includes("kitchen"))
-    return "kitchen";
-  if (typeStr.includes("dining"))
-    return "dining";
-  if (typeStr.includes("living") || typeStr.includes("drawing") || typeStr.includes("family"))
-    return "living";
-  switch (type) {
-    case RoomType.Bedroom:
-    case RoomType.ServantQuarter:
-      return "bedroom";
-    case RoomType.Bathroom:
-      return "bath";
-    case RoomType.Living:
-    case RoomType.Drawing:
-    case RoomType.FamilyLiving:
-      return "living";
-    case RoomType.Dining:
-      return "dining";
-    case RoomType.Kitchen:
-      return "kitchen";
-    case RoomType.Utility:
-      return "utility";
-    case RoomType.Storage:
-    case RoomType.Dressing:
-      return "storage";
-    case RoomType.Study:
-      return "office";
-    case RoomType.Foyer:
-    case RoomType.Porch:
-      return "entry";
-    case RoomType.Corridor:
-      return "circulation";
-    case RoomType.Parking:
-      return "garage";
-    case RoomType.Balcony:
-    case RoomType.Terrace:
-      return "circulation";
-    case RoomType.Pooja:
-    case RoomType.Custom:
-    default:
-      return "living";
-  }
-}
-function deriveWallsFromFloorRooms(rooms) {
-  const edgeMap = /* @__PURE__ */ new Map();
-  for (const room2 of rooms) {
-    const x0 = Math.round(room2.x);
-    const y0 = Math.round(room2.y);
-    const x1 = Math.round(room2.x + room2.width);
-    const y1 = Math.round(room2.y + room2.height);
-    const segments = [
-      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
-      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
-      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
-      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } }
-    ];
-    for (const seg of segments) {
-      const isVert = seg.start.x === seg.end.x;
-      const k = isVert ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}` : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
-      const existing = edgeMap.get(k);
-      if (existing) {
-        existing.roomIds.push(room2.id);
-      } else {
-        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room2.id] });
-      }
-    }
-  }
-  const result = [];
-  for (const [, edge] of edgeMap) {
-    const isExternal = edge.roomIds.length < 2;
-    result.push({
-      start: edge.start,
-      end: edge.end,
-      roomIds: edge.roomIds,
-      isExternal
-    });
-  }
-  return result;
-}
-function pointDistanceToSegment(p, a, b) {
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const l2 = dx * dx + dy * dy;
-  if (l2 === 0)
-    return Math.hypot(p.x - a.x, p.y - a.y);
-  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / l2;
-  t = Math.max(0, Math.min(1, t));
-  const projX = a.x + t * dx;
-  const projY = a.y + t * dy;
-  return Math.hypot(p.x - projX, p.y - projY);
-}
-function findHostWall(pos, walls, toleranceMm = 300) {
-  let closest2 = null;
-  for (const w of walls) {
-    const d = pointDistanceToSegment(pos, w.startPoint, w.endPoint);
-    if (d <= toleranceMm && (!closest2 || d < closest2.distance)) {
-      closest2 = { id: w.id, distance: d };
-    }
-  }
-  return closest2;
-}
-function buildingModelToArchLangSource(building, options) {
-  const diagnostics = [];
-  const lines = [];
-  const paperSize = options?.paperSize ?? "A2";
-  const orientation = options?.orientation ?? "landscape";
-  const scale = options?.scale ?? "1:100";
-  const gridMm = options?.gridMm ?? 1;
-  const autoDims = options?.autoDims ?? "all";
-  const includeTitleBlock = options?.includeTitleBlock ?? true;
-  const roomMap = /* @__PURE__ */ new Map();
-  const wallMap = /* @__PURE__ */ new Map();
-  const doorMap = /* @__PURE__ */ new Map();
-  const windowMap = /* @__PURE__ */ new Map();
-  const stairMap = /* @__PURE__ */ new Map();
-  const elevatorMap = /* @__PURE__ */ new Map();
-  const columnMap = /* @__PURE__ */ new Map();
-  const balconyMap = /* @__PURE__ */ new Map();
-  const shaftMap = /* @__PURE__ */ new Map();
-  let northDir = "up";
-  const orientationDeg = building.site?.orientation ?? 0;
-  if (orientationDeg >= 45 && orientationDeg < 135)
-    northDir = "right";
-  else if (orientationDeg >= 135 && orientationDeg < 225)
-    northDir = "down";
-  else if (orientationDeg >= 225 && orientationDeg < 315)
-    northDir = "left";
-  const safeProjectName = escapeArchLangString(building.name || "Architectural Apartment Plan");
-  lines.push(`plan "${safeProjectName}" {`);
-  lines.push(`  units mm`);
-  lines.push(`  grid ${gridMm}`);
-  lines.push(`  paper ${paperSize} ${orientation}`);
-  lines.push(`  scale ${scale}`);
-  lines.push(`  north ${northDir}`);
-  if (autoDims !== "none") {
-    lines.push(`  dims auto ${autoDims}`);
-  }
-  const floors = building.floors.length > 0 ? building.floors : [
-    {
-      id: "default_floor",
-      buildingId: building.id,
-      level: 0,
-      name: "Ground Floor",
-      floorHeight: 3e3,
-      boundary: { points: [] },
-      rooms: [],
-      walls: [],
-      doors: [],
-      windows: [],
-      stairs: [],
-      columns: []
-    }
-  ];
-  for (const floor of floors) {
-    const floorHeight = floor.floorHeight || 3e3;
-    const safeFloorName = escapeArchLangString(floor.name || `Level ${floor.level}`);
-    lines.push(`
-  level ${floor.level} "${safeFloorName}" height ${floorHeight} {`);
-    let activeWalls = [];
-    if (floor.walls && floor.walls.length > 0) {
-      activeWalls = floor.walls.map((w) => ({
-        id: w.id,
-        startPoint: { x: Math.round(w.startPoint.x), y: Math.round(w.startPoint.y) },
-        endPoint: { x: Math.round(w.endPoint.x), y: Math.round(w.endPoint.y) },
-        thickness: w.thickness > 0 ? Math.round(w.thickness) : w.type === WallType.External ? 200 : 100,
-        type: w.type
-      }));
-    } else {
-      const derived = deriveWallsFromFloorRooms(floor.rooms);
-      activeWalls = derived.map((d, idx) => ({
-        id: `wall_${floor.level}_${idx + 1}`,
-        startPoint: d.start,
-        endPoint: d.end,
-        thickness: d.isExternal ? 200 : 100,
-        type: d.isExternal ? WallType.External : WallType.Internal
-      }));
-    }
-    lines.push(`    # \u2500\u2500 Walls \u2500\u2500`);
-    for (const wall2 of activeWalls) {
-      const len2 = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
-      if (len2 <= 0) {
-        diagnostics.push({
-          stage: "SERIALIZATION",
-          code: "DEGENERATE_WALL_SKIPPED",
-          severity: "warning",
-          message: `Wall ${wall2.id} has length 0 and was omitted.`,
-          elementId: wall2.id
-        });
-        continue;
-      }
-      const archWallId = toArchLangId("w", wall2.id);
-      wallMap.set(wall2.id, archWallId);
-      const category = wall2.type === WallType.External ? "exterior" : "partition";
-      lines.push(`    wall id=${archWallId} ${category} thickness ${wall2.thickness} { (${wall2.startPoint.x}, ${wall2.startPoint.y}) (${wall2.endPoint.x}, ${wall2.endPoint.y}) }`);
-    }
-    const flatsMap = /* @__PURE__ */ new Map();
-    const commonRooms = [];
-    const coreLifts = [];
-    const coreStairs = [];
-    const coreShafts = [];
-    const unzonedBalconies = [];
-    for (const room2 of floor.rooms) {
-      const tags = room2.tags ?? [];
-      if (room2.type === RoomType.Lift || tags.includes("core:lift")) {
-        coreLifts.push(room2);
-        continue;
-      }
-      if (room2.type === RoomType.Staircase || tags.includes("core:stair")) {
-        coreStairs.push(room2);
-        continue;
-      }
-      if (room2.type === RoomType.ServiceShaft || tags.includes("core:shaft")) {
-        coreShafts.push(room2);
-        continue;
-      }
-      if (room2.type === RoomType.Balcony || tags.includes("balcony")) {
-        const flatTag2 = tags.find((t) => t.startsWith("flat:"));
-        if (flatTag2) {
-          const flatId = flatTag2.slice(5);
-          const existing = flatsMap.get(flatId);
-          const label = room2.name.startsWith("Flat") ? room2.name.split(" ").slice(0, 2).join(" ") : `Flat ${flatId.toUpperCase()}`;
-          if (existing) {
-            existing.balconies.push(room2);
-          } else {
-            flatsMap.set(flatId, { label, rooms: [], balconies: [room2] });
-          }
-        } else {
-          unzonedBalconies.push(room2);
-        }
-        continue;
-      }
-      const flatTag = tags.find((t) => t.startsWith("flat:"));
-      if (flatTag) {
-        const flatId = flatTag.slice(5);
-        const existing = flatsMap.get(flatId);
-        const label = room2.name.startsWith("Flat") ? room2.name.split(" ").slice(0, 2).join(" ") : `Flat ${flatId.toUpperCase()}`;
-        if (existing) {
-          existing.rooms.push(room2);
-        } else {
-          flatsMap.set(flatId, { label, rooms: [room2], balconies: [] });
-        }
-      } else {
-        commonRooms.push(room2);
-      }
-    }
-    lines.push(`
-    # \u2500\u2500 Common Core Zone \u2500\u2500`);
-    lines.push(`    zone common_core "Common Core" {`);
-    for (const room2 of commonRooms) {
-      const archRoomId = toArchLangId("r", room2.id);
-      roomMap.set(room2.id, archRoomId);
-      const use = mapRoomTypeToArchLangUse(room2.type);
-      const safeLabel = escapeArchLangString(room2.name);
-      lines.push(`      room id=${archRoomId} at (${Math.round(room2.x)}, ${Math.round(room2.y)}) size ${Math.round(room2.width)}x${Math.round(room2.height)} label "${safeLabel}" uses ${use}`);
-    }
-    for (const lift2 of coreLifts) {
-      const archLiftId = toArchLangId("elev", lift2.id);
-      elevatorMap.set(lift2.id, archLiftId);
-      lines.push(`      elevator id=${archLiftId} at (${Math.round(lift2.x)}, ${Math.round(lift2.y)}) size ${Math.round(lift2.width)}x${Math.round(lift2.height)}`);
-    }
-    const stairsToRender = floor.stairs.length > 0 ? floor.stairs : coreStairs.map((s) => ({
-      id: s.id,
-      floorId: floor.id,
-      x: s.x,
-      y: s.y,
-      width: s.width,
-      length: s.height,
-      direction: "north",
-      connectsFloors: [floor.level, floor.level + 1]
-    }));
-    for (const stair2 of stairsToRender) {
-      const archStairId = toArchLangId("stair", stair2.id);
-      stairMap.set(stair2.id, archStairId);
-      const dir = floor.level === 0 ? "up" : "down";
-      lines.push(`      stair id=${archStairId} at (${Math.round(stair2.x)}, ${Math.round(stair2.y)}) size ${Math.round(stair2.width)}x${Math.round(stair2.length)} dir ${dir}`);
-    }
-    for (const shaft of coreShafts) {
-      const archShaftId = toArchLangId("void", shaft.id);
-      shaftMap.set(shaft.id, archShaftId);
-      lines.push(`      void id=${archShaftId} at (${Math.round(shaft.x)}, ${Math.round(shaft.y)}) size ${Math.round(shaft.width)}x${Math.round(shaft.height)}`);
-    }
-    lines.push(`    }`);
-    lines.push(`
-    # \u2500\u2500 Residential Flats \u2500\u2500`);
-    for (const [flatId, flatData] of flatsMap) {
-      const zoneId = toArchLangId("zone", flatId);
-      const safeFlatLabel = escapeArchLangString(flatData.label);
-      lines.push(`    zone ${zoneId} "${safeFlatLabel}" {`);
-      for (const room2 of flatData.rooms) {
-        const archRoomId = toArchLangId("r", room2.id);
-        roomMap.set(room2.id, archRoomId);
-        const use = mapRoomTypeToArchLangUse(room2.type);
-        const safeLabel = escapeArchLangString(room2.name);
-        lines.push(`      room id=${archRoomId} at (${Math.round(room2.x)}, ${Math.round(room2.y)}) size ${Math.round(room2.width)}x${Math.round(room2.height)} label "${safeLabel}" uses ${use}`);
-      }
-      for (const balc of flatData.balconies) {
-        const archBalcId = toArchLangId("balc", balc.id);
-        balconyMap.set(balc.id, archBalcId);
-        const safeLabel = escapeArchLangString(balc.name || "Balcony");
-        lines.push(`      outdoor id=${archBalcId} balcony at (${Math.round(balc.x)}, ${Math.round(balc.y)}) size ${Math.round(balc.width)}x${Math.round(balc.height)} label "${safeLabel}" rail all`);
-      }
-      lines.push(`    }`);
-    }
-    lines.push(`
-    # \u2500\u2500 Doors \u2500\u2500`);
-    for (const door2 of floor.doors) {
-      let hostWallId = wallMap.get(door2.wallId);
-      let posX = Math.round(door2.position.x);
-      let posY = Math.round(door2.position.y);
-      if (!hostWallId || !wallMap.has(door2.wallId)) {
-        const nearest = findHostWall({ x: posX, y: posY }, activeWalls);
-        if (nearest) {
-          hostWallId = wallMap.get(nearest.id) ?? nearest.id;
-        }
-      }
-      if (!hostWallId) {
-        diagnostics.push({
-          stage: "SERIALIZATION",
-          code: "DOOR_HOST_WALL_NOT_FOUND",
-          severity: "error",
-          message: `Door ${door2.id} has no valid host wall near (${posX}, ${posY}).`,
-          elementId: door2.id
-        });
-        continue;
-      }
-      const archDoorId = toArchLangId("d", door2.id);
-      doorMap.set(door2.id, archDoorId);
-      let kindWord2 = "";
-      let motionClause = "";
-      if (door2.type === DoorType.Sliding) {
-        kindWord2 = "sliding ";
-        motionClause = "slide right";
-      } else if (door2.type === DoorType.Folding) {
-        kindWord2 = "bifold ";
-      } else if (door2.type === DoorType.Double) {
-        kindWord2 = "double ";
-        if (door2.swingDirection === SwingDirection.Outward)
-          motionClause = "swing out";
-        else
-          motionClause = "swing in";
-      } else {
-        if (door2.swingDirection === SwingDirection.Outward)
-          motionClause = "swing out";
-        else if (door2.swingDirection === SwingDirection.Inward)
-          motionClause = "swing in";
-        else if (door2.swingDirection === SwingDirection.Left)
-          motionClause = "hinge left";
-        else if (door2.swingDirection === SwingDirection.Right)
-          motionClause = "hinge right";
-        else
-          motionClause = "swing in";
-      }
-      const doorWidth = Math.max(600, Math.round(door2.width));
-      lines.push(`    door id=${archDoorId} ${kindWord2}at (${posX}, ${posY}) width ${doorWidth} wall ${hostWallId} ${motionClause}`.trimEnd());
-    }
-    lines.push(`
-    # \u2500\u2500 Windows \u2500\u2500`);
-    for (const win of floor.windows) {
-      let hostWallId = wallMap.get(win.wallId);
-      const posX = Math.round(win.position.x);
-      const posY = Math.round(win.position.y);
-      if (!hostWallId || !wallMap.has(win.wallId)) {
-        const nearest = findHostWall({ x: posX, y: posY }, activeWalls);
-        if (nearest) {
-          hostWallId = wallMap.get(nearest.id) ?? nearest.id;
-        }
-      }
-      if (!hostWallId) {
-        diagnostics.push({
-          stage: "SERIALIZATION",
-          code: "WINDOW_HOST_WALL_NOT_FOUND",
-          severity: "error",
-          message: `Window ${win.id} has no valid host wall near (${posX}, ${posY}).`,
-          elementId: win.id
-        });
-        continue;
-      }
-      const archWinId = toArchLangId("win", win.id);
-      windowMap.set(win.id, archWinId);
-      const winWidth = Math.max(500, Math.round(win.width));
-      const sillClause = win.sillHeight ? ` sill ${Math.round(win.sillHeight)}` : "";
-      const headClause = win.height ? ` head ${Math.round((win.sillHeight ?? 900) + win.height)}` : "";
-      lines.push(`    window id=${archWinId} at (${posX}, ${posY}) width ${winWidth} wall ${hostWallId}${sillClause}${headClause}`);
-    }
-    if (floor.columns && floor.columns.length > 0) {
-      lines.push(`
-    # \u2500\u2500 Columns \u2500\u2500`);
-      for (const col of floor.columns) {
-        const archColId = toArchLangId("col", col.id);
-        columnMap.set(col.id, archColId);
-        const colWidth = Math.round(col.width ?? col.dimensions?.width ?? 300);
-        const colDepth = Math.round(col.depth ?? col.dimensions?.depth ?? 300);
-        lines.push(`    column id=${archColId} at (${Math.round(col.position.x)}, ${Math.round(col.position.y)}) size ${colWidth}x${colDepth}`);
-      }
-    }
-    if (unzonedBalconies.length > 0) {
-      lines.push(`
-    # \u2500\u2500 Unzoned Balconies \u2500\u2500`);
-      for (const b of unzonedBalconies) {
-        const archBalcId = toArchLangId("balc", b.id);
-        balconyMap.set(b.id, archBalcId);
-        const safeLabel = escapeArchLangString(b.name || "Balcony");
-        lines.push(`    outdoor id=${archBalcId} balcony at (${Math.round(b.x)}, ${Math.round(b.y)}) size ${Math.round(b.width)}x${Math.round(b.height)} label "${safeLabel}" rail all`);
-      }
-    }
-    lines.push(`  }`);
-  }
-  if (includeTitleBlock) {
-    const today = (/* @__PURE__ */ new Date()).toISOString().split("T")[0];
-    lines.push(`
-  title {`);
-    lines.push(`    project "${safeProjectName}"`);
-    lines.push(`    drawn_by "AI Floor Planner"`);
-    lines.push(`    date "${today}"`);
-    lines.push(`    number "AFP-${building.id.slice(0, 8).toUpperCase()}"`);
-    lines.push(`    revision "1"`);
-    lines.push(`  }`);
-  }
-  lines.push(`}`);
-  lines.push("");
-  const source = lines.join("\n");
-  const sourceHash = computeSourceHash(source);
-  return {
-    source,
-    sourceHash,
-    diagnostics,
-    elementIdMap: {
-      rooms: roomMap,
-      walls: wallMap,
-      doors: doorMap,
-      windows: windowMap,
-      stairs: stairMap,
-      elevators: elevatorMap,
-      columns: columnMap,
-      balconies: balconyMap,
-      shafts: shaftMap
-    }
-  };
-}
-var ARCHLANG_ADAPTER_VERSION, ARCHLANG_PACKAGE_VERSION;
-var init_archlang_adapter = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-adapter.js"() {
-    "use strict";
-    init_dist();
-    ARCHLANG_ADAPTER_VERSION = "1.0.0";
-    ARCHLANG_PACKAGE_VERSION = "1.57.0";
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/archlang-parity-validator.js
+// ../ai-orchestration/dist/apartment/archlang-parity-validator.js
 function roundCoord(val) {
   return Math.round(val);
 }
@@ -59127,7 +60686,7 @@ function validateGeometryParity(canonical, summary, serialization, compileContex
 }
 var TOLERANCE_MM;
 var init_archlang_parity_validator = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
+  "../ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
     "use strict";
     init_dist();
     init_dist4();
@@ -59135,9 +60694,9 @@ var init_archlang_parity_validator = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/archlang-compiler.js
+// ../ai-orchestration/dist/apartment/archlang-compiler.js
 function computeSha256(content) {
-  return import_node_crypto.default.createHash("sha256").update(content).digest("hex");
+  return import_node_crypto2.default.createHash("sha256").update(content).digest("hex");
 }
 async function compileBuildingWithArchLang(building, options) {
   const generatedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -59400,1579 +60959,20 @@ async function compileBuildingWithArchLang(building, options) {
     }
   };
 }
-var import_node_crypto;
+var import_node_crypto2;
 var init_archlang_compiler = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-compiler.js"() {
+  "../ai-orchestration/dist/apartment/archlang-compiler.js"() {
     "use strict";
-    import_node_crypto = __toESM(require("node:crypto"));
+    import_node_crypto2 = __toESM(require("node:crypto"));
     init_dist4();
     init_archlang_adapter();
     init_archlang_parity_validator();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/schematic-renderer.js
-function crc32(buf) {
-  let crc = -1;
-  for (let i = 0; i < buf.length; i++) {
-    const byte = buf[i] ?? 0;
-    const lookup3 = table[(crc ^ byte) & 255] ?? 0;
-    crc = crc >>> 8 ^ lookup3;
-  }
-  return (crc ^ -1) >>> 0;
-}
-function makePngChunk(type, data) {
-  const typeBuf = Buffer.from(type, "ascii");
-  const lenBuf = Buffer.alloc(4);
-  lenBuf.writeUInt32BE(data.length, 0);
-  const crcBuf = Buffer.alloc(4);
-  const crcPayload = Buffer.concat([typeBuf, data]);
-  crcBuf.writeUInt32BE(crc32(crcPayload), 0);
-  return Buffer.concat([lenBuf, crcPayload, crcBuf]);
-}
-function getRoomAbbreviation(name, type) {
-  const norm = `${name} ${type}`.toLowerCase();
-  if (norm.includes("bath") || norm.includes("toilet") || norm.includes("powder"))
-    return { full: "BATH", short: "WC" };
-  if (type === "utility" || norm.includes("utility"))
-    return { full: "UTILITY", short: "UTIL" };
-  if (type === "passage" || norm.includes("passage"))
-    return { full: "PASSAGE", short: "PASS" };
-  if (type === "dress" || norm.includes("dressing"))
-    return { full: "DRESS", short: "DR" };
-  if (type === "store" || norm.includes("store"))
-    return { full: "STORE", short: "ST" };
-  if (type === "study" || norm.includes("study"))
-    return { full: "STUDY", short: "STDY" };
-  if (norm.includes("master") && norm.includes("bed"))
-    return { full: "MASTER BED", short: "M.BED" };
-  if (norm.includes("bed"))
-    return { full: "BEDROOM", short: "BED" };
-  if (norm.includes("living") && norm.includes("dining"))
-    return { full: "LIVING/DINING", short: "LIV/DIN" };
-  if (norm.includes("living"))
-    return { full: "LIVING", short: "LIV" };
-  if (norm.includes("dining"))
-    return { full: "DINING", short: "DIN" };
-  if (norm.includes("kitchen"))
-    return { full: "KITCHEN", short: "KIT" };
-  if (norm.includes("balcony") || norm.includes("terrace") || norm.includes("sit-out"))
-    return { full: "BALCONY", short: "BALC" };
-  if (norm.includes("utility") || norm.includes("wash") || norm.includes("dry"))
-    return { full: "UTILITY", short: "UTIL" };
-  if (norm.includes("pooja") || norm.includes("puja"))
-    return { full: "POOJA", short: "PUJA" };
-  if (norm.includes("foyer") || norm.includes("entry"))
-    return { full: "FOYER", short: "ENT" };
-  if (norm.includes("duct") || norm.includes("shaft") || norm.includes("ots"))
-    return { full: "DUCT", short: "DUCT" };
-  const fallback = name.toUpperCase().slice(0, 8);
-  return { full: fallback, short: fallback.slice(0, 4) };
-}
-function fluxConceptRoomLabel(name, type) {
-  const norm = `${name} ${type}`.toLowerCase();
-  if (norm.includes("bath") || norm.includes("toilet") || norm.includes("powder"))
-    return { lines: ["BATH"], fallback: ["WC"] };
-  if (type === "utility" || norm.includes("utility") || norm.includes("wash"))
-    return { lines: ["UTILITY"], fallback: ["UTIL"] };
-  if (type === "passage" || norm.includes("passage") || type === "dress" || norm.includes("dress"))
-    return null;
-  if (type === "store" || norm.includes("store"))
-    return null;
-  if (norm.includes("balcony") || norm.includes("terrace") || norm.includes("sit-out"))
-    return null;
-  if (norm.includes("duct") || norm.includes("shaft") || norm.includes("ots"))
-    return null;
-  if (type === "study" || norm.includes("study"))
-    return { lines: ["STUDY"], fallback: null };
-  if (norm.includes("pooja") || norm.includes("puja"))
-    return { lines: ["POOJA"], fallback: null };
-  if (norm.includes("bed"))
-    return { lines: ["BEDROOM"], fallback: ["BED"] };
-  if (norm.includes("living") && norm.includes("dining"))
-    return { lines: ["LIVING", "DINING"], fallback: null };
-  if (norm.includes("living"))
-    return { lines: ["LIVING"], fallback: null };
-  if (norm.includes("dining"))
-    return { lines: ["DINING"], fallback: null };
-  if (norm.includes("kitchen"))
-    return { lines: ["KITCHEN"], fallback: ["KIT"] };
-  if (norm.includes("foyer") || norm.includes("entry"))
-    return { lines: ["FOYER"], fallback: null };
-  return null;
-}
-function renderSchematicPng512(schematic, options = {}) {
-  const width = 512;
-  const height = 512;
-  const flux = options.mode === "flux_concept";
-  const emit2 = (label) => options.onLabel?.(label);
-  const rowSize = 1 + width * 4;
-  const raw = Buffer.alloc(height * rowSize, 255);
-  for (let y = 0; y < height; y++) {
-    raw[y * rowSize] = 0;
-  }
-  function setPixel(x, y, r, g, b) {
-    if (x < 0 || x >= width || y < 0 || y >= height)
-      return;
-    const offset = y * rowSize + 1 + x * 4;
-    raw[offset] = r;
-    raw[offset + 1] = g;
-    raw[offset + 2] = b;
-    raw[offset + 3] = 255;
-  }
-  function fillRect(rx, ry, rw, rh, r, g, b) {
-    const x0 = Math.max(0, Math.min(width - 1, Math.round(rx)));
-    const y0 = Math.max(0, Math.min(height - 1, Math.round(ry)));
-    const x1 = Math.max(0, Math.min(width - 1, Math.round(rx + rw)));
-    const y1 = Math.max(0, Math.min(height - 1, Math.round(ry + rh)));
-    for (let y = y0; y <= y1; y++) {
-      for (let x = x0; x <= x1; x++) {
-        setPixel(x, y, r, g, b);
-      }
-    }
-  }
-  function drawLine(x0, y0, x1, y1, r, g, b, thickness = 1) {
-    let px0 = Math.round(x0);
-    let py0 = Math.round(y0);
-    const px1 = Math.round(x1);
-    const py1 = Math.round(y1);
-    const dx = Math.abs(px1 - px0);
-    const dy = Math.abs(py1 - py0);
-    const sx = px0 < px1 ? 1 : -1;
-    const sy = py0 < py1 ? 1 : -1;
-    let err = dx - dy;
-    while (true) {
-      if (thickness <= 1) {
-        setPixel(px0, py0, r, g, b);
-      } else {
-        const rad = Math.floor(thickness / 2);
-        for (let ty = -rad; ty <= rad; ty++) {
-          for (let tx = -rad; tx <= rad; tx++) {
-            setPixel(px0 + tx, py0 + ty, r, g, b);
-          }
-        }
-      }
-      if (px0 === px1 && py0 === py1)
-        break;
-      const e2 = 2 * err;
-      if (e2 > -dy) {
-        err -= dy;
-        px0 += sx;
-      }
-      if (e2 < dx) {
-        err += dx;
-        py0 += sy;
-      }
-    }
-  }
-  function drawRectOutline(rx, ry, rw, rh, thickness = 1, r = 0, g = 0, b = 0) {
-    const x0 = Math.round(rx);
-    const y0 = Math.round(ry);
-    const x1 = Math.round(rx + rw);
-    const y1 = Math.round(ry + rh);
-    for (let t = 0; t < thickness; t++) {
-      drawLine(x0, y0 + t, x1, y0 + t, r, g, b, 1);
-      drawLine(x0, y1 - t, x1, y1 - t, r, g, b, 1);
-      drawLine(x0 + t, y0, x0 + t, y1, r, g, b, 1);
-      drawLine(x1 - t, y0, x1 - t, y1, r, g, b, 1);
-    }
-  }
-  function drawCross(rx, ry, rw, rh, r = 0, g = 0, b = 0, thickness = 1) {
-    const x0 = Math.round(rx);
-    const y0 = Math.round(ry);
-    const x1 = Math.round(rx + rw);
-    const y1 = Math.round(ry + rh);
-    drawLine(x0, y0, x1, y1, r, g, b, thickness);
-    drawLine(x1, y0, x0, y1, r, g, b, thickness);
-  }
-  function drawHatch(rx, ry, rw, rh, step = 5, horizontal = true, r = 0, g = 0, b = 0) {
-    const x0 = Math.round(rx);
-    const y0 = Math.round(ry);
-    const x1 = Math.round(rx + rw);
-    const y1 = Math.round(ry + rh);
-    if (horizontal) {
-      for (let y = y0 + step; y < y1; y += step) {
-        drawLine(x0, y, x1, y, r, g, b, 1);
-      }
-    } else {
-      for (let x = x0 + step; x < x1; x += step) {
-        drawLine(x, y0, x, y1, r, g, b, 1);
-      }
-    }
-  }
-  function measureTextWidth(text2, scale2 = 1) {
-    return text2.length * 6 * scale2;
-  }
-  function drawChar(ch, startX, startY, scale2 = 1, r = 0, g = 0, b = 0) {
-    const glyph = FONT_5X7[ch.toUpperCase()] ?? FONT_5X7[" "];
-    if (!glyph)
-      return;
-    for (let col = 0; col < 5; col++) {
-      const colByte = glyph[col] ?? 0;
-      for (let row = 0; row < 7; row++) {
-        if ((colByte & 1 << row) !== 0) {
-          if (scale2 === 1) {
-            setPixel(startX + col, startY + row, r, g, b);
-          } else {
-            for (let dy = 0; dy < scale2; dy++) {
-              for (let dx = 0; dx < scale2; dx++) {
-                setPixel(startX + col * scale2 + dx, startY + row * scale2 + dy, r, g, b);
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-  function drawText2(text2, startX, startY, scale2 = 1, r = 0, g = 0, b = 0) {
-    let curX = startX;
-    for (let i = 0; i < text2.length; i++) {
-      drawChar(text2[i], curX, startY, scale2, r, g, b);
-      curX += 6 * scale2;
-    }
-  }
-  function drawTextCentered(text2, rx, ry, rw, rh, scale2 = 1, r = 0, g = 0, b = 0, withBackdrop = false) {
-    const textW = measureTextWidth(text2, scale2);
-    const textH = 7 * scale2;
-    const cx = Math.round(rx + (rw - textW) / 2);
-    const cy = Math.round(ry + (rh - textH) / 2);
-    if (withBackdrop) {
-      fillRect(cx - 2, cy - 2, textW + 4, textH + 4, 255, 255, 255);
-    }
-    drawText2(text2, cx, cy, scale2, r, g, b);
-  }
-  const boldWidth = (text2, s) => measureTextWidth(text2, s) + 1;
-  function drawBoldCentered(text2, rx, ry, rw, rh, s, gray = 0) {
-    const textW = boldWidth(text2, s);
-    const textH = 7 * s;
-    const cx = Math.round(rx + (rw - textW) / 2);
-    const cy = Math.round(ry + (rh - textH) / 2);
-    fillRect(cx - 2, cy - 2, textW + 4, textH + 4, 255, 255, 255);
-    drawText2(text2, cx, cy, s, gray, gray, gray);
-    drawText2(text2, cx + 1, cy, s, gray, gray, gray);
-  }
-  const LINE_GAP = 3;
-  const blockHeight = (lines, s) => lines.length * 7 * s + (lines.length - 1) * LINE_GAP;
-  function fitScale(lines, rw, rh, margin = 6, maxScale = 2) {
-    for (const s of [2, 1].filter((v) => v <= maxScale)) {
-      const w = Math.max(...lines.map((l) => boldWidth(l, s)));
-      if (w + margin <= rw && blockHeight(lines, s) + margin <= rh)
-        return s;
-    }
-    return 0;
-  }
-  function drawBoldLines(lines, rx, top, rw, s) {
-    let y = top;
-    for (const line3 of lines) {
-      drawBoldCentered(line3, rx, y, rw, 7 * s, s);
-      y += 7 * s + LINE_GAP;
-    }
-  }
-  const bf = schematic.buildingFootprint ?? { x: 0, y: 0, width: 24, height: 30 };
-  const targetCanvasPx = flux ? 460 : 430;
-  const scale = targetCanvasPx / Math.max(bf.width, bf.height);
-  const offsetX = Math.round((width - bf.width * scale) / 2 - bf.x * scale);
-  const offsetY = Math.round((height - bf.height * scale) / 2 - bf.y * scale);
-  const toPx = (mX, mY, mW, mH) => ({
-    x: offsetX + mX * scale,
-    y: offsetY + mY * scale,
-    w: mW * scale,
-    h: mH * scale
-  });
-  const spaceRects = /* @__PURE__ */ new Map();
-  if (schematic.core?.lobby)
-    spaceRects.set("core_lobby", schematic.core.lobby.bounds);
-  for (const lift2 of schematic.core?.lifts ?? [])
-    spaceRects.set(lift2.id, lift2.bounds);
-  for (const stair2 of schematic.core?.stairs ?? [])
-    spaceRects.set(stair2.id, stair2.bounds);
-  for (const u of schematic.units ?? [])
-    for (const rm of [...u.rooms ?? [], ...u.balconies ?? []])
-      spaceRects.set(rm.id, rm.bounds);
-  if (flux) {
-    renderFluxConceptBody();
-  } else {
-    if (schematic.core) {
-      if (schematic.core.lobby) {
-        const lb = schematic.core.lobby.bounds;
-        const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
-        drawRectOutline(lbp.x, lbp.y, lbp.w, lbp.h, 2, 0, 0, 0);
-        const vertical = lbp.h > lbp.w * 1.6;
-        const lobbyLabel = measureTextWidth("COMMON LOBBY", 1) + 4 <= lbp.w ? "COMMON LOBBY" : "LOBBY";
-        if (vertical && lobbyLabel === "LOBBY" && measureTextWidth("LOBBY", 1) + 4 > lbp.w) {
-          drawTextCentered("LBY", lbp.x, lbp.y, lbp.w, lbp.h, 1, 0, 0, 0, true);
-          emit2({ text: "LBY", kind: "core", spaceId: "core_lobby", scale: 1 });
-        } else {
-          drawTextCentered(lobbyLabel, lbp.x, lbp.y, lbp.w, lbp.h, 1, 0, 0, 0, true);
-          emit2({ text: lobbyLabel, kind: "core", spaceId: "core_lobby", scale: 1 });
-        }
-      }
-      (schematic.core.lifts ?? []).forEach((lift2, idx) => {
-        const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
-        fillRect(lp.x, lp.y, lp.w, lp.h, 255, 255, 255);
-        drawRectOutline(lp.x, lp.y, lp.w, lp.h, 2, 0, 0, 0);
-        drawCross(lp.x, lp.y, lp.w, lp.h, 0, 0, 0, 1);
-        const label = lift2.label || `LIFT 0${idx + 1}`;
-        const liftText = measureTextWidth(label, 1) + 2 <= lp.w ? label : `L${idx + 1}`;
-        drawTextCentered(liftText, lp.x, lp.y, lp.w, lp.h, 1, 0, 0, 0, true);
-        emit2({ text: liftText, kind: "core", spaceId: lift2.id, scale: 1 });
-      });
-      (schematic.core.stairs ?? []).forEach((stair2, idx) => {
-        const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
-        fillRect(sp.x, sp.y, sp.w, sp.h, 255, 255, 255);
-        drawRectOutline(sp.x, sp.y, sp.w, sp.h, 2, 0, 0, 0);
-        drawHatch(sp.x, sp.y, sp.w, sp.h, 5, sp.w >= sp.h, 60, 60, 60);
-        const label = `STAIR ${String(idx + 1).padStart(2, "0")}`;
-        const stairText = measureTextWidth(label, 1) + 2 <= sp.w ? label : `ST${idx + 1}`;
-        drawTextCentered(stairText, sp.x, sp.y, sp.w, sp.h, 1, 0, 0, 0, true);
-        emit2({ text: stairText, kind: "core", spaceId: stair2.id, scale: 1 });
-      });
-      (schematic.core.corridors ?? []).forEach((corr) => {
-        const crp = toPx(corr.bounds.x, corr.bounds.y, corr.bounds.width, corr.bounds.height);
-        drawRectOutline(crp.x, crp.y, crp.w, crp.h, 1, 100, 100, 100);
-      });
-      (schematic.core.serviceShafts ?? []).forEach((shaft) => {
-        const shp = toPx(shaft.bounds.x, shaft.bounds.y, shaft.bounds.width, shaft.bounds.height);
-        drawRectOutline(shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0);
-        drawCross(shp.x, shp.y, shp.w, shp.h, 120, 120, 120, 1);
-        if (measureTextWidth("DUCT", 1) + 4 <= shp.w && shp.h >= 10) {
-          drawTextCentered("DUCT", shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0, true);
-          emit2({ text: "DUCT", kind: "core", scale: 1 });
-        }
-      });
-    }
-    (schematic.units ?? []).forEach((u) => {
-      for (const rm of u.rooms ?? []) {
-        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
-        drawRectOutline(rp.x, rp.y, rp.w, rp.h, 1, 40, 40, 40);
-      }
-      for (const bal of u.balconies ?? []) {
-        const bp = toPx(bal.bounds.x, bal.bounds.y, bal.bounds.width, bal.bounds.height);
-        drawRectOutline(bp.x, bp.y, bp.w, bp.h, 1, 70, 70, 70);
-        drawHatch(bp.x, bp.y, bp.w, bp.h, 6, bp.w < bp.h, 200, 200, 200);
-        if (measureTextWidth("BALC", 1) + 4 <= bp.w && bp.h >= 10) {
-          drawTextCentered("BALC", bp.x, bp.y, bp.w, bp.h, 1, 40, 40, 40, true);
-          emit2({ text: "BALC", kind: "room", flatId: u.flatId, spaceId: bal.id, scale: 1 });
-        } else if (bp.h >= measureTextWidth("BALC", 1) + 4 && bp.w >= 9) {
-          drawTextCentered("B", bp.x, bp.y, bp.w, bp.h, 1, 40, 40, 40, true);
-          emit2({ text: "B", kind: "room", flatId: u.flatId, spaceId: bal.id, scale: 1 });
-        }
-      }
-      const body = u.bodyBounds ?? u.bounds;
-      const bdp = toPx(body.x, body.y, body.width, body.height);
-      drawRectOutline(bdp.x, bdp.y, bdp.w, bdp.h, 3, 0, 0, 0);
-    });
-    for (const door2 of schematic.doors ?? []) {
-      const dp = toPx(door2.bounds.x, door2.bounds.y, door2.bounds.width, door2.bounds.height);
-      const into = spaceRects.get(door2.connects[1]);
-      if (door2.wallAxis === "y") {
-        const cx = dp.x + dp.w / 2;
-        fillRect(cx - 2, dp.y + 1, 4, dp.h - 2, 255, 255, 255);
-        if (door2.doorType !== "open_passage" && into) {
-          const dir = (into.x + into.width / 2) * scale + offsetX > cx ? 1 : -1;
-          const hingeY = dp.y + 1;
-          drawLine(cx, hingeY, cx + dir * (dp.h - 2), hingeY, 0, 0, 0, 1);
-          drawLine(cx + dir * (dp.h - 2), hingeY, cx, dp.y + dp.h - 1, 150, 150, 150, 1);
-        }
-      } else {
-        const cy = dp.y + dp.h / 2;
-        fillRect(dp.x + 1, cy - 2, dp.w - 2, 4, 255, 255, 255);
-        if (door2.doorType !== "open_passage" && into) {
-          const dir = (into.y + into.height / 2) * scale + offsetY > cy ? 1 : -1;
-          const hingeX = dp.x + 1;
-          drawLine(hingeX, cy, hingeX, cy + dir * (dp.w - 2), 0, 0, 0, 1);
-          drawLine(hingeX, cy + dir * (dp.w - 2), dp.x + dp.w - 1, cy, 150, 150, 150, 1);
-        }
-      }
-    }
-    (schematic.units ?? []).forEach((u, i) => {
-      const body = u.bodyBounds ?? u.bounds;
-      const bdp = toPx(body.x, body.y, body.width, body.height);
-      const flatLabel = `FLAT ${String(i + 1).padStart(2, "0")}`;
-      const typeLabel = u.unitType ? u.unitType.toUpperCase() : "";
-      let flatLabelPlaced = false;
-      for (const rm of u.rooms ?? []) {
-        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
-        const { full, short: short2 } = getRoomAbbreviation(rm.name, rm.type);
-        if (rm.type === "living_dining" && rp.h >= 34 && measureTextWidth(flatLabel, 1) + 6 <= rp.w) {
-          const flatScale = measureTextWidth(flatLabel, 2) + 8 <= rp.w && rp.h >= 56 ? 2 : 1;
-          const roomText = measureTextWidth(full, 1) + 6 <= rp.w ? full : short2;
-          const blockH = 7 * flatScale + 4 + 7 + 5 + 7;
-          const top = rp.y + (rp.h - blockH) / 2;
-          drawTextCentered(flatLabel, rp.x, top, rp.w, 7 * flatScale, flatScale, 0, 0, 0, true);
-          drawTextCentered(typeLabel, rp.x, top + 7 * flatScale + 4, rp.w, 7, 1, 40, 40, 40, true);
-          drawTextCentered(roomText, rp.x, top + 7 * flatScale + 16, rp.w, 7, 1, 20, 20, 20, true);
-          emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: flatScale });
-          emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: 1 });
-          emit2({ text: roomText, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
-          flatLabelPlaced = true;
-          continue;
-        }
-        if (measureTextWidth(full, 1) + 6 <= rp.w && rp.h >= 12) {
-          drawTextCentered(full, rp.x, rp.y, rp.w, rp.h, 1, 20, 20, 20, true);
-          emit2({ text: full, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
-        } else if (measureTextWidth(short2, 1) + 4 <= rp.w && rp.h >= 10) {
-          drawTextCentered(short2, rp.x, rp.y, rp.w, rp.h, 1, 20, 20, 20, true);
-          emit2({ text: short2, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: 1 });
-        }
-      }
-      if (!flatLabelPlaced) {
-        const text2 = `${flatLabel} ${typeLabel}`.trim();
-        drawTextCentered(text2, bdp.x, bdp.y + 4, bdp.w, 9, 1, 0, 0, 0, true);
-        emit2({ text: text2, kind: "flat", flatId: u.flatId, scale: 1 });
-      }
-    });
-  }
-  function renderFluxConceptBody() {
-    const core = schematic.core;
-    if (core?.lobby) {
-      const lb = core.lobby.bounds;
-      const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
-      fillRect(lbp.x, lbp.y, lbp.w, lbp.h, 226, 226, 226);
-      drawRectOutline(lbp.x, lbp.y, lbp.w, lbp.h, 3, 0, 0, 0);
-    }
-    for (const corr of core?.corridors ?? []) {
-      const crp = toPx(corr.bounds.x, corr.bounds.y, corr.bounds.width, corr.bounds.height);
-      fillRect(crp.x, crp.y, crp.w, crp.h, 226, 226, 226);
-      drawRectOutline(crp.x, crp.y, crp.w, crp.h, 1, 100, 100, 100);
-    }
-    for (const lift2 of core?.lifts ?? []) {
-      const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
-      fillRect(lp.x, lp.y, lp.w, lp.h, 255, 255, 255);
-      drawRectOutline(lp.x, lp.y, lp.w, lp.h, 3, 0, 0, 0);
-      drawCross(lp.x + 2, lp.y + 2, lp.w - 4, lp.h - 4, 0, 0, 0, 2);
-    }
-    for (const stair2 of core?.stairs ?? []) {
-      const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
-      fillRect(sp.x, sp.y, sp.w, sp.h, 255, 255, 255);
-      drawRectOutline(sp.x, sp.y, sp.w, sp.h, 3, 0, 0, 0);
-      const runVertical = sp.h >= sp.w;
-      const run = runVertical ? sp.h : sp.w;
-      const landing = Math.max(6, Math.round(run * 0.18));
-      if (runVertical) {
-        for (let y = sp.y + landing; y < sp.y + sp.h - 3; y += 5)
-          drawLine(sp.x + 2, y, sp.x + sp.w - 2, y, 40, 40, 40, 1);
-        drawLine(sp.x + sp.w / 2, sp.y + landing, sp.x + sp.w / 2, sp.y + sp.h - 2, 0, 0, 0, 2);
-        drawLine(sp.x + 2, sp.y + landing, sp.x + sp.w - 2, sp.y + landing, 0, 0, 0, 1);
-      } else {
-        for (let x = sp.x + landing; x < sp.x + sp.w - 3; x += 5)
-          drawLine(x, sp.y + 2, x, sp.y + sp.h - 2, 40, 40, 40, 1);
-        drawLine(sp.x + landing, sp.y + sp.h / 2, sp.x + sp.w - 2, sp.y + sp.h / 2, 0, 0, 0, 2);
-        drawLine(sp.x + landing, sp.y + 2, sp.x + landing, sp.y + sp.h - 2, 0, 0, 0, 1);
-      }
-    }
-    for (const shaft of core?.serviceShafts ?? []) {
-      const shp = toPx(shaft.bounds.x, shaft.bounds.y, shaft.bounds.width, shaft.bounds.height);
-      fillRect(shp.x, shp.y, shp.w, shp.h, 150, 150, 150);
-      drawRectOutline(shp.x, shp.y, shp.w, shp.h, 1, 0, 0, 0);
-    }
-    for (const u of schematic.units ?? []) {
-      for (const rm of u.rooms ?? []) {
-        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
-        drawRectOutline(rp.x, rp.y, rp.w, rp.h, 1, 0, 0, 0);
-      }
-      for (const bal of u.balconies ?? []) {
-        const bp = toPx(bal.bounds.x, bal.bounds.y, bal.bounds.width, bal.bounds.height);
-        drawRectOutline(bp.x, bp.y, bp.w, bp.h, 1, 70, 70, 70);
-        drawHatch(bp.x, bp.y, bp.w, bp.h, 4, bp.w < bp.h, 170, 170, 170);
-      }
-      const body = u.bodyBounds ?? u.bounds;
-      const bdp = toPx(body.x, body.y, body.width, body.height);
-      drawRectOutline(bdp.x, bdp.y, bdp.w, bdp.h, 4, 0, 0, 0);
-    }
-    for (const door2 of schematic.doors ?? []) {
-      const dp = toPx(door2.bounds.x, door2.bounds.y, door2.bounds.width, door2.bounds.height);
-      const into = spaceRects.get(door2.connects[1]);
-      const leaf = door2.kind === "flat_entrance" ? 3 : 1;
-      if (door2.wallAxis === "y") {
-        const cx = dp.x + dp.w / 2;
-        fillRect(cx - 3, dp.y + 1, 6, dp.h - 2, 255, 255, 255);
-        if (door2.doorType !== "open_passage" && into) {
-          const dir = (into.x + into.width / 2) * scale + offsetX > cx ? 1 : -1;
-          const hingeY = dp.y + 1;
-          drawLine(cx, hingeY, cx + dir * (dp.h - 2), hingeY, 0, 0, 0, leaf);
-          drawLine(cx + dir * (dp.h - 2), hingeY, cx, dp.y + dp.h - 1, 120, 120, 120, 1);
-        }
-      } else {
-        const cy = dp.y + dp.h / 2;
-        fillRect(dp.x + 1, cy - 3, dp.w - 2, 6, 255, 255, 255);
-        if (door2.doorType !== "open_passage" && into) {
-          const dir = (into.y + into.height / 2) * scale + offsetY > cy ? 1 : -1;
-          const hingeX = dp.x + 1;
-          drawLine(hingeX, cy, hingeX, cy + dir * (dp.w - 2), 0, 0, 0, leaf);
-          drawLine(hingeX, cy + dir * (dp.w - 2), dp.x + dp.w - 1, cy, 120, 120, 120, 1);
-        }
-      }
-    }
-    if (core?.lobby) {
-      const lb = core.lobby.bounds;
-      const lbp = toPx(lb.x, lb.y, lb.width, lb.height);
-      const s = fitScale(["LOBBY"], lbp.w, lbp.h, 4);
-      if (s > 0) {
-        drawBoldLines(["LOBBY"], lbp.x, lbp.y + (lbp.h - 7 * s) / 2, lbp.w, s);
-        emit2({ text: "LOBBY", kind: "core", spaceId: "core_lobby", scale: s });
-      }
-    }
-    for (const lift2 of core?.lifts ?? []) {
-      const lp = toPx(lift2.bounds.x, lift2.bounds.y, lift2.bounds.width, lift2.bounds.height);
-      const s = fitScale(["LIFT"], lp.w, lp.h, 4);
-      if (s > 0) {
-        drawBoldLines(["LIFT"], lp.x, lp.y + (lp.h - 7 * s) / 2, lp.w, s);
-        emit2({ text: "LIFT", kind: "core", spaceId: lift2.id, scale: s });
-      }
-    }
-    for (const stair2 of core?.stairs ?? []) {
-      const sp = toPx(stair2.bounds.x, stair2.bounds.y, stair2.bounds.width, stair2.bounds.height);
-      const s = fitScale(["STAIR"], sp.w, sp.h, 4);
-      if (s > 0) {
-        drawBoldLines(["STAIR"], sp.x, sp.y + (sp.h - 7 * s) / 2, sp.w, s);
-        emit2({ text: "STAIR", kind: "core", spaceId: stair2.id, scale: s });
-      }
-    }
-    (schematic.units ?? []).forEach((u, i) => {
-      const flatLabel = `FLAT ${String(i + 1).padStart(2, "0")}`;
-      const typeLabel = u.unitType ? u.unitType.toUpperCase() : "";
-      const tagLines = typeLabel ? [flatLabel, typeLabel] : [flatLabel];
-      let tagPlaced = false;
-      for (const rm of u.rooms ?? []) {
-        const rp = toPx(rm.bounds.x, rm.bounds.y, rm.bounds.width, rm.bounds.height);
-        const spec = fluxConceptRoomLabel(rm.name, rm.type);
-        const isLiving = rm.type === "living_dining" || rm.type === "living";
-        if (!tagPlaced && isLiving && spec) {
-          const tagScale = fitScale(tagLines, rp.w, rp.h * 0.6);
-          const roomScale = fitScale(spec.lines, rp.w, rp.h * 0.4, 6, 1);
-          if (tagScale > 0 && roomScale > 0) {
-            const tagH = blockHeight(tagLines, tagScale);
-            const roomH = blockHeight(spec.lines, roomScale);
-            const top = rp.y + (rp.h - (tagH + 8 + roomH)) / 2;
-            drawBoldLines(tagLines, rp.x, top, rp.w, tagScale);
-            drawBoldLines(spec.lines, rp.x, top + tagH + 8, rp.w, roomScale);
-            emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: tagScale });
-            if (typeLabel)
-              emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: tagScale });
-            for (const line3 of spec.lines)
-              emit2({ text: line3, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: roomScale });
-            tagPlaced = true;
-            continue;
-          }
-        }
-        if (!spec)
-          continue;
-        let lines = spec.lines;
-        let s = fitScale(lines, rp.w, rp.h, 6, 1);
-        if (s === 0 && spec.fallback) {
-          lines = spec.fallback;
-          s = fitScale(lines, rp.w, rp.h, 4, 1);
-        }
-        if (s === 0)
-          continue;
-        drawBoldLines(lines, rp.x, rp.y + (rp.h - blockHeight(lines, s)) / 2, rp.w, s);
-        for (const line3 of lines)
-          emit2({ text: line3, kind: "room", flatId: u.flatId, spaceId: rm.id, scale: s });
-      }
-      if (!tagPlaced) {
-        const body = u.bodyBounds ?? u.bounds;
-        const bdp = toPx(body.x, body.y, body.width, body.height);
-        const text2 = `${flatLabel} ${typeLabel}`.trim();
-        drawBoldCentered(text2, bdp.x, bdp.y + 6, bdp.w, 7, 1);
-        emit2({ text: flatLabel, kind: "flat", flatId: u.flatId, scale: 1 });
-        if (typeLabel)
-          emit2({ text: typeLabel, kind: "unit_type", flatId: u.flatId, scale: 1 });
-      }
-    });
-  }
-  const naX = width - 35;
-  const naY = 15;
-  drawText2("N", naX, naY, 1, 0, 0, 0);
-  drawLine(naX + 2, naY + 8, naX + 2, naY + 22, 0, 0, 0, 1);
-  drawLine(naX + 2, naY + 8, naX - 1, naY + 12, 0, 0, 0, 1);
-  drawLine(naX + 2, naY + 8, naX + 5, naY + 12, 0, 0, 0, 1);
-  const signature = Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]);
-  const ihdrData = Buffer.alloc(13);
-  ihdrData.writeUInt32BE(width, 0);
-  ihdrData.writeUInt32BE(height, 4);
-  ihdrData[8] = 8;
-  ihdrData[9] = 6;
-  ihdrData[10] = 0;
-  ihdrData[11] = 0;
-  ihdrData[12] = 0;
-  const ihdr = makePngChunk("IHDR", ihdrData);
-  const idat = makePngChunk("IDAT", import_node_zlib.default.deflateSync(raw));
-  const iend = makePngChunk("IEND", Buffer.alloc(0));
-  return Buffer.concat([signature, ihdr, idat, iend]);
-}
-var import_node_zlib, table, FONT_5X7;
-var init_schematic_renderer = __esm({
-  "packages/ai-orchestration/dist/apartment/schematic-renderer.js"() {
-    "use strict";
-    import_node_zlib = __toESM(require("node:zlib"));
-    table = new Int32Array(256);
-    for (let i = 0; i < 256; i++) {
-      let c = i;
-      for (let k = 0; k < 8; k++) {
-        c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
-      }
-      table[i] = c;
-    }
-    FONT_5X7 = {
-      " ": [0, 0, 0, 0, 0],
-      "!": [0, 0, 95, 0, 0],
-      "(": [0, 28, 34, 65, 0],
-      ")": [0, 65, 34, 28, 0],
-      "+": [8, 8, 62, 8, 8],
-      ",": [0, 80, 48, 0, 0],
-      "-": [8, 8, 8, 8, 8],
-      ".": [0, 96, 96, 0, 0],
-      "/": [32, 16, 8, 4, 2],
-      "0": [62, 81, 73, 69, 62],
-      "1": [0, 66, 127, 64, 0],
-      "2": [66, 97, 81, 73, 70],
-      "3": [33, 65, 69, 75, 49],
-      "4": [24, 20, 18, 127, 16],
-      "5": [39, 69, 69, 69, 57],
-      "6": [60, 74, 73, 73, 48],
-      "7": [1, 113, 9, 5, 3],
-      "8": [54, 73, 73, 73, 54],
-      "9": [6, 73, 73, 41, 30],
-      ":": [0, 54, 54, 0, 0],
-      "[": [0, 127, 65, 65, 0],
-      "]": [0, 65, 65, 127, 0],
-      "A": [126, 17, 17, 17, 126],
-      "B": [127, 73, 73, 73, 54],
-      "C": [62, 65, 65, 65, 34],
-      "D": [127, 65, 65, 34, 28],
-      "E": [127, 73, 73, 73, 65],
-      "F": [127, 9, 9, 9, 1],
-      "G": [62, 65, 73, 73, 122],
-      "H": [127, 8, 8, 8, 127],
-      "I": [0, 65, 127, 65, 0],
-      "J": [32, 64, 65, 63, 1],
-      "K": [127, 8, 20, 34, 65],
-      "L": [127, 64, 64, 64, 64],
-      "M": [127, 2, 12, 2, 127],
-      "N": [127, 4, 8, 16, 127],
-      "O": [62, 65, 65, 65, 62],
-      "P": [127, 9, 9, 9, 6],
-      "Q": [62, 65, 81, 33, 94],
-      "R": [127, 9, 25, 41, 70],
-      "S": [70, 73, 73, 73, 49],
-      "T": [1, 1, 127, 1, 1],
-      "U": [63, 64, 64, 64, 63],
-      "V": [31, 32, 64, 32, 31],
-      "W": [127, 32, 24, 32, 127],
-      "X": [99, 20, 8, 20, 99],
-      "Y": [7, 8, 112, 8, 7],
-      "Z": [97, 81, 73, 69, 67]
-    };
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/reference-library.js
-function resolveApartmentReferenceBucket(projectType, flatsPerFloor) {
-  if (projectType === "residential_independent") {
-    return "villa";
-  }
-  switch (flatsPerFloor) {
-    case 1:
-      return "flats_1";
-    case 2:
-      return "flats_2";
-    case 3:
-      return "flats_3";
-    case 4:
-      return "flats_4";
-    case 6:
-      return "flats_6";
-    default:
-      return null;
-  }
-}
-function selectReferenceCandidates(_bucket, availableFiles, maxCount) {
-  const sorted3 = [...availableFiles].sort((a, b) => a.id.localeCompare(b.id));
-  const requestedIds = sorted3.map((f) => f.id);
-  const selected = sorted3.slice(0, Math.max(0, maxCount));
-  return { selected, requestedIds };
-}
-function finalizeReferenceSelection(bucket, requestedIds, selectedIds, attachedIds, drops, distinctReferencesAvailable) {
-  let status;
-  if (bucket === null || requestedIds.length === 0) {
-    status = "EMPTY";
-  } else if (attachedIds.length === 0) {
-    status = drops.length > 0 ? "FAILED" : "EMPTY";
-  } else if (attachedIds.length < selectedIds.length) {
-    status = "PARTIAL";
-  } else {
-    status = "AVAILABLE";
-  }
-  return {
-    bucket,
-    requestedReferenceIds: requestedIds,
-    selectedReferenceIds: selectedIds,
-    attachedReferenceIds: attachedIds,
-    drops,
-    status,
-    ...distinctReferencesAvailable !== void 0 ? { distinctReferencesAvailable } : {}
-  };
-}
-var init_reference_library = __esm({
-  "packages/ai-orchestration/dist/apartment/reference-library.js"() {
-    "use strict";
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/adapter.js
-function apartmentExpectationFromManifest(manifest) {
-  return {
-    flats: manifest.units.exactCount,
-    units: manifest.units.units.map((u) => ({
-      label: u.label,
-      unitType: u.type,
-      bedrooms: u.bedrooms,
-      bathrooms: u.bathrooms,
-      livingRooms: u.livingRooms,
-      diningRooms: u.diningRooms,
-      kitchens: u.kitchens,
-      utilities: u.utilities,
-      balconies: u.balconies
-    })),
-    lifts: manifest.commonCore.lifts,
-    stairs: manifest.commonCore.stairs,
-    commonLobby: manifest.commonCore.commonLobby
-  };
-}
-function apartmentInterpretationContextFromManifest(manifest) {
-  const mix = /* @__PURE__ */ new Map();
-  for (const u of manifest.units.units)
-    mix.set(u.type, (mix.get(u.type) ?? 0) + 1);
-  return {
-    flatsPerFloor: manifest.units.exactCount,
-    unitMix: [...mix.entries()].map(([unitType, count]) => ({ unitType, count })),
-    lifts: manifest.commonCore.lifts,
-    stairs: manifest.commonCore.stairs,
-    commonLobby: manifest.commonCore.commonLobby
-  };
-}
-function generateWindowsForApartmentSchematic(schematic) {
-  const openings = [];
-  let winId = 1;
-  for (const unit3 of schematic.units) {
-    const flatId = unit3.flatId;
-    const stepped = unit3.steppedPolygon;
-    const openFacades = new Set(stepped?.openFacades ?? ["N", "S", "E"]);
-    const deadWalls = new Set(stepped?.deadWalls ?? ["W"]);
-    const otsShafts = stepped?.otsShafts ?? [];
-    const ub = mm5(unit3.bodyBounds);
-    for (const room2 of [...unit3.rooms, ...unit3.balconies]) {
-      const rm = mm5(room2.bounds);
-      const isBath = room2.type === "master_toilet" || room2.type === "common_toilet" || room2.type === "powder_room";
-      const isHabitable3 = room2.type === "living_dining" || room2.type === "living" || room2.type === "dining" || room2.type === "kitchen" || room2.type === "master_bedroom" || room2.type === "bedroom" || room2.type === "study";
-      if (isBath) {
-        let placedOnOts = false;
-        for (const ots of otsShafts) {
-          const ob = mm5(ots.bounds);
-          const xOverlap = Math.min(rm.x + rm.width, ob.x + ob.width) - Math.max(rm.x, ob.x);
-          const yOverlap = Math.min(rm.y + rm.height, ob.y + ob.height) - Math.max(rm.y, ob.y);
-          if (xOverlap > 300 && Math.abs(rm.y - (ob.y + ob.height)) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
-              kind: "window",
-              rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-            placedOnOts = true;
-            break;
-          } else if (xOverlap > 300 && Math.abs(rm.y + rm.height - ob.y) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
-              kind: "window",
-              rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y + rm.height - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-            placedOnOts = true;
-            break;
-          } else if (yOverlap > 300 && Math.abs(rm.x - (ob.x + ob.width)) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
-              kind: "window",
-              rect: { x: rm.x - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-            placedOnOts = true;
-            break;
-          } else if (yOverlap > 300 && Math.abs(rm.x + rm.width - ob.x) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_ots_${winId++}`,
-              kind: "window",
-              rect: { x: rm.x + rm.width - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-            placedOnOts = true;
-            break;
-          }
-        }
-        if (!placedOnOts) {
-          if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_${winId++}`,
-              kind: "window",
-              rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-          } else if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
-            openings.push({
-              id: `${flatId}__win_${room2.id}_${winId++}`,
-              kind: "window",
-              rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y + rm.height - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
-            });
-          }
-        }
-      } else if (isHabitable3) {
-        if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
-          openings.push({
-            id: `${flatId}__win_${room2.id}_N_${winId++}`,
-            kind: "window",
-            rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room2.id}`
-          });
-        }
-        if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
-          openings.push({
-            id: `${flatId}__win_${room2.id}_S_${winId++}`,
-            kind: "window",
-            rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y + rm.height - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room2.id}`
-          });
-        }
-        if (openFacades.has("E") && !deadWalls.has("E") && Math.abs(rm.x + rm.width - (ub.x + ub.width)) <= 200) {
-          openings.push({
-            id: `${flatId}__win_${room2.id}_E_${winId++}`,
-            kind: "window",
-            rect: { x: rm.x + rm.width - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room2.id}`
-          });
-        }
-        if (openFacades.has("W") && !deadWalls.has("W") && Math.abs(rm.x - ub.x) <= 200) {
-          openings.push({
-            id: `${flatId}__win_${room2.id}_W_${winId++}`,
-            kind: "window",
-            rect: { x: rm.x - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room2.id}`
-          });
-        }
-      }
-    }
-  }
-  return openings;
-}
-function schematicToApartmentStructure(schematic) {
-  const structureId = /* @__PURE__ */ new Map();
-  for (const unit3 of schematic.units) {
-    for (const room2 of [...unit3.rooms, ...unit3.balconies]) {
-      structureId.set(room2.id, `${unit3.flatId}__${room2.id}`);
-    }
-  }
-  const sid = (id) => structureId.get(id) ?? id;
-  const doorOpenings = (schematic.doors ?? []).map((door2) => {
-    const a = sid(door2.connects[0]);
-    const b = sid(door2.connects[1]);
-    const lobbyId = schematic.core.lobby ? "core_lobby" : null;
-    return {
-      id: door2.id,
-      kind: "door",
-      rect: mm5(door2.bounds),
-      adjacentRoomId: door2.kind === "flat_entrance" && a === lobbyId ? b : a,
-      doorType: door2.doorType,
-      swingDirection: door2.swing,
-      connects: [a, b],
-      isFlatEntrance: door2.kind === "flat_entrance"
-    };
-  });
-  const windowOpenings = generateWindowsForApartmentSchematic(schematic);
-  const openings = [...doorOpenings, ...windowOpenings];
-  const fp = mm5(schematic.buildingFootprint);
-  const boundary = [
-    { x: fp.x - 50, y: fp.y - 50 },
-    { x: fp.x + fp.width + 50, y: fp.y - 50 },
-    { x: fp.x + fp.width + 50, y: fp.y + fp.height + 50 },
-    { x: fp.x - 50, y: fp.y + fp.height + 50 }
-  ];
-  return {
-    source: "DETERMINISTIC_SCHEMATIC",
-    boundary,
-    flats: schematic.units.map((unit3) => ({
-      id: unit3.flatId,
-      label: unit3.flatLabel,
-      unitType: unit3.unitType,
-      rect: mm5(unit3.bounds),
-      rooms: [...unit3.rooms, ...unit3.balconies].map((room2) => ({
-        id: `${unit3.flatId}__${room2.id}`,
-        name: room2.name,
-        type: room2.type,
-        rect: mm5(room2.bounds)
-      }))
-    })),
-    commonRooms: [],
-    ungroupedRooms: [],
-    lifts: schematic.core.lifts.map((l) => common(l.id, l.label, l.bounds)),
-    stairs: schematic.core.stairs.map((s) => common(s.id, s.label, s.bounds)),
-    lobbies: schematic.core.lobby ? [common("core_lobby", schematic.core.lobby.label, schematic.core.lobby.bounds)] : [],
-    corridors: schematic.core.corridors.map((c, i) => common(`corridor_${i + 1}`, c.label, c.bounds)),
-    shafts: schematic.core.serviceShafts.map((s, i) => common(`shaft_${i + 1}`, s.label, s.bounds)),
-    openings
-  };
-}
-function buildExtractionSite(input) {
-  const front = input.setbacksMm?.front ?? 3e3;
-  const rear = input.setbacksMm?.rear ?? 2e3;
-  const left = input.setbacksMm?.left ?? 2e3;
-  const right = input.setbacksMm?.right ?? 2e3;
-  return {
-    plotWidth: input.plotWidthMm,
-    plotDepth: input.plotDepthMm,
-    frontSetback: front,
-    rearSetback: rear,
-    leftSetback: left,
-    rightSetback: right,
-    roadFacing: (input.roadFacing ?? "north").toString().toLowerCase(),
-    orientation: input.orientationDegrees ?? 0
-  };
-}
-function adaptSchematicToBuilding(schematic, options) {
-  const projectId = options?.projectId ?? "project-cad";
-  const projectName = options?.projectName ?? "Apartment CAD Plan";
-  const structure = schematicToApartmentStructure(schematic);
-  const site = buildExtractionSite({
-    plotWidthMm: options?.site?.plotWidth ?? Math.round(schematic.siteFootprint.width * 1e3),
-    plotDepthMm: options?.site?.plotDepth ?? Math.round(schematic.siteFootprint.height * 1e3),
-    setbacksMm: {
-      front: Math.round(schematic.setbacks.front * 1e3),
-      rear: Math.round(schematic.setbacks.rear * 1e3),
-      left: Math.round(schematic.setbacks.left * 1e3),
-      right: Math.round(schematic.setbacks.right * 1e3)
-    },
-    roadFacing: options?.site?.roadFacing ?? "north",
-    orientationDegrees: options?.site?.orientation ?? 0
-  });
-  const { building } = apartmentStructureToBuilding(structure, site, projectId, projectName);
-  const floor = building.floors[0];
-  const walls = [];
-  const edgeMap = /* @__PURE__ */ new Map();
-  for (const room2 of floor.rooms) {
-    const x0 = room2.x;
-    const y0 = room2.y;
-    const x1 = room2.x + room2.width;
-    const y1 = room2.y + room2.height;
-    const segments = [
-      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
-      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
-      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
-      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } }
-    ];
-    for (const seg of segments) {
-      const k = seg.start.x === seg.end.x ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}` : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
-      const entry = edgeMap.get(k);
-      if (entry) {
-        entry.roomIds.push(room2.id);
-      } else {
-        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room2.id] });
-      }
-    }
-  }
-  for (const [, edge] of edgeMap) {
-    const isInternal = edge.roomIds.length >= 2;
-    const wallType = isInternal ? WallType.Internal : WallType.External;
-    const thickness = isInternal ? 100 : 200;
-    walls.push(createWall({
-      floorId: floor.id,
-      startPoint: edge.start,
-      endPoint: edge.end,
-      type: wallType,
-      thickness,
-      roomIds: edge.roomIds
-    }));
-  }
-  const stairs = schematic.core.stairs.map((st) => createStair({
-    floorId: floor.id,
-    type: StairType.UShaped,
-    x: Math.round(st.bounds.x * 1e3),
-    y: Math.round(st.bounds.y * 1e3),
-    width: Math.round(st.bounds.width * 1e3),
-    length: Math.round(st.bounds.height * 1e3),
-    riserCount: 16,
-    riserHeight: 175,
-    treadDepth: 250,
-    direction: Direction.North,
-    connectsFloors: [0, 1]
-  }));
-  return {
-    ...building,
-    metadata: {
-      ...building.metadata,
-      apartmentSchematic: schematic,
-      steppedPolygons: schematic.units.map((u) => ({
-        flatId: u.flatId,
-        flatLabel: u.flatLabel,
-        steppedPolygon: u.steppedPolygon
-      })),
-      otsShafts: schematic.units.flatMap((u) => u.steppedPolygon?.otsShafts ?? []),
-      balconies: schematic.units.flatMap((u) => u.steppedPolygon?.balconies ?? []),
-      vastuReport: schematic.vastuReport
-    },
-    floors: [
-      {
-        ...floor,
-        walls,
-        stairs
-      }
-    ]
-  };
-}
-var mm5, common;
-var init_adapter = __esm({
-  "packages/ai-orchestration/dist/apartment/adapter.js"() {
-    "use strict";
-    init_dist();
-    init_dist3();
-    mm5 = (r) => ({
-      x: Math.round(r.x * 1e3),
-      y: Math.round(r.y * 1e3),
-      width: Math.round((r.x + r.width) * 1e3) - Math.round(r.x * 1e3),
-      height: Math.round((r.y + r.height) * 1e3) - Math.round(r.y * 1e3)
-    });
-    common = (id, name, bounds) => ({
-      id,
-      name,
-      rect: mm5(bounds),
-      assignedFlatId: null
-    });
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/structural-representation.js
-var init_structural_representation = __esm({
-  "packages/ai-orchestration/dist/apartment/structural-representation.js"() {
-    "use strict";
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/deterministic-planner.js
-var init_deterministic_planner = __esm({
-  "packages/ai-orchestration/dist/apartment/deterministic-planner.js"() {
-    "use strict";
-    init_dist3();
-    init_schematic();
-    init_manifest();
-    init_jurisdiction();
-    init_adapter();
-    init_structural_representation();
-    init_site_defaults();
-  }
-});
-
-// packages/ai-orchestration/dist/apartment/structural-renderer.js
-function validateStructuralPlanRepresentation(rep) {
-  const errors = [];
-  if (!rep) {
-    errors.push("StructuralPlanRepresentation is null or undefined.");
-    return { valid: false, errors };
-  }
-  if (rep.version !== 1) {
-    errors.push(`Unsupported representation version: ${rep.version}`);
-  }
-  if (!rep.buildingFootprint || rep.buildingFootprint.width <= 0 || rep.buildingFootprint.height <= 0) {
-    errors.push("Invalid or empty buildingFootprint.");
-  }
-  if (!rep.outerBuildingWalls || rep.outerBuildingWalls.length < 4) {
-    errors.push("Outer building walls missing or incomplete (expected at least 4 segments).");
-  }
-  if (!rep.flatBoundaries || rep.flatBoundaries.length === 0) {
-    errors.push("No flat boundaries defined.");
-  }
-  if (!rep.commonCore || !rep.commonCore.lobby) {
-    errors.push("Common core lobby missing.");
-  }
-  if (!rep.doors || rep.doors.length === 0) {
-    errors.push("No doors or openings defined in structural representation.");
-  }
-  return { valid: errors.length === 0, errors };
-}
-function computeStructuralBoundingBox(rep) {
-  let minX = rep.buildingFootprint.x;
-  let minY = rep.buildingFootprint.y;
-  let maxX = rep.buildingFootprint.x + rep.buildingFootprint.width;
-  let maxY = rep.buildingFootprint.y + rep.buildingFootprint.height;
-  for (const b of rep.balconies) {
-    minX = Math.min(minX, b.bounds.x);
-    minY = Math.min(minY, b.bounds.y);
-    maxX = Math.max(maxX, b.bounds.x + b.bounds.width);
-    maxY = Math.max(maxY, b.bounds.y + b.bounds.height);
-  }
-  for (const wall2 of rep.outerBuildingWalls) {
-    minX = Math.min(minX, wall2.start.x, wall2.end.x);
-    minY = Math.min(minY, wall2.start.y, wall2.end.y);
-    maxX = Math.max(maxX, wall2.start.x, wall2.end.x);
-    maxY = Math.max(maxY, wall2.start.y, wall2.end.y);
-  }
-  for (const u of rep.flatBoundaries) {
-    minX = Math.min(minX, u.bounds.x);
-    minY = Math.min(minY, u.bounds.y);
-    maxX = Math.max(maxX, u.bounds.x + u.bounds.width);
-    maxY = Math.max(maxY, u.bounds.y + u.bounds.height);
-  }
-  const width = Math.max(1, maxX - minX);
-  const height = Math.max(1, maxY - minY);
-  return { minX, minY, maxX, maxY, width, height };
-}
-function computeViewTransform(bbox, options = {}) {
-  const targetLongSidePx = options.targetLongSidePx ?? 2048;
-  const minShortSidePx = options.minShortSidePx ?? 512;
-  const marginFraction = options.marginFraction ?? 0.06;
-  const aspect = bbox.width / bbox.height;
-  let canvasWidth;
-  let canvasHeight;
-  if (aspect >= 1) {
-    canvasWidth = targetLongSidePx;
-    canvasHeight = Math.round(targetLongSidePx / aspect);
-  } else {
-    canvasHeight = targetLongSidePx;
-    canvasWidth = Math.round(targetLongSidePx * aspect);
-  }
-  canvasWidth = Math.max(minShortSidePx, Math.round(canvasWidth / 16) * 16);
-  canvasHeight = Math.max(minShortSidePx, Math.round(canvasHeight / 16) * 16);
-  const marginX = canvasWidth * marginFraction;
-  const marginY = canvasHeight * marginFraction;
-  const usableWidth = canvasWidth - 2 * marginX;
-  const usableHeight = canvasHeight - 2 * marginY;
-  const scale = Math.min(usableWidth / bbox.width, usableHeight / bbox.height);
-  const renderedWidth = bbox.width * scale;
-  const renderedHeight = bbox.height * scale;
-  const offsetX = (canvasWidth - renderedWidth) / 2 - bbox.minX * scale;
-  const offsetY = (canvasHeight - renderedHeight) / 2 - bbox.minY * scale;
-  return {
-    canvasWidth,
-    canvasHeight,
-    scale,
-    offsetX,
-    offsetY,
-    toScreenX: (worldX) => worldX * scale + offsetX,
-    toScreenY: (worldY) => worldY * scale + offsetY
-  };
-}
-function crc322(buf) {
-  let crc = -1;
-  for (let i = 0; i < buf.length; i++) {
-    const byte = buf[i] ?? 0;
-    const lookup3 = CRC_TABLE[(crc ^ byte) & 255] ?? 0;
-    crc = crc >>> 8 ^ lookup3;
-  }
-  return (crc ^ -1) >>> 0;
-}
-function makePngChunk2(type, data) {
-  const typeBuf = Buffer.from(type, "ascii");
-  const lenBuf = Buffer.alloc(4);
-  lenBuf.writeUInt32BE(data.length, 0);
-  const crcBuf = Buffer.alloc(4);
-  const crcPayload = Buffer.concat([typeBuf, data]);
-  crcBuf.writeUInt32BE(crc322(crcPayload), 0);
-  return Buffer.concat([lenBuf, crcPayload, crcBuf]);
-}
-function renderStructuralPlan(rep, options = {}) {
-  const validation = validateStructuralPlanRepresentation(rep);
-  if (!validation.valid) {
-    throw new InvalidStructuralPlanError(validation.errors);
-  }
-  const bbox = computeStructuralBoundingBox(rep);
-  const vt = computeViewTransform(bbox, options);
-  const { canvasWidth, canvasHeight, scale, toScreenX, toScreenY } = vt;
-  const baseStroke = Math.max(1, (canvasWidth + canvasHeight) / 1e3);
-  const outerWallStroke = Math.max(3, Math.round(baseStroke * 1.6));
-  const flatBoundaryStroke = Math.max(2, Math.round(baseStroke * 1.2));
-  const partyWallStroke = Math.max(2, Math.round(baseStroke * 1));
-  const roomPartitionStroke = Math.max(1, Math.round(baseStroke * 0.7));
-  const coreStroke = Math.max(2, Math.round(baseStroke * 0.9));
-  const stairTreadStroke = Math.max(1, Math.round(baseStroke * 0.4));
-  const doorStroke = Math.max(1, Math.round(baseStroke * 0.7));
-  const rasterizer = new StructuralRasterizer(canvasWidth, canvasHeight);
-  const COL_CANVAS = { r: 255, g: 255, b: 255 };
-  const COL_LOBBY_FILL = { r: 243, g: 244, b: 246 };
-  const COL_BALCONY_FILL = { r: 250, g: 250, b: 250 };
-  const COL_WALL_OUTER = { r: 17, g: 24, b: 39 };
-  const COL_WALL_PARTY = { r: 31, g: 41, b: 55 };
-  const COL_WALL_INTERIOR = { r: 55, g: 65, b: 81 };
-  const COL_DOOR = { r: 31, g: 41, b: 55 };
-  const COL_DOOR_ARC = { r: 107, g: 114, b: 128 };
-  const COL_CORE_DETAIL = { r: 75, g: 85, b: 99 };
-  const COL_DUCT_HATCH = { r: 156, g: 163, b: 175 };
-  const svgElements = [];
-  const lobbyB = rep.commonCore.lobby.bounds;
-  const lobbySx = toScreenX(lobbyB.x);
-  const lobbySy = toScreenY(lobbyB.y);
-  const lobbySw = lobbyB.width * scale;
-  const lobbySh = lobbyB.height * scale;
-  rasterizer.fillRect(lobbySx, lobbySy, lobbySw, lobbySh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
-  svgElements.push(`<rect class="common-lobby" x="${lobbySx.toFixed(1)}" y="${lobbySy.toFixed(1)}" width="${lobbySw.toFixed(1)}" height="${lobbySh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${coreStroke}" />`);
-  for (const c of rep.commonCore.circulationBoundaries) {
-    const csx = toScreenX(c.bounds.x);
-    const csy = toScreenY(c.bounds.y);
-    const csw = c.bounds.width * scale;
-    const csh = c.bounds.height * scale;
-    rasterizer.fillRect(csx, csy, csw, csh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
-    svgElements.push(`<rect class="common-corridor" x="${csx.toFixed(1)}" y="${csy.toFixed(1)}" width="${csw.toFixed(1)}" height="${csh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${coreStroke}" />`);
-  }
-  for (const bal of rep.balconies) {
-    const bsx = toScreenX(bal.bounds.x);
-    const bsy = toScreenY(bal.bounds.y);
-    const bsw = bal.bounds.width * scale;
-    const bsh = bal.bounds.height * scale;
-    rasterizer.fillRect(bsx, bsy, bsw, bsh, COL_BALCONY_FILL.r, COL_BALCONY_FILL.g, COL_BALCONY_FILL.b);
-    rasterizer.drawRectOutline(bsx, bsy, bsw, bsh, Math.max(1, Math.round(roomPartitionStroke * 0.8)), COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b);
-    svgElements.push(`<rect class="balcony" x="${bsx.toFixed(1)}" y="${bsy.toFixed(1)}" width="${bsw.toFixed(1)}" height="${bsh.toFixed(1)}" fill="#FAFAFA" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(roomPartitionStroke * 0.8))}" stroke-dasharray="4,2" />`);
-  }
-  for (const room2 of rep.roomBoundaries) {
-    const rsx = toScreenX(room2.bounds.x);
-    const rsy = toScreenY(room2.bounds.y);
-    const rsw = room2.bounds.width * scale;
-    const rsh = room2.bounds.height * scale;
-    rasterizer.fillRect(rsx, rsy, rsw, rsh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
-    rasterizer.drawRectOutline(rsx, rsy, rsw, rsh, roomPartitionStroke, COL_WALL_INTERIOR.r, COL_WALL_INTERIOR.g, COL_WALL_INTERIOR.b);
-    svgElements.push(`<rect class="room-partition" x="${rsx.toFixed(1)}" y="${rsy.toFixed(1)}" width="${rsw.toFixed(1)}" height="${rsh.toFixed(1)}" fill="#FFFFFF" stroke="#374151" stroke-width="${roomPartitionStroke}" />`);
-  }
-  for (const flat of rep.flatBoundaries) {
-    const fsx = toScreenX(flat.bounds.x);
-    const fsy = toScreenY(flat.bounds.y);
-    const fsw = flat.bounds.width * scale;
-    const fsh = flat.bounds.height * scale;
-    rasterizer.drawRectOutline(fsx, fsy, fsw, fsh, flatBoundaryStroke, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b);
-    svgElements.push(`<rect class="flat-boundary" x="${fsx.toFixed(1)}" y="${fsy.toFixed(1)}" width="${fsw.toFixed(1)}" height="${fsh.toFixed(1)}" fill="none" stroke="#1F2937" stroke-width="${flatBoundaryStroke}" />`);
-  }
-  for (const part of rep.majorPartitions) {
-    if (part.classification === "party_wall") {
-      const x0 = toScreenX(part.start.x);
-      const y0 = toScreenY(part.start.y);
-      const x1 = toScreenX(part.end.x);
-      const y1 = toScreenY(part.end.y);
-      rasterizer.drawLine(x0, y0, x1, y1, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, partyWallStroke);
-      svgElements.push(`<line class="party-wall" x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${partyWallStroke}" />`);
-    }
-  }
-  for (const s of rep.commonCore.stairs) {
-    const sx = toScreenX(s.bounds.x);
-    const sy = toScreenY(s.bounds.y);
-    const sw = s.bounds.width * scale;
-    const sh = s.bounds.height * scale;
-    rasterizer.fillRect(sx, sy, sw, sh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
-    rasterizer.drawRectOutline(sx, sy, sw, sh, coreStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
-    svgElements.push(`<rect class="stair-well" x="${sx.toFixed(1)}" y="${sy.toFixed(1)}" width="${sw.toFixed(1)}" height="${sh.toFixed(1)}" fill="#FFFFFF" stroke="#111827" stroke-width="${coreStroke}" />`);
-    if (sh >= sw) {
-      const midX = sx + sw / 2;
-      const landingH = Math.min(sh * 0.22, 1.2 * scale);
-      rasterizer.drawLine(midX, sy + landingH, midX, sy + sh, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, coreStroke);
-      svgElements.push(`<line class="stair-divider" x1="${midX.toFixed(1)}" y1="${(sy + landingH).toFixed(1)}" x2="${midX.toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#1F2937" stroke-width="${coreStroke}" />`);
-      rasterizer.drawLine(sx, sy + landingH, sx + sw, sy + landingH, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(stairTreadStroke * 1.2)));
-      svgElements.push(`<line class="stair-landing" x1="${sx.toFixed(1)}" y1="${(sy + landingH).toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${(sy + landingH).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
-      const treadCount2 = 9;
-      const treadStep = (sh - landingH) / (treadCount2 + 1);
-      for (let t = 1; t <= treadCount2; t++) {
-        const ty = sy + landingH + t * treadStep;
-        rasterizer.drawLine(sx, ty, midX - 2, ty, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
-        rasterizer.drawLine(midX + 2, ty, sx + sw, ty, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
-        svgElements.push(`<line class="stair-tread" x1="${sx.toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(midX - 2).toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`, `<line class="stair-tread" x1="${(midX + 2).toFixed(1)}" y1="${ty.toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${ty.toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
-      }
-    } else {
-      const midY = sy + sh / 2;
-      const landingW = Math.min(sw * 0.22, 1.2 * scale);
-      rasterizer.drawLine(sx + landingW, midY, sx + sw, midY, COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b, coreStroke);
-      svgElements.push(`<line class="stair-divider" x1="${(sx + landingW).toFixed(1)}" y1="${midY.toFixed(1)}" x2="${(sx + sw).toFixed(1)}" y2="${midY.toFixed(1)}" stroke="#1F2937" stroke-width="${coreStroke}" />`);
-      rasterizer.drawLine(sx + landingW, sy, sx + landingW, sy + sh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(stairTreadStroke * 1.2)));
-      svgElements.push(`<line class="stair-landing" x1="${(sx + landingW).toFixed(1)}" y1="${sy.toFixed(1)}" x2="${(sx + landingW).toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
-      const treadCount2 = 9;
-      const treadStep = (sw - landingW) / (treadCount2 + 1);
-      for (let t = 1; t <= treadCount2; t++) {
-        const tx = sx + landingW + t * treadStep;
-        rasterizer.drawLine(tx, sy, tx, midY - 2, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
-        rasterizer.drawLine(tx, midY + 2, tx, sy + sh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, stairTreadStroke);
-        svgElements.push(`<line class="stair-tread" x1="${tx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(midY - 2).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`, `<line class="stair-tread" x1="${tx.toFixed(1)}" y1="${(midY + 2).toFixed(1)}" x2="${tx.toFixed(1)}" y2="${(sy + sh).toFixed(1)}" stroke="#4B5563" stroke-width="${stairTreadStroke}" />`);
-      }
-    }
-  }
-  for (const l of rep.commonCore.lifts) {
-    const lx = toScreenX(l.bounds.x);
-    const ly = toScreenY(l.bounds.y);
-    const lw = l.bounds.width * scale;
-    const lh = l.bounds.height * scale;
-    rasterizer.fillRect(lx, ly, lw, lh, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b);
-    rasterizer.drawRectOutline(lx, ly, lw, lh, coreStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
-    rasterizer.drawCross(lx, ly, lw, lh, COL_CORE_DETAIL.r, COL_CORE_DETAIL.g, COL_CORE_DETAIL.b, Math.max(1, Math.round(coreStroke * 0.75)));
-    svgElements.push(`<rect class="lift-shaft" x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" width="${lw.toFixed(1)}" height="${lh.toFixed(1)}" fill="#FFFFFF" stroke="#111827" stroke-width="${coreStroke}" />`, `<line class="lift-cross" x1="${lx.toFixed(1)}" y1="${ly.toFixed(1)}" x2="${(lx + lw).toFixed(1)}" y2="${(ly + lh).toFixed(1)}" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(coreStroke * 0.75))}" />`, `<line class="lift-cross" x1="${(lx + lw).toFixed(1)}" y1="${ly.toFixed(1)}" x2="${lx.toFixed(1)}" y2="${(ly + lh).toFixed(1)}" stroke="#4B5563" stroke-width="${Math.max(1, Math.round(coreStroke * 0.75))}" />`);
-  }
-  for (const d of rep.commonCore.ducts) {
-    const dx = toScreenX(d.bounds.x);
-    const dy = toScreenY(d.bounds.y);
-    const dw = d.bounds.width * scale;
-    const dh = d.bounds.height * scale;
-    rasterizer.fillRect(dx, dy, dw, dh, COL_LOBBY_FILL.r, COL_LOBBY_FILL.g, COL_LOBBY_FILL.b);
-    rasterizer.drawRectOutline(dx, dy, dw, dh, Math.max(1, Math.round(coreStroke * 0.7)), COL_WALL_PARTY.r, COL_WALL_PARTY.g, COL_WALL_PARTY.b);
-    rasterizer.drawLine(dx, dy, dx + dw, dy + dh, COL_DUCT_HATCH.r, COL_DUCT_HATCH.g, COL_DUCT_HATCH.b, 1);
-    svgElements.push(`<rect class="service-duct" x="${dx.toFixed(1)}" y="${dy.toFixed(1)}" width="${dw.toFixed(1)}" height="${dh.toFixed(1)}" fill="#F3F4F6" stroke="#1F2937" stroke-width="${Math.max(1, Math.round(coreStroke * 0.7))}" />`, `<line class="duct-slash" x1="${dx.toFixed(1)}" y1="${dy.toFixed(1)}" x2="${(dx + dw).toFixed(1)}" y2="${(dy + dh).toFixed(1)}" stroke="#9CA3AF" stroke-width="1.5" />`);
-  }
-  const fp = rep.buildingFootprint;
-  const fpx = toScreenX(fp.x);
-  const fpy = toScreenY(fp.y);
-  const fpw = fp.width * scale;
-  const fph = fp.height * scale;
-  rasterizer.drawRectOutline(fpx, fpy, fpw, fph, outerWallStroke, COL_WALL_OUTER.r, COL_WALL_OUTER.g, COL_WALL_OUTER.b);
-  svgElements.push(`<rect class="outer-building-boundary" x="${fpx.toFixed(1)}" y="${fpy.toFixed(1)}" width="${fpw.toFixed(1)}" height="${fph.toFixed(1)}" fill="none" stroke="#111827" stroke-width="${outerWallStroke}" stroke-linejoin="miter" stroke-linecap="square" />`);
-  for (const door2 of rep.doors) {
-    const cx = toScreenX(door2.center.x);
-    const cy = toScreenY(door2.center.y);
-    const dWidthPx = door2.widthM * scale;
-    const isEntrance = door2.kind === "flat_entrance";
-    const dStroke = isEntrance ? Math.max(2, Math.round(doorStroke * 1.3)) : doorStroke;
-    if (door2.wallAxis === "x") {
-      const x0 = cx - dWidthPx / 2;
-      const x1 = cx + dWidthPx / 2;
-      rasterizer.drawLine(x0, cy, x1, cy, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b, outerWallStroke + 2);
-      svgElements.push(`<line class="door-opening-cut" x1="${x0.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${cy.toFixed(1)}" stroke="#FFFFFF" stroke-width="${outerWallStroke + 2}" />`);
-      if (door2.doorType === "open_passage") {
-        rasterizer.drawLine(x0, cy - 4, x0, cy + 4, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        rasterizer.drawLine(x1, cy - 4, x1, cy + 4, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        svgElements.push(`<line class="jamb" x1="${x0.toFixed(1)}" y1="${(cy - 4).toFixed(1)}" x2="${x0.toFixed(1)}" y2="${(cy + 4).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="jamb" x1="${x1.toFixed(1)}" y1="${(cy - 4).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${(cy + 4).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
-      } else if (door2.doorType === "sliding") {
-        const half = dWidthPx * 0.55;
-        rasterizer.drawLine(x0, cy - 2, x0 + half, cy - 2, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        rasterizer.drawLine(x1 - half, cy + 2, x1, cy + 2, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        svgElements.push(`<line class="sliding-panel" x1="${x0.toFixed(1)}" y1="${(cy - 2).toFixed(1)}" x2="${(x0 + half).toFixed(1)}" y2="${(cy - 2).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="sliding-panel" x1="${(x1 - half).toFixed(1)}" y1="${(cy + 2).toFixed(1)}" x2="${x1.toFixed(1)}" y2="${(cy + 2).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
-      } else {
-        const signY = door2.swing === "outward" ? -1 : 1;
-        const leafTipX = x0;
-        const leafTipY = cy + signY * dWidthPx;
-        rasterizer.drawLine(x0, cy, leafTipX, leafTipY, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        const startRad = 0;
-        const endRad = signY > 0 ? Math.PI / 2 : -Math.PI / 2;
-        rasterizer.drawArc(x0, cy, dWidthPx, Math.min(startRad, endRad), Math.max(startRad, endRad), COL_DOOR_ARC.r, COL_DOOR_ARC.g, COL_DOOR_ARC.b, 1, true);
-        const sweepFlag = signY > 0 ? 1 : 0;
-        svgElements.push(`<line class="door-leaf" x1="${x0.toFixed(1)}" y1="${cy.toFixed(1)}" x2="${leafTipX.toFixed(1)}" y2="${leafTipY.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<path class="door-arc" d="M ${x1.toFixed(1)} ${cy.toFixed(1)} A ${dWidthPx.toFixed(1)} ${dWidthPx.toFixed(1)} 0 0 ${sweepFlag} ${leafTipX.toFixed(1)} ${leafTipY.toFixed(1)}" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-dasharray="4,3" />`);
-      }
-    } else {
-      const y0 = cy - dWidthPx / 2;
-      const y1 = cy + dWidthPx / 2;
-      rasterizer.drawLine(cx, y0, cx, y1, COL_CANVAS.r, COL_CANVAS.g, COL_CANVAS.b, outerWallStroke + 2);
-      svgElements.push(`<line class="door-opening-cut" x1="${cx.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${cx.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#FFFFFF" stroke-width="${outerWallStroke + 2}" />`);
-      if (door2.doorType === "open_passage") {
-        rasterizer.drawLine(cx - 4, y0, cx + 4, y0, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        rasterizer.drawLine(cx - 4, y1, cx + 4, y1, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        svgElements.push(`<line class="jamb" x1="${(cx - 4).toFixed(1)}" y1="${y0.toFixed(1)}" x2="${(cx + 4).toFixed(1)}" y2="${y0.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="jamb" x1="${(cx - 4).toFixed(1)}" y1="${y1.toFixed(1)}" x2="${(cx + 4).toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
-      } else if (door2.doorType === "sliding") {
-        const half = dWidthPx * 0.55;
-        rasterizer.drawLine(cx - 2, y0, cx - 2, y0 + half, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        rasterizer.drawLine(cx + 2, y1 - half, cx + 2, y1, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        svgElements.push(`<line class="sliding-panel" x1="${(cx - 2).toFixed(1)}" y1="${y0.toFixed(1)}" x2="${(cx - 2).toFixed(1)}" y2="${(y0 + half).toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<line class="sliding-panel" x1="${(cx + 2).toFixed(1)}" y1="${(y1 - half).toFixed(1)}" x2="${(cx + 2).toFixed(1)}" y2="${y1.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`);
-      } else {
-        const signX = door2.swing === "outward" ? -1 : 1;
-        const leafTipX = cx + signX * dWidthPx;
-        const leafTipY = y0;
-        rasterizer.drawLine(cx, y0, leafTipX, leafTipY, COL_DOOR.r, COL_DOOR.g, COL_DOOR.b, dStroke);
-        const startRad = Math.PI / 2;
-        const endRad = signX > 0 ? 0 : Math.PI;
-        rasterizer.drawArc(cx, y0, dWidthPx, Math.min(startRad, endRad), Math.max(startRad, endRad), COL_DOOR_ARC.r, COL_DOOR_ARC.g, COL_DOOR_ARC.b, 1, true);
-        const sweepFlag = signX > 0 ? 0 : 1;
-        svgElements.push(`<line class="door-leaf" x1="${cx.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${leafTipX.toFixed(1)}" y2="${leafTipY.toFixed(1)}" stroke="#1F2937" stroke-width="${dStroke}" />`, `<path class="door-arc" d="M ${cx.toFixed(1)} ${y1.toFixed(1)} A ${dWidthPx.toFixed(1)} ${dWidthPx.toFixed(1)} 0 0 ${sweepFlag} ${leafTipX.toFixed(1)} ${leafTipY.toFixed(1)}" fill="none" stroke="#6B7280" stroke-width="1.5" stroke-dasharray="4,3" />`);
-      }
-    }
-  }
-  if (options.debug) {
-    const debugSvg = [];
-    for (const room2 of rep.roomBoundaries) {
-      const rx = toScreenX(room2.bounds.x + room2.bounds.width / 2);
-      const ry = toScreenY(room2.bounds.y + room2.bounds.height / 2);
-      debugSvg.push(`<text x="${rx.toFixed(1)}" y="${ry.toFixed(1)}" font-family="monospace" font-size="12" fill="#DC2626" text-anchor="middle" dominant-baseline="middle">${room2.id}</text>`);
-    }
-    for (const flat of rep.flatBoundaries) {
-      const fx = toScreenX(flat.bounds.x + 1);
-      const fy = toScreenY(flat.bounds.y + 1);
-      debugSvg.push(`<text x="${fx.toFixed(1)}" y="${fy.toFixed(1)}" font-family="monospace" font-size="14" font-weight="bold" fill="#2563EB">${flat.id}</text>`);
-    }
-    svgElements.push(`<g id="debug-overlay">${debugSvg.join("")}</g>`);
-  }
-  const svgContent = [
-    `<?xml version="1.0" encoding="UTF-8"?>`,
-    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${canvasWidth} ${canvasHeight}" width="${canvasWidth}" height="${canvasHeight}">`,
-    `  <rect width="100%" height="100%" fill="#FFFFFF" />`,
-    `  <g id="structural-geometry">`,
-    `    ${svgElements.join("\n    ")}`,
-    `  </g>`,
-    `</svg>`
-  ].join("\n");
-  const pngBuffer = rasterizer.toPng();
-  const hash = import_node_crypto2.default.createHash("sha256").update(pngBuffer).digest("hex");
-  return {
-    png: pngBuffer,
-    svg: svgContent,
-    width: canvasWidth,
-    height: canvasHeight,
-    boundingBox: bbox,
-    rendererVersion: STRUCTURAL_RENDERER_VERSION,
-    hash,
-    sourceRepresentationId: `structural_v${rep.version}`
-  };
-}
-var import_node_crypto2, import_node_zlib2, STRUCTURAL_RENDERER_VERSION, InvalidStructuralPlanError, CRC_TABLE, StructuralRasterizer;
-var init_structural_renderer = __esm({
-  "packages/ai-orchestration/dist/apartment/structural-renderer.js"() {
-    "use strict";
-    import_node_crypto2 = __toESM(require("node:crypto"));
-    import_node_zlib2 = __toESM(require("node:zlib"));
-    STRUCTURAL_RENDERER_VERSION = "1.0.0";
-    InvalidStructuralPlanError = class extends Error {
-      code = "INVALID_STRUCTURAL_PLAN";
-      errors;
-      constructor(errors) {
-        super(`Invalid StructuralPlanRepresentation: ${errors.join("; ")}`);
-        this.name = "InvalidStructuralPlanError";
-        this.errors = errors;
-      }
-    };
-    CRC_TABLE = new Int32Array(256);
-    for (let i = 0; i < 256; i++) {
-      let c = i;
-      for (let k = 0; k < 8; k++) {
-        c = c & 1 ? 3988292384 ^ c >>> 1 : c >>> 1;
-      }
-      CRC_TABLE[i] = c;
-    }
-    StructuralRasterizer = class {
-      width;
-      height;
-      rowSize;
-      raw;
-      constructor(width, height) {
-        this.width = width;
-        this.height = height;
-        this.rowSize = 1 + width * 4;
-        this.raw = Buffer.alloc(height * this.rowSize, 255);
-        for (let y = 0; y < height; y++) {
-          this.raw[y * this.rowSize] = 0;
-        }
-      }
-      setPixel(x, y, r, g, b) {
-        const px = Math.round(x);
-        const py = Math.round(y);
-        if (px < 0 || px >= this.width || py < 0 || py >= this.height)
-          return;
-        const offset = py * this.rowSize + 1 + px * 4;
-        this.raw[offset] = r;
-        this.raw[offset + 1] = g;
-        this.raw[offset + 2] = b;
-        this.raw[offset + 3] = 255;
-      }
-      fillRect(rx, ry, rw, rh, r, g, b) {
-        const x0 = Math.max(0, Math.min(this.width - 1, Math.round(rx)));
-        const y0 = Math.max(0, Math.min(this.height - 1, Math.round(ry)));
-        const x1 = Math.max(0, Math.min(this.width - 1, Math.round(rx + rw)));
-        const y1 = Math.max(0, Math.min(this.height - 1, Math.round(ry + rh)));
-        for (let y = y0; y <= y1; y++) {
-          for (let x = x0; x <= x1; x++) {
-            this.setPixel(x, y, r, g, b);
-          }
-        }
-      }
-      drawRectOutline(rx, ry, rw, rh, thickness, r, g, b) {
-        const x0 = Math.round(rx);
-        const y0 = Math.round(ry);
-        const x1 = Math.round(rx + rw);
-        const y1 = Math.round(ry + rh);
-        this.drawLine(x0, y0, x1, y0, r, g, b, thickness);
-        this.drawLine(x1, y0, x1, y1, r, g, b, thickness);
-        this.drawLine(x1, y1, x0, y1, r, g, b, thickness);
-        this.drawLine(x0, y1, x0, y0, r, g, b, thickness);
-      }
-      drawLine(x0, y0, x1, y1, r, g, b, thickness = 1) {
-        let px0 = Math.round(x0);
-        let py0 = Math.round(y0);
-        const px1 = Math.round(x1);
-        const py1 = Math.round(y1);
-        const dx = Math.abs(px1 - px0);
-        const dy = Math.abs(py1 - py0);
-        const sx = px0 < px1 ? 1 : -1;
-        const sy = py0 < py1 ? 1 : -1;
-        let err = dx - dy;
-        const rad = Math.max(0, Math.floor(thickness / 2));
-        while (true) {
-          if (thickness <= 1) {
-            this.setPixel(px0, py0, r, g, b);
-          } else {
-            for (let ty = -rad; ty <= rad; ty++) {
-              for (let tx = -rad; tx <= rad; tx++) {
-                this.setPixel(px0 + tx, py0 + ty, r, g, b);
-              }
-            }
-          }
-          if (px0 === px1 && py0 === py1)
-            break;
-          const e2 = 2 * err;
-          if (e2 > -dy) {
-            err -= dy;
-            px0 += sx;
-          }
-          if (e2 < dx) {
-            err += dx;
-            py0 += sy;
-          }
-        }
-      }
-      drawCross(rx, ry, rw, rh, r, g, b, thickness = 1) {
-        const x0 = Math.round(rx);
-        const y0 = Math.round(ry);
-        const x1 = Math.round(rx + rw);
-        const y1 = Math.round(ry + rh);
-        this.drawLine(x0, y0, x1, y1, r, g, b, thickness);
-        this.drawLine(x1, y0, x0, y1, r, g, b, thickness);
-      }
-      drawArc(cx, cy, radius, startAngleRad, endAngleRad, r, g, b, thickness = 1, dashed = false) {
-        const steps = Math.max(20, Math.round(radius * 1.5));
-        const angleRange = endAngleRad - startAngleRad;
-        for (let i = 0; i <= steps; i++) {
-          if (dashed && Math.floor(i / 4) % 2 === 1)
-            continue;
-          const angle = startAngleRad + angleRange * i / steps;
-          const px = cx + radius * Math.cos(angle);
-          const py = cy + radius * Math.sin(angle);
-          this.setPixel(px, py, r, g, b);
-          if (thickness > 1) {
-            const rad = Math.floor(thickness / 2);
-            for (let ty = -rad; ty <= rad; ty++) {
-              for (let tx = -rad; tx <= rad; tx++) {
-                this.setPixel(px + tx, py + ty, r, g, b);
-              }
-            }
-          }
-        }
-      }
-      toPng() {
-        const ihdr = Buffer.alloc(13);
-        ihdr.writeUInt32BE(this.width, 0);
-        ihdr.writeUInt32BE(this.height, 4);
-        ihdr[8] = 8;
-        ihdr[9] = 6;
-        ihdr[10] = 0;
-        ihdr[11] = 0;
-        ihdr[12] = 0;
-        const compressed = import_node_zlib2.default.deflateSync(this.raw, { level: 1 });
-        return Buffer.concat([
-          Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
-          makePngChunk2("IHDR", ihdr),
-          makePngChunk2("IDAT", compressed),
-          makePngChunk2("IEND", Buffer.alloc(0))
-        ]);
-      }
-    };
-  }
-});
-
-// packages/ai-orchestration/dist/index.js
+// ../ai-orchestration/dist/index.js
 var init_dist5 = __esm({
-  "packages/ai-orchestration/dist/index.js"() {
+  "../ai-orchestration/dist/index.js"() {
     "use strict";
     init_base();
     init_openai();
@@ -61001,7 +61001,6 @@ var init_dist5 = __esm({
     init_architectural_evaluation();
     init_apartment_preflight();
     init_manifest();
-    init_archlang_compiler();
     init_schematic_renderer();
     init_layout_planner();
     init_aspect_ratio();
@@ -61016,15 +61015,15 @@ var init_dist5 = __esm({
   }
 });
 
-// packages/backend/src/services/apartment-structure.ts
+// src/services/apartment-structure.ts
 var init_apartment_structure = __esm({
-  "packages/backend/src/services/apartment-structure.ts"() {
+  "src/services/apartment-structure.ts"() {
     "use strict";
     init_dist5();
   }
 });
 
-// packages/backend/src/services/extraction-pipeline.ts
+// src/services/extraction-pipeline.ts
 function siteContext(requirements) {
   const hard = requirements.hard;
   return {
@@ -61137,14 +61136,14 @@ function rejected(planId, extractedPlan, diagnostics, input) {
   };
 }
 var init_extraction_pipeline = __esm({
-  "packages/backend/src/services/extraction-pipeline.ts"() {
+  "src/services/extraction-pipeline.ts"() {
     "use strict";
     init_dist3();
     init_apartment_structure();
   }
 });
 
-// packages/backend/src/services/local-stub-plan-interpreter.ts
+// src/services/local-stub-plan-interpreter.ts
 function schedule(requirements, program) {
   const cells = [];
   if (program && program.items.length > 0) {
@@ -61245,7 +61244,7 @@ function synthesizeInterpretation(requirements, program) {
 }
 var IMAGE_WIDE, IMAGE_TALL, MARGIN, GUTTER;
 var init_local_stub_plan_interpreter = __esm({
-  "packages/backend/src/services/local-stub-plan-interpreter.ts"() {
+  "src/services/local-stub-plan-interpreter.ts"() {
     "use strict";
     IMAGE_WIDE = 1024;
     IMAGE_TALL = 1024;
@@ -61254,7 +61253,7 @@ var init_local_stub_plan_interpreter = __esm({
   }
 });
 
-// packages/backend/src/services/deterministic-fallback.ts
+// src/services/deterministic-fallback.ts
 function buildDeterministicFallbackPlan(input) {
   const structure = schematicToApartmentStructure(input.schematic);
   const expectation = apartmentExpectationFromManifest(input.manifest);
@@ -61323,7 +61322,7 @@ function buildDeterministicFallbackImage(input) {
 }
 var FALLBACK_DETERMINISTIC_PROVIDER, FALLBACK_DETERMINISTIC_MODEL, FALLBACK_DETERMINISTIC_PROMPT_VERSION, FALLBACK_USER_MESSAGE;
 var init_deterministic_fallback = __esm({
-  "packages/backend/src/services/deterministic-fallback.ts"() {
+  "src/services/deterministic-fallback.ts"() {
     "use strict";
     init_dist5();
     init_dist3();
@@ -61336,7 +61335,7 @@ var init_deterministic_fallback = __esm({
   }
 });
 
-// packages/backend/src/services/generation-orchestrator.ts
+// src/services/generation-orchestrator.ts
 var generation_orchestrator_exports = {};
 __export(generation_orchestrator_exports, {
   CONCEPT_REFERENCE_DIRS: () => CONCEPT_REFERENCE_DIRS,
@@ -61574,7 +61573,7 @@ function resolveDirection(dir) {
 }
 var import_node_crypto4, import_node_fs, import_node_path, FLUX_SCHEMATIC_RENDER_MODE, FLUX_MAX_INPUT_IMAGES, CONCEPT_REFERENCE_DIRS, DEFAULT_MAX_VISUAL_ATTEMPTS, VISUAL_RETRY_SEED_OFFSET, GenerationOrchestrator;
 var init_generation_orchestrator = __esm({
-  "packages/backend/src/services/generation-orchestrator.ts"() {
+  "src/services/generation-orchestrator.ts"() {
     "use strict";
     import_node_crypto4 = __toESM(require("node:crypto"), 1);
     import_node_fs = __toESM(require("node:fs"), 1);
@@ -61886,7 +61885,7 @@ var init_generation_orchestrator = __esm({
               }
             });
             let archlangResult = null;
-            const shouldCompileArchLang = Boolean(this.deps.enableArchLang || input.enableArchLang);
+            const shouldCompileArchLang = Boolean(input.enableArchLang ?? this.deps.enableArchLang ?? false);
             if (shouldCompileArchLang) {
               try {
                 archlangResult = await compileBuildingWithArchLang(building, {
@@ -62619,7 +62618,7 @@ var init_generation_orchestrator = __esm({
             geminiEvaluation: fallbackGated.stage
           };
           let fallbackArchlangResult = null;
-          const shouldCompileArchLangFb = Boolean(this.deps.enableArchLang || input.enableArchLang);
+          const shouldCompileArchLangFb = Boolean(input.enableArchLang ?? this.deps.enableArchLang ?? false);
           if (plan.building && shouldCompileArchLangFb) {
             try {
               fallbackArchlangResult = await compileBuildingWithArchLang(plan.building, {
@@ -62918,7 +62917,7 @@ var init_generation_orchestrator = __esm({
   }
 });
 
-// packages/backend/src/server.ts
+// src/server.ts
 var server_exports = {};
 __export(server_exports, {
   GENERATION_REQUEST_TIMEOUT_MS: () => GENERATION_REQUEST_TIMEOUT_MS,
@@ -62926,6 +62925,7 @@ __export(server_exports, {
   createBackendServer: () => createBackendServer,
   createGeminiProvider: () => createGeminiProvider,
   createImageProvider: () => createImageProvider,
+  resolveCorsHeaders: () => resolveCorsHeaders,
   startBackendServer: () => startBackendServer
 });
 module.exports = __toCommonJS(server_exports);
@@ -62934,7 +62934,7 @@ var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
 init_dist5();
 
-// packages/backend/src/api/image-routes.ts
+// src/api/image-routes.ts
 init_dist5();
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -62992,7 +62992,7 @@ async function handleArtifactGet(generationId, store) {
   return { status: 200, json: { artifact } };
 }
 
-// packages/backend/src/api/interpretation-routes.ts
+// src/api/interpretation-routes.ts
 init_dist();
 init_dist5();
 init_extraction_pipeline();
@@ -63116,7 +63116,7 @@ async function handleArchitecturalEvaluation(body, deps) {
   }
 }
 
-// packages/backend/src/env.ts
+// src/env.ts
 var import_path = __toESM(require("path"), 1);
 init_dist5();
 function cloudflareConfigured(config) {
@@ -63134,6 +63134,24 @@ function resolveImageProviderKind(env) {
   if (kind === "gemini") return "gemini";
   if (kind === "pollinations") return "pollinations";
   return "cloudflare";
+}
+function resolveCorsAllowedOrigins(env) {
+  const raw = (env.CORS_ALLOWED_ORIGINS ?? "").trim();
+  if (raw.length > 0) {
+    return raw.split(",").map((s) => s.trim()).filter((s) => s.length > 0);
+  }
+  const isProd = (env.NODE_ENV ?? "development") === "production";
+  if (!isProd) {
+    return [
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:4173",
+      "http://127.0.0.1:4173"
+    ];
+  }
+  return [];
 }
 function positiveInt(value, fallback) {
   const parsed = Number.parseInt(value ?? "", 10);
@@ -63163,11 +63181,13 @@ function resolveImageServiceConfig(env = process.env) {
     geminiFallbackModel: fallbackModel,
     port: positiveInt(env.PORT, 4200),
     artifactDir: (env.IMAGE_ARTIFACT_DIR ?? "").trim() || import_path.default.join(process.cwd(), "data", "image-artifacts"),
-    deterministicCadFirst: (env.DETERMINISTIC_CAD_FIRST ?? "true").trim().toLowerCase() !== "false" && (env.DETERMINISTIC_CAD_FIRST ?? "true").trim() !== "0"
+    deterministicCadFirst: (env.DETERMINISTIC_CAD_FIRST ?? "true").trim().toLowerCase() !== "false" && (env.DETERMINISTIC_CAD_FIRST ?? "true").trim() !== "0",
+    corsAllowedOrigins: resolveCorsAllowedOrigins(env),
+    enableArchLang: (env.ENABLE_ARCHLANG ?? "false").trim().toLowerCase() === "true" || (env.ENABLE_ARCHLANG ?? "0").trim() === "1"
   };
 }
 
-// packages/backend/src/services/image-artifact-store.ts
+// src/services/image-artifact-store.ts
 var import_node_crypto3 = require("node:crypto");
 var import_promises = require("node:fs/promises");
 var import_path2 = __toESM(require("path"), 1);
@@ -63257,7 +63277,7 @@ var ImageArtifactStore = class {
   }
 };
 
-// packages/backend/src/services/local-stub-image-provider.ts
+// src/services/local-stub-image-provider.ts
 var import_node_zlib3 = require("node:zlib");
 var CRC_TABLE2 = (() => {
   const table2 = new Uint32Array(256);
@@ -63380,7 +63400,7 @@ var LocalStubImageProvider = class {
   }
 };
 
-// packages/backend/src/server.ts
+// src/server.ts
 if (typeof process.loadEnvFile === "function") {
   for (const candidate of [
     ".env",
@@ -63397,11 +63417,30 @@ if (typeof process.loadEnvFile === "function") {
   }
 }
 var MAX_BODY_BYTES = 2e6;
-var CORS_HEADERS = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization"
-};
+function resolveCorsHeaders(requestOrigin, allowedOrigins, isProduction) {
+  const headers = {
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  };
+  if (!isProduction) {
+    if (allowedOrigins.includes("*")) {
+      headers["Access-Control-Allow-Origin"] = "*";
+      return headers;
+    }
+    headers["Access-Control-Allow-Origin"] = requestOrigin || "*";
+    if (requestOrigin) headers["Vary"] = "Origin";
+    return headers;
+  }
+  if (!requestOrigin) {
+    return headers;
+  }
+  if (allowedOrigins.includes(requestOrigin)) {
+    headers["Access-Control-Allow-Origin"] = requestOrigin;
+    headers["Vary"] = "Origin";
+    return headers;
+  }
+  return headers;
+}
 function createImageProvider(config) {
   if (config.imageProviderKind === "local-stub") return new LocalStubImageProvider();
   if (!imageProviderConfigured(config)) return null;
@@ -63740,8 +63779,8 @@ function createBackendServer(deps) {
   server.requestTimeout = GENERATION_REQUEST_TIMEOUT_MS;
   return server;
 }
-function sendJson(response2, status, json) {
-  response2.writeHead(status, { "Content-Type": "application/json", ...CORS_HEADERS });
+function sendJson(response2, status, json, corsHeaders = {}) {
+  response2.writeHead(status, { "Content-Type": "application/json", ...corsHeaders });
   response2.end(JSON.stringify(json));
 }
 function readBody(request) {
@@ -63764,16 +63803,30 @@ function readBody(request) {
 async function route(request, response2, deps) {
   const url = new URL(request.url ?? "/", "http://localhost");
   const method = request.method ?? "GET";
+  const config = deps.config ?? resolveImageServiceConfig();
+  const isProduction = (process.env.NODE_ENV ?? "development") === "production";
+  const corsHeaders = resolveCorsHeaders(request.headers.origin, config.corsAllowedOrigins, isProduction);
+  const send = (status, json) => sendJson(response2, status, json, corsHeaders);
   if (method === "OPTIONS") {
-    response2.writeHead(204, CORS_HEADERS);
+    if (request.headers.origin && !corsHeaders["Access-Control-Allow-Origin"]) {
+      response2.writeHead(403, { "Content-Type": "application/json" });
+      response2.end(JSON.stringify({
+        error: {
+          code: "CORS_FORBIDDEN",
+          message: `Origin ${request.headers.origin} is not allowed by CORS policy.`
+        }
+      }));
+      return;
+    }
+    response2.writeHead(204, corsHeaders);
     response2.end();
     return;
   }
   try {
     if (method === "GET" && url.pathname === "/api/v1/health") {
-      const config = deps.config ?? resolveImageServiceConfig();
-      const health = await checkProviderHealth(config, deps);
-      sendJson(response2, 200, health);
+      const config2 = deps.config ?? resolveImageServiceConfig();
+      const health = await checkProviderHealth(config2, deps);
+      send(200, health);
       return;
     }
     if (method === "POST" && (url.pathname === "/api/v1/generation/run" || url.pathname === "/api/generation/run")) {
@@ -63782,7 +63835,7 @@ async function route(request, response2, deps) {
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response2, 400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
         return;
       }
       const { GenerationOrchestrator: GenerationOrchestrator2 } = await Promise.resolve().then(() => (init_generation_orchestrator(), generation_orchestrator_exports));
@@ -63794,7 +63847,7 @@ async function route(request, response2, deps) {
         deterministicCadFirst: deps.config?.deterministicCadFirst ?? true
       });
       const result = await orchestrator.run(body);
-      sendJson(response2, 200, result);
+      send(200, result);
       return;
     }
     if (method === "POST" && (url.pathname === "/api/v1/generation/resume" || url.pathname === "/api/generation/resume")) {
@@ -63803,7 +63856,7 @@ async function route(request, response2, deps) {
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response2, 400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
         return;
       }
       const { GenerationOrchestrator: GenerationOrchestrator2 } = await Promise.resolve().then(() => (init_generation_orchestrator(), generation_orchestrator_exports));
@@ -63815,7 +63868,7 @@ async function route(request, response2, deps) {
         deterministicCadFirst: deps.config?.deterministicCadFirst ?? true
       });
       const result = await orchestrator.resumeFromArtifact(body);
-      sendJson(response2, 200, result);
+      send(200, result);
       return;
     }
     if (method === "POST" && url.pathname === "/api/v1/image/floor-plan") {
@@ -63824,11 +63877,11 @@ async function route(request, response2, deps) {
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response2, 400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
         return;
       }
       const result = await handleFloorPlanGeneration(body, deps);
-      sendJson(response2, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === "POST" && url.pathname === "/api/v1/image/interpret") {
@@ -63837,11 +63890,11 @@ async function route(request, response2, deps) {
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response2, 400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
         return;
       }
       const result = await handleImageInterpretation(body, deps);
-      sendJson(response2, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === "POST" && url.pathname === "/api/v1/architecture/evaluate") {
@@ -63850,32 +63903,32 @@ async function route(request, response2, deps) {
       try {
         body = raw.length > 0 ? JSON.parse(raw) : null;
       } catch {
-        sendJson(response2, 400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
         return;
       }
       const result = await handleArchitecturalEvaluation(body, deps);
-      sendJson(response2, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     const artifactMatch = url.pathname.match(/^\/api\/v1\/image\/artifacts\/([^/]+)$/);
     if (method === "GET" && artifactMatch) {
       const result = await handleArtifactGet(decodeURIComponent(artifactMatch[1]), deps.store);
-      sendJson(response2, result.status, result.json);
+      send(result.status, result.json);
       return;
     }
     if (method === "GET" && url.pathname === "/api/v1/image/artifacts") {
       const projectId = url.searchParams.get("projectId") ?? "";
       if (!projectId) {
-        sendJson(response2, 400, { error: { code: "INVALID_REQUEST", message: "projectId query parameter is required." } });
+        send(400, { error: { code: "INVALID_REQUEST", message: "projectId query parameter is required." } });
         return;
       }
       sendJson(response2, 200, { artifacts: await deps.store.listByProject(projectId) });
       return;
     }
-    sendJson(response2, 404, { error: { code: "NOT_FOUND", message: "Unknown endpoint." } });
+    send(404, { error: { code: "NOT_FOUND", message: "Unknown endpoint." } });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected server error.";
-    sendJson(response2, message.includes("too large") ? 413 : 500, { error: { code: "SERVER_ERROR", message } });
+    send(message.includes("too large") ? 413 : 500, { error: { code: "SERVER_ERROR", message } });
   }
 }
 function startBackendServer(port) {
@@ -63891,6 +63944,7 @@ function startBackendServer(port) {
   const server = createBackendServer(deps);
   server.listen(port ?? config.port, () => {
     console.log(`AI floor-planner backend listening on port ${port ?? config.port}`);
+    console.log(`CORS allowed origins: ${config.corsAllowedOrigins.length > 0 ? config.corsAllowedOrigins.join(", ") : process.env.NODE_ENV === "production" ? "NONE (explicit origins required)" : "local dev frontends"}`);
     const providerModel = config.imageProviderKind === "pollinations" ? config.pollinationsImageModel : config.imageProviderKind === "cloudflare" ? config.fluxModel : "local-stub";
     const missing = config.imageProviderKind === "pollinations" ? "POLLINATIONS_API_KEY" : "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN";
     console.log(`Image provider: ${deps.provider ? `${deps.provider.name} configured (model ${providerModel})` : `${config.imageProviderKind} NOT CONFIGURED (set ${missing})`}`);
@@ -63913,6 +63967,7 @@ if (isDirectRun()) {
   createBackendServer,
   createGeminiProvider,
   createImageProvider,
+  resolveCorsHeaders,
   startBackendServer
 });
 /*! Bundled license information:
