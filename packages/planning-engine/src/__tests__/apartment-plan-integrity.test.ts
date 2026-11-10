@@ -274,7 +274,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
             bedrooms: 0,
             bathrooms: 1,
             livingRooms: 1,
-            diningRooms: 0,
+            diningRooms: 1,
             kitchens: 0,
             utilities: 0,
             balconies: 0,
@@ -285,7 +285,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
             bedrooms: 1,
             bathrooms: 1,
             livingRooms: 1,
-            diningRooms: 0,
+            diningRooms: 1,
             kitchens: 0,
             utilities: 0,
             balconies: 0,
@@ -355,7 +355,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
             bedrooms: 0,
             bathrooms: 1,
             livingRooms: 1,
-            diningRooms: 0,
+            diningRooms: 1,
             kitchens: 0,
             utilities: 0,
             balconies: 0,
@@ -366,7 +366,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
             bedrooms: 2,
             bathrooms: 1,
             livingRooms: 1,
-            diningRooms: 0,
+            diningRooms: 1,
             kitchens: 0,
             utilities: 0,
             balconies: 0,
@@ -1264,6 +1264,814 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
 
       const result = validateCanonicalApartmentBuilding(building, expectation);
       expect(result.verificationIssues.some(i => i.code.includes('COLLISION'))).toBe(false);
+    });
+  });
+
+  // =========================================================================
+  // SUITE 5: Phase 2.2.2 — Boundary Integrity Closure & Regression Hardening
+  // =========================================================================
+  describe('5. Boundary Integrity Closure & Regression Hardening (Phase 2.2.2)', () => {
+    describe('5.1 Stepped Polygon Preservation', () => {
+      it('preserves a supplied stepped polygon through the adapter even when a room occupies its cutaway', () => {
+        // Create a stepped polygon (L-shaped with 6+ vertices)
+        const steppedVertices = [
+          { x: 5000, y: 5000 },
+          { x: 12000, y: 5000 },
+          { x: 12000, y: 8000 },
+          { x: 10000, y: 8000 },
+          { x: 10000, y: 11000 },
+          { x: 5000, y: 11000 },
+        ];
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: '2BHK',
+          rect: { x: 5000, y: 5000, width: 7000, height: 6000 },
+          boundary: steppedVertices,
+          rooms: [
+            createRectRoom('r1', 'Living', 'living_dining', 5000, 5000, 5000, 3000),
+            createRectRoom('r2', 'Bedroom', 'bedroom', 5000, 8000, 5000, 3000),
+          ],
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 0, y: 0 },
+            { x: 20000, y: 0 },
+            { x: 20000, y: 20000 },
+            { x: 0, y: 20000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_stepped_preserve', 'Stepped Preserve Test');
+        const storedBoundaries = (building.metadata as any)?.flatBoundaries;
+
+        expect(storedBoundaries).toBeDefined();
+        expect(storedBoundaries).toHaveLength(1);
+        // The stepped boundary should be preserved, not replaced with rectangle
+        expect(storedBoundaries[0].boundary.points).toHaveLength(6);
+        expect(storedBoundaries[0].boundary.points).toEqual(steppedVertices);
+      });
+    });
+
+    describe('5.2 Concave Boundary Edge Crossing Rejection', () => {
+      it('rejects a room polygon with vertices inside a concave boundary but an edge crossing the cutaway', () => {
+        const steppedVertices = [
+          { x: 5000, y: 5000 },
+          { x: 12000, y: 5000 },
+          { x: 12000, y: 8000 },
+          { x: 10000, y: 8000 },
+          { x: 10000, y: 11000 },
+          { x: 5000, y: 11000 },
+        ];
+
+        // Room that has all vertices inside but edge crosses the cutaway (concave notch)
+        const cutawayRoom = createRectRoom('r_cutaway', 'Cutaway Bedroom', 'bedroom', 9500, 7500, 1000, 1000);
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: '1BHK',
+          rect: { x: 5000, y: 5000, width: 7000, height: 6000 },
+          boundary: steppedVertices,
+          rooms: [
+            createRectRoom('r1', 'Living', 'living_dining', 5000, 5000, 5000, 3000),
+            cutawayRoom,
+          ],
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 0, y: 0 },
+            { x: 20000, y: 0 },
+            { x: 20000, y: 20000 },
+            { x: 0, y: 20000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_cutaway_edge', 'Cutaway Edge Crossing');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [{
+            label: 'Flat 01',
+            unitType: '1BHK',
+            bedrooms: 1,
+            bathrooms: 0,
+            livingRooms: 1,
+            diningRooms: 1,
+            kitchens: 0,
+            utilities: 0,
+            balconies: 0,
+          }],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY')).toBe(true);
+      });
+
+      it('rejects a wall whose endpoints are inside but whose segment crosses a concave cutaway', () => {
+        const floorId = 'floor_0';
+        const floorBoundary = {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10000, y: 0 },
+            { x: 10000, y: 5000 },
+            { x: 5000, y: 5000 },
+            { x: 5000, y: 10000 },
+            { x: 0, y: 10000 },
+          ],
+        };
+
+        const living = createRoom({
+          floorId,
+          name: 'Living',
+          type: RoomType.Living,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+        const bedroom = createRoom({
+          floorId,
+          name: 'Bedroom',
+          type: RoomType.Bedroom,
+          x: 1000,
+          y: 6000,
+          width: 4000,
+          height: 3000,
+          tags: ['flat:flat_01'],
+        });
+
+        const walls = generateWallsFromRooms(floorId, [living, bedroom]);
+
+        // Add a wall that crosses the concave cutaway
+        const crossingWall = createWall({
+          floorId,
+          startPoint: { x: 6000, y: 2000 },
+          endPoint: { x: 6000, y: 8000 },
+          type: WallType.Internal,
+          thickness: 100,
+          roomIds: [living.id, bedroom.id],
+        });
+
+        const floor: Floor = {
+          ...createFloor({ buildingId: 'bldg_1', level: 0 }),
+          id: floorId,
+          boundary: floorBoundary,
+          rooms: [living, bedroom],
+          walls: [...walls, crossingWall],
+        };
+
+        const building: Building = {
+          ...createBuilding({
+            projectId: 'proj_wall_crossing',
+            name: 'Wall Crossing Cutaway',
+            site: buildingSiteParams,
+          }),
+          floors: [floor],
+        };
+
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [
+            { label: 'Flat 01', unitType: '1BHK', bedrooms: 1, bathrooms: 0, livingRooms: 1, diningRooms: 0, kitchens: 0, utilities: 0, balconies: 0 },
+          ],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_WALL_OUT_OF_BOUNDS')).toBe(true);
+      });
+
+      it('rejects a stair footprint whose corners are inside but whose edge crosses a cutaway', () => {
+        const floorId = 'floor_0';
+        const floorBoundary = {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10000, y: 0 },
+            { x: 10000, y: 5000 },
+            { x: 5000, y: 5000 },
+            { x: 5000, y: 10000 },
+            { x: 0, y: 10000 },
+          ],
+        };
+
+        const living = createRoom({
+          floorId,
+          name: 'Living',
+          type: RoomType.Living,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+
+        // Stair that extends into the concave cutaway
+        const crossingStair = createStair({
+          floorId,
+          type: StairType.Straight,
+          x: 5500,
+          y: 2000,
+          width: 1200,
+          length: 4000,
+          connectsFloors: [0, 1],
+        });
+
+        const walls = generateWallsFromRooms(floorId, [living]);
+
+        const floor: Floor = {
+          ...createFloor({ buildingId: 'bldg_1', level: 0 }),
+          id: floorId,
+          boundary: floorBoundary,
+          rooms: [living],
+          walls,
+          stairs: [crossingStair],
+        };
+
+        const building: Building = {
+          ...createBuilding({
+            projectId: 'proj_stair_crossing',
+            name: 'Stair Crossing Cutaway',
+            site: buildingSiteParams,
+          }),
+          floors: [floor],
+        };
+
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [
+            { label: 'Flat 01', unitType: 'Studio', bedrooms: 0, bathrooms: 0, livingRooms: 1, diningRooms: 0, kitchens: 0, utilities: 0, balconies: 0 },
+          ],
+          lifts: 0,
+          stairs: 1,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_STAIR_OUT_OF_BOUNDS')).toBe(true);
+      });
+    });
+
+    describe('5.3 Column Validation', () => {
+      it('rejects an outside column (column footprint outside floor boundary)', () => {
+        const floorId = 'floor_0';
+        const floorBoundary = {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10000, y: 0 },
+            { x: 10000, y: 10000 },
+            { x: 0, y: 10000 },
+          ],
+        };
+
+        const living = createRoom({
+          floorId,
+          name: 'Living',
+          type: RoomType.Living,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+
+        const walls = generateWallsFromRooms(floorId, [living]);
+
+        const floor: Floor = {
+          ...createFloor({ buildingId: 'bldg_1', level: 0 }),
+          id: floorId,
+          boundary: floorBoundary,
+          rooms: [living],
+          walls,
+        };
+
+        // Add a column that is outside the floor boundary
+        const building: Building = {
+          ...createBuilding({
+            projectId: 'proj_column_outside',
+            name: 'Column Outside',
+            site: buildingSiteParams,
+          }),
+          floors: [{
+            ...floor,
+            columns: [
+              {
+                id: 'col_outside',
+                floorId,
+                x: 12000, // Outside!
+                y: 5000,
+                width: 300,
+                depth: 300,
+              }
+            ] as any,
+          }],
+        };
+
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [
+            { label: 'Flat 01', unitType: 'Studio', bedrooms: 0, bathrooms: 0, livingRooms: 1, diningRooms: 0, kitchens: 0, utilities: 0, balconies: 0 },
+          ],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_COLUMN_OUT_OF_BOUNDS')).toBe(true);
+      });
+
+      it('rejects missing or mismatched column floor ownership', () => {
+        const floorId = 'floor_0';
+        const floorBoundary = {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10000, y: 0 },
+            { x: 10000, y: 10000 },
+            { x: 0, y: 10000 },
+          ],
+        };
+
+        const living = createRoom({
+          floorId,
+          name: 'Living',
+          type: RoomType.Living,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+
+        const walls = generateWallsFromRooms(floorId, [living]);
+
+        const floor: Floor = {
+          ...createFloor({ buildingId: 'bldg_1', level: 0 }),
+          id: floorId,
+          boundary: floorBoundary,
+          rooms: [living],
+          walls,
+        };
+
+        // Add a column with mismatched floorId
+        const building: Building = {
+          ...createBuilding({
+            projectId: 'proj_column_mismatch',
+            name: 'Column Floor Mismatch',
+            site: buildingSiteParams,
+          }),
+          floors: [{
+            ...floor,
+            columns: [
+              {
+                id: 'col_mismatch',
+                floorId: 'floor_different', // Wrong floorId!
+                x: 5000,
+                y: 5000,
+                width: 300,
+                depth: 300,
+              }
+            ] as any,
+          }],
+        };
+
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [
+            { label: 'Flat 01', unitType: 'Studio', bedrooms: 0, bathrooms: 0, livingRooms: 1, diningRooms: 0, kitchens: 0, utilities: 0, balconies: 0 },
+          ],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_INVALID_FLOOR_OWNERSHIP')).toBe(true);
+      });
+    });
+
+    describe('5.4 Multi-unit and Studio Room Programme', () => {
+      it('passes for a multi-unit all-Studio plan without bedroom requirements', () => {
+        const studioLiving = createRectRoom('s1_living', 'Living', 'living_dining', 5000, 5000, 5000, 4000);
+        const studioBath = createRectRoom('s1_bath', 'Bathroom', 'master_toilet', 10000, 5000, 2000, 2000);
+        const studioKitchen = createRectRoom('s1_kitchen', 'Kitchen', 'kitchen', 10000, 7000, 2500, 2500);
+
+        const studioLiving2 = createRectRoom('s2_living', 'Living', 'living_dining', 5000, 10000, 5000, 4000);
+        const studioBath2 = createRectRoom('s2_bath', 'Bathroom', 'master_toilet', 10000, 10000, 2000, 2000);
+        const studioKitchen2 = createRectRoom('s2_kitchen', 'Kitchen', 'kitchen', 10000, 12000, 2500, 2500);
+
+        const flats: ApartmentPlanFlat[] = [
+          {
+            id: 'flat_studio_1',
+            label: 'Studio 1',
+            unitType: 'Studio',
+            rect: { x: 5000, y: 5000, width: 8000, height: 4500 },
+            rooms: [studioLiving, studioBath, studioKitchen],
+          },
+          {
+            id: 'flat_studio_2',
+            label: 'Studio 2',
+            unitType: 'Studio',
+            rect: { x: 5000, y: 10000, width: 8000, height: 4500 },
+            rooms: [studioLiving2, studioBath2, studioKitchen2],
+          },
+        ];
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 2000, y: 2000 },
+            { x: 30000, y: 2000 },
+            { x: 30000, y: 25000 },
+            { x: 2000, y: 25000 },
+          ],
+          flats,
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_all_studio', 'All Studio Multi-unit');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 2,
+          units: [
+            {
+              label: 'flat_studio_1',
+              unitType: 'Studio',
+              bedrooms: 0,
+              bathrooms: 1,
+              livingRooms: 1,
+              diningRooms: 0,
+              kitchens: 1,
+              utilities: 0,
+              balconies: 0,
+            },
+            {
+              label: 'flat_studio_2',
+              unitType: 'Studio',
+              bedrooms: 0,
+              bathrooms: 1,
+              livingRooms: 1,
+              diningRooms: 0,
+              kitchens: 1,
+              utilities: 0,
+              balconies: 0,
+            },
+          ],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(true);
+        expect(result.verificationIssues.filter(i => i.severity === 'error')).toHaveLength(0);
+        expect(result.verificationIssues.some(i => i.code === 'DESIGN_MISSING_BEDROOM')).toBe(false);
+      });
+
+      it('fails for a Studio plan missing its required living space', () => {
+        const studioBath = createRectRoom('s_bath', 'Bathroom', 'master_toilet', 10000, 5000, 2000, 2000);
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: 'Studio',
+          rect: { x: 5000, y: 5000, width: 7000, height: 4000 },
+          rooms: [studioBath], // Missing living space
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 2000, y: 2000 },
+            { x: 30000, y: 2000 },
+            { x: 30000, y: 25000 },
+            { x: 2000, y: 25000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_studio_missing_living', 'Studio Missing Living');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [{
+            label: 'Flat 01',
+            unitType: 'Studio',
+            bedrooms: 0,
+            bathrooms: 1,
+            livingRooms: 1,
+            diningRooms: 1,
+            kitchens: 0,
+            utilities: 0,
+            balconies: 0,
+          }],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(false);
+        expect(result.verificationIssues.some(i => i.code.includes('LIVING') || i.code.includes('COUNT_MISMATCH'))).toBe(true);
+      });
+    });
+
+    describe('5.5 Positive Regression Cases', () => {
+      it('passes for a valid rectangular layout', () => {
+        const living = createRectRoom('r1', 'Living', 'living_dining', 5000, 5000, 5000, 4000);
+        const bedroom = createRectRoom('r2', 'Bedroom', 'bedroom', 5000, 9000, 5000, 4000);
+        const kitchen = createRectRoom('r3', 'Kitchen', 'kitchen', 10000, 5000, 2500, 2500);
+        const bath = createRectRoom('r4', 'Bathroom', 'master_toilet', 10000, 7500, 2000, 2000);
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: '1BHK',
+          rect: { x: 5000, y: 5000, width: 8000, height: 8000 },
+          rooms: [living, bedroom, kitchen, bath],
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 0, y: 0 },
+            { x: 20000, y: 0 },
+            { x: 20000, y: 20000 },
+            { x: 0, y: 20000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_rectangular', 'Valid Rectangular');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [{
+            label: 'Flat 01',
+            unitType: '1BHK',
+            bedrooms: 1,
+            bathrooms: 1,
+            livingRooms: 1,
+            diningRooms: 1,
+            kitchens: 1,
+            utilities: 0,
+            balconies: 0,
+          }],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(true);
+      });
+
+      it('passes for a valid stepped layout with all rooms inside', () => {
+        const steppedVertices = [
+          { x: 5000, y: 5000 },
+          { x: 12500, y: 5000 },
+          { x: 12500, y: 11000 },
+          { x: 5000, y: 11000 },
+        ];
+
+        const living = createRectRoom('r1', 'Living', 'living_dining', 5000, 5000, 5000, 3000);
+        const bedroom = createRectRoom('r2', 'Bedroom', 'bedroom', 5000, 8000, 5000, 3000);
+        const kitchen = createRectRoom('r3', 'Kitchen', 'kitchen', 10000, 5000, 2500, 2500);
+        const bath = createRectRoom('r4', 'Bathroom', 'master_toilet', 10000, 7500, 2000, 2000);
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: '1BHK',
+          rect: { x: 5000, y: 5000, width: 7500, height: 6000 },
+          boundary: steppedVertices,
+          rooms: [living, bedroom, kitchen, bath],
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 0, y: 0 },
+            { x: 20000, y: 0 },
+            { x: 20000, y: 20000 },
+            { x: 0, y: 20000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_stepped_valid', 'Valid Stepped');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [{
+            label: 'Flat 01',
+            unitType: '1BHK',
+            bedrooms: 1,
+            bathrooms: 1,
+            livingRooms: 1,
+            diningRooms: 1,
+            kitchens: 1,
+            utilities: 0,
+            balconies: 0,
+          }],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(true);
+      });
+
+      it('passes for attached balconies on open facade', () => {
+        const flatRect = { x: 5000, y: 5000, width: 5000, height: 5000 };
+        const living = createRectRoom('rm_living', 'Living', 'living_dining', 5000, 5000, 5000, 5000);
+        const attachedBalcony = createRectRoom('rm_balcony', 'Balcony Deck', 'balcony', 10000, 6000, 1500, 2000);
+
+        const flat: ApartmentPlanFlat = {
+          id: 'flat_01',
+          label: 'Flat 01',
+          unitType: '1BHK',
+          rect: flatRect,
+          rooms: [living, attachedBalcony],
+        };
+
+        const structure: ApartmentPlanStructure = {
+          source: 'DETERMINISTIC_SCHEMATIC',
+          boundary: [
+            { x: 0, y: 0 },
+            { x: 20000, y: 0 },
+            { x: 20000, y: 20000 },
+            { x: 0, y: 20000 },
+          ],
+          flats: [flat],
+          commonRooms: [],
+          ungroupedRooms: [],
+          lifts: [],
+          stairs: [],
+          lobbies: [],
+          corridors: [],
+          shafts: [],
+          openings: [],
+        };
+
+        const { building } = apartmentStructureToBuilding(structure, standardSite, 'proj_balcony_attached', 'Balcony Attached');
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [{
+            label: 'Flat 01',
+            unitType: '1BHK',
+            bedrooms: 0,
+            bathrooms: 0,
+            livingRooms: 1,
+            diningRooms: 1,
+            kitchens: 0,
+            utilities: 0,
+            balconies: 1,
+          }],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(true);
+        expect(result.verificationIssues.some(i => i.code === 'CANONICAL_BALCONY_ATTACHMENT_INVALID')).toBe(false);
+      });
+
+      it('passes for vertically stacked rooms on different floors', () => {
+        const floorBoundary = {
+          points: [
+            { x: 0, y: 0 },
+            { x: 10000, y: 0 },
+            { x: 10000, y: 10000 },
+            { x: 0, y: 10000 },
+          ],
+        };
+
+        const rFloor0 = createRoom({
+          floorId: 'fl_0',
+          name: 'Level 0 Living',
+          type: RoomType.Living,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+        const walls0 = generateWallsFromRooms('fl_0', [rFloor0]);
+
+        const rFloor1 = createRoom({
+          floorId: 'fl_1',
+          name: 'Level 1 Bedroom',
+          type: RoomType.Bedroom,
+          x: 1000,
+          y: 1000,
+          width: 4000,
+          height: 4000,
+          tags: ['flat:flat_01'],
+        });
+        const walls1 = generateWallsFromRooms('fl_1', [rFloor1]);
+
+        const floor0: Floor = {
+          ...createFloor({ buildingId: 'bldg_multi', level: 0 }),
+          id: 'fl_0',
+          boundary: floorBoundary,
+          rooms: [rFloor0],
+          walls: walls0,
+        };
+
+        const floor1: Floor = {
+          ...createFloor({ buildingId: 'bldg_multi', level: 1 }),
+          id: 'fl_1',
+          boundary: floorBoundary,
+          rooms: [rFloor1],
+          walls: walls1,
+        };
+
+        const building: Building = {
+          ...createBuilding({
+            projectId: 'proj_vertical_stack',
+            name: 'Vertical Stacking',
+            site: buildingSiteParams,
+          }),
+          floors: [floor0, floor1],
+        };
+
+        const expectation: ApartmentPlanExpectation = {
+          flats: 1,
+          units: [
+            { label: 'Flat 01', unitType: '1BHK', bedrooms: 1, bathrooms: 0, livingRooms: 1, diningRooms: 0, kitchens: 0, utilities: 0, balconies: 0 },
+          ],
+          lifts: 0,
+          stairs: 0,
+          commonLobby: false,
+        };
+
+        const result = validateCanonicalApartmentBuilding(building, expectation);
+        expect(result.isValid).toBe(true);
+        expect(result.verificationIssues.some(i => i.code.includes('COLLISION'))).toBe(false);
+      });
     });
   });
 });

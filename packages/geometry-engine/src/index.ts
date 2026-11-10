@@ -116,6 +116,7 @@ export {
   assertValidPolygon,
   offsetPolygon,
   containsPolygon,
+  containsPolygonConcave,
   polygonIntersectionArea,
   sutherlandHodgmanClip,
   polygonsOverlap,
@@ -124,6 +125,9 @@ export {
   polygonEdges,
   translatePolygon,
   rotatePolygon,
+  pointInPolygonWithTolerance,
+  containsPolygonWithTolerance,
+  segmentCrossesOutsidePolygon,
 } from './polygon';
 
 // Curved geometry primitives

@@ -8,7 +8,7 @@
 
 import type { Point, Polygon, BoundingBox, LineSegment } from '@ai-floor-planner/core';
 import { TOLERANCES } from '@ai-floor-planner/core';
-import { pointInPolygon, pointsEqual, translatePoint, rotatePoint } from './point';
+import { pointInPolygon, pointsEqual } from './point';
 import { segmentIntersection } from './segment';
 import { DegenerateGeometryError, SelfIntersectionError } from './errors';
 
@@ -20,11 +20,7 @@ export function createPolygon(points: Point[]): Polygon {
   return { points: Object.freeze([...points]) };
 }
 
-/**
- * Compute signed area of a polygon using the shoelace formula.
- * In world coordinates (X right, Y down):
- * Positive for clockwise winding, negative for counter-clockwise winding.
- */
+/** Compute signed area of a polygon using the shoelace formula. */
 export function polygonSignedArea(polygon: Polygon): number {
   const pts = polygon.points;
   const n = pts.length;
@@ -37,10 +33,7 @@ export function polygonSignedArea(polygon: Polygon): number {
   return area / 2;
 }
 
-/**
- * Compute absolute area of a polygon using the shoelace formula.
- * Always returns a non-negative number.
- */
+/** Compute absolute area of a polygon using the shoelace formula. Always returns a non-negative number. */
 export function polygonArea(polygon: Polygon): number {
   return Math.abs(polygonSignedArea(polygon));
 }
@@ -83,7 +76,6 @@ export function polygonCentroid(polygon: Polygon): Point {
 
   signedArea /= 2;
   if (Math.abs(signedArea) < 1e-10) {
-    // Degenerate polygon — return average of points
     const sumX = pts.reduce((s, p) => s + p.x, 0);
     const sumY = pts.reduce((s, p) => s + p.y, 0);
     return { x: sumX / n, y: sumY / n };
@@ -150,7 +142,7 @@ export function isValidPolygon(polygon: Polygon): boolean {
   for (let i = 0; i < n; i++) {
     const a: LineSegment = { start: pts[i]!, end: pts[(i + 1) % n]! };
     for (let j = i + 2; j < n; j++) {
-      if (i === 0 && j === n - 1) continue; // Adjacent segments share a vertex
+      if (i === 0 && j === n - 1) continue;
       const b: LineSegment = { start: pts[j]!, end: pts[(j + 1) % n]! };
       if (segmentIntersection(a, b) !== null) {
         return false;
@@ -193,7 +185,6 @@ export function offsetPolygon(polygon: Polygon, dist: number): Polygon {
 
   const newPoints: Point[] = [];
   const signed = polygonSignedArea(polygon);
-  // CW in Y-down has signedArea > 0
   const isCW = signed >= 0;
 
   for (let i = 0; i < n; i++) {
@@ -213,7 +204,6 @@ export function offsetPolygon(polygon: Polygon, dist: number): Polygon {
       continue;
     }
 
-    // Inward normal for polygon
     const n1x = isCW ? -e1y / len1 : e1y / len1;
     const n1y = isCW ? e1x / len1 : -e1x / len1;
     const n2x = isCW ? -e2y / len2 : e2y / len2;
@@ -232,10 +222,6 @@ export function offsetPolygon(polygon: Polygon, dist: number): Polygon {
     const dot = n1x * bx + n1y * by;
     const scale = dot > 0.1 ? dist / dot : dist;
 
-    // Notice: dist > 0 means outward, dist < 0 means inward
-    // Inward normal points inward, so + (-dist) * inward normal or - dist * inward normal
-    // If dist > 0 (outward): - dist * inwardNormal expands outwards
-    // If dist < 0 (inward): - dist * inwardNormal moves inwards
     newPoints.push({
       x: curr.x - bx * scale,
       y: curr.y - by * scale,
@@ -253,6 +239,193 @@ export function containsPolygon(outer: Polygon, inner: Polygon): boolean {
     }
   }
   return true;
+}
+
+/**
+ * Check if polygon A entirely contains polygon B, accounting for concave boundaries.
+ * This is stricter than simple vertex containment - it also checks that inner polygon edges
+ * do not cross outside the outer polygon.
+ */
+export function containsPolygonConcave(outer: Polygon, inner: Polygon): boolean {
+  const outerPts = outer.points;
+  const innerPts = inner.points;
+
+  // 1. Every inner polygon vertex must be inside or on the outer polygon
+  for (const p of innerPts) {
+    if (!pointInPolygon(p, outer)) {
+      return false;
+    }
+  }
+
+  // 2. No inner polygon edge should cross outside the outer polygon.
+  const nInner = innerPts.length;
+  const nOuter = outerPts.length;
+
+  if (nInner < 2 || nOuter < 2) return false;
+
+  for (let i = 0; i < nInner; i++) {
+    const edgeStart = innerPts[i]!;
+    const edgeEnd = innerPts[(i + 1) % nInner]!;
+
+    for (let j = 0; j < nOuter; j++) {
+      const outerStart = outerPts[j]!;
+      const outerEnd = outerPts[(j + 1) % nOuter]!;
+
+      const intersection = segmentIntersection(
+        { start: edgeStart, end: edgeEnd },
+        { start: outerStart, end: outerEnd }
+      );
+
+      if (intersection !== null) {
+        const isAdjacentVertex =
+          (pointsEqual(edgeStart, outerStart) && pointsEqual(edgeEnd, outerEnd)) ||
+          (pointsEqual(edgeStart, outerEnd) && pointsEqual(edgeEnd, outerStart));
+
+        if (!isAdjacentVertex) {
+          const dx = intersection.x - edgeStart.x;
+          const dy = intersection.y - edgeStart.y;
+          const distFromStart = Math.sqrt(dx * dx + dy * dy);
+          if (distFromStart > TOLERANCES.LINEAR) {
+            return false;
+          }
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+/** Check if a point is inside a polygon using ray casting with tolerance. */
+export function pointInPolygonWithTolerance(
+  pt: { x: number; y: number },
+  poly: readonly { x: number; y: number }[],
+  toleranceMm: number = 50,
+): boolean {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i]!.x, yi = poly[i]!.y;
+    const xj = poly[j]!.x, yj = poly[j]!.y;
+    const intersect = ((yi > pt.y) !== (yj > pt.y)) && (pt.x < (xj - xi) * (pt.y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  if (inside) return true;
+
+  const tolSq = toleranceMm * toleranceMm;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % poly.length]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    let distSq: number;
+    if (lenSq === 0) {
+      distSq = (pt.x - a.x) * (pt.x - a.x) + (pt.y - a.y) * (pt.y - a.y);
+    } else {
+      const t = Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / lenSq));
+      const projX = a.x + t * dx;
+      const projY = a.y + t * dy;
+      distSq = (pt.x - projX) * (pt.x - projX) + (pt.y - projY) * (pt.y - projY);
+    }
+    if (distSq <= tolSq) return true;
+  }
+  return false;
+}
+
+/** Check if polygon A entirely contains polygon B (vertex + edge containment with tolerance). */
+export function containsPolygonWithTolerance(
+  outer: readonly { x: number; y: number }[],
+  inner: readonly { x: number; y: number }[],
+  toleranceMm: number = 50,
+): boolean {
+  for (const p of inner) {
+    if (!pointInPolygonWithTolerance(p, outer, toleranceMm)) {
+      return false;
+    }
+  }
+
+  const nInner = inner.length;
+  const nOuter = outer.length;
+
+  for (let i = 0; i < nInner; i++) {
+    const edgeStart = inner[i]!;
+    const edgeEnd = inner[(i + 1) % nInner]!;
+
+    for (let j = 0; j < nOuter; j++) {
+      const outerStart = outer[j]!;
+      const outerEnd = outer[(j + 1) % nOuter]!;
+
+      const intersection = segmentIntersection(
+        { start: edgeStart, end: edgeEnd },
+        { start: outerStart, end: outerEnd }
+      );
+
+      if (intersection !== null) {
+        const dx1 = edgeStart.x - outerStart.x;
+        const dy1 = edgeStart.y - outerStart.y;
+        const dx2 = edgeEnd.x - outerEnd.x;
+        const dy2 = edgeEnd.y - outerEnd.y;
+        const startIsShared = Math.abs(dx1) <= toleranceMm && Math.abs(dy1) <= toleranceMm;
+        const endIsShared = Math.abs(dx2) <= toleranceMm && Math.abs(dy2) <= toleranceMm;
+
+        if (!startIsShared || !endIsShared) {
+          const dx = intersection.x - edgeStart.x;
+          const dy = intersection.y - edgeStart.y;
+          const distFromStart = Math.sqrt(dx * dx + dy * dy);
+          if (distFromStart > toleranceMm) {
+            return false;
+          }
+        }
+      }
+    }
+  }
+
+  return true;
+}
+
+/** Check if a line segment crosses outside a polygon boundary. */
+export function segmentCrossesOutsidePolygon(
+  segment: LineSegment,
+  polygon: readonly { x: number; y: number }[],
+  toleranceMm: number = 50,
+): boolean {
+  const { start: p1, end: p2 } = segment;
+
+  const p1In = pointInPolygonWithTolerance(p1, polygon, toleranceMm);
+  const p2In = pointInPolygonWithTolerance(p2, polygon, toleranceMm);
+
+  if (p1In && p2In) {
+    const midX = (p1.x + p2.x) / 2;
+    const midY = (p1.y + p2.y) / 2;
+    const midIn = pointInPolygonWithTolerance({ x: midX, y: midY }, polygon, toleranceMm);
+    if (!midIn) {
+      for (const t of [0.25, 0.5, 0.75]) {
+        const sampleX = p1.x + (p2.x - p1.x) * t;
+        const sampleY = p1.y + (p2.y - p1.y) * t;
+        if (!pointInPolygonWithTolerance({ x: sampleX, y: sampleY }, polygon, toleranceMm)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  if (!p1In || !p2In) return true;
+
+  const midX = (p1.x + p2.x) / 2;
+  const midY = (p1.y + p2.y) / 2;
+  const midIn = pointInPolygonWithTolerance({ x: midX, y: midY }, polygon, toleranceMm);
+  if (midIn) {
+    for (const t of [0.25, 0.5, 0.75]) {
+      const sampleX = p1.x + (p2.x - p1.x) * t;
+      const sampleY = p1.y + (p2.y - p1.y) * t;
+      if (pointInPolygonWithTolerance({ x: sampleX, y: sampleY }, polygon, toleranceMm)) {
+        return true;
+      }
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -402,14 +575,25 @@ function edgesOverlap(a: LineSegment, b: LineSegment, tolerance: number): boolea
 /** Translate all points of a polygon by dx, dy. */
 export function translatePolygon(polygon: Polygon, dx: number, dy: number): Polygon {
   return {
-    points: polygon.points.map(p => translatePoint(p, dx, dy)),
+    points: polygon.points.map(p => ({ x: p.x + dx, y: p.y + dy })),
   };
 }
 
 /** Rotate all points of a polygon around an origin by angle in degrees. */
 export function rotatePolygon(polygon: Polygon, angleDeg: number, origin?: Point): Polygon {
   const rotOrigin = origin ?? polygonCentroid(polygon);
+  const rad = (angleDeg * Math.PI) / 180;
+  const cos = Math.cos(rad);
+  const sin = Math.sin(rad);
+
   return {
-    points: polygon.points.map(p => rotatePoint(p, angleDeg, rotOrigin)),
+    points: polygon.points.map(p => {
+      const dx = p.x - rotOrigin.x;
+      const dy = p.y - rotOrigin.y;
+      return {
+        x: rotOrigin.x + dx * cos - dy * sin,
+        y: rotOrigin.y + dx * sin + dy * cos,
+      };
+    }),
   };
 }

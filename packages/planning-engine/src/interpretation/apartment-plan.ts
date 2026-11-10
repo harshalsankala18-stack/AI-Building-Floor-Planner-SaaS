@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Recovery Phase 4 — apartment-aware plan structure, hard validation and
  * canonical geometry (APARTMENT_GENERATION_DIAGNOSIS_AND_5_PHASE_PLAN.md, Phase 4).
  *
@@ -34,13 +34,16 @@ import {
   type Door,
   type Window,
   type Floor,
+  type Polygon,
+  type LineSegment,
 } from '@ai-floor-planner/core';
 import {
   containsPolygon,
+  containsPolygonWithTolerance,
   detectRoomCollisions,
-  pointInPolygon,
-  pointToSegmentDistance,
+  pointInPolygonWithTolerance,
   polygonIntersectionArea,
+  segmentCrossesOutsidePolygon,
   validateDoorPlacement,
   validateWindowPlacement,
 } from '@ai-floor-planner/geometry-engine';
@@ -517,20 +520,6 @@ export function validateApartmentStructure(
 const DOOR_TYPE: Readonly<Record<string, string>> = {
   open_passage: 'open_passage', double: 'double', sliding: 'sliding', single: 'single', unknown: 'single',
 };
-
-function pointInPolygonWithTolerance(
-  p: { x: number; y: number },
-  poly: { points: readonly { x: number; y: number }[] },
-  tol = 50,
-): boolean {
-  if (pointInPolygon(p, poly)) return true;
-  for (let i = 0; i < poly.points.length; i++) {
-    const a = poly.points[i]!;
-    const b = poly.points[(i + 1) % poly.points.length]!;
-    if (pointToSegmentDistance(p, { start: a, end: b }) <= tol) return true;
-  }
-  return false;
-}
 
 export function generateWallsFromRooms(
   floorId: string,
@@ -1368,7 +1357,7 @@ export function validateCanonicalApartmentBuilding(
         });
       }
       if (!Number.isFinite(wall.startPoint.x) || !Number.isFinite(wall.startPoint.y) ||
-          !Number.isFinite(wall.endPoint.x) || !Number.isFinite(wall.endPoint.y)) {
+        !Number.isFinite(wall.endPoint.x) || !Number.isFinite(wall.endPoint.y)) {
         issues.push({
           code: 'CANONICAL_WALL_GEOMETRY_INVALID',
           severity: 'error',
@@ -1383,14 +1372,14 @@ export function validateCanonicalApartmentBuilding(
           message: `Wall "${wall.id}" has zero length.`,
         });
       }
-      // Wall containment against floor boundary
-      const p1In = pointInPolygonWithTolerance(wall.startPoint, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
-      const p2In = pointInPolygonWithTolerance(wall.endPoint, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
-      if (!p1In || !p2In) {
+      // Wall containment against floor boundary — check complete segment, not just endpoints
+      const wallSegment: LineSegment = { start: wall.startPoint, end: wall.endPoint };
+      const floorBoundaryPoints = floor.boundary.points.map(p => ({ x: p.x, y: p.y }));
+      if (segmentCrossesOutsidePolygon(wallSegment, floorBoundaryPoints, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
         issues.push({
           code: 'CANONICAL_WALL_OUT_OF_BOUNDS',
           severity: 'error',
-          message: `Floor ${floor.level}: Wall "${wall.id}" extends beyond the floor boundary.`,
+          message: `Floor ${floor.level}: Wall "${wall.id}" extends beyond the floor boundary segment.`,
         });
       }
       for (const rid of wall.roomIds) {
@@ -1570,26 +1559,29 @@ export function validateCanonicalApartmentBuilding(
         });
       }
       if (!Number.isFinite(stair.x) || !Number.isFinite(stair.y) ||
-          !Number.isFinite(stair.width) || !Number.isFinite(stair.length) ||
-          stair.width <= 0 || stair.length <= 0) {
+        !Number.isFinite(stair.width) || !Number.isFinite(stair.length) ||
+        stair.width <= 0 || stair.length <= 0) {
         issues.push({
           code: 'CANONICAL_STAIR_GEOMETRY_INVALID',
           severity: 'error',
           message: `Stair "${stair.id}" has invalid dimensions or coordinates.`,
         });
       } else {
-        const stairCorners = [
-          { x: stair.x, y: stair.y },
-          { x: stair.x + stair.width, y: stair.y },
-          { x: stair.x + stair.width, y: stair.y + stair.length },
-          { x: stair.x, y: stair.y + stair.length },
-        ];
-        const outsideCorners = stairCorners.filter(c => !pointInPolygonWithTolerance(c, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
-        if (outsideCorners.length > 0) {
+        // Validate complete stair footprint polygon, including edge containment for concave boundaries
+        const stairPolygon: Polygon = {
+          points: [
+            { x: stair.x, y: stair.y },
+            { x: stair.x + stair.width, y: stair.y },
+            { x: stair.x + stair.width, y: stair.y + stair.length },
+            { x: stair.x, y: stair.y + stair.length },
+          ]
+        };
+
+        if (!containsPolygonWithTolerance(floor.boundary.points, stairPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
           issues.push({
             code: 'CANONICAL_STAIR_OUT_OF_BOUNDS',
             severity: 'error',
-            message: `Floor ${floor.level}: Stair "${stair.id}" extends beyond the floor boundary.`,
+            message: `Floor ${floor.level}: Stair "${stair.id}" extends beyond the floor boundary polygon.`,
           });
         }
       }
@@ -1631,13 +1623,31 @@ export function validateCanonicalApartmentBuilding(
           });
         }
         if (!Number.isFinite(col.x) || !Number.isFinite(col.y) ||
-            (col.width !== undefined && col.width <= 0) ||
-            (col.depth !== undefined && col.depth <= 0)) {
+          (col.width !== undefined && col.width <= 0) ||
+          (col.depth !== undefined && col.depth <= 0)) {
           issues.push({
             code: 'CANONICAL_COLUMN_GEOMETRY_INVALID',
             severity: 'error',
             message: `Column "${col.id}" has invalid dimensions or coordinates.`,
           });
+        }
+        // Column footprint containment - validate complete footprint
+        if (col.floorId && col.floorId === floor.id) {
+          const colPolygon: Polygon = {
+            points: [
+              { x: col.x - (col.width ?? 0) / 2, y: col.y - (col.depth ?? 0) / 2 },
+              { x: col.x + (col.width ?? 0) / 2, y: col.y - (col.depth ?? 0) / 2 },
+              { x: col.x + (col.width ?? 0) / 2, y: col.y + (col.depth ?? 0) / 2 },
+              { x: col.x - (col.width ?? 0) / 2, y: col.y + (col.depth ?? 0) / 2 },
+            ]
+          };
+          if (!containsPolygonWithTolerance(floor.boundary.points, colPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
+            issues.push({
+              code: 'CANONICAL_COLUMN_OUT_OF_BOUNDS',
+              severity: 'error',
+              message: `Floor ${floor.level}: Column "${col.id}" extends beyond the floor boundary.`,
+            });
+          }
         }
       }
     }
@@ -1654,8 +1664,8 @@ export function validateCanonicalApartmentBuilding(
       });
     }
 
-    // G. Floor boundary containment on EVERY floor
-    const outside = floor.rooms.filter(r => !containsPolygon(floor.boundary, r.boundary) && r.boundary.points.some(p => !pointInPolygonWithTolerance(p, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)));
+    // G. Floor boundary containment on EVERY floor — use robust concave-aware containment with tolerance
+    const outside = floor.rooms.filter(r => !containsPolygonWithTolerance(floor.boundary.points, r.boundary.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
     if (outside.length > 0) {
       issues.push({
         code: 'CANONICAL_ROOMS_OUT_OF_BOUNDS',
@@ -1828,7 +1838,7 @@ export function validateCanonicalApartmentBuilding(
           // or attached directly to fbPolygon (at least one vertex touches within tolerance).
           const isContained = containsPolygon(fbPolygon, r.boundary);
           if (!isContained) {
-            const touchingPoints = r.boundary.points.filter(p => pointInPolygonWithTolerance(p, fbPolygon, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+            const touchingPoints = r.boundary.points.filter(p => pointInPolygonWithTolerance(p, fbPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
             if (touchingPoints.length === 0) {
               issues.push({
                 code: 'CANONICAL_BALCONY_ATTACHMENT_INVALID',
@@ -1841,7 +1851,7 @@ export function validateCanonicalApartmentBuilding(
           // Interior rooms: must strictly lie within flat boundary
           const isContained = containsPolygon(fbPolygon, r.boundary);
           if (!isContained) {
-            const pointsOutside = r.boundary.points.filter(p => !pointInPolygonWithTolerance(p, fbPolygon, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+            const pointsOutside = r.boundary.points.filter(p => !pointInPolygonWithTolerance(p, fbPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
             if (pointsOutside.length > 0) {
               issues.push({
                 code: 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY',
