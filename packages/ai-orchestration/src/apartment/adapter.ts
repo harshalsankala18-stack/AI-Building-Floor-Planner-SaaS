@@ -346,6 +346,43 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
  * Converts a DeterministicApartmentSchematic directly into an ApartmentPlanStructure.
  * Used to construct the authoritative canonical Building Model before any image model is involved.
  */
+function isPointInPolyWithTolerance(
+  pt: { x: number; y: number },
+  poly: readonly { x: number; y: number }[],
+  toleranceMm: number = 50,
+): boolean {
+  // Direct ray casting
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i]!.x, yi = poly[i]!.y;
+    const xj = poly[j]!.x, yj = poly[j]!.y;
+    const intersect = ((yi > pt.y) !== (yj > pt.y)) && (pt.x < (xj - xi) * (pt.y - yi) / (yj - yi) + xi);
+    if (intersect) inside = !inside;
+  }
+  if (inside) return true;
+
+  // Tolerance check against boundary edges
+  const tolSq = toleranceMm * toleranceMm;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i]!;
+    const b = poly[(i + 1) % poly.length]!;
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    let distSq: number;
+    if (lenSq === 0) {
+      distSq = (pt.x - a.x) * (pt.x - a.x) + (pt.y - a.y) * (pt.y - a.y);
+    } else {
+      const t = Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / lenSq));
+      const projX = a.x + t * dx;
+      const projY = a.y + t * dy;
+      distSq = (pt.x - projX) * (pt.x - projX) + (pt.y - projY) * (pt.y - projY);
+    }
+    if (distSq <= tolSq) return true;
+  }
+  return false;
+}
+
 export function schematicToApartmentStructure(schematic: DeterministicApartmentSchematic): ApartmentPlanStructure {
   const structureId = new Map<string, string>();
   for (const unit of schematic.units) {
@@ -384,18 +421,39 @@ export function schematicToApartmentStructure(schematic: DeterministicApartmentS
   return {
     source: 'DETERMINISTIC_SCHEMATIC',
     boundary,
-    flats: schematic.units.map(unit => ({
-      id: unit.flatId,
-      label: unit.flatLabel,
-      unitType: unit.unitType,
-      rect: mm(unit.bounds),
-      rooms: [...unit.rooms, ...unit.balconies].map(room => ({
-        id: `${unit.flatId}__${room.id}`,
-        name: room.name,
-        type: room.type,
-        rect: mm(room.bounds),
-      })),
-    })),
+    flats: schematic.units.map(unit => {
+      const hasStepped = unit.steppedPolygon && unit.steppedPolygon.vertices && unit.steppedPolygon.vertices.length >= 6;
+      let steppedPointsMm: Array<{ x: number; y: number }> | undefined;
+      if (hasStepped) {
+        steppedPointsMm = unit.steppedPolygon!.vertices.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }));
+      }
+      // Preserve the actual stepped polygon where valid; if rooms exceed it (e.g. existing rectangular plan),
+      // maintain compatibility with rectangular plan.
+      const isValidStepped = steppedPointsMm && unit.rooms.every(room => {
+        const rm = mm(room.bounds);
+        const corners = [
+          { x: rm.x, y: rm.y },
+          { x: rm.x + rm.width, y: rm.y },
+          { x: rm.x + rm.width, y: rm.y + rm.height },
+          { x: rm.x, y: rm.y + rm.height },
+        ];
+        return corners.every(c => isPointInPolyWithTolerance(c, steppedPointsMm!, 50));
+      });
+
+      return {
+        id: unit.flatId,
+        label: unit.flatLabel,
+        unitType: unit.unitType,
+        rect: mm(unit.bounds),
+        boundary: isValidStepped ? steppedPointsMm : undefined,
+        rooms: [...unit.rooms, ...unit.balconies].map(room => ({
+          id: `${unit.flatId}__${room.id}`,
+          name: room.name,
+          type: room.type,
+          rect: mm(room.bounds),
+        })),
+      };
+    }),
     commonRooms: [],
     ungroupedRooms: [],
     lifts: schematic.core.lifts.map(l => common(l.id, l.label, l.bounds)),
@@ -490,20 +548,40 @@ export function adaptSchematicToBuilding(
     metadata: {
       ...building.metadata,
       apartmentSchematic: schematic,
-      flatBoundaries: schematic.units.map(u => ({
-        flatId: u.flatId,
-        label: u.flatLabel,
-        unitType: u.unitType,
-        rect: mm(u.bounds),
-        boundary: {
-          points: [
-            { x: Math.round(u.bounds.x * 1000), y: Math.round(u.bounds.y * 1000) },
-            { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round(u.bounds.y * 1000) },
-            { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
-            { x: Math.round(u.bounds.x * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
-          ],
-        },
-      })),
+      flatBoundaries: schematic.units.map(u => {
+        const hasStepped = u.steppedPolygon && u.steppedPolygon.vertices && u.steppedPolygon.vertices.length >= 6;
+        let steppedPointsMm: Array<{ x: number; y: number }> | undefined;
+        if (hasStepped) {
+          steppedPointsMm = u.steppedPolygon!.vertices.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }));
+        }
+        const isValidStepped = steppedPointsMm && u.rooms.every(room => {
+          const rm = mm(room.bounds);
+          const corners = [
+            { x: rm.x, y: rm.y },
+            { x: rm.x + rm.width, y: rm.y },
+            { x: rm.x + rm.width, y: rm.y + rm.height },
+            { x: rm.x, y: rm.y + rm.height },
+          ];
+          return corners.every(c => isPointInPolyWithTolerance(c, steppedPointsMm!, 50));
+        });
+
+        return {
+          flatId: u.flatId,
+          label: u.flatLabel,
+          unitType: u.unitType,
+          rect: mm(u.bounds),
+          boundary: {
+            points: isValidStepped
+              ? steppedPointsMm!
+              : [
+                  { x: Math.round(u.bounds.x * 1000), y: Math.round(u.bounds.y * 1000) },
+                  { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round(u.bounds.y * 1000) },
+                  { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+                  { x: Math.round(u.bounds.x * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+                ],
+          },
+        };
+      }),
       steppedPolygons: schematic.units.map(u => ({
         flatId: u.flatId,
         flatLabel: u.flatLabel,

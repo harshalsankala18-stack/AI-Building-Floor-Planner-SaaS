@@ -51,6 +51,14 @@ import type { ExtractedPlanValidation } from './extraction-validation';
 
 export const APARTMENT_COMMON_FLAT_ID = 'COMMON';
 
+/** Documented geometric tolerance (mm) for canonical apartment flat boundaries and containment. */
+export const CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM = 50;
+
+/** Normalizes a flat identifier for strict deterministic comparison (removes whitespace, underscores, hyphens). */
+export function normalizeFlatIdentifier(id: string): string {
+  return id.trim().toLowerCase().replace(/[\s_-]+/g, '');
+}
+
 /** Provenance of the structure; the fallback is never presented as an interpretation. */
 export type ApartmentPlanSource = 'IMAGE_INTERPRETATION' | 'DETERMINISTIC_SCHEMATIC';
 
@@ -74,6 +82,7 @@ export interface ApartmentPlanFlat {
   readonly label: string;
   readonly unitType: string;
   readonly rect: ApartmentRectMm;
+  readonly boundary?: readonly { readonly x: number; readonly y: number }[];
   readonly rooms: readonly ApartmentPlanRoom[];
 }
 
@@ -527,60 +536,223 @@ export function generateWallsFromRooms(
   floorId: string,
   rooms: readonly Room[],
 ): Wall[] {
-  const walls: Wall[] = [];
-  const edgeMap = new Map<string, { start: { x: number; y: number }; end: { x: number; y: number }; roomIds: string[] }>();
+  interface RawSegment {
+    readonly coord: number;
+    readonly min: number;
+    readonly max: number;
+    readonly roomId: string;
+  }
+
+  const hSegments: RawSegment[] = [];
+  const vSegments: RawSegment[] = [];
 
   for (const room of rooms) {
-    const x0 = room.x;
-    const y0 = room.y;
-    const x1 = room.x + room.width;
-    const y1 = room.y + room.height;
+    const x0 = Math.round(room.x);
+    const y0 = Math.round(room.y);
+    const x1 = Math.round(room.x + room.width);
+    const y1 = Math.round(room.y + room.height);
 
-    const segments = [
-      { start: { x: Math.min(x0, x1), y: y0 }, end: { x: Math.max(x0, x1), y: y0 } },
-      { start: { x: x1, y: Math.min(y0, y1) }, end: { x: x1, y: Math.max(y0, y1) } },
-      { start: { x: Math.min(x0, x1), y: y1 }, end: { x: Math.max(x0, x1), y: y1 } },
-      { start: { x: x0, y: Math.min(y0, y1) }, end: { x: x0, y: Math.max(y0, y1) } },
-    ];
+    const minX = Math.min(x0, x1);
+    const maxX = Math.max(x0, x1);
+    const minY = Math.min(y0, y1);
+    const maxY = Math.max(y0, y1);
 
-    for (const seg of segments) {
-      const k = seg.start.x === seg.end.x
-        ? `v_${seg.start.x}_${seg.start.y}_${seg.end.y}`
-        : `h_${seg.start.y}_${seg.start.x}_${seg.end.x}`;
-
-      const entry = edgeMap.get(k);
-      if (entry) {
-        if (!entry.roomIds.includes(room.id)) {
-          entry.roomIds.push(room.id);
-        }
-      } else {
-        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room.id] });
-      }
-    }
+    hSegments.push({ coord: y0, min: minX, max: maxX, roomId: room.id });
+    hSegments.push({ coord: y1, min: minX, max: maxX, roomId: room.id });
+    vSegments.push({ coord: x0, min: minY, max: maxY, roomId: room.id });
+    vSegments.push({ coord: x1, min: minY, max: maxY, roomId: room.id });
   }
 
   const roomMap = new Map(rooms.map(r => [r.id, r]));
+  const rawWalls: Wall[] = [];
 
-  for (const [, edge] of edgeMap) {
-    const roomObjects = edge.roomIds.map(id => roomMap.get(id)).filter(Boolean);
-    const touchesShaft = roomObjects.some(r => r?.type === RoomType.ServiceShaft);
-    const isInternal = edge.roomIds.length >= 2 && !touchesShaft;
-    const wallType = isInternal ? WallType.Internal : WallType.External;
-    const thickness = isInternal ? 100 : 200;
-
-    walls.push(
-      createWall({
-        floorId,
-        startPoint: edge.start,
-        endPoint: edge.end,
-        type: wallType,
-        thickness,
-        roomIds: edge.roomIds,
-      }),
-    );
+  // Group horizontal segments by Y and split at all vertex coordinates
+  const hByY = new Map<number, RawSegment[]>();
+  for (const seg of hSegments) {
+    const list = hByY.get(seg.coord) ?? [];
+    list.push(seg);
+    hByY.set(seg.coord, list);
   }
 
-  return walls;
+  for (const [y, segs] of hByY) {
+    const xCoords = new Set<number>();
+    for (const s of segs) {
+      xCoords.add(s.min);
+      xCoords.add(s.max);
+    }
+    const sortedX = [...xCoords].sort((a, b) => a - b);
+    for (let i = 0; i < sortedX.length - 1; i++) {
+      const xStart = sortedX[i]!;
+      const xEnd = sortedX[i + 1]!;
+      if (xEnd <= xStart) continue;
+
+      const coveringRooms = new Set<string>();
+      for (const s of segs) {
+        if (s.min <= xStart && s.max >= xEnd) {
+          coveringRooms.add(s.roomId);
+        }
+      }
+      if (coveringRooms.size === 0) continue;
+
+      const roomIds = [...coveringRooms];
+      const roomObjects = roomIds.map(id => roomMap.get(id)).filter(Boolean);
+      const touchesShaft = roomObjects.some(r => r?.type === RoomType.ServiceShaft);
+      const isInternal = roomIds.length >= 2 && !touchesShaft;
+      const wallType = isInternal ? WallType.Internal : WallType.External;
+      const thickness = isInternal ? 100 : 200;
+
+      rawWalls.push(
+        createWall({
+          floorId,
+          startPoint: { x: xStart, y },
+          endPoint: { x: xEnd, y },
+          type: wallType,
+          thickness,
+          roomIds,
+        }),
+      );
+    }
+  }
+
+  // Group vertical segments by X and split at all vertex coordinates
+  const vByX = new Map<number, RawSegment[]>();
+  for (const seg of vSegments) {
+    const list = vByX.get(seg.coord) ?? [];
+    list.push(seg);
+    vByX.set(seg.coord, list);
+  }
+
+  for (const [x, segs] of vByX) {
+    const yCoords = new Set<number>();
+    for (const s of segs) {
+      yCoords.add(s.min);
+      yCoords.add(s.max);
+    }
+    const sortedY = [...yCoords].sort((a, b) => a - b);
+    for (let i = 0; i < sortedY.length - 1; i++) {
+      const yStart = sortedY[i]!;
+      const yEnd = sortedY[i + 1]!;
+      if (yEnd <= yStart) continue;
+
+      const coveringRooms = new Set<string>();
+      for (const s of segs) {
+        if (s.min <= yStart && s.max >= yEnd) {
+          coveringRooms.add(s.roomId);
+        }
+      }
+      if (coveringRooms.size === 0) continue;
+
+      const roomIds = [...coveringRooms];
+      const roomObjects = roomIds.map(id => roomMap.get(id)).filter(Boolean);
+      const touchesShaft = roomObjects.some(r => r?.type === RoomType.ServiceShaft);
+      const isInternal = roomIds.length >= 2 && !touchesShaft;
+      const wallType = isInternal ? WallType.Internal : WallType.External;
+      const thickness = isInternal ? 100 : 200;
+
+      rawWalls.push(
+        createWall({
+          floorId,
+          startPoint: { x, y: yStart },
+          endPoint: { x, y: yEnd },
+          type: wallType,
+          thickness,
+          roomIds,
+        }),
+      );
+    }
+  }
+
+  // Merge adjacent collinear walls with identical roomIds and properties
+  return mergeAdjacentCollinearWalls(rawWalls);
+}
+
+function mergeAdjacentCollinearWalls(walls: Wall[]): Wall[] {
+  const result: Wall[] = [];
+
+  const hWalls = walls.filter(w => Math.abs(w.startPoint.y - w.endPoint.y) <= 1e-6);
+  const vWalls = walls.filter(w => Math.abs(w.startPoint.x - w.endPoint.x) <= 1e-6);
+  const otherWalls = walls.filter(w => !hWalls.includes(w) && !vWalls.includes(w));
+  result.push(...otherWalls);
+
+  const hByY = new Map<number, Wall[]>();
+  for (const w of hWalls) {
+    const y = w.startPoint.y;
+    const list = hByY.get(y) ?? [];
+    list.push(w);
+    hByY.set(y, list);
+  }
+
+  for (const [, list] of hByY) {
+    list.sort((a, b) => Math.min(a.startPoint.x, a.endPoint.x) - Math.min(b.startPoint.x, b.endPoint.x));
+    let current: Wall | null = null;
+    for (const w of list) {
+      const wMin = Math.min(w.startPoint.x, w.endPoint.x);
+      const wMax = Math.max(w.startPoint.x, w.endPoint.x);
+      if (!current) {
+        current = w;
+        continue;
+      }
+      const cMin = Math.min(current.startPoint.x, current.endPoint.x);
+      const cMax = Math.max(current.startPoint.x, current.endPoint.x);
+      const curRooms = [...current.roomIds].sort();
+      const wRooms = [...w.roomIds].sort();
+      const sameRooms = curRooms.length === wRooms.length && curRooms.every((id, idx) => id === wRooms[idx]);
+      const sameProps = current.type === w.type && current.thickness === w.thickness;
+
+      if (sameRooms && sameProps && Math.abs(cMax - wMin) <= 1e-3) {
+        current = {
+          ...current,
+          startPoint: { x: cMin, y: current.startPoint.y },
+          endPoint: { x: wMax, y: current.startPoint.y },
+        };
+      } else {
+        result.push(current);
+        current = w;
+      }
+    }
+    if (current) result.push(current);
+  }
+
+  const vByX = new Map<number, Wall[]>();
+  for (const w of vWalls) {
+    const x = w.startPoint.x;
+    const list = vByX.get(x) ?? [];
+    list.push(w);
+    vByX.set(x, list);
+  }
+
+  for (const [, list] of vByX) {
+    list.sort((a, b) => Math.min(a.startPoint.y, a.endPoint.y) - Math.min(b.startPoint.y, b.endPoint.y));
+    let current: Wall | null = null;
+    for (const w of list) {
+      const wMin = Math.min(w.startPoint.y, w.endPoint.y);
+      const wMax = Math.max(w.startPoint.y, w.endPoint.y);
+      if (!current) {
+        current = w;
+        continue;
+      }
+      const cMin = Math.min(current.startPoint.y, current.endPoint.y);
+      const cMax = Math.max(current.startPoint.y, current.endPoint.y);
+      const curRooms = [...current.roomIds].sort();
+      const wRooms = [...w.roomIds].sort();
+      const sameRooms = curRooms.length === wRooms.length && curRooms.every((id, idx) => id === wRooms[idx]);
+      const sameProps = current.type === w.type && current.thickness === w.thickness;
+
+      if (sameRooms && sameProps && Math.abs(cMax - wMin) <= 1e-3) {
+        current = {
+          ...current,
+          startPoint: { x: current.startPoint.x, y: cMin },
+          endPoint: { x: current.startPoint.x, y: wMax },
+        };
+      } else {
+        result.push(current);
+        current = w;
+      }
+    }
+    if (current) result.push(current);
+  }
+
+  return result;
 }
 
 export interface AttachOpeningsResult {
@@ -609,11 +781,23 @@ export function attachOpeningsToHostWalls(
   const updatedDoors: Door[] = [];
   for (const door of floor.doors) {
     const [rAId, rBId] = door.connectsRooms;
-    const rA = roomMap.get(rAId);
+    const isOutsideA = rAId === '__outside__';
     const isOutsideB = rBId === '__outside__';
+    const isExterior = isOutsideA || isOutsideB;
+
+    if (isOutsideA && isOutsideB) {
+      issues.push({
+        code: 'DOOR_ROOM_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" has invalid endpoints: both are outside identifiers.`,
+      });
+      continue;
+    }
+
+    const rA = isOutsideA ? null : roomMap.get(rAId);
     const rB = isOutsideB ? null : roomMap.get(rBId);
 
-    if (!rA) {
+    if (!isOutsideA && !rA) {
       issues.push({
         code: 'DOOR_ROOM_NOT_FOUND',
         severity: 'error',
@@ -630,29 +814,43 @@ export function attachOpeningsToHostWalls(
       continue;
     }
 
-    let candidates = walls.filter(w => {
-      if (isOutsideB) {
-        return w.roomIds.includes(rAId) && w.type === WallType.External;
-      }
-      return w.roomIds.includes(rAId) && w.roomIds.includes(rBId);
-    });
+    if (!isExterior && rAId === rBId) {
+      issues.push({
+        code: 'DOOR_ROOM_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" connects room "${rAId}" to itself.`,
+      });
+      continue;
+    }
 
-    if (candidates.length === 0) {
-      candidates = walls.filter(w => w.roomIds.includes(rAId));
+    // Determine candidate host walls strictly based on topology
+    let candidates: Wall[];
+    if (isExterior) {
+      const roomActualId = isOutsideA ? rBId : rAId;
+      candidates = walls.filter(w => w.type === WallType.External && w.roomIds.includes(roomActualId));
+    } else {
+      // Interior door: host wall MUST contain BOTH room IDs
+      candidates = walls.filter(w => w.roomIds.includes(rAId) && w.roomIds.includes(rBId));
     }
 
     if (candidates.length === 0) {
       issues.push({
         code: 'DOOR_HOST_WALL_NOT_FOUND',
         severity: 'error',
-        message: `Door "${door.id}" has no candidate host wall for room "${rAId}".`,
+        message: isExterior
+          ? `Door "${door.id}" has no exterior host wall for room "${isOutsideA ? rBId : rAId}".`
+          : `Door "${door.id}" has no host wall connecting rooms "${rAId}" and "${rBId}".`,
       });
       continue;
     }
 
-    let bestWall: Wall | null = null;
-    let bestDist = Infinity;
-    let bestAlignedPos: { x: number; y: number } | null = null;
+    interface EvaluatedDoorCandidate {
+      wall: Wall;
+      dist: number;
+      clampingShift: number;
+      alignedPos: { x: number; y: number };
+    }
+    const matching: EvaluatedDoorCandidate[] = [];
 
     for (const wall of candidates) {
       const minX = Math.min(wall.startPoint.x, wall.endPoint.x);
@@ -666,6 +864,7 @@ export function attachOpeningsToHostWalls(
 
       let dist = Infinity;
       let alignedPos: { x: number; y: number } | null = null;
+      let clampingShift = Infinity;
 
       if (isHorizontal) {
         const wallY = wall.startPoint.y;
@@ -673,6 +872,7 @@ export function attachOpeningsToHostWalls(
         const wallLen = maxX - minX;
         if (wallLen >= door.width + 2 * doorMinEdgeDistance) {
           const clampedX = Math.max(minX + doorMinEdgeDistance, Math.min(maxX - door.width - doorMinEdgeDistance, door.position.x));
+          clampingShift = Math.abs(clampedX - door.position.x);
           alignedPos = { x: clampedX, y: wallY };
         }
       } else {
@@ -681,18 +881,18 @@ export function attachOpeningsToHostWalls(
         const wallLen = maxY - minY;
         if (wallLen >= door.width + 2 * doorMinEdgeDistance) {
           const clampedY = Math.max(minY + doorMinEdgeDistance, Math.min(maxY - door.width - doorMinEdgeDistance, door.position.y));
+          clampingShift = Math.abs(clampedY - door.position.y);
           alignedPos = { x: wallX, y: clampedY };
         }
       }
 
-      if (alignedPos && dist < bestDist && dist <= 300) {
-        bestDist = dist;
-        bestWall = wall;
-        bestAlignedPos = alignedPos;
+      // Check distance and maximum clamping shift (reject arbitrary long-distance shifts)
+      if (alignedPos && dist <= 300 && clampingShift <= 100) {
+        matching.push({ wall, dist, clampingShift, alignedPos });
       }
     }
 
-    if (!bestWall || !bestAlignedPos) {
+    if (matching.length === 0) {
       issues.push({
         code: 'DOOR_HOST_WALL_NOT_FOUND',
         severity: 'error',
@@ -701,18 +901,29 @@ export function attachOpeningsToHostWalls(
       continue;
     }
 
+    matching.sort((a, b) => a.dist - b.dist);
+    if (matching.length > 1 && Math.abs(matching[0]!.dist - matching[1]!.dist) <= 20) {
+      issues.push({
+        code: 'DOOR_HOST_WALL_AMBIGUOUS',
+        severity: 'error',
+        message: `Door "${door.id}" has ambiguous host wall association (multiple candidate walls equidistant within tolerance).`,
+      });
+      continue;
+    }
+
+    const best = matching[0]!;
     const updatedDoor: Door = {
       ...door,
-      wallId: bestWall.id,
-      position: bestAlignedPos,
+      wallId: best.wall.id,
+      position: best.alignedPos,
     };
 
-    const placement = validateDoorPlacement(updatedDoor, bestWall, doorMinEdgeDistance);
+    const placement = validateDoorPlacement(updatedDoor, best.wall, doorMinEdgeDistance);
     if (!placement.valid) {
       issues.push({
         code: 'DOOR_PLACEMENT_INVALID',
         severity: 'error',
-        message: `Door "${door.id}" placement on wall "${bestWall.id}" is invalid: ${placement.reason}`,
+        message: `Door "${door.id}" placement on wall "${best.wall.id}" is invalid: ${placement.reason}`,
       });
       continue;
     }
@@ -747,9 +958,13 @@ export function attachOpeningsToHostWalls(
       continue;
     }
 
-    let bestWall: Wall | null = null;
-    let bestDist = Infinity;
-    let bestAlignedPos: { x: number; y: number } | null = null;
+    interface EvaluatedWindowCandidate {
+      wall: Wall;
+      dist: number;
+      clampingShift: number;
+      alignedPos: { x: number; y: number };
+    }
+    const matching: EvaluatedWindowCandidate[] = [];
 
     for (const wall of candidates) {
       const minX = Math.min(wall.startPoint.x, wall.endPoint.x);
@@ -763,6 +978,7 @@ export function attachOpeningsToHostWalls(
 
       let dist = Infinity;
       let alignedPos: { x: number; y: number } | null = null;
+      let clampingShift = Infinity;
 
       if (isHorizontal) {
         const wallY = wall.startPoint.y;
@@ -770,6 +986,7 @@ export function attachOpeningsToHostWalls(
         const wallLen = maxX - minX;
         if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
           const clampedX = Math.max(minX + windowMinEdgeDistance, Math.min(maxX - win.width - windowMinEdgeDistance, win.position.x));
+          clampingShift = Math.abs(clampedX - win.position.x);
           alignedPos = { x: clampedX, y: wallY };
         }
       } else {
@@ -778,18 +995,17 @@ export function attachOpeningsToHostWalls(
         const wallLen = maxY - minY;
         if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
           const clampedY = Math.max(minY + windowMinEdgeDistance, Math.min(maxY - win.width - windowMinEdgeDistance, win.position.y));
+          clampingShift = Math.abs(clampedY - win.position.y);
           alignedPos = { x: wallX, y: clampedY };
         }
       }
 
-      if (alignedPos && dist < bestDist && dist <= 300) {
-        bestDist = dist;
-        bestWall = wall;
-        bestAlignedPos = alignedPos;
+      if (alignedPos && dist <= 300 && clampingShift <= 100) {
+        matching.push({ wall, dist, clampingShift, alignedPos });
       }
     }
 
-    if (!bestWall || !bestAlignedPos) {
+    if (matching.length === 0) {
       issues.push({
         code: 'WINDOW_HOST_WALL_NOT_FOUND',
         severity: 'error',
@@ -798,18 +1014,29 @@ export function attachOpeningsToHostWalls(
       continue;
     }
 
+    matching.sort((a, b) => a.dist - b.dist);
+    if (matching.length > 1 && Math.abs(matching[0]!.dist - matching[1]!.dist) <= 20) {
+      issues.push({
+        code: 'WINDOW_HOST_WALL_AMBIGUOUS',
+        severity: 'error',
+        message: `Window "${win.id}" has ambiguous host wall association (multiple candidate walls equidistant within tolerance).`,
+      });
+      continue;
+    }
+
+    const best = matching[0]!;
     const updatedWindow: Window = {
       ...win,
-      wallId: bestWall.id,
-      position: bestAlignedPos,
+      wallId: best.wall.id,
+      position: best.alignedPos,
     };
 
-    const placement = validateWindowPlacement(updatedWindow, bestWall, windowMinEdgeDistance, true);
+    const placement = validateWindowPlacement(updatedWindow, best.wall, windowMinEdgeDistance, true);
     if (!placement.valid) {
       issues.push({
         code: 'WINDOW_PLACEMENT_INVALID',
         severity: 'error',
-        message: `Window "${win.id}" placement on wall "${bestWall.id}" is invalid: ${placement.reason}`,
+        message: `Window "${win.id}" placement on wall "${best.wall.id}" is invalid: ${placement.reason}`,
       });
       continue;
     }
@@ -841,7 +1068,9 @@ export function apartmentStructureToBuilding(
     label: flat.label,
     unitType: flat.unitType,
     rect: flat.rect,
-    boundary: rectToPolygon(flat.rect.x, flat.rect.y, flat.rect.width, flat.rect.height),
+    boundary: flat.boundary && flat.boundary.length >= 3
+      ? { points: flat.boundary.map(p => ({ x: Math.round(p.x), y: Math.round(p.y) })) }
+      : rectToPolygon(flat.rect.x, flat.rect.y, flat.rect.width, flat.rect.height),
   }));
 
   const base = createBuilding({
@@ -915,15 +1144,27 @@ export function apartmentStructureToBuilding(
     const adjacent = rooms.find(r => r.tags.includes(`apt-room:${opening.adjacentRoomId}`));
     if (!adjacent) {
       diagnostics.push({
-        code: 'APARTMENT_OPENING_SKIPPED',
-        severity: 'warning',
+        code: opening.kind === 'door' ? 'APARTMENT_DOOR_ROOM_NOT_FOUND' : 'APARTMENT_WINDOW_ROOM_NOT_FOUND',
+        severity: 'error',
         message: `${opening.kind === 'door' ? 'Door' : 'Window'} "${opening.id}" was not attached: adjacent room "${opening.adjacentRoomId}" is not in the plan.`,
       });
       continue;
     }
     const position = { x: Math.round(opening.rect.x), y: Math.round(opening.rect.y) };
     const otherId = opening.connects?.find(id => id !== opening.adjacentRoomId);
-    const other = otherId ? rooms.find(r => r.tags.includes(`apt-room:${otherId}`)) : undefined;
+    let other: Room | undefined = undefined;
+    if (otherId) {
+      other = rooms.find(r => r.tags.includes(`apt-room:${otherId}`));
+      if (!other && otherId !== '__outside__') {
+        diagnostics.push({
+          code: 'APARTMENT_DOOR_ROOM_NOT_FOUND',
+          severity: 'error',
+          message: `Door "${opening.id}" was not attached: connected room "${otherId}" is not in the plan.`,
+        });
+        continue;
+      }
+    }
+
     if (opening.kind === 'door') {
       initialDoors.push({
         id: opening.id,
@@ -963,7 +1204,7 @@ export function apartmentStructureToBuilding(
   };
 
   const { doors: attachedDoors, windows: attachedWindows, issues: attachIssues } = attachOpeningsToHostWalls(floorCandidate);
-  diagnostics.push(...attachIssues);
+  const allOpeningDiagnostics = [...diagnostics, ...attachIssues];
 
   return {
     building: {
@@ -976,10 +1217,10 @@ export function apartmentStructureToBuilding(
       metadata: {
         ...base.metadata,
         flatBoundaries,
-        ...(attachIssues.length > 0 ? { openingIssues: attachIssues } : {}),
+        ...(allOpeningDiagnostics.length > 0 ? { openingIssues: allOpeningDiagnostics } : {}),
       },
     },
-    diagnostics,
+    diagnostics: allOpeningDiagnostics,
   };
 }
 
@@ -1051,38 +1292,15 @@ export function classifyCanonicalFlatRooms(rooms: readonly Room[], unitType: str
   };
 }
 
-function matchFlatRooms(
+export function matchFlatRooms(
   expectedUnit: ApartmentUnitExpectation,
   allResidentialRooms: readonly Room[],
-  unitIndex: number,
-  uniqueFlatIds: readonly string[],
 ): Room[] {
-  const normExpected = expectedUnit.label.toLowerCase().replace(/[^a-z0-9]/g, '');
-
-  // 1. Direct tag match
-  const byTag = allResidentialRooms.filter(r => {
-    return r.tags.some(t => {
-      if (!t.startsWith('flat:')) return false;
-      const tagVal = t.slice(5).toLowerCase().replace(/[^a-z0-9]/g, '');
-      return tagVal === normExpected || tagVal.includes(normExpected) || normExpected.includes(tagVal);
-    });
+  const normExpected = normalizeFlatIdentifier(expectedUnit.label);
+  return allResidentialRooms.filter(r => {
+    const flatTags = r.tags.filter(t => t.startsWith('flat:'));
+    return flatTags.some(t => normalizeFlatIdentifier(t.slice(5)) === normExpected);
   });
-  if (byTag.length > 0) return byTag;
-
-  // 2. Name prefix match
-  const byName = allResidentialRooms.filter(r => {
-    const normName = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
-    return normName.startsWith(normExpected);
-  });
-  if (byName.length > 0) return byName;
-
-  // 3. Index match among unique flat tags
-  if (unitIndex < uniqueFlatIds.length) {
-    const targetId = uniqueFlatIds[unitIndex]!;
-    return allResidentialRooms.filter(r => r.tags.includes(`flat:${targetId}`));
-  }
-
-  return [];
 }
 
 /** Structure counts measured on the canonical Building itself (tags). */
@@ -1108,6 +1326,8 @@ export function measureApartmentBuilding(building: Building): {
     }
     if (room.type === RoomType.Bedroom && room.tags.some(t => t.startsWith('flat:'))) bedrooms++;
   }
+  const floorStairsCount = building.floors.reduce((sum, f) => sum + (f.stairs?.length ?? 0), 0);
+  stairs = Math.max(stairs, floorStairsCount);
   return { flats: flats.size, lifts, stairs, lobbies, bedrooms };
 }
 
@@ -1115,7 +1335,12 @@ export function validateCanonicalApartmentBuilding(
   building: Building,
   expectation: ApartmentPlanExpectation,
 ): ExtractedPlanValidation {
-  const diagnostics = evaluateDesign(building, { requiredRoomTypes: ['living', 'bedroom'] as never });
+  const hasBHK = expectation.units.some(u => normalizeApartmentUnitType(u.unitType) !== 'STUDIO' && u.bedrooms > 0);
+  const requiredRoomTypes: RoomType[] = [RoomType.Living];
+  if (hasBHK) {
+    requiredRoomTypes.push(RoomType.Bedroom);
+  }
+  const diagnostics = evaluateDesign(building, { requiredRoomTypes });
   const issues: DiagnosticFragment[] = [];
 
   for (const warning of diagnostics.warnings) {
@@ -1124,7 +1349,7 @@ export function validateCanonicalApartmentBuilding(
 
   // ── 1. Per-floor multi-floor-safe validations ──
   for (const floor of building.floors) {
-    // A. Entity floor ownership
+    // A. Entity floor ownership & sanity
     for (const room of floor.rooms) {
       if (room.floorId !== floor.id) {
         issues.push({
@@ -1156,6 +1381,16 @@ export function validateCanonicalApartmentBuilding(
           code: 'CANONICAL_WALL_GEOMETRY_INVALID',
           severity: 'error',
           message: `Wall "${wall.id}" has zero length.`,
+        });
+      }
+      // Wall containment against floor boundary
+      const p1In = pointInPolygonWithTolerance(wall.startPoint, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
+      const p2In = pointInPolygonWithTolerance(wall.endPoint, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
+      if (!p1In || !p2In) {
+        issues.push({
+          code: 'CANONICAL_WALL_OUT_OF_BOUNDS',
+          severity: 'error',
+          message: `Floor ${floor.level}: Wall "${wall.id}" extends beyond the floor boundary.`,
         });
       }
       for (const rid of wall.roomIds) {
@@ -1199,27 +1434,62 @@ export function validateCanonicalApartmentBuilding(
       }
 
       const [rA, rB] = door.connectsRooms;
-      if (!floor.rooms.some(r => r.id === rA)) {
-        issues.push({
-          code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
-          severity: 'error',
-          message: `Door "${door.id}" references connected room "${rA}" which does not exist on floor "${floor.id}".`,
-        });
-      }
-      if (rB !== '__outside__' && !floor.rooms.some(r => r.id === rB)) {
-        issues.push({
-          code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
-          severity: 'error',
-          message: `Door "${door.id}" references connected room "${rB}" which does not exist on floor "${floor.id}".`,
-        });
-      }
+      const isOutsideA = rA === '__outside__';
+      const isOutsideB = rB === '__outside__';
 
-      if (!hostWall.roomIds.includes(rA) && (rB === '__outside__' || !hostWall.roomIds.includes(rB))) {
+      if (isOutsideA && isOutsideB) {
         issues.push({
-          code: 'CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL',
+          code: 'CANONICAL_DOOR_ENDPOINTS_INVALID',
           severity: 'error',
-          message: `Host wall "${hostWall.id}" does not connect rooms [${door.connectsRooms.join(', ')}].`,
+          message: `Door "${door.id}" connects outside to outside.`,
         });
+      } else if (isOutsideA || isOutsideB) {
+        // Exterior door
+        const roomId = isOutsideA ? rB : rA;
+        if (!floor.rooms.some(r => r.id === roomId)) {
+          issues.push({
+            code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
+            severity: 'error',
+            message: `Exterior door "${door.id}" references room "${roomId}" which does not exist on floor "${floor.id}".`,
+          });
+        }
+        if (hostWall.type !== WallType.External) {
+          issues.push({
+            code: 'CANONICAL_DOOR_EXTERIOR_WALL_INVALID',
+            severity: 'error',
+            message: `Exterior door "${door.id}" is attached to internal wall "${hostWall.id}".`,
+          });
+        }
+        if (!hostWall.roomIds.includes(roomId)) {
+          issues.push({
+            code: 'CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL',
+            severity: 'error',
+            message: `Exterior host wall "${hostWall.id}" does not belong to room "${roomId}".`,
+          });
+        }
+      } else {
+        // Interior door: BOTH rooms must exist on floor and on host wall
+        if (!floor.rooms.some(r => r.id === rA)) {
+          issues.push({
+            code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
+            severity: 'error',
+            message: `Interior door "${door.id}" references connected room "${rA}" which does not exist on floor "${floor.id}".`,
+          });
+        }
+        if (!floor.rooms.some(r => r.id === rB)) {
+          issues.push({
+            code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
+            severity: 'error',
+            message: `Interior door "${door.id}" references connected room "${rB}" which does not exist on floor "${floor.id}".`,
+          });
+        }
+        if (!hostWall.roomIds.includes(rA) || !hostWall.roomIds.includes(rB)) {
+          issues.push({
+            code: 'CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL',
+            severity: 'error',
+            message: `Interior host wall "${hostWall.id}" does not connect both rooms [${rA}, ${rB}].`,
+          });
+        }
       }
 
       const placement = validateDoorPlacement(door, hostWall, 50);
@@ -1299,17 +1569,80 @@ export function validateCanonicalApartmentBuilding(
           message: `Stair "${stair.id}" has floorId "${stair.floorId}" which does not match floor "${floor.id}".`,
         });
       }
+      if (!Number.isFinite(stair.x) || !Number.isFinite(stair.y) ||
+          !Number.isFinite(stair.width) || !Number.isFinite(stair.length) ||
+          stair.width <= 0 || stair.length <= 0) {
+        issues.push({
+          code: 'CANONICAL_STAIR_GEOMETRY_INVALID',
+          severity: 'error',
+          message: `Stair "${stair.id}" has invalid dimensions or coordinates.`,
+        });
+      } else {
+        const stairCorners = [
+          { x: stair.x, y: stair.y },
+          { x: stair.x + stair.width, y: stair.y },
+          { x: stair.x + stair.width, y: stair.y + stair.length },
+          { x: stair.x, y: stair.y + stair.length },
+        ];
+        const outsideCorners = stairCorners.filter(c => !pointInPolygonWithTolerance(c, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+        if (outsideCorners.length > 0) {
+          issues.push({
+            code: 'CANONICAL_STAIR_OUT_OF_BOUNDS',
+            severity: 'error',
+            message: `Floor ${floor.level}: Stair "${stair.id}" extends beyond the floor boundary.`,
+          });
+        }
+      }
+
       const [fromLevel, toLevel] = stair.connectsFloors;
-      if (fromLevel < 0 || toLevel < 0) {
+      if (fromLevel < 0 || toLevel < 0 || !Number.isInteger(fromLevel) || !Number.isInteger(toLevel)) {
         issues.push({
           code: 'CANONICAL_STAIR_LEVEL_INVALID',
           severity: 'error',
           message: `Stair "${stair.id}" references invalid floor levels: [${fromLevel}, ${toLevel}].`,
         });
+      } else if (fromLevel !== floor.level) {
+        issues.push({
+          code: 'CANONICAL_STAIR_LEVEL_INVALID',
+          severity: 'error',
+          message: `Stair "${stair.id}" source level (${fromLevel}) does not match owning floor level (${floor.level}).`,
+        });
+      } else if (building.floors.length > 1) {
+        const targetFloorExists = building.floors.some(f => f.level === toLevel);
+        if (!targetFloorExists) {
+          issues.push({
+            code: 'CANONICAL_STAIR_TARGET_LEVEL_MISSING',
+            severity: 'error',
+            message: `Stair "${stair.id}" connects to level ${toLevel} which does not exist in the building.`,
+          });
+        }
       }
     }
 
-    // E. Collision detection strictly scoped to entities on the same floor
+    // E. Columns integrity (if present)
+    const columns = (floor as any).columns as Array<any> | undefined;
+    if (columns && Array.isArray(columns)) {
+      for (const col of columns) {
+        if (col.floorId && col.floorId !== floor.id) {
+          issues.push({
+            code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+            severity: 'error',
+            message: `Column "${col.id}" has floorId "${col.floorId}" which does not match floor "${floor.id}".`,
+          });
+        }
+        if (!Number.isFinite(col.x) || !Number.isFinite(col.y) ||
+            (col.width !== undefined && col.width <= 0) ||
+            (col.depth !== undefined && col.depth <= 0)) {
+          issues.push({
+            code: 'CANONICAL_COLUMN_GEOMETRY_INVALID',
+            severity: 'error',
+            message: `Column "${col.id}" has invalid dimensions or coordinates.`,
+          });
+        }
+      }
+    }
+
+    // F. Collision detection strictly scoped to entities on the same floor
     const collisions = floor.rooms.flatMap(room => detectRoomCollisions(room, floor.rooms));
     if (collisions.length > 0) {
       const names = new Map(floor.rooms.map(r => [r.id, r.name]));
@@ -1321,8 +1654,8 @@ export function validateCanonicalApartmentBuilding(
       });
     }
 
-    // F. Floor boundary containment on EVERY floor
-    const outside = floor.rooms.filter(r => !containsPolygon(floor.boundary, r.boundary));
+    // G. Floor boundary containment on EVERY floor
+    const outside = floor.rooms.filter(r => !containsPolygon(floor.boundary, r.boundary) && r.boundary.points.some(p => !pointInPolygonWithTolerance(p, floor.boundary, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)));
     if (outside.length > 0) {
       issues.push({
         code: 'CANONICAL_ROOMS_OUT_OF_BOUNDS',
@@ -1338,8 +1671,21 @@ export function validateCanonicalApartmentBuilding(
     return !isCore && r.type !== RoomType.Lift && r.type !== RoomType.Staircase && r.type !== RoomType.ServiceShaft;
   });
 
-  const uniqueFlatIds: string[] = [];
-  const expectedNormLabels = new Set(expectation.units.map(u => u.label.toLowerCase().replace(/[^a-z0-9]/g, '')));
+  const expectedFlatMap = new Map<string, ApartmentUnitExpectation>();
+  for (const u of expectation.units) {
+    const norm = normalizeFlatIdentifier(u.label);
+    if (expectedFlatMap.has(norm)) {
+      issues.push({
+        code: 'CANONICAL_DUPLICATE_FLAT_MAPPING',
+        severity: 'error',
+        message: `Multiple expected manifest units map to the same normalized label "${norm}".`,
+      });
+    } else {
+      expectedFlatMap.set(norm, u);
+    }
+  }
+
+  const roomOwnershipMap = new Map<string, string>();
 
   for (const r of allResidentialRooms) {
     const flatTags = r.tags.filter(t => t.startsWith('flat:'));
@@ -1349,35 +1695,38 @@ export function validateCanonicalApartmentBuilding(
         severity: 'error',
         message: `Residential room "${r.name}" (${r.id}) has no flat ownership tag.`,
       });
-    } else {
-      const distinct = new Set(flatTags);
-      if (distinct.size > 1) {
-        issues.push({
-          code: 'CANONICAL_CONFLICTING_FLAT_OWNERSHIP',
-          severity: 'error',
-          message: `Residential room "${r.name}" (${r.id}) has conflicting flat ownership tags: ${[...distinct].join(', ')}.`,
-        });
-      }
-      for (const ft of distinct) {
-        const flatId = ft.slice(5);
-        if (!uniqueFlatIds.includes(flatId)) uniqueFlatIds.push(flatId);
-        const normId = flatId.toLowerCase().replace(/[^a-z0-9]/g, '');
-        const matchesAny = [...expectedNormLabels].some(enl => enl === normId || enl.includes(normId) || normId.includes(enl));
-        if (!matchesAny && expectedNormLabels.size > 0 && uniqueFlatIds.indexOf(flatId) >= expectation.units.length) {
-          issues.push({
-            code: 'CANONICAL_UNKNOWN_FLAT_OWNERSHIP',
-            severity: 'error',
-            message: `Residential room "${r.name}" (${r.id}) references unknown flat ID "${flatId}".`,
-          });
-        }
-      }
+      continue;
     }
+
+    const distinctNormFlatIds = [...new Set(flatTags.map(t => normalizeFlatIdentifier(t.slice(5))))];
+    if (distinctNormFlatIds.length > 1) {
+      issues.push({
+        code: 'CANONICAL_CONFLICTING_FLAT_OWNERSHIP',
+        severity: 'error',
+        message: `Residential room "${r.name}" (${r.id}) has conflicting flat ownership tags: ${flatTags.join(', ')}.`,
+      });
+      continue;
+    }
+
+    const normFlatId = distinctNormFlatIds[0]!;
+    if (!expectedFlatMap.has(normFlatId)) {
+      issues.push({
+        code: 'CANONICAL_UNKNOWN_FLAT_OWNERSHIP',
+        severity: 'error',
+        message: `Residential room "${r.name}" (${r.id}) references unknown flat ID "${flatTags[0]!.slice(5)}".`,
+      });
+      continue;
+    }
+
+    roomOwnershipMap.set(r.id, normFlatId);
   }
 
   // ── 3. Exact 7-category Room Programme per flat ──
-  for (let i = 0; i < expectation.units.length; i++) {
-    const u = expectation.units[i]!;
-    const flatRooms = matchFlatRooms(u, allResidentialRooms, i, uniqueFlatIds);
+  const allocatedRoomIds = new Set<string>();
+
+  for (const u of expectation.units) {
+    const flatRooms = matchFlatRooms(u, allResidentialRooms);
+
     if (flatRooms.length === 0) {
       issues.push({
         code: 'CANONICAL_FLAT_MISSING_ROOMS',
@@ -1385,6 +1734,17 @@ export function validateCanonicalApartmentBuilding(
         message: `No rooms found for flat "${u.label}" (${u.unitType}) in canonical building model.`,
       });
       continue;
+    }
+
+    for (const r of flatRooms) {
+      if (allocatedRoomIds.has(r.id)) {
+        issues.push({
+          code: 'CANONICAL_DUPLICATE_ROOM_ALLOCATION',
+          severity: 'error',
+          message: `Room "${r.name}" (${r.id}) is claimed by more than one flat.`,
+        });
+      }
+      allocatedRoomIds.add(r.id);
     }
 
     const classified = classifyCanonicalFlatRooms(flatRooms, u.unitType);
@@ -1459,25 +1819,42 @@ export function validateCanonicalApartmentBuilding(
   if (flatBoundaries && flatBoundaries.length > 0) {
     for (const fb of flatBoundaries) {
       const fbPolygon = fb.boundary;
-      const flatTag = `flat:${fb.flatId}`;
-      const roomsOfFlat = allResidentialRooms.filter(r => r.tags.includes(flatTag) || r.tags.some(t => t.toLowerCase() === flatTag.toLowerCase()));
+      const normFlatId = normalizeFlatIdentifier(fb.flatId);
+      const roomsOfFlat = allResidentialRooms.filter(r => roomOwnershipMap.get(r.id) === normFlatId);
 
       for (const r of roomsOfFlat) {
-        const isContained = containsPolygon(fbPolygon, r.boundary);
-        if (!isContained) {
-          const pointsOutside = r.boundary.points.filter(p => !pointInPolygonWithTolerance(p, fbPolygon, 50));
-          if (pointsOutside.length > 0) {
-            issues.push({
-              code: 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY',
-              severity: 'error',
-              message: `Room "${r.name}" (${r.id}) falls outside declared flat boundary for "${fb.label}".`,
-            });
+        if (r.type === RoomType.Balcony) {
+          // Balconies: outdoor cantilever extensions. Must either be contained within fbPolygon
+          // or attached directly to fbPolygon (at least one vertex touches within tolerance).
+          const isContained = containsPolygon(fbPolygon, r.boundary);
+          if (!isContained) {
+            const touchingPoints = r.boundary.points.filter(p => pointInPolygonWithTolerance(p, fbPolygon, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+            if (touchingPoints.length === 0) {
+              issues.push({
+                code: 'CANONICAL_BALCONY_ATTACHMENT_INVALID',
+                severity: 'error',
+                message: `Balcony "${r.name}" (${r.id}) does not attach to declared flat boundary for "${fb.label}".`,
+              });
+            }
+          }
+        } else {
+          // Interior rooms: must strictly lie within flat boundary
+          const isContained = containsPolygon(fbPolygon, r.boundary);
+          if (!isContained) {
+            const pointsOutside = r.boundary.points.filter(p => !pointInPolygonWithTolerance(p, fbPolygon, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+            if (pointsOutside.length > 0) {
+              issues.push({
+                code: 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY',
+                severity: 'error',
+                message: `Room "${r.name}" (${r.id}) falls outside declared flat boundary for "${fb.label}".`,
+              });
+            }
           }
         }
       }
 
       // Party wall encroachment: rooms of other flats must not encroach into fbPolygon
-      const otherFlatRooms = allResidentialRooms.filter(r => !r.tags.includes(flatTag) && !r.tags.some(t => t.toLowerCase() === flatTag.toLowerCase()));
+      const otherFlatRooms = allResidentialRooms.filter(r => roomOwnershipMap.get(r.id) !== normFlatId);
       for (const otherRoom of otherFlatRooms) {
         const overlap = polygonIntersectionArea(otherRoom.boundary, fbPolygon);
         const roomArea = otherRoom.width * otherRoom.height;
@@ -1524,11 +1901,28 @@ export function validateCanonicalApartmentBuilding(
     issues.push({ code: 'CANONICAL_COUNT_MISMATCH', severity: 'error', message: 'Canonical plan has no common lobby; manifest requires one.' });
   }
 
+  // Stair connectors status metadata
+  const stairConnectors = building.floors.flatMap(f =>
+    f.stairs.map(st => {
+      const [fromLevel, toLevel] = st.connectsFloors;
+      const targetExists = building.floors.some(fl => fl.level === toLevel);
+      return {
+        stairId: st.id,
+        fromLevel,
+        toLevel,
+        status: targetExists ? 'CONNECTED' as const : 'PENDING_UPPER_FLOOR' as const,
+      };
+    }),
+  );
+  if (building.metadata) {
+    (building.metadata as any).stairConnectors = stairConnectors;
+  }
+
   // Include any opening attachment issues
   const metaOpeningIssues = (building.metadata as any)?.openingIssues as DiagnosticFragment[] | undefined;
   if (metaOpeningIssues && metaOpeningIssues.length > 0) {
     for (const oi of metaOpeningIssues) {
-      issues.push({ code: `CANONICAL_${oi.code}`, severity: oi.severity, message: oi.message });
+      issues.push({ code: oi.code.startsWith('CANONICAL_') ? oi.code : `CANONICAL_${oi.code}`, severity: oi.severity, message: oi.message });
     }
   }
 

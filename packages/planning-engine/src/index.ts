@@ -104,6 +104,9 @@ export {
 export type { ExtractedFlat, ExtractedCoreElement } from './interpretation/extraction';
 export {
   APARTMENT_COMMON_FLAT_ID,
+  CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM,
+  normalizeFlatIdentifier,
+  matchFlatRooms,
   apartmentRoomRoles,
   normalizeApartmentUnitType,
   extractedPlanToApartmentStructure,
