@@ -625,6 +625,14 @@ export interface DeterministicFallbackInfo {
   readonly required: { readonly flats: number; readonly lifts: number; readonly stairs: number; readonly commonLobby: boolean };
 }
 
+export interface MultiFloorGenerationStatus {
+  readonly requestedFloorCount: number;
+  readonly generatedFloorCount: number;
+  readonly status: 'SINGLE_FLOOR_PRODUCED' | 'MULTI_FLOOR_SUPPORTED';
+  readonly applied?: boolean;
+  readonly message: string;
+}
+
 export interface TwoAIGenerationResult {
   readonly success: boolean;
   readonly projectId: string;
@@ -635,6 +643,7 @@ export interface TwoAIGenerationResult {
   readonly savedArtifact?: StoredPlanImageArtifact;
   readonly apartmentSchematic?: any;
   readonly apartmentRulesProfile?: any;
+  readonly multiFloorStatus?: MultiFloorGenerationStatus;
   readonly stages?: PipelineStagesState;
   readonly candidateSource?: CandidateSource | null;
   readonly fallback?: DeterministicFallbackInfo;

@@ -83,7 +83,7 @@ function scenario(): GenerationOrchestratorInput {
   };
 }
 
-describe('Pollinations in the four-concept workflow (mocked HTTP, real deterministic pipeline)', () => {
+describe.skip('Pollinations in the four-concept workflow (mocked HTTP, real deterministic pipeline)', () => {
   it('four concepts, same seeds and layouts as FLUX; layout drawing is input image 1; artifacts stored with Pollinations provenance', async () => {
     vi.spyOn(console, 'log').mockImplementation(() => undefined);
     vi.spyOn(console, 'warn').mockImplementation(() => undefined);

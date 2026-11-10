@@ -14,12 +14,9 @@
 
 import {
   type Building,
-  type Wall,
   type Stair,
   Direction,
-  WallType,
   StairType,
-  createWall,
   createStair,
 } from '@ai-floor-planner/core';
 import {
@@ -146,16 +143,34 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
   const openings: ApartmentPlanOpening[] = [];
   let winId = 1;
 
+  const allSpaces = schematic.units.flatMap(u =>
+    [...u.rooms, ...u.balconies].map(r => ({
+      flatId: u.flatId,
+      roomId: `${u.flatId}__${r.id}`,
+      type: r.type,
+      rect: mm(r.bounds),
+    })),
+  );
+
+  const allCore = [
+    ...schematic.core.lifts.map(l => ({ rect: mm(l.bounds), isShaft: false })),
+    ...schematic.core.stairs.map(s => ({ rect: mm(s.bounds), isShaft: false })),
+    ...(schematic.core.lobby ? [{ rect: mm(schematic.core.lobby.bounds), isShaft: false }] : []),
+    ...schematic.core.corridors.map(c => ({ rect: mm(c.bounds), isShaft: false })),
+    ...schematic.core.serviceShafts.map(s => ({ rect: mm(s.bounds), isShaft: true })),
+  ];
+
   for (const unit of schematic.units) {
     const flatId = unit.flatId;
     const stepped = unit.steppedPolygon;
-    const openFacades = new Set(stepped?.openFacades ?? ['N', 'S', 'E']);
-    const deadWalls = new Set(stepped?.deadWalls ?? ['W']);
+    const openFacades = new Set(stepped?.openFacades ?? ['N', 'S', 'E', 'W']);
+    const deadWalls = new Set(stepped?.deadWalls ?? []);
     const otsShafts = stepped?.otsShafts ?? [];
     const ub = mm(unit.bodyBounds);
 
     for (const room of [...unit.rooms, ...unit.balconies]) {
       const rm = mm(room.bounds);
+      const currentFullId = `${flatId}__${room.id}`;
       const isBath = room.type === 'master_toilet' || room.type === 'common_toilet' || room.type === 'powder_room';
       const isHabitable =
         room.type === 'living_dining' ||
@@ -165,6 +180,62 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
         room.type === 'master_bedroom' ||
         room.type === 'bedroom' ||
         room.type === 'study';
+
+      const hasNorthNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId) continue;
+          if (s.type === 'balcony' || s.type === 'utility' || s.type.includes('balcony')) continue;
+          const xOverlap = Math.min(rm.x + rm.width, s.rect.x + s.rect.width) - Math.max(rm.x, s.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y - (s.rect.y + s.rect.height)) <= 150) return true;
+        }
+        for (const c of allCore) {
+          const xOverlap = Math.min(rm.x + rm.width, c.rect.x + c.rect.width) - Math.max(rm.x, c.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y - (c.rect.y + c.rect.height)) <= 150) return true;
+        }
+        return false;
+      };
+
+      const hasSouthNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId) continue;
+          if (s.type === 'balcony' || s.type === 'utility' || s.type.includes('balcony')) continue;
+          const xOverlap = Math.min(rm.x + rm.width, s.rect.x + s.rect.width) - Math.max(rm.x, s.rect.x);
+          if (xOverlap > 100 && Math.abs((rm.y + rm.height) - s.rect.y) <= 150) return true;
+        }
+        for (const c of allCore) {
+          const xOverlap = Math.min(rm.x + rm.width, c.rect.x + c.rect.width) - Math.max(rm.x, c.rect.x);
+          if (xOverlap > 100 && Math.abs((rm.y + rm.height) - c.rect.y) <= 150) return true;
+        }
+        return false;
+      };
+
+      const hasEastNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId) continue;
+          if (s.type === 'balcony' || s.type === 'utility' || s.type.includes('balcony')) continue;
+          const yOverlap = Math.min(rm.y + rm.height, s.rect.y + s.rect.height) - Math.max(rm.y, s.rect.y);
+          if (yOverlap > 100 && Math.abs((rm.x + rm.width) - s.rect.x) <= 150) return true;
+        }
+        for (const c of allCore) {
+          const yOverlap = Math.min(rm.y + rm.height, c.rect.y + c.rect.height) - Math.max(rm.y, c.rect.y);
+          if (yOverlap > 100 && Math.abs((rm.x + rm.width) - c.rect.x) <= 150) return true;
+        }
+        return false;
+      };
+
+      const hasWestNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId) continue;
+          if (s.type === 'balcony' || s.type === 'utility' || s.type.includes('balcony')) continue;
+          const yOverlap = Math.min(rm.y + rm.height, s.rect.y + s.rect.height) - Math.max(rm.y, s.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x - (s.rect.x + s.rect.width)) <= 150) return true;
+        }
+        for (const c of allCore) {
+          const yOverlap = Math.min(rm.y + rm.height, c.rect.y + c.rect.height) - Math.max(rm.y, c.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x - (c.rect.x + c.rect.width)) <= 150) return true;
+        }
+        return false;
+      };
 
       if (isBath) {
         // Bathroom: place ventilation window strictly on edge touching OTS shaft or openFacade
@@ -178,7 +249,7 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
               id: `${flatId}__win_${room.id}_ots_${winId++}`,
               kind: 'window',
               rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
             placedOnOts = true;
             break;
@@ -187,7 +258,7 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
               id: `${flatId}__win_${room.id}_ots_${winId++}`,
               kind: 'window',
               rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y + rm.height - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
             placedOnOts = true;
             break;
@@ -196,7 +267,7 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
               id: `${flatId}__win_${room.id}_ots_${winId++}`,
               kind: 'window',
               rect: { x: rm.x - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
             placedOnOts = true;
             break;
@@ -205,63 +276,63 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
               id: `${flatId}__win_${room.id}_ots_${winId++}`,
               kind: 'window',
               rect: { x: rm.x + rm.width - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
             placedOnOts = true;
             break;
           }
         }
 
-        // If not on OTS, allow ventilation window strictly on openFacades (never on deadWalls)
+        // If not on OTS, allow ventilation window strictly on openFacades (never on deadWalls or shared interior walls)
         if (!placedOnOts) {
-          if (openFacades.has('N') && !deadWalls.has('N') && Math.abs(rm.y - ub.y) <= 200) {
+          if (openFacades.has('N') && !deadWalls.has('N') && Math.abs(rm.y - ub.y) <= 200 && !hasNorthNeighbor()) {
             openings.push({
               id: `${flatId}__win_${room.id}_${winId++}`,
               kind: 'window',
               rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
-          } else if (openFacades.has('S') && !deadWalls.has('S') && Math.abs((rm.y + rm.height) - (ub.y + ub.height)) <= 200) {
+          } else if (openFacades.has('S') && !deadWalls.has('S') && Math.abs((rm.y + rm.height) - (ub.y + ub.height)) <= 200 && !hasSouthNeighbor()) {
             openings.push({
               id: `${flatId}__win_${room.id}_${winId++}`,
               kind: 'window',
               rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y + rm.height - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room.id}`,
+              adjacentRoomId: currentFullId,
             });
           }
         }
       } else if (isHabitable) {
-        // Habitable room: place window on exterior open facade (ZERO on deadWalls)
-        if (openFacades.has('N') && !deadWalls.has('N') && Math.abs(rm.y - ub.y) <= 200) {
+        // Habitable room: place window on exterior open facade (ZERO on deadWalls or shared interior walls)
+        if (openFacades.has('N') && !deadWalls.has('N') && Math.abs(rm.y - ub.y) <= 200 && !hasNorthNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room.id}_N_${winId++}`,
             kind: 'window',
             rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room.id}`,
+            adjacentRoomId: currentFullId,
           });
         }
-        if (openFacades.has('S') && !deadWalls.has('S') && Math.abs((rm.y + rm.height) - (ub.y + ub.height)) <= 200) {
+        if (openFacades.has('S') && !deadWalls.has('S') && Math.abs((rm.y + rm.height) - (ub.y + ub.height)) <= 200 && !hasSouthNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room.id}_S_${winId++}`,
             kind: 'window',
             rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y + rm.height - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room.id}`,
+            adjacentRoomId: currentFullId,
           });
         }
-        if (openFacades.has('E') && !deadWalls.has('E') && Math.abs((rm.x + rm.width) - (ub.x + ub.width)) <= 200) {
+        if (openFacades.has('E') && !deadWalls.has('E') && Math.abs((rm.x + rm.width) - (ub.x + ub.width)) <= 200 && !hasEastNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room.id}_E_${winId++}`,
             kind: 'window',
             rect: { x: rm.x + rm.width - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room.id}`,
+            adjacentRoomId: currentFullId,
           });
         }
-        if (openFacades.has('W') && !deadWalls.has('W') && Math.abs(rm.x - ub.x) <= 200) {
+        if (openFacades.has('W') && !deadWalls.has('W') && Math.abs(rm.x - ub.x) <= 200 && !hasWestNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room.id}_W_${winId++}`,
             kind: 'window',
             rect: { x: rm.x - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room.id}`,
+            adjacentRoomId: currentFullId,
           });
         }
       }
@@ -397,54 +468,6 @@ export function adaptSchematicToBuilding(
   const { building } = apartmentStructureToBuilding(structure, site, projectId, projectName);
   const floor = building.floors[0]!;
 
-  // Generate walls for all room boundaries using topological shared-edge classification
-  const walls: Wall[] = [];
-  const edgeMap = new Map<string, { start: { x: number; y: number }; end: { x: number; y: number }; roomIds: string[] }>();
-
-  for (const room of floor.rooms) {
-    const x0 = room.x;
-    const y0 = room.y;
-    const x1 = room.x + room.width;
-    const y1 = room.y + room.height;
-
-    const segments = [
-      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
-      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
-      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
-      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } },
-    ];
-
-    for (const seg of segments) {
-      const k = seg.start.x === seg.end.x
-        ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}`
-        : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
-
-      const entry = edgeMap.get(k);
-      if (entry) {
-        entry.roomIds.push(room.id);
-      } else {
-        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room.id] });
-      }
-    }
-  }
-
-  for (const [, edge] of edgeMap) {
-    const isInternal = edge.roomIds.length >= 2;
-    const wallType = isInternal ? WallType.Internal : WallType.External;
-    const thickness = isInternal ? 100 : 200;
-
-    walls.push(
-      createWall({
-        floorId: floor.id,
-        startPoint: edge.start,
-        endPoint: edge.end,
-        type: wallType,
-        thickness,
-        roomIds: edge.roomIds,
-      }),
-    );
-  }
-
   // Generate stairs
   const stairs: Stair[] = schematic.core.stairs.map(st =>
     createStair({
@@ -467,6 +490,20 @@ export function adaptSchematicToBuilding(
     metadata: {
       ...building.metadata,
       apartmentSchematic: schematic,
+      flatBoundaries: schematic.units.map(u => ({
+        flatId: u.flatId,
+        label: u.flatLabel,
+        unitType: u.unitType,
+        rect: mm(u.bounds),
+        boundary: {
+          points: [
+            { x: Math.round(u.bounds.x * 1000), y: Math.round(u.bounds.y * 1000) },
+            { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round(u.bounds.y * 1000) },
+            { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+            { x: Math.round(u.bounds.x * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+          ],
+        },
+      })),
       steppedPolygons: schematic.units.map(u => ({
         flatId: u.flatId,
         flatLabel: u.flatLabel,
@@ -490,7 +527,6 @@ export function adaptSchematicToBuilding(
     floors: [
       {
         ...floor,
-        walls,
         stairs,
       },
     ],

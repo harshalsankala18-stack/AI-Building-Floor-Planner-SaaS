@@ -523,8 +523,8 @@ export function buildingModelToArchLangSource(
     lines.push(`\n    # ── Doors ──`);
     for (const door of floor.doors) {
       let hostWallId = wallMap.get(door.wallId);
-      let posX = Math.round(door.position.x);
-      let posY = Math.round(door.position.y);
+      const posX = Math.round(door.position.x);
+      const posY = Math.round(door.position.y);
 
       // If door.wallId is generic '__extracted__' or unmapped, locate nearest physical wall
       if (!hostWallId || !wallMap.has(door.wallId)) {

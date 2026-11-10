@@ -27,6 +27,7 @@ import {
   StopCircle,
   AlertTriangle,
   RefreshCw,
+  Info,
 } from 'lucide-react';
 import { Direction, normalizeDesignRequirementSpecification, RoomType, type CandidatePlan, type Building } from '@ai-floor-planner/core';
 import {
@@ -3210,6 +3211,39 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                       </p>
                     </div>
                   )}
+
+                  {/* Multi-floor limitation notice (Phase 2.2 §8) */}
+                  {generationOutcome?.multiFloorStatus &&
+                    (generationOutcome.multiFloorStatus.status === 'SINGLE_FLOOR_PRODUCED' ||
+                      generationOutcome.multiFloorStatus.applied === false) && (
+                      <div
+                        role="status"
+                        aria-live="polite"
+                        style={{
+                          margin: '0 0 14px',
+                          padding: '12px 14px',
+                          borderRadius: 8,
+                          border: '1px solid #93C5FD',
+                          background: '#EFF6FF',
+                          fontSize: 12,
+                          color: '#1E3A8A',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                          <Info size={16} color="#2563EB" />
+                          <strong style={{ fontSize: 13, color: '#1E40AF' }}>
+                            Single-Floor Plate Generated ({generationOutcome.multiFloorStatus.requestedFloorCount} Floors Requested)
+                          </strong>
+                        </div>
+                        <p style={{ margin: '0 0 6px', color: '#1E3A8A' }}>
+                          Multi-floor apartment generation currently produces the canonical Ground Floor (typical floor plate) only.
+                          Future phases will add multi-floor vertical stacking, per-floor unit mix assignment, and vertical circulation continuity.
+                        </p>
+                        <div style={{ fontSize: 11, color: '#3B82F6' }}>
+                          Requested: {generationOutcome.multiFloorStatus.requestedFloorCount} floors · Generated: {generationOutcome.multiFloorStatus.generatedFloorCount} floor
+                        </div>
+                      </div>
+                    )}
 
                   {/* Phase 3: honest generation provenance (fallback + rejected FLUX attempts) */}
                   {generationOutcome && (generationOutcome.fallbackUsed || generationOutcome.rejectedAttempts.length > 0) && (

@@ -11,6 +11,7 @@
 
 import type {
   CandidateSource,
+  MultiFloorGenerationStatus,
   OrchestratedCandidateResult,
   PipelineStagesState,
   TwoAIGenerationResult,
@@ -52,6 +53,7 @@ export interface GenerationOutcomeView {
   /** Real stage rows: the authoritative candidate's own stages, else the run summary. */
   readonly stageRows: readonly StageRow[];
   readonly stageRowsSource: 'CANDIDATE' | 'RUN_SUMMARY';
+  readonly multiFloorStatus?: MultiFloorGenerationStatus;
 }
 
 export const FALLBACK_NOTICE =
@@ -321,6 +323,7 @@ export function summarizeGenerationOutcome(result: TwoAIGenerationResult): Gener
       requirementsUnderstood: Boolean(result.requirements),
     }),
     stageRowsSource: accepted?.stages ? 'CANDIDATE' : 'RUN_SUMMARY',
+    multiFloorStatus: result.multiFloorStatus,
   };
 }
 

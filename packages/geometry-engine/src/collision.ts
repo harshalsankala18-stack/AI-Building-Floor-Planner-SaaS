@@ -33,7 +33,7 @@ export function detectEntityCollision(
 /** Check if a room collides with any other room on the floor. */
 export function detectRoomCollisions(
   room: Room,
-  otherRooms: Room[],
+  otherRooms: readonly Room[],
 ): CollisionResult[] {
   const results: CollisionResult[] = [];
 

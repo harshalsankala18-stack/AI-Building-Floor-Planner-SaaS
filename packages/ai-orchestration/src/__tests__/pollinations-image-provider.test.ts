@@ -81,7 +81,14 @@ describe('buildPollinationsImageRequest', () => {
   });
 });
 
-describe('PollinationsImageProvider.generateFloorPlan', () => {
+describe('PollinationsImageProvider (legacy raster disabled)', () => {
+  it('generateFloorPlan throws IMAGE_PROVIDER_NOT_CONFIGURED', async () => {
+    const p = new PollinationsImageProvider({ apiKey: KEY });
+    await expect(p.generateFloorPlan(request())).rejects.toThrow('Pollinations image generation is disabled.');
+  });
+});
+
+describe.skip('PollinationsImageProvider.generateFloorPlan (legacy mock transport)', () => {
   it('sends the layout drawing + references, returns a valid image with truthful provenance, never leaks the key', async () => {
     const logs: string[] = [];
     vi.spyOn(console, 'log').mockImplementation((...a: unknown[]) => void logs.push(a.join(' ')));

@@ -20,15 +20,30 @@
 import {
   createBuilding,
   createRoom,
+  createWall,
   MINIMUM_DIMENSIONS,
   MINIMUM_ROOM_AREAS,
   PlotShape,
   RoomType,
+  WallType,
+  rectToPolygon,
   type Building,
   type Direction,
   type Room,
+  type Wall,
+  type Door,
+  type Window,
+  type Floor,
 } from '@ai-floor-planner/core';
-import { containsPolygon, detectRoomCollisions } from '@ai-floor-planner/geometry-engine';
+import {
+  containsPolygon,
+  detectRoomCollisions,
+  pointInPolygon,
+  pointToSegmentDistance,
+  polygonIntersectionArea,
+  validateDoorPlacement,
+  validateWindowPlacement,
+} from '@ai-floor-planner/geometry-engine';
 import { evaluateDesign } from '../diagnostics/design-evaluator';
 import type { DiagnosticFragment, ExtractedCoreElement, ExtractedPlan } from './extraction';
 import type { ExtractionSite } from './extraction-building';
@@ -494,6 +509,321 @@ const DOOR_TYPE: Readonly<Record<string, string>> = {
   open_passage: 'open_passage', double: 'double', sliding: 'sliding', single: 'single', unknown: 'single',
 };
 
+function pointInPolygonWithTolerance(
+  p: { x: number; y: number },
+  poly: { points: readonly { x: number; y: number }[] },
+  tol = 50,
+): boolean {
+  if (pointInPolygon(p, poly)) return true;
+  for (let i = 0; i < poly.points.length; i++) {
+    const a = poly.points[i]!;
+    const b = poly.points[(i + 1) % poly.points.length]!;
+    if (pointToSegmentDistance(p, { start: a, end: b }) <= tol) return true;
+  }
+  return false;
+}
+
+export function generateWallsFromRooms(
+  floorId: string,
+  rooms: readonly Room[],
+): Wall[] {
+  const walls: Wall[] = [];
+  const edgeMap = new Map<string, { start: { x: number; y: number }; end: { x: number; y: number }; roomIds: string[] }>();
+
+  for (const room of rooms) {
+    const x0 = room.x;
+    const y0 = room.y;
+    const x1 = room.x + room.width;
+    const y1 = room.y + room.height;
+
+    const segments = [
+      { start: { x: Math.min(x0, x1), y: y0 }, end: { x: Math.max(x0, x1), y: y0 } },
+      { start: { x: x1, y: Math.min(y0, y1) }, end: { x: x1, y: Math.max(y0, y1) } },
+      { start: { x: Math.min(x0, x1), y: y1 }, end: { x: Math.max(x0, x1), y: y1 } },
+      { start: { x: x0, y: Math.min(y0, y1) }, end: { x: x0, y: Math.max(y0, y1) } },
+    ];
+
+    for (const seg of segments) {
+      const k = seg.start.x === seg.end.x
+        ? `v_${seg.start.x}_${seg.start.y}_${seg.end.y}`
+        : `h_${seg.start.y}_${seg.start.x}_${seg.end.x}`;
+
+      const entry = edgeMap.get(k);
+      if (entry) {
+        if (!entry.roomIds.includes(room.id)) {
+          entry.roomIds.push(room.id);
+        }
+      } else {
+        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room.id] });
+      }
+    }
+  }
+
+  const roomMap = new Map(rooms.map(r => [r.id, r]));
+
+  for (const [, edge] of edgeMap) {
+    const roomObjects = edge.roomIds.map(id => roomMap.get(id)).filter(Boolean);
+    const touchesShaft = roomObjects.some(r => r?.type === RoomType.ServiceShaft);
+    const isInternal = edge.roomIds.length >= 2 && !touchesShaft;
+    const wallType = isInternal ? WallType.Internal : WallType.External;
+    const thickness = isInternal ? 100 : 200;
+
+    walls.push(
+      createWall({
+        floorId,
+        startPoint: edge.start,
+        endPoint: edge.end,
+        type: wallType,
+        thickness,
+        roomIds: edge.roomIds,
+      }),
+    );
+  }
+
+  return walls;
+}
+
+export interface AttachOpeningsResult {
+  readonly doors: readonly Door[];
+  readonly windows: readonly Window[];
+  readonly issues: readonly DiagnosticFragment[];
+}
+
+/**
+ * Deterministically associates doors and windows to actual host walls on the same floor.
+ * Uses opening positions, orientation, spans, adjacent rooms and host-wall geometry.
+ * Snaps opening position to lie strictly on the host wall segment.
+ * If an opening cannot be attached unambiguously, produces a structured error.
+ */
+export function attachOpeningsToHostWalls(
+  floor: Floor,
+  options?: { doorMinEdgeDistance?: number; windowMinEdgeDistance?: number },
+): AttachOpeningsResult {
+  const issues: DiagnosticFragment[] = [];
+  const doorMinEdgeDistance = options?.doorMinEdgeDistance ?? 100;
+  const windowMinEdgeDistance = options?.windowMinEdgeDistance ?? 100;
+
+  const roomMap = new Map(floor.rooms.map(r => [r.id, r]));
+  const walls = floor.walls;
+
+  const updatedDoors: Door[] = [];
+  for (const door of floor.doors) {
+    const [rAId, rBId] = door.connectsRooms;
+    const rA = roomMap.get(rAId);
+    const isOutsideB = rBId === '__outside__';
+    const rB = isOutsideB ? null : roomMap.get(rBId);
+
+    if (!rA) {
+      issues.push({
+        code: 'DOOR_ROOM_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" references room "${rAId}" which does not exist on floor ${floor.id}.`,
+      });
+      continue;
+    }
+    if (!isOutsideB && !rB) {
+      issues.push({
+        code: 'DOOR_ROOM_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" references room "${rBId}" which does not exist on floor ${floor.id}.`,
+      });
+      continue;
+    }
+
+    let candidates = walls.filter(w => {
+      if (isOutsideB) {
+        return w.roomIds.includes(rAId) && w.type === WallType.External;
+      }
+      return w.roomIds.includes(rAId) && w.roomIds.includes(rBId);
+    });
+
+    if (candidates.length === 0) {
+      candidates = walls.filter(w => w.roomIds.includes(rAId));
+    }
+
+    if (candidates.length === 0) {
+      issues.push({
+        code: 'DOOR_HOST_WALL_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" has no candidate host wall for room "${rAId}".`,
+      });
+      continue;
+    }
+
+    let bestWall: Wall | null = null;
+    let bestDist = Infinity;
+    let bestAlignedPos: { x: number; y: number } | null = null;
+
+    for (const wall of candidates) {
+      const minX = Math.min(wall.startPoint.x, wall.endPoint.x);
+      const maxX = Math.max(wall.startPoint.x, wall.endPoint.x);
+      const minY = Math.min(wall.startPoint.y, wall.endPoint.y);
+      const maxY = Math.max(wall.startPoint.y, wall.endPoint.y);
+      const isHorizontal = Math.abs(wall.startPoint.y - wall.endPoint.y) <= 5;
+      const isVertical = Math.abs(wall.startPoint.x - wall.endPoint.x) <= 5;
+
+      if (!isHorizontal && !isVertical) continue;
+
+      let dist = Infinity;
+      let alignedPos: { x: number; y: number } | null = null;
+
+      if (isHorizontal) {
+        const wallY = wall.startPoint.y;
+        dist = Math.abs(door.position.y - wallY);
+        const wallLen = maxX - minX;
+        if (wallLen >= door.width + 2 * doorMinEdgeDistance) {
+          const clampedX = Math.max(minX + doorMinEdgeDistance, Math.min(maxX - door.width - doorMinEdgeDistance, door.position.x));
+          alignedPos = { x: clampedX, y: wallY };
+        }
+      } else {
+        const wallX = wall.startPoint.x;
+        dist = Math.abs(door.position.x - wallX);
+        const wallLen = maxY - minY;
+        if (wallLen >= door.width + 2 * doorMinEdgeDistance) {
+          const clampedY = Math.max(minY + doorMinEdgeDistance, Math.min(maxY - door.width - doorMinEdgeDistance, door.position.y));
+          alignedPos = { x: wallX, y: clampedY };
+        }
+      }
+
+      if (alignedPos && dist < bestDist && dist <= 300) {
+        bestDist = dist;
+        bestWall = wall;
+        bestAlignedPos = alignedPos;
+      }
+    }
+
+    if (!bestWall || !bestAlignedPos) {
+      issues.push({
+        code: 'DOOR_HOST_WALL_NOT_FOUND',
+        severity: 'error',
+        message: `Door "${door.id}" could not be geometrically associated with a host wall near (${door.position.x}, ${door.position.y}).`,
+      });
+      continue;
+    }
+
+    const updatedDoor: Door = {
+      ...door,
+      wallId: bestWall.id,
+      position: bestAlignedPos,
+    };
+
+    const placement = validateDoorPlacement(updatedDoor, bestWall, doorMinEdgeDistance);
+    if (!placement.valid) {
+      issues.push({
+        code: 'DOOR_PLACEMENT_INVALID',
+        severity: 'error',
+        message: `Door "${door.id}" placement on wall "${bestWall.id}" is invalid: ${placement.reason}`,
+      });
+      continue;
+    }
+
+    updatedDoors.push(updatedDoor);
+  }
+
+  const updatedWindows: Window[] = [];
+  for (const win of floor.windows) {
+    const room = roomMap.get(win.roomId);
+    if (!room) {
+      issues.push({
+        code: 'WINDOW_ROOM_NOT_FOUND',
+        severity: 'error',
+        message: `Window "${win.id}" references room "${win.roomId}" which does not exist on floor ${floor.id}.`,
+      });
+      continue;
+    }
+
+    const candidates = walls.filter(w => {
+      if (!w.roomIds.includes(win.roomId)) return false;
+      if (w.type === WallType.External) return true;
+      return w.roomIds.some(id => roomMap.get(id)?.type === RoomType.ServiceShaft);
+    });
+
+    if (candidates.length === 0) {
+      issues.push({
+        code: 'WINDOW_HOST_WALL_NOT_FOUND',
+        severity: 'error',
+        message: `Window "${win.id}" has no exterior or shaft host wall for room "${win.roomId}".`,
+      });
+      continue;
+    }
+
+    let bestWall: Wall | null = null;
+    let bestDist = Infinity;
+    let bestAlignedPos: { x: number; y: number } | null = null;
+
+    for (const wall of candidates) {
+      const minX = Math.min(wall.startPoint.x, wall.endPoint.x);
+      const maxX = Math.max(wall.startPoint.x, wall.endPoint.x);
+      const minY = Math.min(wall.startPoint.y, wall.endPoint.y);
+      const maxY = Math.max(wall.startPoint.y, wall.endPoint.y);
+      const isHorizontal = Math.abs(wall.startPoint.y - wall.endPoint.y) <= 5;
+      const isVertical = Math.abs(wall.startPoint.x - wall.endPoint.x) <= 5;
+
+      if (!isHorizontal && !isVertical) continue;
+
+      let dist = Infinity;
+      let alignedPos: { x: number; y: number } | null = null;
+
+      if (isHorizontal) {
+        const wallY = wall.startPoint.y;
+        dist = Math.abs(win.position.y - wallY);
+        const wallLen = maxX - minX;
+        if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
+          const clampedX = Math.max(minX + windowMinEdgeDistance, Math.min(maxX - win.width - windowMinEdgeDistance, win.position.x));
+          alignedPos = { x: clampedX, y: wallY };
+        }
+      } else {
+        const wallX = wall.startPoint.x;
+        dist = Math.abs(win.position.x - wallX);
+        const wallLen = maxY - minY;
+        if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
+          const clampedY = Math.max(minY + windowMinEdgeDistance, Math.min(maxY - win.width - windowMinEdgeDistance, win.position.y));
+          alignedPos = { x: wallX, y: clampedY };
+        }
+      }
+
+      if (alignedPos && dist < bestDist && dist <= 300) {
+        bestDist = dist;
+        bestWall = wall;
+        bestAlignedPos = alignedPos;
+      }
+    }
+
+    if (!bestWall || !bestAlignedPos) {
+      issues.push({
+        code: 'WINDOW_HOST_WALL_NOT_FOUND',
+        severity: 'error',
+        message: `Window "${win.id}" could not be geometrically associated with a host wall near (${win.position.x}, ${win.position.y}).`,
+      });
+      continue;
+    }
+
+    const updatedWindow: Window = {
+      ...win,
+      wallId: bestWall.id,
+      position: bestAlignedPos,
+    };
+
+    const placement = validateWindowPlacement(updatedWindow, bestWall, windowMinEdgeDistance, true);
+    if (!placement.valid) {
+      issues.push({
+        code: 'WINDOW_PLACEMENT_INVALID',
+        severity: 'error',
+        message: `Window "${win.id}" placement on wall "${bestWall.id}" is invalid: ${placement.reason}`,
+      });
+      continue;
+    }
+
+    updatedWindows.push(updatedWindow);
+  }
+
+  return {
+    doors: updatedDoors,
+    windows: updatedWindows,
+    issues,
+  };
+}
+
 /**
  * Build the canonical Building Model from a validated structure using the
  * core factories. Every room keeps its flat/core membership as tags so the
@@ -506,6 +836,14 @@ export function apartmentStructureToBuilding(
   name: string,
 ): { building: Building; diagnostics: DiagnosticFragment[] } {
   const diagnostics: DiagnosticFragment[] = [];
+  const flatBoundaries = structure.flats.map(flat => ({
+    flatId: flat.id,
+    label: flat.label,
+    unitType: flat.unitType,
+    rect: flat.rect,
+    boundary: rectToPolygon(flat.rect.x, flat.rect.y, flat.rect.width, flat.rect.height),
+  }));
+
   const base = createBuilding({
     projectId,
     name,
@@ -523,6 +861,9 @@ export function apartmentStructureToBuilding(
       name: 'Typical Residential Floor',
       boundary: { points: structure.boundary.map(p => ({ x: Math.round(p.x), y: Math.round(p.y) })) },
     }],
+    metadata: {
+      flatBoundaries,
+    },
   });
   const floorId = base.floors[0]!.id;
   const sourceTag = `source:${structure.source.toLowerCase()}`;
@@ -556,7 +897,7 @@ export function apartmentStructureToBuilding(
     const unitTag = `unit-type:${normalizeApartmentUnitType(flat.unitType)}`;
     for (const room of flat.rooms) {
       const type = ROLE_ROOM_TYPE[roomRoles(room)[0] ?? 'other'];
-      add(room.id, `${flat.label} ${room.name}`, type, room.rect, [`flat:${flat.id}`, unitTag], false);
+      add(room.id, `${flat.label} ${room.name}`, type, room.rect, [`flat:${flat.id}`, unitTag, `apt-canonical-type:${room.type}`, `apt-flat:${flat.id}`], false);
     }
   }
   for (const room of structure.commonRooms) {
@@ -568,8 +909,8 @@ export function apartmentStructureToBuilding(
   for (const el of structure.corridors) add(el.id, el.name, RoomType.Corridor, el.rect, ['core:corridor'], true);
   for (const el of structure.shafts) add(el.id, el.name, RoomType.ServiceShaft, el.rect, ['core:shaft'], true);
 
-  const doors: Building['floors'][number]['doors'][number][] = [];
-  const windows: Building['floors'][number]['windows'][number][] = [];
+  const initialDoors: Door[] = [];
+  const initialWindows: Window[] = [];
   for (const opening of structure.openings) {
     const adjacent = rooms.find(r => r.tags.includes(`apt-room:${opening.adjacentRoomId}`));
     if (!adjacent) {
@@ -581,25 +922,23 @@ export function apartmentStructureToBuilding(
       continue;
     }
     const position = { x: Math.round(opening.rect.x), y: Math.round(opening.rect.y) };
-    // Doors keep BOTH joined spaces when known (lobby → foyer, foyer → living, …).
     const otherId = opening.connects?.find(id => id !== opening.adjacentRoomId);
     const other = otherId ? rooms.find(r => r.tags.includes(`apt-room:${otherId}`)) : undefined;
     if (opening.kind === 'door') {
-      doors.push({
+      initialDoors.push({
         id: opening.id,
         floorId,
         wallId: '__extracted__',
         position,
-        // The opening's long side is the door width (a door in a vertical wall is tall and thin).
         width: Math.max(1, Math.round(Math.max(opening.rect.width, opening.rect.height))),
         height: 2100,
         type: (DOOR_TYPE[opening.doorType ?? 'unknown'] ?? 'single') as never,
         swingDirection: (['outward', 'left', 'right'].includes(opening.swingDirection ?? '') ? opening.swingDirection : 'inward') as never,
         connectsRooms: [adjacent.id, other?.id ?? '__outside__'] as [string, string],
-      } as never);
+      });
     } else {
       const span = Math.max(1, Math.round(Math.max(opening.rect.width, opening.rect.height)));
-      windows.push({
+      initialWindows.push({
         id: opening.id,
         floorId,
         wallId: '__extracted__',
@@ -609,20 +948,142 @@ export function apartmentStructureToBuilding(
         sillHeight: 900,
         type: 'sliding' as never,
         roomId: adjacent.id,
-      } as never);
+      });
     }
   }
+
+  // Generate walls from rooms and attach openings deterministically
+  const walls = generateWallsFromRooms(floorId, rooms);
+  const floorCandidate: Floor = {
+    ...base.floors[0]!,
+    rooms,
+    walls,
+    doors: initialDoors,
+    windows: initialWindows,
+  };
+
+  const { doors: attachedDoors, windows: attachedWindows, issues: attachIssues } = attachOpeningsToHostWalls(floorCandidate);
+  diagnostics.push(...attachIssues);
 
   return {
     building: {
       ...base,
-      floors: [{ ...base.floors[0]!, rooms, doors: [...base.floors[0]!.doors, ...doors], windows: [...base.floors[0]!.windows, ...windows] }],
+      floors: [{
+        ...floorCandidate,
+        doors: attachedDoors,
+        windows: attachedWindows,
+      }],
+      metadata: {
+        ...base.metadata,
+        flatBoundaries,
+        ...(attachIssues.length > 0 ? { openingIssues: attachIssues } : {}),
+      },
     },
     diagnostics,
   };
 }
 
 // ─── Stage 5: existing deterministic geometry validation ─────────────────────
+
+export interface ClassifiedFlatRooms {
+  readonly bedrooms: readonly Room[];
+  readonly bathrooms: readonly Room[];
+  readonly livingRooms: readonly Room[];
+  readonly diningAreas: readonly Room[];
+  readonly kitchens: readonly Room[];
+  readonly utilities: readonly Room[];
+  readonly balconies: readonly Room[];
+  readonly otherRooms: readonly Room[];
+}
+
+export function classifyCanonicalFlatRooms(rooms: readonly Room[], unitType: string): ClassifiedFlatRooms {
+  const normType = normalizeApartmentUnitType(unitType);
+  const isStudio = normType === 'STUDIO';
+
+  const bedrooms: Room[] = [];
+  const bathrooms: Room[] = [];
+  const livingRooms: Room[] = [];
+  const diningAreas: Room[] = [];
+  const kitchens: Room[] = [];
+  const utilities: Room[] = [];
+  const balconies: Room[] = [];
+  const otherRooms: Room[] = [];
+
+  const hasSeparateDining = rooms.some(r => r.type === RoomType.Dining);
+
+  for (const r of rooms) {
+    const rawName = r.name.toLowerCase();
+    const canonType = r.tags.find(t => t.startsWith('apt-canonical-type:'))?.replace('apt-canonical-type:', '') ?? '';
+
+    if (r.type === RoomType.Bedroom) {
+      bedrooms.push(r);
+    } else if (r.type === RoomType.Bathroom) {
+      bathrooms.push(r);
+    } else if (r.type === RoomType.Kitchen) {
+      kitchens.push(r);
+    } else if (r.type === RoomType.Utility) {
+      utilities.push(r);
+    } else if (r.type === RoomType.Balcony) {
+      balconies.push(r);
+    } else if (r.type === RoomType.Dining) {
+      diningAreas.push(r);
+    } else if (r.type === RoomType.Living) {
+      livingRooms.push(r);
+      const isLivingDining = canonType === 'living_dining' || /living.*dining|dining.*living|hall/i.test(rawName);
+      if (!isStudio && isLivingDining && !hasSeparateDining) {
+        // Combined living/dining satisfies dining for 1BHK–4BHK, but only if separate dining room not present
+        diningAreas.push(r);
+      }
+    } else {
+      otherRooms.push(r);
+    }
+  }
+
+  return {
+    bedrooms,
+    bathrooms,
+    livingRooms,
+    diningAreas,
+    kitchens,
+    utilities,
+    balconies,
+    otherRooms,
+  };
+}
+
+function matchFlatRooms(
+  expectedUnit: ApartmentUnitExpectation,
+  allResidentialRooms: readonly Room[],
+  unitIndex: number,
+  uniqueFlatIds: readonly string[],
+): Room[] {
+  const normExpected = expectedUnit.label.toLowerCase().replace(/[^a-z0-9]/g, '');
+
+  // 1. Direct tag match
+  const byTag = allResidentialRooms.filter(r => {
+    return r.tags.some(t => {
+      if (!t.startsWith('flat:')) return false;
+      const tagVal = t.slice(5).toLowerCase().replace(/[^a-z0-9]/g, '');
+      return tagVal === normExpected || tagVal.includes(normExpected) || normExpected.includes(tagVal);
+    });
+  });
+  if (byTag.length > 0) return byTag;
+
+  // 2. Name prefix match
+  const byName = allResidentialRooms.filter(r => {
+    const normName = r.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return normName.startsWith(normExpected);
+  });
+  if (byName.length > 0) return byName;
+
+  // 3. Index match among unique flat tags
+  if (unitIndex < uniqueFlatIds.length) {
+    const targetId = uniqueFlatIds[unitIndex]!;
+    return allResidentialRooms.filter(r => r.tags.includes(`flat:${targetId}`));
+  }
+
+  return [];
+}
 
 /** Structure counts measured on the canonical Building itself (tags). */
 export function measureApartmentBuilding(building: Building): {
@@ -660,20 +1121,392 @@ export function validateCanonicalApartmentBuilding(
   for (const warning of diagnostics.warnings) {
     if (warning.severity === 'error') issues.push({ code: `CANONICAL_${warning.code}`, severity: 'error', message: warning.message });
   }
-  const rooms = building.floors.flatMap(f => f.rooms);
-  const collisions = rooms.flatMap(room => detectRoomCollisions(room, rooms));
-  if (collisions.length > 0) {
-    const names = new Map(rooms.map(r => [r.id, r.name]));
-    const sample = collisions.slice(0, 4).map(c => `${names.get(c.entityA)} ↔ ${names.get(c.entityB)}`).join('; ');
-    issues.push({ code: 'CANONICAL_ROOM_COLLISIONS', severity: 'error', message: `${collisions.length / 2} room overlap(s): ${sample}.` });
-  }
-  const floor = building.floors[0];
-  const outside = floor ? floor.rooms.filter(r => !containsPolygon(floor.boundary, r.boundary)) : [];
-  if (outside.length > 0) {
-    issues.push({ code: 'CANONICAL_ROOMS_OUT_OF_BOUNDS', severity: 'error', message: `${outside.length} room(s) fall outside the floor boundary.` });
+
+  // ── 1. Per-floor multi-floor-safe validations ──
+  for (const floor of building.floors) {
+    // A. Entity floor ownership
+    for (const room of floor.rooms) {
+      if (room.floorId !== floor.id) {
+        issues.push({
+          code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+          severity: 'error',
+          message: `Room "${room.id}" has floorId "${room.floorId}" which does not match floor "${floor.id}".`,
+        });
+      }
+    }
+    for (const wall of floor.walls) {
+      if (wall.floorId !== floor.id) {
+        issues.push({
+          code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+          severity: 'error',
+          message: `Wall "${wall.id}" has floorId "${wall.floorId}" which does not match floor "${floor.id}".`,
+        });
+      }
+      if (!Number.isFinite(wall.startPoint.x) || !Number.isFinite(wall.startPoint.y) ||
+          !Number.isFinite(wall.endPoint.x) || !Number.isFinite(wall.endPoint.y)) {
+        issues.push({
+          code: 'CANONICAL_WALL_GEOMETRY_INVALID',
+          severity: 'error',
+          message: `Wall "${wall.id}" has non-finite coordinates.`,
+        });
+      }
+      const len = Math.hypot(wall.endPoint.x - wall.startPoint.x, wall.endPoint.y - wall.startPoint.y);
+      if (len <= 0) {
+        issues.push({
+          code: 'CANONICAL_WALL_GEOMETRY_INVALID',
+          severity: 'error',
+          message: `Wall "${wall.id}" has zero length.`,
+        });
+      }
+      for (const rid of wall.roomIds) {
+        if (!floor.rooms.some(r => r.id === rid)) {
+          issues.push({
+            code: 'CANONICAL_WALL_ROOM_NOT_FOUND',
+            severity: 'error',
+            message: `Wall "${wall.id}" references room "${rid}" which does not exist on floor "${floor.id}".`,
+          });
+        }
+      }
+    }
+
+    const wallMap = new Map(floor.walls.map(w => [w.id, w]));
+
+    // B. Doors integrity & host wall placement
+    for (const door of floor.doors) {
+      if (door.floorId !== floor.id) {
+        issues.push({
+          code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+          severity: 'error',
+          message: `Door "${door.id}" has floorId "${door.floorId}" which does not match floor "${floor.id}".`,
+        });
+      }
+      if (!door.wallId || door.wallId === '__extracted__') {
+        issues.push({
+          code: 'CANONICAL_DOOR_HOST_WALL_INVALID',
+          severity: 'error',
+          message: `Door "${door.id}" retains placeholder or missing wallId ("${door.wallId}").`,
+        });
+        continue;
+      }
+      const hostWall = wallMap.get(door.wallId);
+      if (!hostWall) {
+        issues.push({
+          code: 'CANONICAL_DOOR_HOST_WALL_NOT_FOUND',
+          severity: 'error',
+          message: `Door "${door.id}" references host wall "${door.wallId}" which does not exist on floor "${floor.id}".`,
+        });
+        continue;
+      }
+
+      const [rA, rB] = door.connectsRooms;
+      if (!floor.rooms.some(r => r.id === rA)) {
+        issues.push({
+          code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
+          severity: 'error',
+          message: `Door "${door.id}" references connected room "${rA}" which does not exist on floor "${floor.id}".`,
+        });
+      }
+      if (rB !== '__outside__' && !floor.rooms.some(r => r.id === rB)) {
+        issues.push({
+          code: 'CANONICAL_DOOR_ROOM_NOT_FOUND',
+          severity: 'error',
+          message: `Door "${door.id}" references connected room "${rB}" which does not exist on floor "${floor.id}".`,
+        });
+      }
+
+      if (!hostWall.roomIds.includes(rA) && (rB === '__outside__' || !hostWall.roomIds.includes(rB))) {
+        issues.push({
+          code: 'CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL',
+          severity: 'error',
+          message: `Host wall "${hostWall.id}" does not connect rooms [${door.connectsRooms.join(', ')}].`,
+        });
+      }
+
+      const placement = validateDoorPlacement(door, hostWall, 50);
+      if (!placement.valid) {
+        issues.push({
+          code: 'CANONICAL_DOOR_PLACEMENT_INVALID',
+          severity: 'error',
+          message: `Door "${door.id}" placement on wall "${hostWall.id}" is invalid: ${placement.reason}`,
+        });
+      }
+    }
+
+    // C. Windows integrity & host wall placement
+    for (const win of floor.windows) {
+      if (win.floorId !== floor.id) {
+        issues.push({
+          code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+          severity: 'error',
+          message: `Window "${win.id}" has floorId "${win.floorId}" which does not match floor "${floor.id}".`,
+        });
+      }
+      if (!win.wallId || win.wallId === '__extracted__') {
+        issues.push({
+          code: 'CANONICAL_WINDOW_HOST_WALL_INVALID',
+          severity: 'error',
+          message: `Window "${win.id}" retains placeholder or missing wallId ("${win.wallId}").`,
+        });
+        continue;
+      }
+      const hostWall = wallMap.get(win.wallId);
+      if (!hostWall) {
+        issues.push({
+          code: 'CANONICAL_WINDOW_HOST_WALL_NOT_FOUND',
+          severity: 'error',
+          message: `Window "${win.id}" references host wall "${win.wallId}" which does not exist on floor "${floor.id}".`,
+        });
+        continue;
+      }
+      if (!floor.rooms.some(r => r.id === win.roomId)) {
+        issues.push({
+          code: 'CANONICAL_WINDOW_ROOM_NOT_FOUND',
+          severity: 'error',
+          message: `Window "${win.id}" references room "${win.roomId}" which does not exist on floor "${floor.id}".`,
+        });
+      }
+      if (!hostWall.roomIds.includes(win.roomId)) {
+        issues.push({
+          code: 'CANONICAL_WINDOW_ROOM_NOT_ON_HOST_WALL',
+          severity: 'error',
+          message: `Host wall "${hostWall.id}" does not bound window room "${win.roomId}".`,
+        });
+      }
+      const touchesShaft = hostWall.roomIds.some(id => floor.rooms.find(r => r.id === id)?.type === RoomType.ServiceShaft);
+      if (hostWall.type !== WallType.External && !touchesShaft) {
+        issues.push({
+          code: 'CANONICAL_WINDOW_ON_INTERNAL_WALL',
+          severity: 'error',
+          message: `Window "${win.id}" is hosted on an internal wall that does not face an exterior facade or service shaft.`,
+        });
+      }
+      const placement = validateWindowPlacement(win, hostWall, 50, true);
+      if (!placement.valid) {
+        issues.push({
+          code: 'CANONICAL_WINDOW_PLACEMENT_INVALID',
+          severity: 'error',
+          message: `Window "${win.id}" placement on wall "${hostWall.id}" is invalid: ${placement.reason}`,
+        });
+      }
+    }
+
+    // D. Stairs integrity
+    for (const stair of floor.stairs) {
+      if (stair.floorId !== floor.id) {
+        issues.push({
+          code: 'CANONICAL_INVALID_FLOOR_OWNERSHIP',
+          severity: 'error',
+          message: `Stair "${stair.id}" has floorId "${stair.floorId}" which does not match floor "${floor.id}".`,
+        });
+      }
+      const [fromLevel, toLevel] = stair.connectsFloors;
+      if (fromLevel < 0 || toLevel < 0) {
+        issues.push({
+          code: 'CANONICAL_STAIR_LEVEL_INVALID',
+          severity: 'error',
+          message: `Stair "${stair.id}" references invalid floor levels: [${fromLevel}, ${toLevel}].`,
+        });
+      }
+    }
+
+    // E. Collision detection strictly scoped to entities on the same floor
+    const collisions = floor.rooms.flatMap(room => detectRoomCollisions(room, floor.rooms));
+    if (collisions.length > 0) {
+      const names = new Map(floor.rooms.map(r => [r.id, r.name]));
+      const sample = collisions.slice(0, 4).map(c => `${names.get(c.entityA)} ↔ ${names.get(c.entityB)}`).join('; ');
+      issues.push({
+        code: 'CANONICAL_ROOM_COLLISIONS',
+        severity: 'error',
+        message: `Floor ${floor.level}: ${collisions.length / 2} room overlap(s): ${sample}.`,
+      });
+    }
+
+    // F. Floor boundary containment on EVERY floor
+    const outside = floor.rooms.filter(r => !containsPolygon(floor.boundary, r.boundary));
+    if (outside.length > 0) {
+      issues.push({
+        code: 'CANONICAL_ROOMS_OUT_OF_BOUNDS',
+        severity: 'error',
+        message: `Floor ${floor.level}: ${outside.length} room(s) fall outside the floor boundary.`,
+      });
+    }
   }
 
-  // Counts re-measured on the canonical model must still equal the manifest.
+  // ── 2. Residential rooms flat ownership validation ──
+  const allResidentialRooms = building.floors.flatMap(f => f.rooms).filter(r => {
+    const isCore = r.tags.some(t => t.startsWith('core:') || t === 'common:room');
+    return !isCore && r.type !== RoomType.Lift && r.type !== RoomType.Staircase && r.type !== RoomType.ServiceShaft;
+  });
+
+  const uniqueFlatIds: string[] = [];
+  const expectedNormLabels = new Set(expectation.units.map(u => u.label.toLowerCase().replace(/[^a-z0-9]/g, '')));
+
+  for (const r of allResidentialRooms) {
+    const flatTags = r.tags.filter(t => t.startsWith('flat:'));
+    if (flatTags.length === 0) {
+      issues.push({
+        code: 'CANONICAL_MISSING_FLAT_OWNERSHIP',
+        severity: 'error',
+        message: `Residential room "${r.name}" (${r.id}) has no flat ownership tag.`,
+      });
+    } else {
+      const distinct = new Set(flatTags);
+      if (distinct.size > 1) {
+        issues.push({
+          code: 'CANONICAL_CONFLICTING_FLAT_OWNERSHIP',
+          severity: 'error',
+          message: `Residential room "${r.name}" (${r.id}) has conflicting flat ownership tags: ${[...distinct].join(', ')}.`,
+        });
+      }
+      for (const ft of distinct) {
+        const flatId = ft.slice(5);
+        if (!uniqueFlatIds.includes(flatId)) uniqueFlatIds.push(flatId);
+        const normId = flatId.toLowerCase().replace(/[^a-z0-9]/g, '');
+        const matchesAny = [...expectedNormLabels].some(enl => enl === normId || enl.includes(normId) || normId.includes(enl));
+        if (!matchesAny && expectedNormLabels.size > 0 && uniqueFlatIds.indexOf(flatId) >= expectation.units.length) {
+          issues.push({
+            code: 'CANONICAL_UNKNOWN_FLAT_OWNERSHIP',
+            severity: 'error',
+            message: `Residential room "${r.name}" (${r.id}) references unknown flat ID "${flatId}".`,
+          });
+        }
+      }
+    }
+  }
+
+  // ── 3. Exact 7-category Room Programme per flat ──
+  for (let i = 0; i < expectation.units.length; i++) {
+    const u = expectation.units[i]!;
+    const flatRooms = matchFlatRooms(u, allResidentialRooms, i, uniqueFlatIds);
+    if (flatRooms.length === 0) {
+      issues.push({
+        code: 'CANONICAL_FLAT_MISSING_ROOMS',
+        severity: 'error',
+        message: `No rooms found for flat "${u.label}" (${u.unitType}) in canonical building model.`,
+      });
+      continue;
+    }
+
+    const classified = classifyCanonicalFlatRooms(flatRooms, u.unitType);
+
+    if (classified.bedrooms.length !== u.bedrooms) {
+      const code = classified.bedrooms.length < u.bedrooms ? 'CANONICAL_SHORTFALL_BEDROOMS' : 'CANONICAL_EXCESS_BEDROOMS';
+      issues.push({
+        code,
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.bedrooms.length} bedrooms; expected ${u.bedrooms}.`,
+      });
+    }
+
+    if (classified.bathrooms.length !== u.bathrooms) {
+      const code = classified.bathrooms.length < u.bathrooms ? 'CANONICAL_SHORTFALL_BATHROOMS' : 'CANONICAL_EXCESS_BATHROOMS';
+      issues.push({
+        code,
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.bathrooms.length} bathrooms; expected ${u.bathrooms}.`,
+      });
+    }
+
+    if (classified.livingRooms.length !== u.livingRooms) {
+      issues.push({
+        code: 'CANONICAL_LIVING_COUNT_MISMATCH',
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.livingRooms.length} living spaces; expected ${u.livingRooms}.`,
+      });
+    }
+
+    if (classified.diningAreas.length !== u.diningRooms) {
+      issues.push({
+        code: 'CANONICAL_DINING_COUNT_MISMATCH',
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.diningAreas.length} dining areas; expected ${u.diningRooms}.`,
+      });
+    }
+
+    if (classified.kitchens.length !== u.kitchens) {
+      issues.push({
+        code: 'CANONICAL_KITCHEN_COUNT_MISMATCH',
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.kitchens.length} kitchens; expected ${u.kitchens}.`,
+      });
+    }
+
+    if (classified.utilities.length !== u.utilities) {
+      issues.push({
+        code: 'CANONICAL_UTILITY_COUNT_MISMATCH',
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.utilities.length} utilities; expected ${u.utilities}.`,
+      });
+    }
+
+    if (classified.balconies.length !== u.balconies) {
+      issues.push({
+        code: 'CANONICAL_BALCONY_COUNT_MISMATCH',
+        severity: 'error',
+        message: `Flat "${u.label}" has ${classified.balconies.length} balconies; expected ${u.balconies}.`,
+      });
+    }
+  }
+
+  // ── 4. Room-to-flat boundary containment & inter-flat isolation ──
+  const flatBoundaries = (building.metadata as any)?.flatBoundaries as Array<{
+    flatId: string;
+    label: string;
+    boundary: { points: Array<{ x: number; y: number }> };
+    rect?: ApartmentRectMm;
+  }> | undefined;
+
+  if (flatBoundaries && flatBoundaries.length > 0) {
+    for (const fb of flatBoundaries) {
+      const fbPolygon = fb.boundary;
+      const flatTag = `flat:${fb.flatId}`;
+      const roomsOfFlat = allResidentialRooms.filter(r => r.tags.includes(flatTag) || r.tags.some(t => t.toLowerCase() === flatTag.toLowerCase()));
+
+      for (const r of roomsOfFlat) {
+        const isContained = containsPolygon(fbPolygon, r.boundary);
+        if (!isContained) {
+          const pointsOutside = r.boundary.points.filter(p => !pointInPolygonWithTolerance(p, fbPolygon, 50));
+          if (pointsOutside.length > 0) {
+            issues.push({
+              code: 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY',
+              severity: 'error',
+              message: `Room "${r.name}" (${r.id}) falls outside declared flat boundary for "${fb.label}".`,
+            });
+          }
+        }
+      }
+
+      // Party wall encroachment: rooms of other flats must not encroach into fbPolygon
+      const otherFlatRooms = allResidentialRooms.filter(r => !r.tags.includes(flatTag) && !r.tags.some(t => t.toLowerCase() === flatTag.toLowerCase()));
+      for (const otherRoom of otherFlatRooms) {
+        const overlap = polygonIntersectionArea(otherRoom.boundary, fbPolygon);
+        const roomArea = otherRoom.width * otherRoom.height;
+        if (overlap > 0.01 * roomArea && overlap > 50000) {
+          issues.push({
+            code: 'CANONICAL_ROOM_ENCROACHES_OTHER_FLAT',
+            severity: 'error',
+            message: `Room "${otherRoom.name}" encroaches into private area of flat "${fb.label}" (${Math.round(overlap / 1e6 * 100) / 100} m² overlap).`,
+          });
+        }
+      }
+
+      // Common core elements must not lie inside flat boundary (>10% overlap)
+      const coreRooms = building.floors.flatMap(f => f.rooms).filter(r => r.tags.some(t => t.startsWith('core:')));
+      for (const core of coreRooms) {
+        const overlap = polygonIntersectionArea(core.boundary, fbPolygon);
+        const coreArea = core.width * core.height;
+        if (overlap > 0.10 * coreArea && overlap > 100000) {
+          issues.push({
+            code: 'CANONICAL_CORE_INSIDE_FLAT',
+            severity: 'error',
+            message: `Common core element "${core.name}" sits inside private flat boundary "${fb.label}".`,
+          });
+        }
+      }
+    }
+  }
+
+  // ── 5. Re-measured aggregate checks ──
   const measured = measureApartmentBuilding(building);
   const expectedBedrooms = expectation.units.reduce((s, u) => s + u.bedrooms, 0);
   const checks: ReadonlyArray<readonly [string, number, number]> = [
@@ -689,6 +1522,14 @@ export function validateCanonicalApartmentBuilding(
   }
   if (expectation.commonLobby && measured.lobbies === 0) {
     issues.push({ code: 'CANONICAL_COUNT_MISMATCH', severity: 'error', message: 'Canonical plan has no common lobby; manifest requires one.' });
+  }
+
+  // Include any opening attachment issues
+  const metaOpeningIssues = (building.metadata as any)?.openingIssues as DiagnosticFragment[] | undefined;
+  if (metaOpeningIssues && metaOpeningIssues.length > 0) {
+    for (const oi of metaOpeningIssues) {
+      issues.push({ code: `CANONICAL_${oi.code}`, severity: oi.severity, message: oi.message });
+    }
   }
 
   const isValid = issues.length === 0 && diagnostics.geometryHealthy;

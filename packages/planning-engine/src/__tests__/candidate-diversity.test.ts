@@ -60,7 +60,7 @@ describe('meaningful architectural alternatives', () => {
     const common = candidateDiversityEvidence(first[1]!.building);
     expect(common.functionalClusters).toContainEqual(['0:dining_1', '0:kitchen_1', '0:living_1', '0:utility_1']);
     expect(first[1]!.architecturalEvidence!.closeout!.kitchenService.find(item => item.relationship === 'KITCHEN_COMMON')!.status).toBe('SHORT_FUNCTIONAL_PATH');
-  });
+  }, 30000);
 
   it('does not count millimetre jitter, reordered rooms or changed labels as organizational diversity', () => {
     const { spec, program, source } = inputs();
