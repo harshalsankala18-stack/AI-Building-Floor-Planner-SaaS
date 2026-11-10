@@ -20,14 +20,4 @@ export default defineConfig({
       'pdfkit': emptyStub,
     },
   },
-  build: {
-    rollupOptions: {
-      external: [
-        '@chanmeng666/archlang',
-        'clipper2-wasm',
-        'pdfkit',
-        '@resvg/resvg-js',
-      ],
-    },
-  },
 });

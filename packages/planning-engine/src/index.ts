@@ -135,6 +135,12 @@ export {
   type ApartmentRoomRole,
   type ApartmentPlanValidationResult,
 } from './interpretation/apartment-plan';
+export {
+  containsPolygonWithTolerance,
+  pointInPolygonWithTolerance,
+  isValidPolygon,
+  segmentCrossesOutsidePolygon,
+} from '@ai-floor-planner/geometry-engine';
 export { MassingGenerator } from './generator/massing-generator';
 export type { MassingFootprintPlan } from './generator/massing-generator';
 export { ArchitecturalLayoutEngine } from './generator/architectural-layout-engine';

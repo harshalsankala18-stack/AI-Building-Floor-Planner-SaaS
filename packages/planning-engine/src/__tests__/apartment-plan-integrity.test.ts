@@ -18,6 +18,9 @@ import {
   attachOpeningsToHostWalls,
   generateWallsFromRooms,
   validateCanonicalApartmentBuilding,
+  pointInPolygonWithTolerance,
+  containsPolygonWithTolerance,
+  segmentCrossesOutsidePolygon,
   type ApartmentPlanExpectation,
   type ApartmentPlanStructure,
   type ApartmentPlanFlat,
@@ -1327,26 +1330,48 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
 
     describe('5.2 Concave Boundary Edge Crossing Rejection', () => {
       it('rejects a room polygon with vertices inside a concave boundary but an edge crossing the cutaway', () => {
+        // U-shaped flat boundary with concave cutaway notch in the middle
         const steppedVertices = [
-          { x: 5000, y: 5000 },
-          { x: 12000, y: 5000 },
-          { x: 12000, y: 8000 },
-          { x: 10000, y: 8000 },
-          { x: 10000, y: 11000 },
-          { x: 5000, y: 11000 },
+          { x: 0, y: 0 },
+          { x: 12000, y: 0 },
+          { x: 12000, y: 10000 },
+          { x: 8000, y: 10000 },
+          { x: 8000, y: 4000 },
+          { x: 4000, y: 4000 },
+          { x: 4000, y: 10000 },
+          { x: 0, y: 10000 },
         ];
 
-        // Room that has all vertices inside but edge crosses the cutaway (concave notch)
-        const cutawayRoom = createRectRoom('r_cutaway', 'Cutaway Bedroom', 'bedroom', 9500, 7500, 1000, 1000);
+        // Room spanning both wings:
+        // Left wing: x in [0, 4000], y in [0, 10000]
+        // Right wing: x in [8000, 12000], y in [0, 10000]
+        // Bottom base: x in [0, 12000], y in [0, 4000]
+        // Cutaway notch: x in (4000, 8000), y in (4000, 10000]
+        const roomCorners = [
+          { x: 1000, y: 2000 },
+          { x: 11000, y: 2000 },
+          { x: 11000, y: 8000 },
+          { x: 1000, y: 8000 },
+        ];
+
+        // Assert preconditions: ALL four corners are strictly inside the boundary!
+        for (const pt of roomCorners) {
+          expect(pointInPolygonWithTolerance(pt, steppedVertices, 50)).toBe(true);
+        }
+        // Top edge from (1000, 8000) to (11000, 8000) crosses the outside notch
+        expect(segmentCrossesOutsidePolygon({ start: { x: 1000, y: 8000 }, end: { x: 11000, y: 8000 } }, steppedVertices, 50)).toBe(true);
+        expect(containsPolygonWithTolerance(steppedVertices, roomCorners, 50)).toBe(false);
+
+        const cutawayRoom = createRectRoom('r_cutaway', 'Cutaway Bedroom', 'bedroom', 1000, 2000, 10000, 6000);
 
         const flat: ApartmentPlanFlat = {
           id: 'flat_01',
           label: 'Flat 01',
           unitType: '1BHK',
-          rect: { x: 5000, y: 5000, width: 7000, height: 6000 },
+          rect: { x: 0, y: 0, width: 12000, height: 10000 },
           boundary: steppedVertices,
           rooms: [
-            createRectRoom('r1', 'Living', 'living_dining', 5000, 5000, 5000, 3000),
+            createRectRoom('r1', 'Living', 'living_dining', 500, 500, 3000, 3000),
             cutawayRoom,
           ],
         };
@@ -1394,15 +1419,18 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
         expect(result.verificationIssues.some(i => i.code === 'CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY')).toBe(true);
       });
 
-      it('rejects a wall whose endpoints are inside but whose segment crosses a concave cutaway', () => {
+      it('rejects a wall whose endpoints are inside but whose segment crosses a narrow concave notch', () => {
         const floorId = 'floor_0';
+        // Floor boundary with a narrow 200mm notch between x=4900 and x=5100 extending down to y=2000
         const floorBoundary = {
           points: [
             { x: 0, y: 0 },
             { x: 10000, y: 0 },
-            { x: 10000, y: 5000 },
-            { x: 5000, y: 5000 },
-            { x: 5000, y: 10000 },
+            { x: 10000, y: 10000 },
+            { x: 5100, y: 10000 },
+            { x: 5100, y: 2000 },
+            { x: 4900, y: 2000 },
+            { x: 4900, y: 10000 },
             { x: 0, y: 10000 },
           ],
         };
@@ -1412,29 +1440,37 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
           name: 'Living',
           type: RoomType.Living,
           x: 1000,
-          y: 1000,
-          width: 4000,
-          height: 4000,
+          y: 500,
+          width: 3500,
+          height: 1200,
           tags: ['flat:flat_01'],
         });
         const bedroom = createRoom({
           floorId,
           name: 'Bedroom',
           type: RoomType.Bedroom,
-          x: 1000,
-          y: 6000,
-          width: 4000,
-          height: 3000,
+          x: 5500,
+          y: 500,
+          width: 3500,
+          height: 1200,
           tags: ['flat:flat_01'],
         });
 
         const walls = generateWallsFromRooms(floorId, [living, bedroom]);
 
-        // Add a wall that crosses the concave cutaway
+        // Wall with start and end points inside, crossing the narrow notch at non-trivial fraction y=6137
+        const wallStart = { x: 1000, y: 6137 };
+        const wallEnd = { x: 9000, y: 6137 };
+
+        // Assert preconditions: both endpoints are strictly inside!
+        expect(pointInPolygonWithTolerance(wallStart, floorBoundary.points, 50)).toBe(true);
+        expect(pointInPolygonWithTolerance(wallEnd, floorBoundary.points, 50)).toBe(true);
+        expect(segmentCrossesOutsidePolygon({ start: wallStart, end: wallEnd }, floorBoundary.points, 50)).toBe(true);
+
         const crossingWall = createWall({
           floorId,
-          startPoint: { x: 6000, y: 2000 },
-          endPoint: { x: 6000, y: 8000 },
+          startPoint: wallStart,
+          endPoint: wallEnd,
           type: WallType.Internal,
           thickness: 100,
           roomIds: [living.id, bedroom.id],
@@ -1477,10 +1513,12 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
         const floorBoundary = {
           points: [
             { x: 0, y: 0 },
-            { x: 10000, y: 0 },
-            { x: 10000, y: 5000 },
-            { x: 5000, y: 5000 },
-            { x: 5000, y: 10000 },
+            { x: 12000, y: 0 },
+            { x: 12000, y: 10000 },
+            { x: 8000, y: 10000 },
+            { x: 8000, y: 4000 },
+            { x: 4000, y: 4000 },
+            { x: 4000, y: 10000 },
             { x: 0, y: 10000 },
           ],
         };
@@ -1489,23 +1527,38 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
           floorId,
           name: 'Living',
           type: RoomType.Living,
-          x: 1000,
-          y: 1000,
-          width: 4000,
-          height: 4000,
+          x: 500,
+          y: 500,
+          width: 3000,
+          height: 3000,
           tags: ['flat:flat_01'],
         });
 
-        // Stair that extends into the concave cutaway
+        // Stair whose corners are inside the U-shaped boundary prongs/base but whose top edge crosses the notch
         const crossingStair = createStair({
           floorId,
           type: StairType.Straight,
-          x: 5500,
+          x: 1000,
           y: 2000,
-          width: 1200,
-          length: 4000,
+          width: 10000,
+          length: 6000,
           connectsFloors: [0, 1],
         });
+
+        const stairCorners = [
+          { x: 1000, y: 2000 },
+          { x: 11000, y: 2000 },
+          { x: 11000, y: 8000 },
+          { x: 1000, y: 8000 },
+        ];
+
+        // Assert preconditions: ALL four corners are strictly inside the boundary!
+        for (const pt of stairCorners) {
+          expect(pointInPolygonWithTolerance(pt, floorBoundary.points, 50)).toBe(true);
+        }
+        // Top edge crosses the cutaway notch
+        expect(segmentCrossesOutsidePolygon({ start: { x: 1000, y: 8000 }, end: { x: 11000, y: 8000 } }, floorBoundary.points, 50)).toBe(true);
+        expect(containsPolygonWithTolerance(floorBoundary.points, stairCorners, 50)).toBe(false);
 
         const walls = generateWallsFromRooms(floorId, [living]);
 
@@ -1544,7 +1597,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
     });
 
     describe('5.3 Column Validation', () => {
-      it('rejects an outside column (column footprint outside floor boundary)', () => {
+      it('rejects an outside column even when floorId is omitted (column footprint outside floor boundary)', () => {
         const floorId = 'floor_0';
         const floorBoundary = {
           points: [
@@ -1576,7 +1629,19 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
           walls,
         };
 
-        // Add a column that is outside the floor boundary
+        // Add a column with floorId omitted (undefined) that is outside the floor boundary
+        const colWithoutFloorId = {
+          id: 'col_outside',
+          floorId: undefined, // Explicitly omitted!
+          x: 12000, // Outside!
+          y: 5000,
+          width: 300,
+          depth: 300,
+        };
+
+        // Precondition: floorId is undefined
+        expect(colWithoutFloorId.floorId).toBeUndefined();
+
         const building: Building = {
           ...createBuilding({
             projectId: 'proj_column_outside',
@@ -1585,16 +1650,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
           }),
           floors: [{
             ...floor,
-            columns: [
-              {
-                id: 'col_outside',
-                floorId,
-                x: 12000, // Outside!
-                y: 5000,
-                width: 300,
-                depth: 300,
-              }
-            ] as any,
+            columns: [colWithoutFloorId] as any,
           }],
         };
 
@@ -1613,7 +1669,7 @@ describe('Phase 2.2.1 — Final Canonical Validation Closure & Architectural Int
         expect(result.verificationIssues.some(i => i.code === 'CANONICAL_COLUMN_OUT_OF_BOUNDS')).toBe(true);
       });
 
-      it('rejects missing or mismatched column floor ownership', () => {
+      it('rejects mismatched column floor ownership', () => {
         const floorId = 'floor_0';
         const floorBoundary = {
           points: [

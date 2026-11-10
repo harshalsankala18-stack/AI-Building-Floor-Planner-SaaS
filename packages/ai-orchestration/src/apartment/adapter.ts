@@ -15,6 +15,7 @@
 import {
   type Building,
   type Stair,
+  type Polygon,
   Direction,
   StairType,
   createStair,
@@ -27,9 +28,12 @@ import {
   type ApartmentPlanOpening,
   type ExtractionSite,
   apartmentStructureToBuilding,
+  containsPolygonWithTolerance,
+  pointInPolygonWithTolerance,
+  isValidPolygon,
 } from '@ai-floor-planner/planning-engine';
 import type { ApartmentGenerationManifest } from './manifest';
-import type { DeterministicApartmentSchematic, Rect2D } from './schematic';
+import type { DeterministicApartmentSchematic, SchematicApartmentUnit, Rect2D } from './schematic';
 
 /** Structured context sent to Gemini alongside the image (context only). */
 export interface ApartmentInterpretationContext {
@@ -346,41 +350,98 @@ export function generateWindowsForApartmentSchematic(schematic: DeterministicApa
  * Converts a DeterministicApartmentSchematic directly into an ApartmentPlanStructure.
  * Used to construct the authoritative canonical Building Model before any image model is involved.
  */
-function isPointInPolyWithTolerance(
-  pt: { x: number; y: number },
-  poly: readonly { x: number; y: number }[],
-  toleranceMm: number = 50,
-): boolean {
-  // Direct ray casting
-  let inside = false;
-  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
-    const xi = poly[i]!.x, yi = poly[i]!.y;
-    const xj = poly[j]!.x, yj = poly[j]!.y;
-    const intersect = ((yi > pt.y) !== (yj > pt.y)) && (pt.x < (xj - xi) * (pt.y - yi) / (yj - yi) + xi);
-    if (intersect) inside = !inside;
-  }
-  if (inside) return true;
+export type SteppedPolygonValidationResult =
+  | { readonly status: 'RECTANGULAR'; readonly pointsMm: null }
+  | { readonly status: 'VALID_STEPPED'; readonly pointsMm: Array<{ x: number; y: number }> }
+  | { readonly status: 'INVALID_TOPOLOGY'; readonly error: string; readonly pointsMm?: Array<{ x: number; y: number }> }
+  | { readonly status: 'ROOM_OUTSIDE_STEPPED'; readonly error: string; readonly pointsMm: Array<{ x: number; y: number }> };
 
-  // Tolerance check against boundary edges
-  const tolSq = toleranceMm * toleranceMm;
-  for (let i = 0; i < poly.length; i++) {
-    const a = poly[i]!;
-    const b = poly[(i + 1) % poly.length]!;
-    const dx = b.x - a.x;
-    const dy = b.y - a.y;
-    const lenSq = dx * dx + dy * dy;
-    let distSq: number;
-    if (lenSq === 0) {
-      distSq = (pt.x - a.x) * (pt.x - a.x) + (pt.y - a.y) * (pt.y - a.y);
-    } else {
-      const t = Math.max(0, Math.min(1, ((pt.x - a.x) * dx + (pt.y - a.y) * dy) / lenSq));
-      const projX = a.x + t * dx;
-      const projY = a.y + t * dy;
-      distSq = (pt.x - projX) * (pt.x - projX) + (pt.y - projY) * (pt.y - projY);
-    }
-    if (distSq <= tolSq) return true;
+/**
+ * Validates a unit's stepped orthogonal polygon and room containment.
+ * Fails closed without falling back to a rectangular approximation if an invalid
+ * stepped polygon is supplied.
+ */
+export function validateAndConvertSteppedPolygon(
+  unit: SchematicApartmentUnit,
+  toleranceMm: number = 50,
+): SteppedPolygonValidationResult {
+  if (!unit.steppedPolygon) {
+    return { status: 'RECTANGULAR', pointsMm: null };
   }
-  return false;
+
+  const { vertices } = unit.steppedPolygon;
+  if (!vertices || !Array.isArray(vertices) || vertices.length < 6) {
+    return {
+      status: 'INVALID_TOPOLOGY',
+      error: `Unit ${unit.flatLabel} (${unit.flatId}): steppedPolygon has ${vertices?.length ?? 0} vertices (minimum 6 required).`,
+      pointsMm: vertices?.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) })),
+    };
+  }
+
+  for (let i = 0; i < vertices.length; i++) {
+    const v = vertices[i]!;
+    if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) {
+      return {
+        status: 'INVALID_TOPOLOGY',
+        error: `Unit ${unit.flatLabel} (${unit.flatId}): steppedPolygon vertex ${i} has non-finite coordinates.`,
+      };
+    }
+  }
+
+  const steppedPointsMm = vertices.map(v => ({
+    x: Math.round(v.x * 1000),
+    y: Math.round(v.y * 1000),
+  }));
+
+  const poly: Polygon = { points: steppedPointsMm };
+  if (!isValidPolygon(poly)) {
+    return {
+      status: 'INVALID_TOPOLOGY',
+      error: `Unit ${unit.flatLabel} (${unit.flatId}): steppedPolygon is invalid (self-intersecting, degenerate, or zero area).`,
+      pointsMm: steppedPointsMm,
+    };
+  }
+
+  // Check full interior room footprints (excluding balconies)
+  for (const room of unit.rooms) {
+    const rm = mm(room.bounds);
+    const roomPolyPoints = [
+      { x: rm.x, y: rm.y },
+      { x: rm.x + rm.width, y: rm.y },
+      { x: rm.x + rm.width, y: rm.y + rm.height },
+      { x: rm.x, y: rm.y + rm.height },
+    ];
+    if (!containsPolygonWithTolerance(steppedPointsMm, roomPolyPoints, toleranceMm)) {
+      return {
+        status: 'ROOM_OUTSIDE_STEPPED',
+        error: `Unit ${unit.flatLabel} (${unit.flatId}): room "${room.name}" (${room.id}) is not fully contained within stepped polygon boundary.`,
+        pointsMm: steppedPointsMm,
+      };
+    }
+  }
+
+  // Balconies: validate against open exterior attachment, do not treat as interior rooms
+  if (unit.balconies && unit.balconies.length > 0) {
+    for (const bal of unit.balconies) {
+      const bm = mm(bal.bounds);
+      const balCorners = [
+        { x: bm.x, y: bm.y },
+        { x: bm.x + bm.width, y: bm.y },
+        { x: bm.x + bm.width, y: bm.y + bm.height },
+        { x: bm.x, y: bm.y + bm.height },
+      ];
+      const touches = balCorners.some(c => pointInPolygonWithTolerance(c, steppedPointsMm, toleranceMm));
+      if (!touches) {
+        return {
+          status: 'ROOM_OUTSIDE_STEPPED',
+          error: `Unit ${unit.flatLabel} (${unit.flatId}): balcony "${bal.name}" (${bal.id}) does not attach to stepped polygon boundary.`,
+          pointsMm: steppedPointsMm,
+        };
+      }
+    }
+  }
+
+  return { status: 'VALID_STEPPED', pointsMm: steppedPointsMm };
 }
 
 export function schematicToApartmentStructure(schematic: DeterministicApartmentSchematic): ApartmentPlanStructure {
@@ -422,30 +483,23 @@ export function schematicToApartmentStructure(schematic: DeterministicApartmentS
     source: 'DETERMINISTIC_SCHEMATIC',
     boundary,
     flats: schematic.units.map(unit => {
-      const hasStepped = unit.steppedPolygon && unit.steppedPolygon.vertices && unit.steppedPolygon.vertices.length >= 6;
-      let steppedPointsMm: Array<{ x: number; y: number }> | undefined;
-      if (hasStepped) {
-        steppedPointsMm = unit.steppedPolygon!.vertices.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }));
+      const steppedResult = validateAndConvertSteppedPolygon(unit, 50);
+      let flatBoundary: Array<{ x: number; y: number }> | undefined;
+      if (steppedResult.status === 'VALID_STEPPED') {
+        flatBoundary = steppedResult.pointsMm;
+      } else if (steppedResult.status === 'INVALID_TOPOLOGY' || steppedResult.status === 'ROOM_OUTSIDE_STEPPED') {
+        // Fail closed: preserve the stepped points so downstream canonical validation sees the defect
+        flatBoundary = steppedResult.pointsMm ?? unit.steppedPolygon?.vertices?.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }));
+      } else {
+        flatBoundary = undefined;
       }
-      // Preserve the actual stepped polygon where valid; if rooms exceed it (e.g. existing rectangular plan),
-      // maintain compatibility with rectangular plan.
-      const isValidStepped = steppedPointsMm && unit.rooms.every(room => {
-        const rm = mm(room.bounds);
-        const corners = [
-          { x: rm.x, y: rm.y },
-          { x: rm.x + rm.width, y: rm.y },
-          { x: rm.x + rm.width, y: rm.y + rm.height },
-          { x: rm.x, y: rm.y + rm.height },
-        ];
-        return corners.every(c => isPointInPolyWithTolerance(c, steppedPointsMm!, 50));
-      });
 
       return {
         id: unit.flatId,
         label: unit.flatLabel,
         unitType: unit.unitType,
         rect: mm(unit.bounds),
-        boundary: isValidStepped ? steppedPointsMm : undefined,
+        boundary: flatBoundary,
         rooms: [...unit.rooms, ...unit.balconies].map(room => ({
           id: `${unit.flatId}__${room.id}`,
           name: room.name,
@@ -543,45 +597,55 @@ export function adaptSchematicToBuilding(
     }),
   );
 
+  const steppedValidationIssues: Array<{ flatId: string; code: string; message: string }> = [];
+  const flatBoundaries = schematic.units.map(u => {
+    const steppedResult = validateAndConvertSteppedPolygon(u, 50);
+    if (steppedResult.status === 'INVALID_TOPOLOGY') {
+      steppedValidationIssues.push({
+        flatId: u.flatId,
+        code: 'STEPPED_POLYGON_INVALID',
+        message: steppedResult.error,
+      });
+    } else if (steppedResult.status === 'ROOM_OUTSIDE_STEPPED') {
+      steppedValidationIssues.push({
+        flatId: u.flatId,
+        code: 'STEPPED_POLYGON_ROOM_ENCROACHMENT',
+        message: steppedResult.error,
+      });
+    }
+
+    let points: Array<{ x: number; y: number }>;
+    if (steppedResult.status === 'VALID_STEPPED') {
+      points = steppedResult.pointsMm;
+    } else if (steppedResult.status === 'INVALID_TOPOLOGY' || steppedResult.status === 'ROOM_OUTSIDE_STEPPED') {
+      // Do NOT silently replace with rectangle! Keep supplied polygon coordinates so downstream validation fails closed
+      points = steppedResult.pointsMm ?? u.steppedPolygon?.vertices?.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) })) ?? [];
+    } else {
+      // Genuine rectangular plan
+      points = [
+        { x: Math.round(u.bounds.x * 1000), y: Math.round(u.bounds.y * 1000) },
+        { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round(u.bounds.y * 1000) },
+        { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+        { x: Math.round(u.bounds.x * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
+      ];
+    }
+
+    return {
+      flatId: u.flatId,
+      label: u.flatLabel,
+      unitType: u.unitType,
+      rect: mm(u.bounds),
+      boundary: { points },
+    };
+  });
+
   return {
     ...building,
     metadata: {
       ...building.metadata,
       apartmentSchematic: schematic,
-      flatBoundaries: schematic.units.map(u => {
-        const hasStepped = u.steppedPolygon && u.steppedPolygon.vertices && u.steppedPolygon.vertices.length >= 6;
-        let steppedPointsMm: Array<{ x: number; y: number }> | undefined;
-        if (hasStepped) {
-          steppedPointsMm = u.steppedPolygon!.vertices.map(v => ({ x: Math.round(v.x * 1000), y: Math.round(v.y * 1000) }));
-        }
-        const isValidStepped = steppedPointsMm && u.rooms.every(room => {
-          const rm = mm(room.bounds);
-          const corners = [
-            { x: rm.x, y: rm.y },
-            { x: rm.x + rm.width, y: rm.y },
-            { x: rm.x + rm.width, y: rm.y + rm.height },
-            { x: rm.x, y: rm.y + rm.height },
-          ];
-          return corners.every(c => isPointInPolyWithTolerance(c, steppedPointsMm!, 50));
-        });
-
-        return {
-          flatId: u.flatId,
-          label: u.flatLabel,
-          unitType: u.unitType,
-          rect: mm(u.bounds),
-          boundary: {
-            points: isValidStepped
-              ? steppedPointsMm!
-              : [
-                  { x: Math.round(u.bounds.x * 1000), y: Math.round(u.bounds.y * 1000) },
-                  { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round(u.bounds.y * 1000) },
-                  { x: Math.round((u.bounds.x + u.bounds.width) * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
-                  { x: Math.round(u.bounds.x * 1000), y: Math.round((u.bounds.y + u.bounds.height) * 1000) },
-                ],
-          },
-        };
-      }),
+      flatBoundaries,
+      steppedPolygonValidationIssues: steppedValidationIssues,
       steppedPolygons: schematic.units.map(u => ({
         flatId: u.flatId,
         flatLabel: u.flatLabel,

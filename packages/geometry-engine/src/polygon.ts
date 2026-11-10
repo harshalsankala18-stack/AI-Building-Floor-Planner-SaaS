@@ -246,54 +246,12 @@ export function containsPolygon(outer: Polygon, inner: Polygon): boolean {
  * This is stricter than simple vertex containment - it also checks that inner polygon edges
  * do not cross outside the outer polygon.
  */
-export function containsPolygonConcave(outer: Polygon, inner: Polygon): boolean {
-  const outerPts = outer.points;
-  const innerPts = inner.points;
-
-  // 1. Every inner polygon vertex must be inside or on the outer polygon
-  for (const p of innerPts) {
-    if (!pointInPolygon(p, outer)) {
-      return false;
-    }
-  }
-
-  // 2. No inner polygon edge should cross outside the outer polygon.
-  const nInner = innerPts.length;
-  const nOuter = outerPts.length;
-
-  if (nInner < 2 || nOuter < 2) return false;
-
-  for (let i = 0; i < nInner; i++) {
-    const edgeStart = innerPts[i]!;
-    const edgeEnd = innerPts[(i + 1) % nInner]!;
-
-    for (let j = 0; j < nOuter; j++) {
-      const outerStart = outerPts[j]!;
-      const outerEnd = outerPts[(j + 1) % nOuter]!;
-
-      const intersection = segmentIntersection(
-        { start: edgeStart, end: edgeEnd },
-        { start: outerStart, end: outerEnd }
-      );
-
-      if (intersection !== null) {
-        const isAdjacentVertex =
-          (pointsEqual(edgeStart, outerStart) && pointsEqual(edgeEnd, outerEnd)) ||
-          (pointsEqual(edgeStart, outerEnd) && pointsEqual(edgeEnd, outerStart));
-
-        if (!isAdjacentVertex) {
-          const dx = intersection.x - edgeStart.x;
-          const dy = intersection.y - edgeStart.y;
-          const distFromStart = Math.sqrt(dx * dx + dy * dy);
-          if (distFromStart > TOLERANCES.LINEAR) {
-            return false;
-          }
-        }
-      }
-    }
-  }
-
-  return true;
+export function containsPolygonConcave(
+  outer: Polygon,
+  inner: Polygon,
+  toleranceMm: number = TOLERANCES.LINEAR,
+): boolean {
+  return containsPolygonWithTolerance(outer.points, inner.points, toleranceMm);
 }
 
 /** Check if a point is inside a polygon using ray casting with tolerance. */
@@ -338,6 +296,8 @@ export function containsPolygonWithTolerance(
   inner: readonly { x: number; y: number }[],
   toleranceMm: number = 50,
 ): boolean {
+  if (outer.length < 3) return false;
+
   for (const p of inner) {
     if (!pointInPolygonWithTolerance(p, outer, toleranceMm)) {
       return false;
@@ -345,38 +305,14 @@ export function containsPolygonWithTolerance(
   }
 
   const nInner = inner.length;
-  const nOuter = outer.length;
+  if (nInner < 2) return true;
 
   for (let i = 0; i < nInner; i++) {
     const edgeStart = inner[i]!;
     const edgeEnd = inner[(i + 1) % nInner]!;
-
-    for (let j = 0; j < nOuter; j++) {
-      const outerStart = outer[j]!;
-      const outerEnd = outer[(j + 1) % nOuter]!;
-
-      const intersection = segmentIntersection(
-        { start: edgeStart, end: edgeEnd },
-        { start: outerStart, end: outerEnd }
-      );
-
-      if (intersection !== null) {
-        const dx1 = edgeStart.x - outerStart.x;
-        const dy1 = edgeStart.y - outerStart.y;
-        const dx2 = edgeEnd.x - outerEnd.x;
-        const dy2 = edgeEnd.y - outerEnd.y;
-        const startIsShared = Math.abs(dx1) <= toleranceMm && Math.abs(dy1) <= toleranceMm;
-        const endIsShared = Math.abs(dx2) <= toleranceMm && Math.abs(dy2) <= toleranceMm;
-
-        if (!startIsShared || !endIsShared) {
-          const dx = intersection.x - edgeStart.x;
-          const dy = intersection.y - edgeStart.y;
-          const distFromStart = Math.sqrt(dx * dx + dy * dy);
-          if (distFromStart > toleranceMm) {
-            return false;
-          }
-        }
-      }
+    const edge: LineSegment = { start: edgeStart, end: edgeEnd };
+    if (segmentCrossesOutsidePolygon(edge, outer, toleranceMm)) {
+      return false;
     }
   }
 
@@ -393,35 +329,57 @@ export function segmentCrossesOutsidePolygon(
 
   const p1In = pointInPolygonWithTolerance(p1, polygon, toleranceMm);
   const p2In = pointInPolygonWithTolerance(p2, polygon, toleranceMm);
-
-  if (p1In && p2In) {
-    const midX = (p1.x + p2.x) / 2;
-    const midY = (p1.y + p2.y) / 2;
-    const midIn = pointInPolygonWithTolerance({ x: midX, y: midY }, polygon, toleranceMm);
-    if (!midIn) {
-      for (const t of [0.25, 0.5, 0.75]) {
-        const sampleX = p1.x + (p2.x - p1.x) * t;
-        const sampleY = p1.y + (p2.y - p1.y) * t;
-        if (!pointInPolygonWithTolerance({ x: sampleX, y: sampleY }, polygon, toleranceMm)) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
   if (!p1In || !p2In) return true;
 
-  const midX = (p1.x + p2.x) / 2;
-  const midY = (p1.y + p2.y) / 2;
-  const midIn = pointInPolygonWithTolerance({ x: midX, y: midY }, polygon, toleranceMm);
-  if (midIn) {
-    for (const t of [0.25, 0.5, 0.75]) {
-      const sampleX = p1.x + (p2.x - p1.x) * t;
-      const sampleY = p1.y + (p2.y - p1.y) * t;
-      if (pointInPolygonWithTolerance({ x: sampleX, y: sampleY }, polygon, toleranceMm)) {
-        return true;
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-10) return false;
+
+  const tValues: number[] = [0, 1];
+  const nPoly = polygon.length;
+
+  for (let j = 0; j < nPoly; j++) {
+    const e1 = polygon[j]!;
+    const e2 = polygon[(j + 1) % nPoly]!;
+    const edge: LineSegment = { start: e1, end: e2 };
+
+    // Vertex projection near segment to capture exact boundary vertex transitions
+    const tVertex = ((e1.x - p1.x) * dx + (e1.y - p1.y) * dy) / lenSq;
+    if (tVertex > 0 && tVertex < 1) {
+      const projX = p1.x + tVertex * dx;
+      const projY = p1.y + tVertex * dy;
+      const distSq = (e1.x - projX) * (e1.x - projX) + (e1.y - projY) * (e1.y - projY);
+      if (distSq <= toleranceMm * toleranceMm) {
+        tValues.push(tVertex);
       }
+    }
+
+    // Exact segment intersection with polygon edge
+    const inter = segmentIntersection(segment, edge);
+    if (inter !== null) {
+      const t = ((inter.x - p1.x) * dx + (inter.y - p1.y) * dy) / lenSq;
+      const clampedT = Math.max(0, Math.min(1, t));
+      tValues.push(clampedT);
+    }
+  }
+
+  tValues.sort((a, b) => a - b);
+  const distinctT: number[] = [];
+  for (const t of tValues) {
+    if (distinctT.length === 0 || Math.abs(t - distinctT[distinctT.length - 1]!) > 1e-4) {
+      distinctT.push(t);
+    }
+  }
+
+  for (let i = 0; i < distinctT.length - 1; i++) {
+    const tMid = (distinctT[i]! + distinctT[i + 1]!) / 2;
+    const midPt = {
+      x: p1.x + tMid * dx,
+      y: p1.y + tMid * dy,
+    };
+    if (!pointInPolygonWithTolerance(midPt, polygon, toleranceMm)) {
+      return true;
     }
   }
 
