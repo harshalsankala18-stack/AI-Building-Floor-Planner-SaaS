@@ -135,17 +135,16 @@ export function buildSteppedPolygon(params: SteppedPolygonParams): SteppedUnitPo
   let vertices: { x: number; y: number }[];
 
   if (corridorSide === 'W' || corridorSide === 'E') {
-    // Corridor on W or E: step is on the opposite open facade side (E or W)
-    // For corridor W: unit is east of corridor, open facades E,N,S.
-    // Step the southern bedroom wing on the east side.
-    const insetX = corridorSide === 'W' ? x1 - insetMm / 1000 : x0 + insetMm / 1000;
+    // Corridor on W or E: step projects outward on the opposite open facade side (E or W)
+    // to enclose the unit's articulated facade wing without encroaching on interior rooms.
+    const stepX = corridorSide === 'W' ? x1 + insetMm / 1000 : x0 - insetMm / 1000;
     if (corridorSide === 'W') {
       vertices = [
         { x: x0, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: splitY },
-        { x: insetX, y: splitY },
-        { x: insetX, y: y1 },
+        { x: stepX, y: splitY },
+        { x: stepX, y: y1 },
         { x: x0, y: y1 },
       ];
     } else {
@@ -153,28 +152,28 @@ export function buildSteppedPolygon(params: SteppedPolygonParams): SteppedUnitPo
         { x: x0, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: y1 },
-        { x: insetX, y: y1 },
-        { x: insetX, y: splitY },
+        { x: stepX, y: y1 },
+        { x: stepX, y: splitY },
         { x: x0, y: splitY },
       ];
     }
   } else {
-    // Corridor N or S: step on opposite side
-    const insetY = corridorSide === 'N' ? y1 - insetMm / 1000 : y0 + insetMm / 1000;
+    // Corridor N or S: step projects outward on opposite side
+    const stepY = corridorSide === 'N' ? y1 + insetMm / 1000 : y0 - insetMm / 1000;
     const splitX = x0 + bbox.width * 0.58;
     if (corridorSide === 'N') {
       vertices = [
         { x: x0, y: y0 },
         { x: x1, y: y0 },
-        { x: x1, y: insetY },
-        { x: splitX, y: insetY },
+        { x: x1, y: y1 },
         { x: splitX, y: y1 },
-        { x: x0, y: y1 },
+        { x: splitX, y: stepY },
+        { x: x0, y: stepY },
       ];
     } else {
       vertices = [
-        { x: x0, y: insetY },
-        { x: splitX, y: insetY },
+        { x: x0, y: stepY },
+        { x: splitX, y: stepY },
         { x: splitX, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: y1 },
