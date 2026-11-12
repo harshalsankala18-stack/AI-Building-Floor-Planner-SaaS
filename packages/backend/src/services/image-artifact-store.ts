@@ -25,8 +25,16 @@ export interface StoredImageArtifactMetadata {
   readonly promptVersion: number;
   readonly originalPrompt: string;
   readonly negativePrompt: string;
+  /**
+   * The image's ACTUAL decoded pixel size, read from the returned bytes.
+   * Image providers may ignore the requested size (aspect-ratio-only APIs do),
+   * so the request's width/height are kept separately as `requestedWidth`/
+   * `requestedHeight` and must never be used as the raster's real dimensions.
+   */
   readonly width: number;
   readonly height: number;
+  readonly requestedWidth: number;
+  readonly requestedHeight: number;
   readonly mimeType: string;
   readonly generatedAt: string;
   readonly latencyMs: number;
@@ -44,6 +52,49 @@ export class ImageArtifactImmutabilityError extends Error {
     this.name = 'ImageArtifactImmutabilityError';
     Object.setPrototypeOf(this, ImageArtifactImmutabilityError.prototype);
   }
+}
+
+/**
+ * Read a raster's real pixel size from its own bytes (PNG IHDR / JPEG SOFn).
+ * Returns null when the header cannot be parsed; callers then fall back to the
+ * requested size and the mismatch stays visible rather than silently assumed.
+ */
+export function decodeImageDimensions(bytes: Buffer): { width: number; height: number } | null {
+  // PNG: 8-byte signature, then IHDR length/type, then width/height big-endian.
+  if (
+    bytes.length >= 24 &&
+    bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47
+  ) {
+    const width = bytes.readUInt32BE(16);
+    const height = bytes.readUInt32BE(20);
+    return width > 0 && height > 0 ? { width, height } : null;
+  }
+
+  // JPEG: walk the marker segments to the first Start-Of-Frame.
+  if (bytes.length >= 4 && bytes[0] === 0xff && bytes[1] === 0xd8) {
+    let offset = 2;
+    while (offset + 9 < bytes.length) {
+      if (bytes[offset] !== 0xff) { offset += 1; continue; }
+      const marker = bytes[offset + 1]!;
+      // Standalone markers carry no length payload.
+      if (marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7) || marker === 0x01) {
+        offset += 2;
+        continue;
+      }
+      const segmentLength = bytes.readUInt16BE(offset + 2);
+      const isStartOfFrame =
+        marker >= 0xc0 && marker <= 0xcf && marker !== 0xc4 && marker !== 0xc8 && marker !== 0xcc;
+      if (isStartOfFrame) {
+        const height = bytes.readUInt16BE(offset + 5);
+        const width = bytes.readUInt16BE(offset + 7);
+        return width > 0 && height > 0 ? { width, height } : null;
+      }
+      if (segmentLength < 2) return null;
+      offset += 2 + segmentLength;
+    }
+  }
+
+  return null;
 }
 
 export class ImageArtifactStore {
@@ -81,6 +132,9 @@ export class ImageArtifactStore {
     }
 
     const extension = image.mimeType === 'image/jpeg' ? 'jpg' : 'png';
+    const imageBytes = Buffer.from(image.imageBase64, 'base64');
+    // Record what the provider actually returned, not what we asked for.
+    const decoded = decodeImageDimensions(imageBytes);
     const artifact: StoredImageArtifact = {
       generationId,
       projectId,
@@ -90,8 +144,10 @@ export class ImageArtifactStore {
       promptVersion: request.promptVersion,
       originalPrompt: image.prompt,
       negativePrompt: request.negativePrompt,
-      width: request.width,
-      height: request.height,
+      width: decoded?.width ?? request.width,
+      height: decoded?.height ?? request.height,
+      requestedWidth: request.width,
+      requestedHeight: request.height,
       mimeType: image.mimeType,
       generatedAt: image.generatedAt,
       latencyMs: image.latencyMs,
@@ -101,7 +157,7 @@ export class ImageArtifactStore {
 
     const { imageBase64, ...metadata } = artifact;
     await writeFile(metadataPath, JSON.stringify(metadata, null, 2), 'utf8');
-    await writeFile(this.imagePath(generationId, extension), Buffer.from(imageBase64, 'base64'));
+    await writeFile(this.imagePath(generationId, extension), imageBytes);
     return artifact;
   }
 
@@ -115,7 +171,16 @@ export class ImageArtifactStore {
     const metadata = JSON.parse(raw) as StoredImageArtifactMetadata;
     const extension = metadata.mimeType === 'image/jpeg' ? 'jpg' : 'png';
     const imageBytes = await readFile(this.imagePath(generationId, extension));
-    return { ...metadata, imageBase64: imageBytes.toString('base64') };
+    // Legacy artifacts recorded the REQUESTED size as width/height. Correct it
+    // from the stored bytes so downstream image→mm mapping uses real pixels.
+    const decoded = decodeImageDimensions(imageBytes);
+    return {
+      ...metadata,
+      requestedWidth: metadata.requestedWidth ?? metadata.width,
+      requestedHeight: metadata.requestedHeight ?? metadata.height,
+      ...(decoded ? { width: decoded.width, height: decoded.height } : {}),
+      imageBase64: imageBytes.toString('base64'),
+    };
   }
 
   async listByProject(projectId: string): Promise<StoredImageArtifactMetadata[]> {

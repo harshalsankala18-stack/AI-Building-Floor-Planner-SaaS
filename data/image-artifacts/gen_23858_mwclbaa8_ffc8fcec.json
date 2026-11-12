@@ -1,0 +1,32 @@
+{
+  "generationId": "gen_23858_mwclbaa8_ffc8fcec",
+  "projectId": "proj_q7fuhen",
+  "seed": 23858,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Ahmedabad L-Shaped Villa, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing East.\nSETBACKS: front 3048mm, rear 1829mm, left 1524mm, right 1524mm.\nROOM PROGRAM: 3 bedroom(s), 2 bathroom(s), living room, kitchen, dining room, staircase.\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: 3 bedrooms, 2 bathrooms, living room, dining room, kitchen, balcony, parking, vastu compliant orientation. Footprint shape: l shape. Plot size 40x60 ft, road facing east.\n\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #4, Previous Score: 65/100):\n- RESOLVE HARD VIOLATIONS: Failure to provide a distinct 2-floor layout for the 3 BHK requirement (currently looks like all rooms are on the ground level).; Vastu violation for kitchen placement (NE instead of SE).\n- FIX SPATIAL DEFECTS: Kitchen is located in the North-East corner instead of the South-East.; The layout appears to combine all 3 bedrooms on a single level while referencing a 'Ground and First Floor Plan' which is inconsistent with the visual output.; Complex internal plumbing due to bathroom scattering.\n- ARCHITECTURAL CORRECTIONS: Move the kitchen to the South-East corner to comply with Vastu principles.; Redesign the floor plan to distribute the 3 bedrooms across two levels (e.g., 1 bedroom on ground, 2 on first) to satisfy the multi-floor duplex requirement.; Refine the 'First Floor' portion of the drawing to show a separate plan instead of just a balcony/open-to-below void.\nEnsure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n- Use the supplied reference images for visual drafting style. Current project requirements always override references.\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 832,
+  "height": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T20:47:17.452Z",
+  "latencyMs": 4733,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "referenceHashes": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "aspectRatio": "3:4",
+    "promptHash": "27b812571d0eb6ec3704d5c9cb1da3c084a387ea7930587dba56e5c60ad34b91"
+  }
+}

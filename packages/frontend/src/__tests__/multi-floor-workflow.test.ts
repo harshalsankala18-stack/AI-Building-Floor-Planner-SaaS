@@ -86,7 +86,7 @@ describe('multi-floor persistence and export workflow', () => {
       format: 'json',
       floorId: building.floors[2]!.id,
     });
-    expect(JSON.parse(json.content).building.floors).toHaveLength(4);
+    expect(JSON.parse(json.content as string).building.floors).toHaveLength(4);
 
     const pdf = createExportArtifact(building, {
       ...DEFAULT_ADVANCED_EXPORT_SETTINGS,

@@ -136,6 +136,8 @@ export {
   createDefaultFootprintIntent,
   generateFootprintPolygon,
   validateFootprint,
+  checkFootprintFeasibility,
+  type FootprintFeasibilityResult,
   applyFootprintToBuilding,
   deriveFootprintIntent,
   recenterFootprint,

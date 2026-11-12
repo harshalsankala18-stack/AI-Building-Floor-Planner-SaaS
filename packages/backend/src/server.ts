@@ -15,6 +15,9 @@ import {
   GeminiProvider,
   PollinationsImageProvider,
   POLLINATIONS_PROVIDER_NAME,
+  GEMINI_IMAGE_PROVIDER_NAME,
+  ImageProviderError,
+  type FloorPlanImagePromptRequest,
   type BaseAIProvider,
   type ImageGenerationProvider,
 } from '@ai-floor-planner/ai-orchestration';
@@ -146,16 +149,43 @@ export interface ProviderStatusInfo {
 }
 
 export interface ImageGenerationStatusInfo extends ProviderStatusInfo {
-  /** Active image-generation provider name (e.g. 'pollinations', 'cloudflare-workers-ai'). */
+  /** Active image-generation provider name (e.g. 'gemini', 'pollinations', 'cloudflare-workers-ai'). */
   readonly provider: string;
+  readonly imageModelReachable: boolean;
+  readonly authenticationStatus: 'AUTHENTICATED' | 'AUTH_FAILED' | 'NOT_CONFIGURED';
+  readonly modelAvailability: 'AVAILABLE' | 'UNAVAILABLE' | 'UNKNOWN';
+  readonly rateLimits: 'OK' | 'EXCEEDED' | 'UNKNOWN';
+  readonly quotaState: 'OK' | 'EXCEEDED' | 'UNKNOWN';
+  readonly lastSuccessfulGeneration: string | null;
   readonly capabilities?: { readonly acceptsImageInput: boolean; readonly maxReferenceImages: number; readonly source: string };
+}
+
+export interface VisionStatusInfo extends ProviderStatusInfo {
+  readonly visionModelReachable: boolean;
+  readonly authenticationStatus: 'AUTHENTICATED' | 'AUTH_FAILED' | 'NOT_CONFIGURED';
+  readonly modelAvailability: 'AVAILABLE' | 'UNAVAILABLE' | 'UNKNOWN';
+  readonly rateLimits: 'OK' | 'EXCEEDED' | 'UNKNOWN';
+  readonly quotaState: 'OK' | 'EXCEEDED' | 'UNKNOWN';
 }
 
 export interface BackendHealthResponse {
   readonly status: 'ok' | 'degraded';
   readonly imageProvider: 'configured' | 'not_configured';
+  readonly imageProviderName?: string;
+  readonly imageProviderStatus?: string;
+  readonly configuredImageModel?: string;
+  readonly imageProviderConfigured: boolean;
+  readonly imageModelReachable: boolean;
+  readonly visionModelReachable: boolean;
+  readonly authenticationStatus: 'AUTHENTICATED' | 'AUTH_FAILED' | 'NOT_CONFIGURED';
+  readonly modelAvailability: 'AVAILABLE' | 'UNAVAILABLE' | 'UNKNOWN';
+  readonly rateLimits: 'OK' | 'EXCEEDED' | 'UNKNOWN';
+  readonly quotaState: 'OK' | 'EXCEEDED' | 'UNKNOWN';
+  readonly lastSuccessfulGeneration: string | null;
   /** Status of the ACTIVE image-generation provider. */
   readonly imageGeneration: ImageGenerationStatusInfo;
+  /** Status of the Vision / Evaluation model. */
+  readonly vision: VisionStatusInfo;
   /** Cloudflare status; 'INACTIVE' when another image provider is selected. */
   readonly cloudflare: ProviderStatusInfo;
   readonly gemini: ProviderStatusInfo;
@@ -169,21 +199,43 @@ export async function checkProviderHealth(
   const isPollinations = deps.provider
     ? deps.provider.name === POLLINATIONS_PROVIDER_NAME
     : config.imageProviderKind === 'pollinations';
+  const isGeminiImage = deps.provider
+    ? deps.provider.name === GEMINI_IMAGE_PROVIDER_NAME
+    : config.imageProviderKind === 'gemini';
   let cfStatus: ProviderStatusInfo;
   let imageGeneration: ImageGenerationStatusInfo | null = null;
   if (isPollinations) {
     // Pollinations is the active image provider: check key + model catalog (no generation, no spend).
     const model = deps.provider instanceof PollinationsImageProvider ? deps.provider.getModel() : config.pollinationsImageModel;
     if (!(deps.provider instanceof PollinationsImageProvider)) {
-      imageGeneration = { provider: POLLINATIONS_PROVIDER_NAME, configured: false, reachable: false, status: 'NOT_CONFIGURED', model, detail: 'POLLINATIONS_API_KEY is not configured' };
+      imageGeneration = {
+        provider: POLLINATIONS_PROVIDER_NAME,
+        configured: false,
+        reachable: false,
+        imageModelReachable: false,
+        status: 'NOT_CONFIGURED',
+        model,
+        detail: 'POLLINATIONS_API_KEY is not configured',
+        authenticationStatus: 'NOT_CONFIGURED',
+        modelAvailability: 'UNKNOWN',
+        rateLimits: 'UNKNOWN',
+        quotaState: 'UNKNOWN',
+        lastSuccessfulGeneration: null,
+      };
     } else {
       const access = await deps.provider.checkAccess();
       imageGeneration = {
         provider: POLLINATIONS_PROVIDER_NAME,
         configured: true,
         reachable: access.reachable,
+        imageModelReachable: access.reachable,
         status: access.status,
         model,
+        authenticationStatus: access.status === 'AUTH_FAILED' ? 'AUTH_FAILED' : 'AUTHENTICATED',
+        modelAvailability: access.status === 'MODEL_UNAVAILABLE' ? 'UNAVAILABLE' : (access.reachable ? 'AVAILABLE' : 'UNKNOWN'),
+        rateLimits: access.status === 'RATE_LIMITED' ? 'EXCEEDED' : 'OK',
+        quotaState: 'OK',
+        lastSuccessfulGeneration: null,
         ...(access.detail ? { detail: access.detail } : {}),
         ...(access.capabilities
           ? { capabilities: { acceptsImageInput: access.capabilities.acceptsImageInput, maxReferenceImages: access.capabilities.maxReferenceImages, source: access.capabilities.source } }
@@ -197,13 +249,55 @@ export async function checkProviderHealth(
       model: config.fluxModel,
       detail: `Active image provider: ${POLLINATIONS_PROVIDER_NAME} (${model})`,
     };
+  } else if (isGeminiImage) {
+    const model = deps.provider instanceof GeminiImageProvider ? deps.provider.getModel() : config.geminiImageModel;
+    if (!(deps.provider instanceof GeminiImageProvider) || !deps.provider.isConfigured()) {
+      imageGeneration = {
+        provider: GEMINI_IMAGE_PROVIDER_NAME,
+        configured: false,
+        reachable: false,
+        imageModelReachable: false,
+        status: 'NOT_CONFIGURED',
+        model,
+        detail: 'GEMINI_API_KEY is not configured',
+        authenticationStatus: 'NOT_CONFIGURED',
+        modelAvailability: 'UNKNOWN',
+        rateLimits: 'UNKNOWN',
+        quotaState: 'UNKNOWN',
+        lastSuccessfulGeneration: null,
+      };
+    } else {
+      const access = await deps.provider.checkAccess();
+      imageGeneration = {
+        provider: GEMINI_IMAGE_PROVIDER_NAME,
+        configured: true,
+        reachable: access.reachable,
+        imageModelReachable: access.imageModelReachable,
+        status: access.status,
+        model,
+        ...(access.detail ? { detail: access.detail } : {}),
+        authenticationStatus: access.authenticationStatus,
+        modelAvailability: access.modelAvailability,
+        rateLimits: access.rateLimits,
+        quotaState: access.quotaState,
+        lastSuccessfulGeneration: access.lastSuccessfulGeneration,
+      };
+    }
+    cfStatus = {
+      configured: cloudflareConfigured(config),
+      reachable: false,
+      status: 'INACTIVE',
+      model: config.fluxModel,
+      detail: `Active image provider: ${GEMINI_IMAGE_PROVIDER_NAME} (${model})`,
+    };
   } else if (config.imageProviderKind === 'local-stub' || deps.provider instanceof LocalStubImageProvider || (deps.provider && !isCloudflare)) {
+    const reachable = (await deps.provider?.isAvailable().catch(() => false)) ?? true;
     cfStatus = {
       configured: true,
-      reachable: true,
-      status: 'REACHABLE',
+      reachable,
+      status: reachable ? 'REACHABLE' : 'NOT_CONFIGURED',
       model: deps.provider?.name ?? 'local-stub',
-      detail: 'Local or stub provider active',
+      detail: 'Custom, local or stub provider active',
     };
   } else if (!cloudflareConfigured(config) || !deps.provider) {
     cfStatus = {
@@ -360,22 +454,32 @@ export async function checkProviderHealth(
     }
   }
 
-  let geminiStatus: ProviderStatusInfo;
+  let visionStatus: VisionStatusInfo;
   if (deps.interpreterKind === 'local-stub') {
-    geminiStatus = {
+    visionStatus = {
       configured: true,
       reachable: true,
+      visionModelReachable: true,
       status: 'REACHABLE',
       model: 'local-stub',
       detail: 'Local development stub interpreter active',
+      authenticationStatus: 'AUTHENTICATED',
+      modelAvailability: 'AVAILABLE',
+      rateLimits: 'OK',
+      quotaState: 'OK',
     };
   } else if (!config.geminiApiKey || !deps.gemini) {
-    geminiStatus = {
+    visionStatus = {
       configured: false,
       reachable: false,
+      visionModelReachable: false,
       status: 'NOT_CONFIGURED',
       model: config.geminiModel,
       detail: 'GEMINI_API_KEY is not configured',
+      authenticationStatus: 'NOT_CONFIGURED',
+      modelAvailability: 'UNKNOWN',
+      rateLimits: 'UNKNOWN',
+      quotaState: 'UNKNOWN',
     };
   } else {
     try {
@@ -384,71 +488,120 @@ export async function checkProviderHealth(
         { signal: AbortSignal.timeout(5000) },
       );
       if (res.ok) {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: true,
+          visionModelReachable: true,
           status: 'REACHABLE',
           model: config.geminiModel,
-        };
-      } else if (res.status === 401 || res.status === 403) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: 'AUTH_FAILED',
-          model: config.geminiModel,
-          detail: `Gemini API key is invalid or unauthorized (HTTP ${res.status})`,
-        };
-      } else if (res.status === 429) {
-        const bodyText = await res.text().catch(() => '');
-        const isQuota = /quota|exhausted/i.test(bodyText);
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: isQuota ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED',
-          model: config.geminiModel,
-          detail: `Gemini rate limit or quota exceeded (HTTP ${res.status})`,
-        };
-      } else if (res.status === 503 || res.status === 504) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: 'TEMPORARILY_UNAVAILABLE',
-          model: config.geminiModel,
-          detail: `Gemini service is temporarily unavailable / experiencing high demand (HTTP ${res.status})`,
-        };
-      } else if (res.status === 404) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: 'MODEL_UNAVAILABLE',
-          model: config.geminiModel,
-          detail: `Model ${config.geminiModel} not found or retired`,
+          authenticationStatus: 'AUTHENTICATED',
+          modelAvailability: 'AVAILABLE',
+          rateLimits: 'OK',
+          quotaState: 'OK',
         };
       } else {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: 'REQUEST_ERROR',
-          model: config.geminiModel,
-          detail: `HTTP ${res.status}`,
-        };
+        let errDetail: string | undefined;
+        try {
+          const body = (await res.json()) as { error?: { message?: string } };
+          if (body?.error?.message) errDetail = body.error.message;
+        } catch {
+          // Ignored
+        }
+
+        if (res.status === 401 || res.status === 403) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: 'AUTH_FAILED',
+            model: config.geminiModel,
+            detail: errDetail ? `Gemini API key is unauthorized: ${errDetail} (HTTP ${res.status})` : `Gemini API key is invalid or unauthorized (HTTP ${res.status})`,
+            authenticationStatus: 'AUTH_FAILED',
+            modelAvailability: 'UNKNOWN',
+            rateLimits: 'UNKNOWN',
+            quotaState: 'UNKNOWN',
+          };
+        } else if (res.status === 429) {
+          const isQuota = /quota|exhausted/i.test(errDetail ?? '');
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: isQuota ? 'QUOTA_EXCEEDED' : 'RATE_LIMITED',
+            model: config.geminiModel,
+            detail: errDetail || `Gemini rate limit or quota exceeded (HTTP ${res.status})`,
+            authenticationStatus: 'AUTHENTICATED',
+            modelAvailability: 'AVAILABLE',
+            rateLimits: 'EXCEEDED',
+            quotaState: isQuota ? 'EXCEEDED' : 'OK',
+          };
+        } else if (res.status === 503 || res.status === 504) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: 'TEMPORARILY_UNAVAILABLE',
+            model: config.geminiModel,
+            detail: errDetail || `Gemini service is temporarily unavailable / experiencing high demand (HTTP ${res.status})`,
+            authenticationStatus: 'AUTHENTICATED',
+            modelAvailability: 'AVAILABLE',
+            rateLimits: 'OK',
+            quotaState: 'OK',
+          };
+        } else if (res.status === 404) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: 'MODEL_UNAVAILABLE',
+            model: config.geminiModel,
+            detail: errDetail ? `Model ${config.geminiModel} not found: ${errDetail}` : `Model ${config.geminiModel} not found or retired`,
+            authenticationStatus: 'AUTHENTICATED',
+            modelAvailability: 'UNAVAILABLE',
+            rateLimits: 'OK',
+            quotaState: 'OK',
+          };
+        } else {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: 'REQUEST_ERROR',
+            model: config.geminiModel,
+            detail: errDetail ? `HTTP ${res.status}: ${errDetail}` : `HTTP ${res.status}`,
+            authenticationStatus: 'UNKNOWN' as any,
+            modelAvailability: 'UNKNOWN',
+            rateLimits: 'UNKNOWN',
+            quotaState: 'UNKNOWN',
+          };
+        }
       }
     } catch (err) {
       if (err instanceof Error && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: false,
+          visionModelReachable: false,
           status: 'TIMEOUT',
           model: config.geminiModel,
           detail: 'Gemini health check timed out',
+          authenticationStatus: 'UNKNOWN' as any,
+          modelAvailability: 'UNKNOWN',
+          rateLimits: 'UNKNOWN',
+          quotaState: 'UNKNOWN',
         };
       } else {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: false,
+          visionModelReachable: false,
           status: 'NETWORK_ERROR',
           model: config.geminiModel,
           detail: err instanceof Error ? err.message : 'Network timeout or unreachable',
+          authenticationStatus: 'UNKNOWN' as any,
+          modelAvailability: 'UNKNOWN',
+          rateLimits: 'UNKNOWN',
+          quotaState: 'UNKNOWN',
         };
       }
     }
@@ -456,14 +609,40 @@ export async function checkProviderHealth(
 
   const activeImage: ImageGenerationStatusInfo = imageGeneration ?? {
     provider: deps.provider?.name ?? 'cloudflare-workers-ai',
+    imageModelReachable: cfStatus.reachable,
+    authenticationStatus: cfStatus.status === 'AUTH_FAILED' ? 'AUTH_FAILED' : (cfStatus.configured ? 'AUTHENTICATED' : 'NOT_CONFIGURED'),
+    modelAvailability: cfStatus.status === 'MODEL_UNAVAILABLE' ? 'UNAVAILABLE' : (cfStatus.reachable ? 'AVAILABLE' : 'UNKNOWN'),
+    rateLimits: cfStatus.status === 'RATE_LIMITED' ? 'EXCEEDED' : 'OK',
+    quotaState: 'OK',
+    lastSuccessfulGeneration: null,
     ...cfStatus,
   };
+
+  const imageModelReachable = activeImage.imageModelReachable ?? activeImage.reachable;
+  const visionModelReachable = visionStatus.visionModelReachable;
+
   return {
-    status: activeImage.reachable && geminiStatus.reachable ? 'ok' : 'degraded',
+    status: imageModelReachable && visionModelReachable ? 'ok' : 'degraded',
     imageProvider: deps.provider ? 'configured' : 'not_configured',
+    imageProviderName: activeImage.provider,
+    imageProviderStatus: imageModelReachable ? 'REACHABLE' : activeImage.status,
+    configuredImageModel: activeImage.model,
+    imageProviderConfigured: activeImage.configured,
+    imageModelReachable,
+    visionModelReachable,
+    authenticationStatus: activeImage.authenticationStatus === 'AUTHENTICATED' && visionStatus.authenticationStatus === 'AUTHENTICATED'
+      ? 'AUTHENTICATED'
+      : (activeImage.authenticationStatus === 'AUTH_FAILED' || visionStatus.authenticationStatus === 'AUTH_FAILED' ? 'AUTH_FAILED' : 'NOT_CONFIGURED'),
+    modelAvailability: activeImage.modelAvailability === 'AVAILABLE' && visionStatus.modelAvailability === 'AVAILABLE'
+      ? 'AVAILABLE'
+      : (activeImage.modelAvailability === 'UNAVAILABLE' || visionStatus.modelAvailability === 'UNAVAILABLE' ? 'UNAVAILABLE' : 'UNKNOWN'),
+    rateLimits: activeImage.rateLimits === 'EXCEEDED' || visionStatus.rateLimits === 'EXCEEDED' ? 'EXCEEDED' : 'OK',
+    quotaState: activeImage.quotaState === 'EXCEEDED' || visionStatus.quotaState === 'EXCEEDED' ? 'EXCEEDED' : 'OK',
+    lastSuccessfulGeneration: activeImage.lastSuccessfulGeneration,
     imageGeneration: activeImage,
+    vision: visionStatus,
     cloudflare: cfStatus,
-    gemini: geminiStatus,
+    gemini: visionStatus,
   };
 }
 
@@ -508,6 +687,228 @@ function readBody(request: IncomingMessage): Promise<string> {
   });
 }
 
+export const DEFAULT_SMOKE_TEST_PROMPT = `Create a premium architectural floor-plan concept illustration for a modern Indian L-shaped 3-bedroom villa.
+
+The villa is designed for a 40 ft × 60 ft east-facing residential plot in Ahmedabad, Gujarat.
+
+Create a clean, sophisticated, top-down orthographic architectural floor-plan visualization with a clearly recognizable L-shaped building footprint.
+
+Include these architectural spaces:
+- Spacious living room.
+- Dining area connected naturally to the living room.
+- Semi-open kitchen.
+- Three appropriately positioned bedrooms.
+- Attached and common bathrooms.
+- Dedicated northeast Pooja room.
+- Utility space toward the southeast.
+- Front verandah or traditional otla.
+- Parking provision.
+- Internal circulation and staircase provision for a possible G+1 design.
+
+Follow the specified east-facing site orientation and strict Vastu preferences. Make the layout feel realistic, spacious, practical, and architecturally intentional.
+
+Use varied but coherent room proportions, thoughtful circulation, realistic door and window placement, and natural daylight considerations.
+
+Visual style:
+- Professional architectural presentation.
+- Fine dark architectural outlines.
+- Subtle neutral floor finishes.
+- Refined material representation.
+- Clear spatial separation.
+- Minimal visual clutter.
+- Balanced composition.
+- High-quality architectural visualization.
+
+The result should look like a professionally prepared architectural concept presentation, not a generic collection of rectangular boxes.
+
+Do not invent dimensions, room labels, technical annotations, structural calculations, or building-code certifications. Do not present this generated image as an engineering-approved construction drawing.
+
+Generate an actual image, not a textual description.`;
+
+export function decodeImageDimensions(buf: Buffer): { format: 'png' | 'jpeg'; width: number; height: number } | null {
+  if (
+    buf.length >= 24 &&
+    buf[0] === 0x89 &&
+    buf[1] === 0x50 &&
+    buf[2] === 0x4e &&
+    buf[3] === 0x47 &&
+    buf[4] === 0x0d &&
+    buf[5] === 0x0a &&
+    buf[6] === 0x1a &&
+    buf[7] === 0x0a
+  ) {
+    const width = buf.readUInt32BE(16);
+    const height = buf.readUInt32BE(20);
+    if (width > 0 && height > 0) {
+      return { format: 'png', width, height };
+    }
+  }
+  if (buf.length >= 4 && buf[0] === 0xff && buf[1] === 0xd8 && buf[2] === 0xff) {
+    let offset = 2;
+    while (offset + 9 < buf.length) {
+      if (buf[offset] !== 0xff) {
+        offset++;
+        continue;
+      }
+      const marker = buf[offset + 1]!;
+      if (marker === 0xff) {
+        offset++;
+        continue;
+      }
+      // SOF0..SOF3, SOF5..SOF7, SOF9..SOF11, SOF13..SOF15
+      if (
+        (marker >= 0xc0 && marker <= 0xc3) ||
+        (marker >= 0xc5 && marker <= 0xc7) ||
+        (marker >= 0xc9 && marker <= 0xcb) ||
+        (marker >= 0xcd && marker <= 0xcf)
+      ) {
+        const height = buf.readUInt16BE(offset + 5);
+        const width = buf.readUInt16BE(offset + 7);
+        if (width > 0 && height > 0) {
+          return { format: 'jpeg', width, height };
+        }
+        break;
+      }
+      if (offset + 3 >= buf.length) break;
+      const segLength = buf.readUInt16BE(offset + 2);
+      if (segLength < 2) break;
+      offset += 2 + segLength;
+    }
+  }
+  return null;
+}
+
+export async function handleImageSmokeTest(deps: ServerDeps, rawBody?: string): Promise<{ status: number; json: unknown }> {
+  if (!deps.provider) {
+    return {
+      status: 503,
+      json: {
+        success: false,
+        error: { code: 'NOT_CONFIGURED', message: 'No image generation provider configured on server.' },
+      },
+    };
+  }
+
+  if ('checkAccess' in deps.provider) {
+    const access = await (deps.provider as any).checkAccess().catch(() => null);
+    if (access && !access.reachable) {
+      return {
+        status: 502,
+        json: {
+          success: false,
+          provider: deps.provider.name,
+          model: (deps.provider as any).getModel?.() ?? 'unknown',
+          error: {
+            code: access.status || 'IMAGE_PROVIDER_UNREACHABLE',
+            message: access.detail || 'Image generation provider is not reachable.',
+            status: access.status === 'AUTH_FAILED' ? 403 : 502,
+          },
+        },
+      };
+    }
+  }
+
+  let customPrompt: string | undefined;
+  let customWidth: number | undefined;
+  let customHeight: number | undefined;
+  let customSeed: number | undefined;
+  if (rawBody && rawBody.trim().length > 0) {
+    try {
+      const parsed = JSON.parse(rawBody) as Record<string, unknown>;
+      if (typeof parsed.prompt === 'string' && parsed.prompt.trim().length > 0) {
+        customPrompt = parsed.prompt.trim();
+      }
+      if (typeof parsed.width === 'number' && parsed.width > 0) customWidth = parsed.width;
+      if (typeof parsed.height === 'number' && parsed.height > 0) customHeight = parsed.height;
+      if (typeof parsed.seed === 'number' && Number.isFinite(parsed.seed)) customSeed = parsed.seed;
+    } catch {
+      // Fall back to default smoke test prompt
+    }
+  }
+
+  const testRequest: FloorPlanImagePromptRequest = {
+    schemaVersion: 1,
+    promptVersion: 1,
+    prompt: customPrompt ?? DEFAULT_SMOKE_TEST_PROMPT,
+    negativePrompt: 'perspective, 3d exterior render, realistic photography, dimensions, technical text annotations',
+    seed: customSeed ?? 1234,
+    width: customWidth ?? 1024,
+    height: customHeight ?? 768,
+    metadata: {
+      projectName: 'Ahmedabad L-Shaped 3BHK Villa Smoke Test',
+      plotWidthMm: 12192,
+      plotDepthMm: 18288,
+      floorsCount: 2,
+      roadFacing: 'east',
+      projectType: 'residential_independent',
+    },
+  };
+
+  const startedAt = Date.now();
+  try {
+    const result = await deps.provider.generateFloorPlan(testRequest);
+    const latencyMs = Date.now() - startedAt;
+    const buf = Buffer.from(result.imageBase64, 'base64');
+
+    const decoded = decodeImageDimensions(buf);
+    if (!decoded) {
+      return {
+        status: 502,
+        json: {
+          success: false,
+          provider: result.provider,
+          model: result.model,
+          error: { code: 'INVALID_IMAGE_BYTES', message: 'Generated image could not be decoded as a valid PNG or JPEG with positive dimensions.' },
+        },
+      };
+    }
+
+    const artifact = await deps.store.save('smoke-test', result, testRequest);
+    const persistedArtifact = await deps.store.get(artifact.generationId);
+    if (!persistedArtifact || !persistedArtifact.imageBase64) {
+      return {
+        status: 500,
+        json: {
+          success: false,
+          provider: result.provider,
+          model: result.model,
+          error: { code: 'PERSISTENCE_FAILURE', message: 'Generated image could not be verified in artifact storage.' },
+        },
+      };
+    }
+
+    return {
+      status: 200,
+      json: {
+        success: true,
+        provider: result.provider,
+        model: result.model,
+        mimeType: result.mimeType,
+        format: decoded.format,
+        dimensions: { width: decoded.width, height: decoded.height },
+        byteLength: buf.length,
+        latencyMs,
+        artifactId: artifact.generationId,
+        persisted: true,
+        provenance: result.providerRequest,
+      },
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const code = err instanceof ImageProviderError ? err.code : 'IMAGE_GENERATION_FAILED';
+    const status = (err instanceof ImageProviderError && (err as any).status) ? (err as any).status : 502;
+    return {
+      status: status >= 400 && status < 600 ? status : 502,
+      json: {
+        success: false,
+        provider: deps.provider.name,
+        model: (deps.provider as any).getModel?.() ?? 'unknown',
+        error: { code, message, status },
+      },
+    };
+  }
+}
+
 async function route(request: IncomingMessage, response: ServerResponse, deps: ServerDeps): Promise<void> {
   const url = new URL(request.url ?? '/', 'http://localhost');
   const method = request.method ?? 'GET';
@@ -537,6 +938,12 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       const config = deps.config ?? resolveImageServiceConfig();
       const health = await checkProviderHealth(config, deps);
       send(200, health);
+      return;
+    }
+    if (method === 'POST' && (url.pathname === '/api/v1/image/smoke-test' || url.pathname === '/api/image/smoke-test')) {
+      const raw = await readBody(request);
+      const smokeResult = await handleImageSmokeTest(deps, raw);
+      send(smokeResult.status, smokeResult.json);
       return;
     }
     if (method === 'POST' && (url.pathname === '/api/v1/generation/run' || url.pathname === '/api/generation/run')) {
@@ -657,8 +1064,8 @@ export function startBackendServer(port?: number): { server: Server; config: Ima
     // Never log credential values — only their presence (PRD §36).
     console.log(`AI floor-planner backend listening on port ${port ?? config.port}`);
     console.log(`CORS allowed origins: ${config.corsAllowedOrigins.length > 0 ? config.corsAllowedOrigins.join(', ') : (process.env.NODE_ENV === 'production' ? 'NONE (explicit origins required)' : 'local dev frontends')}`);
-    const providerModel = config.imageProviderKind === 'pollinations' ? config.pollinationsImageModel : config.imageProviderKind === 'cloudflare' ? config.fluxModel : 'local-stub';
-    const missing = config.imageProviderKind === 'pollinations' ? 'POLLINATIONS_API_KEY' : 'CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN';
+    const providerModel = config.imageProviderKind === 'pollinations' ? config.pollinationsImageModel : config.imageProviderKind === 'gemini' ? config.geminiImageModel : config.imageProviderKind === 'cloudflare' ? config.fluxModel : 'local-stub';
+    const missing = config.imageProviderKind === 'pollinations' ? 'POLLINATIONS_API_KEY' : config.imageProviderKind === 'gemini' ? 'GEMINI_API_KEY' : 'CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN';
     console.log(`Image provider: ${deps.provider ? `${deps.provider.name} configured (model ${providerModel})` : `${config.imageProviderKind} NOT CONFIGURED (set ${missing})`}`);
     console.log(`Image interpreter: ${deps.interpreterKind === 'gemini' ? (gemini ? 'gemini configured' : 'gemini NOT CONFIGURED (set GEMINI_API_KEY)') : 'local-stub (dev)'}`);
     console.log(`Image artifact store: ${config.artifactDir}`);

@@ -150,6 +150,15 @@ export type {
 } from './generation-control';
 
 export type {
+  SourceImageRegion,
+  EntityImageProvenance,
+  BuildingImageProvenance,
+  GeometryAdjustment,
+} from './image-provenance';
+
+export { IMAGE_DERIVED_TAG, DETERMINISTIC_TEMPLATE_TAG } from './image-provenance';
+
+export type {
   DesignGraphEdge,
   DesignGraph,
   SpatialGraphNode,

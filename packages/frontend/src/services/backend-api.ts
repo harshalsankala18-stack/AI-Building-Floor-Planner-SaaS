@@ -281,6 +281,38 @@ export class BackendAPI {
     return this.outcome(response, 'ARCHITECTURAL_EVALUATION_FAILED');
   }
 
+  /**
+   * Phase 2.6 Master 100-point rubric evaluation of an AI-generated floor plan image.
+   */
+  async evaluateMasterPlan(
+    options: {
+      requirementsSummary: string;
+      siteSummary: string;
+      footprintShape?: string;
+      requiredBedrooms?: number;
+      requiredBathrooms?: number;
+      requiredFloors?: number;
+      parkingRequired?: boolean;
+      imageBase64: string;
+      imageMimeType?: string;
+      attemptNumber?: number;
+    },
+    signal?: AbortSignal,
+  ): Promise<{ evaluation: any }> {
+    const response = await this.post(
+      '/api/v1/architecture/evaluate',
+      JSON.stringify({
+        ...options,
+        rubric: 'master',
+        buildingSummary: options.siteSummary,
+      }),
+      signal,
+      'IMAGE_BACKEND_UNAVAILABLE',
+      'The architectural evaluation service is unreachable. Start the backend and try again.',
+    );
+    return this.outcome(response, 'ARCHITECTURAL_EVALUATION_FAILED');
+  }
+
   private async post(path: string, body: string, signal: AbortSignal | undefined, unavailableCode: string, unavailableMessage: string): Promise<Response> {
     const baseUrl = this.getBaseUrl();
     try {
@@ -402,6 +434,8 @@ export class BackendAPI {
       artifactId: string;
       projectId?: string;
       projectName?: string;
+      projectType?: 'apartment' | 'residential_independent' | 'single_family';
+      site?: TwoAIGenerationInput['site'];
       requirements?: DesignRequirementSpecification;
     },
     signal?: AbortSignal,
@@ -495,10 +529,12 @@ export interface BackendHealthResponse {
   };
 }
 
+export type HealthCheckResponse = BackendHealthResponse;
+
 export interface TwoAIGenerationInput {
   readonly projectId: string;
   readonly projectName?: string;
-  readonly projectType?: 'apartment' | 'residential_independent';
+  readonly projectType?: 'apartment' | 'residential_independent' | 'single_family';
   readonly apartmentConfig?: ApartmentBriefConfig;
   readonly site: {
     readonly plotWidth: number;
@@ -579,6 +615,35 @@ export interface OrchestratedCandidateResult {
   readonly rejectedReason: string | null;
   /** Apartment concept mode: which controlled strategy produced this candidate. */
   readonly concept?: CandidateConceptInfo;
+  /**
+   * Phase 2.7 — where this candidate's geometry actually came from. Only
+   * `IMAGE_RECONSTRUCTION` may be presented as the converted AI image.
+   */
+  readonly geometrySource?: 'IMAGE_RECONSTRUCTION' | 'EXTRACTED_DIRECT' | 'APARTMENT_STRUCTURE';
+  /** Phase 2.7 — image-to-CAD fidelity. NOT the Gemini image-quality score. */
+  readonly cadFidelity?: CadFidelityReportResult;
+  /** The real image-to-CAD conversion error when reconstruction failed. */
+  readonly conversionError?: { readonly code: string; readonly message: string };
+}
+
+/** Image-to-CAD fidelity report as returned by the backend. */
+export interface CadFidelityReportResult {
+  readonly overallScore: number;
+  readonly threshold: number;
+  readonly passed: boolean;
+  readonly dimensions: readonly {
+    readonly id: string;
+    readonly label: string;
+    readonly score: number;
+    readonly weight: number;
+    readonly detail: string;
+    readonly missing: readonly string[];
+  }[];
+  readonly missingMandatory: readonly string[];
+  readonly lowConfidenceEntities: readonly string[];
+  readonly materialAdjustments: readonly string[];
+  readonly comparedArtifactId: string;
+  readonly evaluatedAt: string;
 }
 
 export type ApartmentConceptStrategyId = 'balanced' | 'daylight' | 'privacy' | 'circulation';

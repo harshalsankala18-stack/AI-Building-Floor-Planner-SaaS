@@ -11,6 +11,7 @@ import type { DesignRequirementSpecification, SpaceProgram } from '@ai-floor-pla
 import { normalizeDesignRequirementSpecification } from '@ai-floor-planner/core';
 import {
   evaluatePlanArchitecturally,
+  evaluateMasterImageWithGemini,
   interpretPlanImageWithGemini,
   type BaseAIProvider,
 } from '@ai-floor-planner/ai-orchestration';
@@ -160,6 +161,22 @@ export async function handleArchitecturalEvaluation(body: unknown, deps: Interpr
     return { status: 503, json: { error: { code: 'ARCHITECTURAL_EVALUATOR_NOT_CONFIGURED', message: 'Architectural evaluation is not configured on this server (GEMINI_API_KEY missing). No score was produced.' } } };
   }
   try {
+    if (record.rubric === 'master' || record.masterRubric === true || record.siteSummary) {
+      const evaluation = await evaluateMasterImageWithGemini(deps.gemini, {
+        requirementsSummary,
+        siteSummary: typeof record.siteSummary === 'string' ? record.siteSummary : buildingSummary,
+        footprintShape: typeof record.footprintShape === 'string' ? record.footprintShape : undefined,
+        requiredBedrooms: typeof record.requiredBedrooms === 'number' ? record.requiredBedrooms : undefined,
+        requiredBathrooms: typeof record.requiredBathrooms === 'number' ? record.requiredBathrooms : undefined,
+        requiredFloors: typeof record.requiredFloors === 'number' ? record.requiredFloors : undefined,
+        parkingRequired: typeof record.parkingRequired === 'boolean' ? record.parkingRequired : undefined,
+        imageBase64: typeof record.imageBase64 === 'string' ? record.imageBase64 : '',
+        imageMimeType: typeof record.imageMimeType === 'string' ? record.imageMimeType : undefined,
+        attemptNumber: typeof record.attemptNumber === 'number' ? record.attemptNumber : 1,
+      });
+      return { status: 200, json: { evaluation } };
+    }
+
     const evaluation = await evaluatePlanArchitecturally(deps.gemini, {
       buildingSummary,
       requirementsSummary,

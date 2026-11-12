@@ -1,0 +1,32 @@
+{
+  "generationId": "gen_8020_mwckrwls_aebafd6c",
+  "projectId": "proj_aeablw0",
+  "seed": 8020,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Ahmedabad L-Shaped Villa, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing East.\nSETBACKS: front 3048mm, rear 1829mm, left 1524mm, right 1524mm.\nROOM PROGRAM: 3 bedroom(s), 2 bathroom(s), living room, kitchen, dining room, staircase.\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: 3 bedrooms, 2 bathrooms, living room, dining room, kitchen, balcony, parking, vastu compliant orientation. Footprint shape: l shape. Plot size 40x60 ft, road facing east.\n\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #2, Previous Score: 60/100):\n- RESOLVE HARD VIOLATIONS: Missing second floor plan representation.; Master bedroom placement violates Vastu constraint (placed in SE instead of SW).\n- FIX SPATIAL DEFECTS: Redundant central staircase area, which consumes significant floor space.; Missing second floor design completely.; Poor adherence to Vastu principles (Master bedroom in SE instead of SW).; Kitchen is located in NW which is acceptable but not optimal for East-facing plot.\n- ARCHITECTURAL CORRECTIONS: Redesign the footprint to create an intentional L-shape void or projection on the south or north side.; Relocate the Master bedroom to the SW corner of the plan.; Consolidate the vertical circulation into one efficient staircase to free up space.; Provide a distinct, separate plan sheet for the second floor to meet the duplex requirement.; Shift the Kitchen to the SE corner for Vastu compliance.\nEnsure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n- Use the supplied reference images for visual drafting style. Current project requirements always override references.\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 832,
+  "height": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T20:32:13.263Z",
+  "latencyMs": 4559,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "referenceHashes": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "aspectRatio": "3:4",
+    "promptHash": "fa659999997a7273ab8883b6037a6823813abd837c9305b0b33ba94072142b56"
+  }
+}

@@ -1,63 +1,63 @@
 :root {
-  /* Color Palette — premium architectural intelligence */
-  --bg-app: #06080d;
-  --bg-surface: #0b0f16;
-  --bg-panel: #101620;
-  --bg-card: #141c28;
-  --bg-card-hover: #1a2534;
-  --bg-canvas: #ffffff;
-  --bg-selection: rgba(61, 222, 200, 0.1);
+  /* Color Palette — Premium Architectural Intelligence */
+  --bg-app: #F7F7F4;
+  --bg-surface: #FFFFFF;
+  --bg-panel: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F2F4EE;
+  --bg-canvas: #FFFFFF;
+  --bg-selection: rgba(30, 58, 47, 0.08);
 
-  /* Borders */
-  --border-subtle: rgba(255, 255, 255, 0.07);
-  --border-default: rgba(255, 255, 255, 0.12);
+  /* Architectural Borders */
+  --border-subtle: #ECEEE7;
+  --border-default: #DFE2DA;
   --border-color: var(--border-default);
-  --border-focus: #3ddec8;
+  --border-focus: #1E3A2F;
 
-  /* Text */
-  --text-primary: #f8fafc;
-  --text-secondary: #a7b0bf;
-  --text-muted: #697586;
-  --text-dark: #0f172a;
+  /* Graphite & Charcoal Typography */
+  --text-primary: #1C1E1B;
+  --text-secondary: #4D534B;
+  --text-muted: #7E877C;
+  --text-dark: #1C1E1B;
+  --text-inverse: #FFFFFF;
 
-  /* Accents & Status */
-  --accent-primary: #3ddec8;
-  --accent-primary-hover: #62ead6;
-  --accent-cyan: #3ddec8;
-  --accent-magenta: #ff6584;
-  --accent-purple: #8b5cf6;
-  --accent-violet: #a58bff;
-  --accent-green: #43e5a0;
-  --accent-red: #ff647c;
-  
-  --status-success: #10b981;
-  --status-success-bg: rgba(16, 185, 129, 0.12);
-  --status-warning: #f59e0b;
-  --status-warning-bg: rgba(245, 158, 11, 0.12);
-  --status-danger: #ef4444;
-  --status-danger-bg: rgba(239, 68, 68, 0.12);
-  --status-neutral: #94a3b8;
-  --status-neutral-bg: rgba(148, 163, 184, 0.1);
+  /* Deep Forest Green Architectural Accent (Restrained single accent) */
+  --accent-primary: #1E3A2F;
+  --accent-primary-hover: #152A22;
+  --accent-cyan: #2A5243;
+  --accent-green: #1E3A2F;
+  --accent-forest: #1E3A2F;
+  --accent-forest-soft: rgba(30, 58, 47, 0.08);
+
+  /* Status Colors (Architectural & Legible) */
+  --status-success: #1E5E3A;
+  --status-success-bg: rgba(30, 94, 58, 0.08);
+  --status-warning: #995C00;
+  --status-warning-bg: rgba(153, 92, 0, 0.08);
+  --status-danger: #B91C1C;
+  --status-danger-bg: rgba(185, 28, 28, 0.08);
+  --status-neutral: #64748B;
+  --status-neutral-bg: rgba(100, 116, 139, 0.08);
 
   /* Typography */
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
 
   /* Spacing */
-  --header-height: 68px;
-  --toolbar-width: 76px;
+  --header-height: 60px;
+  --toolbar-width: 68px;
   --inspector-width: 380px;
-  --statusbar-height: 38px;
+  --statusbar-height: 36px;
 
-  /* Radii & Shadows */
-  --radius-sm: 7px;
-  --radius-md: 12px;
-  --radius-lg: 18px;
-  --radius-xl: 24px;
-  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 14px 30px -18px rgba(0, 0, 0, 0.75);
-  --shadow-lg: 0 30px 70px -30px rgba(0, 0, 0, 0.8);
-  --transition-fast: 160ms cubic-bezier(.2,.8,.2,1);
+  /* Radii & Soft Architectural Shadows */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --radius-xl: 22px;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.02);
+  --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-lg: 0 12px 28px -4px rgba(0, 0, 0, 0.07), 0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  --transition-fast: 150ms cubic-bezier(.2,.8,.2,1);
 }
 
 * {
@@ -88,24 +88,24 @@ button {
 input, select, textarea {
   font-family: inherit;
   color: var(--text-primary);
-  background-color: var(--bg-card);
+  background-color: var(--bg-surface);
   border: 1px solid var(--border-default);
   border-radius: var(--radius-sm);
-  padding: 6px 10px;
+  padding: 7px 11px;
   font-size: 13px;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 input:focus, select:focus, textarea:focus {
   border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(61, 222, 200, 0.1);
+  box-shadow: 0 0 0 3px rgba(30, 58, 47, 0.08);
 }
 
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible {
-  outline: 2px solid var(--accent-cyan);
+  outline: 2px solid var(--accent-primary);
   outline-offset: 2px;
 }

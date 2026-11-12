@@ -96,6 +96,9 @@ export const ConceptCardsPanel: React.FC<{
           );
         })}
       </ul>
+      <p style={{ margin: '8px 0 0', fontSize: 11, color: '#64748B', fontStyle: 'italic' }}>
+        AI-generated concept image — illustrative and not to scale. Use the editable CAD plan for authoritative geometry and dimensions.
+      </p>
       {anyScored && <p style={{ margin: '8px 0 0', fontSize: 11, color: '#64748B' }}>{ADVISORY_EVALUATION_NOTICE}</p>}
     </section>
   );

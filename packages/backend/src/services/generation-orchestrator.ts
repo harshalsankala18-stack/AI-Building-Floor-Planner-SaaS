@@ -53,6 +53,8 @@ import {
   runGeminiApartmentPreflight,
   type ApartmentVisualPreflightResult,
   evaluatePlanArchitecturally,
+  evaluateMasterImageWithGemini,
+  type MasterImageEvaluationResult,
   interpretPlanImageWithGemini,
   AIOrchestrationService,
   ImageProviderError,
@@ -95,6 +97,8 @@ import {
 } from '@ai-floor-planner/planning-engine';
 import type { ImageArtifactStore, StoredImageArtifact } from './image-artifact-store.js';
 import { runExtractionPipeline } from './extraction-pipeline.js';
+import type { ImageSourceIdentity } from './image-to-cad-reconstruction.js';
+import type { CadFidelityReport } from './cad-fidelity.js';
 import { apartmentInterpretationContextFromManifest } from './apartment-structure.js';
 import { synthesizeInterpretation } from './local-stub-plan-interpreter.js';
 import {
@@ -492,6 +496,38 @@ export interface OrchestratedCandidate {
     };
   };
   readonly vastuReport?: any;
+  /** Phase 2.6 Master Floor Plan 100-point rubric evaluation result. */
+  readonly masterEvaluation?: MasterImageEvaluationResult | null;
+  /** Phase 2.6 History of improvement loop attempts for this design. */
+  readonly masterAttemptHistory?: readonly MasterAttemptRecord[];
+  /**
+   * Phase 2.7: where this candidate's geometry came from. Only
+   * `IMAGE_RECONSTRUCTION` may be presented to the user as the converted AI
+   * image; anything else is a different design and must say so.
+   */
+  readonly geometrySource?: 'IMAGE_RECONSTRUCTION' | 'EXTRACTED_DIRECT' | 'APARTMENT_STRUCTURE';
+  /** Phase 2.7 image-to-CAD fidelity report; NOT the image-quality score. */
+  readonly cadFidelity?: CadFidelityReport;
+  /** The real image-to-CAD conversion error when reconstruction failed. */
+  readonly conversionError?: { readonly code: string; readonly message: string };
+}
+
+export interface MasterAttemptRecord {
+  readonly attemptNumber: number;
+  readonly seed: number;
+  readonly artifactId: string;
+  readonly overallScore: number;
+  readonly passed: boolean;
+  readonly hardConstraintViolations: readonly string[];
+  readonly identifiedProblems: readonly string[];
+  readonly suggestedCorrections: readonly string[];
+  readonly complianceScore: number;
+  readonly spatialLayoutScore: number;
+  readonly footprintScore: number;
+  readonly circulationScore: number;
+  readonly draftingClarityScore: number;
+  readonly vastuDaylightScore: number;
+  readonly coherenceScore: number;
 }
 
 /** Concept identity of a candidate slot (two-phase upgrade, apartment concept mode). */
@@ -552,6 +588,8 @@ export interface GenerationOrchestratorError {
     | 'APARTMENT_NOT_FEASIBLE'
     | 'CLOUDFLARE_GENERATION_ERROR'
     | 'IMAGE_INTERPRETATION_ERROR'
+    /** Phase 2.7: reconstructing the accepted image into editable CAD failed. */
+    | 'IMAGE_TO_CAD_CONVERSION_ERROR'
     | 'EXTRACTION_ERROR'
     | 'GEOMETRY_VALIDATION_ERROR'
     | 'GEMINI_EVALUATION_ERROR'
@@ -659,6 +697,12 @@ export interface GenerationOrchestratorResult {
     readonly attempted: number;
     readonly seeds: readonly number[];
   };
+  /** Phase 2.6 Automatic improvement loop attempt history. */
+  readonly masterAttemptHistory?: readonly MasterAttemptRecord[];
+  /** Phase 2.6 Verified quality score (0–100) from the master evaluation rubric. */
+  readonly masterQualityScore?: number;
+  /** Phase 2.6 Evaluated master 100-point rubric result. */
+  readonly masterEvaluation?: MasterImageEvaluationResult | null;
 }
 
 export interface GenerationOrchestratorDeps {
@@ -672,6 +716,45 @@ export interface GenerationOrchestratorDeps {
   readonly deterministicCadFirst?: boolean;
   /** When true, compiles generated buildings with ArchLang and runs geometry parity checks. */
   readonly enableArchLang?: boolean;
+}
+
+/**
+ * Identity of the master image an image-to-CAD conversion reconstructs.
+ * The hash is taken over the exact bytes that were interpreted, so a later
+ * edit of the geometry can still be traced to the drawing it came from.
+ */
+function imageSourceIdentityFor(
+  artifact: StoredImageArtifact,
+  spec: DesignRequirementSpecification,
+  interpretationSource: string,
+  visionModel?: string,
+): ImageSourceIdentity {
+  const imageHash = crypto.createHash('sha256').update(Buffer.from(artifact.imageBase64, 'base64')).digest('hex');
+  const projectFingerprint = crypto
+    .createHash('sha256')
+    .update(
+      JSON.stringify({
+        plotWidthMm: spec.hard.plotWidthMm,
+        plotDepthMm: spec.hard.plotDepthMm,
+        roadFacing: spec.hard.roadFacing,
+        floorsCount: spec.hard.floorsCount,
+        bedroomCount: spec.hard.bedroomCount,
+        bathroomCount: spec.hard.bathroomCount,
+        setbacks: spec.setbacksMm ?? null,
+      }),
+    )
+    .digest('hex')
+    .slice(0, 16);
+  return {
+    artifactId: artifact.generationId,
+    imageHash,
+    generationRevision: artifact.promptVersion ?? 1,
+    projectFingerprint,
+    ...(visionModel ? { visionModel } : {}),
+    interpretationSource,
+    imageWidePixels: artifact.width,
+    imageTallPixels: artifact.height,
+  };
 }
 
 function resolveDirection(dir: Direction | string): Direction {
@@ -791,7 +874,7 @@ export class GenerationOrchestrator {
     // Villas keep the historical 1–3 candidate batch.
     const candidateTargetCount = isApartment
       ? Math.min(Math.max(1, input.candidateCount ?? 1), APARTMENT_CONCEPT_STRATEGIES.length)
-      : Math.min(Math.max(1, input.candidateCount ?? 1), 3);
+      : 1; // Phase 2.6: Single Master Design workflow (never generate 3 competing candidate cards)
     const conceptMode = isApartment && candidateTargetCount > 1;
     let conceptSchematics: Array<{ strategy: ApartmentConceptStrategy; schematic: DeterministicApartmentSchematic }> = [];
 
@@ -1273,6 +1356,14 @@ export class GenerationOrchestrator {
     if (!this.deps.provider || !(await this.deps.provider.isAvailable())) {
       stages.imageGeneration = 'FAILED';
       stages.imageArtifact = 'FAILED';
+      const access = this.deps.provider && 'checkAccess' in this.deps.provider
+        ? await (this.deps.provider as any).checkAccess().catch(() => null)
+        : null;
+      const providerName = this.deps.provider?.name ?? 'unknown';
+      const detail = access?.detail || (this.deps.provider ? `Provider ${providerName} is unreachable` : 'Image generation provider is not configured');
+      const errorCode = access?.status === 'AUTH_FAILED'
+        ? (providerName === 'gemini' ? 'GEMINI_AUTH_ERROR' : 'IMAGE_PROVIDER_AUTH_ERROR')
+        : (providerName === 'gemini' ? 'GEMINI_GENERATION_ERROR' : 'IMAGE_GENERATION_FAILED');
       return {
         success: false,
         projectId,
@@ -1282,9 +1373,9 @@ export class GenerationOrchestrator {
         latencyMs: Date.now() - startedAt,
         stages,
         error: {
-          code: 'CLOUDFLARE_GENERATION_ERROR',
+          code: errorCode as any,
           stage: 'image_generation',
-          message: 'Image generation is not configured on this server (check IMAGE_GENERATION_PROVIDER and its credentials: CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN or POLLINATIONS_API_KEY). Try deterministic planner instead.',
+          message: `Image generation (${providerName}): ${detail}`,
           fallbackAvailable: true,
         },
       };
@@ -1321,13 +1412,19 @@ export class GenerationOrchestrator {
     let preflightUnavailable = false;
     let fluxRetryTransportError: string | undefined;
     const conceptSlots: ConceptSlotRecord[] = [];
+    const masterAttemptHistory: MasterAttemptRecord[] = [];
+    let previousMasterEval: MasterImageEvaluationResult | null = null;
 
     slotLoop:
     for (let cIdx = 0; cIdx < candidateTargetCount; cIdx++) {
       const slotSeed = (baseSeed + cIdx * 137) % 1_000_000;
       // Concept mode: ONE FLUX attempt per strategy slot (the four strategies are the
-      // controlled variation); single-candidate mode keeps the Phase 3 bounded retry.
-      const attemptsForSlot = conceptMode ? 1 : preflightApplies ? maxVisualAttempts : 1;
+      // controlled variation); residential master mode runs up to 5 attempts until score >= 80.
+      const attemptsForSlot = conceptMode
+        ? 1
+        : preflightApplies
+        ? maxVisualAttempts
+        : (!isApartment ? Math.min(5, this.deps.maxVisualAttempts ?? 5) : 1);
       const slotConcept = conceptMode ? conceptSchematics[cIdx] : undefined;
       const slotSchematic = slotConcept?.schematic ?? apartmentSchematic;
       let slotReferenceIds: string[] = [];
@@ -1370,6 +1467,7 @@ export class GenerationOrchestrator {
         readonly generatedImage: Awaited<ReturnType<ImageGenerationProvider['generateFloorPlan']>>;
         readonly artifact: StoredImageArtifact;
         readonly preflight: ApartmentVisualPreflightResult | undefined;
+        readonly masterEvaluation?: MasterImageEvaluationResult | null;
       } | null = null;
 
       for (let attemptIdx = 0; attemptIdx < attemptsForSlot; attemptIdx++) {
@@ -1453,10 +1551,22 @@ export class GenerationOrchestrator {
           console.warn('[GenerationOrchestrator] Villa reference loading error:', refErr);
         }
 
+        const enrichedAdditional = [
+          input.additionalPrompt,
+          previousMasterEval
+            ? `\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100):\n` +
+              (previousMasterEval.hardConstraintViolations.length > 0 ? `- RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join('; ')}\n` : '') +
+              (previousMasterEval.identifiedProblems.length > 0 ? `- FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join('; ')}\n` : '') +
+              (previousMasterEval.suggestedCorrections.length > 0 ? `- ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join('; ')}\n` : '') +
+              'Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.'
+            : '',
+        ].filter(Boolean).join('\n');
+
         promptRequest = compileFloorPlanImagePrompt({
           requirements: spec,
           site: buildingSite,
           seed,
+          additionalPrompt: enrichedAdditional || undefined,
           referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
           referenceDiagnostics: refDiagnostics,
         });
@@ -1491,6 +1601,7 @@ export class GenerationOrchestrator {
         stages.imageArtifact = 'FAILED';
         if (err instanceof ImageProviderError) {
           const isRefError = err.code.startsWith('REFERENCE');
+          const defaultCode = this.deps.provider?.name === 'gemini' ? 'GEMINI_GENERATION_ERROR' : 'IMAGE_GENERATION_ERROR';
           return {
             success: false,
             projectId,
@@ -1500,13 +1611,14 @@ export class GenerationOrchestrator {
             latencyMs: Date.now() - startedAt,
             stages,
             error: {
-              code: (isRefError ? err.code : 'CLOUDFLARE_GENERATION_ERROR') as any,
+              code: (isRefError ? err.code : defaultCode) as any,
               stage: isRefError ? 'reference_preparation' : 'image_generation',
               message: isRefError ? `Reference asset error: ${err.message}` : `Image generation (${this.deps.provider?.name ?? 'unknown provider'}) failed: ${err.message}`,
               fallbackAvailable: true,
             },
           };
         }
+        const fallbackCode = this.deps.provider?.name === 'gemini' ? 'GEMINI_GENERATION_ERROR' : 'IMAGE_GENERATION_ERROR';
         return {
           success: false,
           projectId,
@@ -1516,7 +1628,7 @@ export class GenerationOrchestrator {
           latencyMs: Date.now() - startedAt,
           stages,
           error: {
-            code: 'CLOUDFLARE_GENERATION_ERROR',
+            code: fallbackCode as any,
             stage: 'image_generation',
             message: err instanceof Error ? err.message : 'Unexpected image generation failure.',
             fallbackAvailable: true,
@@ -1662,6 +1774,54 @@ export class GenerationOrchestrator {
       }
 
       if (preflightApplies) stages.visualPreflight = 'PASSED';
+
+      // ─── PIPELINE STEP 5.6: PHASE 2.6 MASTER 80+ QUALITY GATE (Residential) ───
+      let currentMasterEval: MasterImageEvaluationResult | null = null;
+      if (!isApartment && this.deps.gemini && this.deps.provider?.name !== 'local-stub') {
+        try {
+          currentMasterEval = await evaluateMasterImageWithGemini(this.deps.gemini, {
+            requirementsSummary: `${spec.hard.bedroomCount} BHK, ${spec.hard.bathroomCount} Bath, ${spec.hard.floorsCount} Floor(s), road facing ${spec.hard.roadFacing}${spec.rawUserPrompt ? ` (${spec.rawUserPrompt})` : ''}`,
+            siteSummary: `Plot ${spec.hard.plotWidthMm}x${spec.hard.plotDepthMm}mm, setbacks: front ${spec.setbacksMm?.front ?? 1500}mm, rear ${spec.setbacksMm?.rear ?? 1000}mm`,
+            footprintShape: (spec as any).footprintShape,
+            requiredBedrooms: spec.hard.bedroomCount,
+            requiredBathrooms: spec.hard.bathroomCount,
+            requiredFloors: spec.hard.floorsCount,
+            parkingRequired: spec.hard.parkingRequired,
+            imageBase64: generatedImage.imageBase64,
+            imageMimeType: generatedImage.mimeType,
+            attemptNumber,
+          });
+        } catch (mErr) {
+          console.warn(`[GenerationOrchestrator] Master evaluation attempt ${attemptNumber} error:`, mErr);
+        }
+      }
+
+      if (currentMasterEval) {
+        masterAttemptHistory.push({
+          attemptNumber,
+          seed,
+          artifactId: artifact.generationId,
+          overallScore: currentMasterEval.overallScore,
+          passed: currentMasterEval.passed,
+          hardConstraintViolations: currentMasterEval.hardConstraintViolations,
+          identifiedProblems: currentMasterEval.identifiedProblems,
+          suggestedCorrections: currentMasterEval.suggestedCorrections,
+          complianceScore: currentMasterEval.complianceScore,
+          spatialLayoutScore: currentMasterEval.spatialLayoutScore,
+          footprintScore: currentMasterEval.footprintScore,
+          circulationScore: currentMasterEval.circulationScore,
+          draftingClarityScore: currentMasterEval.draftingClarityScore,
+          vastuDaylightScore: currentMasterEval.vastuDaylightScore,
+          coherenceScore: currentMasterEval.coherenceScore,
+        });
+
+        if (!currentMasterEval.passed && attemptNumber < attemptsForSlot) {
+          console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(', ')}. Enriching prompt for retry.`);
+          previousMasterEval = currentMasterEval;
+          continue; // Automatic improvement retry with enriched feedback!
+        }
+      }
+
       acceptedAttempt = {
         seed,
         attempt: attemptNumber,
@@ -1669,6 +1829,7 @@ export class GenerationOrchestrator {
         generatedImage,
         artifact,
         preflight: apartmentPreflightResult,
+        masterEvaluation: currentMasterEval,
       };
       break;
       } // end bounded FLUX attempt loop
@@ -1687,6 +1848,7 @@ export class GenerationOrchestrator {
       let interpretationSource: 'provider' | 'rule_based' | 'rule_based_fallback' = 'provider';
       let confidence = 'likely';
       let interpretationFrame: { width: number; height: number } | undefined;
+      let visionModel: string | undefined;
 
       if (this.deps.interpreterKind === 'gemini') {
         if (!this.deps.gemini || !(await this.deps.gemini.isAvailable())) {
@@ -1739,6 +1901,7 @@ export class GenerationOrchestrator {
           if (vision.coordinateFrame.kind === 'normalized') {
             interpretationFrame = { width: vision.coordinateFrame.width, height: vision.coordinateFrame.height };
           }
+          visionModel = vision.model;
           interpretationSource = 'provider';
           stages.imageInterpretation = 'SUCCESS';
         } catch (vErr) {
@@ -1793,6 +1956,9 @@ export class GenerationOrchestrator {
         isApartment,
         apartmentManifest,
         ...(interpretationFrame ? { coordinateFrame: interpretationFrame } : {}),
+        ...(interpretationSource === 'provider'
+          ? { imageSource: imageSourceIdentityFor(artifact, spec, interpretationSource, visionModel) }
+          : {}),
       });
 
       const isValid = extraction.status === 'ACCEPTED' && extraction.building !== null;
@@ -1868,6 +2034,8 @@ export class GenerationOrchestrator {
         rejectedReason: candidateRejectedReason,
         referenceDiagnostics: candRefDiag,
         vastuReport: (extraction.building?.metadata as any)?.vastuReport ?? slotSchematic?.vastuReport ?? null,
+        masterEvaluation: acceptedAttempt.masterEvaluation ?? null,
+        masterAttemptHistory: [...masterAttemptHistory],
         ...(extraction.apartmentValidation
           ? { apartmentValidation: { source: extraction.apartmentValidation.source, stages: extraction.apartmentValidation.stages } }
           : {}),
@@ -2075,6 +2243,9 @@ export class GenerationOrchestrator {
         attempted: attemptSeeds.length,
         seeds: attemptSeeds,
       },
+      masterAttemptHistory: [...masterAttemptHistory],
+      masterEvaluation: acceptedCandidate?.masterEvaluation ?? (candidates[0]?.masterEvaluation ?? null),
+      masterQualityScore: acceptedCandidate?.masterEvaluation?.overallScore ?? (candidates[0]?.masterEvaluation?.overallScore ?? undefined),
       ...(conceptMode ? { conceptMode: true, conceptSlots } : {}),
       ...(fallbackInfo ? { fallback: fallbackInfo } : {}),
       ...(!anyAccepted && candidates.length > 0 ? {
@@ -2160,6 +2331,8 @@ export class GenerationOrchestrator {
     let payload: unknown;
     let interpretationSource: 'provider' | 'rule_based' | 'rule_based_fallback' = 'provider';
     let confidence = 'likely';
+    let interpretationFrame: { width: number; height: number } | undefined;
+    let visionModel: string | undefined;
 
     if (this.deps.interpreterKind === 'gemini') {
       if (!this.deps.gemini || !(await this.deps.gemini.isAvailable())) {
@@ -2196,6 +2369,10 @@ export class GenerationOrchestrator {
         });
         payload = vision.parsed;
         interpretationSource = 'provider';
+        visionModel = vision.model;
+        if (vision.coordinateFrame.kind === 'normalized') {
+          interpretationFrame = { width: vision.coordinateFrame.width, height: vision.coordinateFrame.height };
+        }
         stages.imageInterpretation = 'SUCCESS';
       } catch (vErr) {
         const status = extractHttpStatus(vErr);
@@ -2245,6 +2422,10 @@ export class GenerationOrchestrator {
       extractionSource: interpretationSource === 'provider' ? 'gemini_vision' : 'local_rule_based',
       confidence,
       interpretationSource,
+      ...(interpretationFrame ? { coordinateFrame: interpretationFrame } : {}),
+      ...(interpretationSource === 'provider'
+        ? { imageSource: imageSourceIdentityFor(artifact, spec, interpretationSource, visionModel) }
+        : {}),
     });
 
     const isValid = extraction.status === 'ACCEPTED' && extraction.building !== null;
@@ -2263,6 +2444,27 @@ export class GenerationOrchestrator {
     const evaluation: ArchitecturalEvaluationResult | null = gated.evaluation;
     stages.geminiEvaluation = gated.stage;
 
+    let masterEvaluation: MasterImageEvaluationResult | null = null;
+    if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 100) {
+      try {
+        const evalRes = await evaluateMasterImageWithGemini(this.deps.gemini, {
+          requirementsSummary: `${spec.hard.bedroomCount} bedrooms, ${spec.hard.bathroomCount} bathrooms${spec.rawUserPrompt ? `, prompt: ${spec.rawUserPrompt}` : ''}`,
+          siteSummary: `${spec.hard.plotWidthMm}x${spec.hard.plotDepthMm}mm, road facing ${spec.hard.roadFacing}`,
+          footprintShape: (spec as any).footprintShape,
+          requiredBedrooms: spec.hard.bedroomCount,
+          requiredBathrooms: spec.hard.bathroomCount,
+          requiredFloors: spec.hard.floorsCount,
+          parkingRequired: spec.hard.parkingRequired,
+          imageBase64: artifact.imageBase64,
+          imageMimeType: artifact.mimeType,
+          attemptNumber: 1,
+        });
+        masterEvaluation = evalRes;
+      } catch (meErr) {
+        console.warn('Master evaluation in resume encountered an issue:', meErr);
+      }
+    }
+
     const resumedFromFallback = artifact.provider === FALLBACK_DETERMINISTIC_PROVIDER;
     const candidate: OrchestratedCandidate = {
       id: `cand_resumed_${artifact.seed}_${Date.now().toString(36)}`,
@@ -2275,6 +2477,7 @@ export class GenerationOrchestrator {
       stages: { ...stages },
       building: extraction.building,
       artifact,
+      masterEvaluation: masterEvaluation ?? null,
       validation: {
         isValid: extraction.validation?.isValid ?? false,
         recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
@@ -2284,8 +2487,16 @@ export class GenerationOrchestrator {
       },
       evaluation,
       diagnostics: extraction.diagnostics,
+      ...(extraction.geometrySource ? { geometrySource: extraction.geometrySource } : {}),
+      ...(extraction.cadFidelity ? { cadFidelity: extraction.cadFidelity } : {}),
+      ...(extraction.conversionError
+        ? { conversionError: { code: extraction.conversionError.code, message: extraction.conversionError.message } }
+        : {}),
       rejectedReason: extraction.status === 'REJECTED'
-        ? 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.'
+        ? extraction.conversionError
+          // The ACTUAL conversion error, not a generic validation message.
+          ? `${extraction.conversionError.code}: ${extraction.conversionError.message}`
+          : 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.'
         : null,
     };
 
@@ -2299,12 +2510,16 @@ export class GenerationOrchestrator {
       stages,
       latencyMs: Date.now() - startedAt,
       candidateSource: isValid ? candidate.source : null,
+      masterEvaluation: masterEvaluation ?? null,
+      masterQualityScore: masterEvaluation?.overallScore,
       error: isValid
         ? undefined
         : {
-            code: 'GEOMETRY_VALIDATION_ERROR',
-            stage: 'geometry_validation',
-            message: 'Deterministic geometry validation failed.',
+            code: extraction.conversionError ? 'IMAGE_TO_CAD_CONVERSION_ERROR' : 'GEOMETRY_VALIDATION_ERROR',
+            stage: extraction.conversionError ? 'image_to_cad' : 'geometry_validation',
+            message: extraction.conversionError
+              ? extraction.conversionError.message
+              : 'Deterministic geometry validation failed.',
             reasons: extraction.diagnostics.map(d => `[${d.severity}] ${d.message}`),
             fallbackAvailable: false,
             artifactId: artifact.generationId,

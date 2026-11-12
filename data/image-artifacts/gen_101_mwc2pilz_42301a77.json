@@ -1,0 +1,24 @@
+{
+  "generationId": "gen_101_mwc2pilz_42301a77",
+  "projectId": "proj_tn4mc5f",
+  "seed": 101,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Ahmedabad East Villa 40x60, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing East.\nSETBACKS: front 2134mm, rear 1219mm, left 1219mm, right 1219mm.\nROOM PROGRAM: Living Room (~18.0 m2), Dining (~12.0 m2), Kitchen (~9.0 m2), Primary Bedroom (~16.0 m2), 2 x Bedroom (~13.0 m2 each), Primary Bathroom (~4.5 m2), 2 x Common Bathroom (~4.0 m2 each), Utility (~5.0 m2), Pooja Room (~3.5 m2), Car Parking (~15.0 m2), Staircase (~7.5 m2), Balcony (~5.0 m2).\nPARKING: dedicated parking for 1 car(s).\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 832,
+  "height": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T12:06:28.725Z",
+  "latencyMs": 4256,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [],
+    "referenceHashes": [],
+    "aspectRatio": "3:4",
+    "promptHash": "d3622c7034560d5d7aadbe07e7a3a581392147c60c4c4ae4c81f0e3aeeb636b6"
+  }
+}

@@ -4,7 +4,7 @@
  */
 
 import type { Building, BuildingBudgetIntent, CandidatePlan, FootprintIntent, GenerationControlState, SpaceProgram } from '@ai-floor-planner/core';
-import type { FloorPlanImagePromptRequest } from '@ai-floor-planner/ai-orchestration';
+import type { FloorPlanImagePromptRequest, MasterImageEvaluationResult } from '@ai-floor-planner/ai-orchestration';
 import {
   serializeBuilding,
   deserializeBuilding,
@@ -45,8 +45,41 @@ export interface ProjectEnvelope {
   readonly generationControl?: GenerationControlState;
   /** Latest AI concept image. Original artifacts remain immutable server-side. */
   readonly floorPlanImage?: FloorPlanImageSession | null;
+  /** Revision history of AI concept images & synchronized CAD snapshots (Phase 2.5). */
+  readonly imageRevisions?: readonly FloorPlanImageRevision[];
+  /** Explicit generation job state machine (Phase 2.5 Part 8). */
+  readonly generationJob?: GenerationJobRecord | null;
+  /** True when newly created from wizard so Studio opens in AI Design progress screen first (Part 6.1). */
+  readonly pendingAiGeneration?: boolean;
   /** Gemini architectural evaluation of the accepted plan (PRD 25). Never validity. */
   readonly architecturalEvaluation?: ArchitecturalEvaluation | null;
+  /** Guided residential planning wizard brief and inputs. */
+  readonly wizardBrief?: Record<string, unknown> | null;
+}
+
+export type GenerationJobStatus = 'idle' | 'queued' | 'running' | 'completed' | 'failed' | 'cancelled';
+
+export interface GenerationJobRecord {
+  readonly jobId: string;
+  readonly status: GenerationJobStatus;
+  readonly startedAt: string;
+  readonly updatedAt?: string;
+  readonly completedAt?: string;
+  readonly projectType?: string;
+  readonly artifactId?: string;
+  readonly stages?: Record<string, string>;
+  readonly stageRows?: readonly unknown[];
+  readonly errorMessage?: string;
+  readonly errorStage?: string;
+}
+
+export interface FloorPlanImageRevision extends FloorPlanImageSession {
+  readonly revisionNumber: number;
+  readonly revisionId?: string;
+  readonly parentGenerationId?: string;
+  readonly interpretationModel?: string;
+  readonly interpretedSummary?: string;
+  readonly buildingSnapshot?: Building;
 }
 
 export interface GenerationSession {
@@ -102,6 +135,12 @@ export interface FloorPlanImageSession {
   readonly request: FloorPlanImagePromptRequest;
   /** Canonical building identity/version the image was generated from. */
   readonly contextSignature: string;
+  /** Optional editing instruction used when modifying a prior concept image. */
+  readonly editInstruction?: string;
+  /** Phase 2.6 Deterministic requirements fingerprint. */
+  readonly requirementsFingerprint?: string;
+  /** Phase 2.6 Evaluated master 100-point rubric result. */
+  readonly evaluation?: MasterImageEvaluationResult | null;
 }
 
 export const BUILDING_CATEGORIES = ['residential', 'commercial', 'mixed_use', 'educational'] as const;
@@ -212,6 +251,15 @@ export class LocalStorageProjectStorage {
       const previousImage = previousRaw
         ? (JSON.parse(previousRaw).floorPlanImage as FloorPlanImageSession | undefined)
         : undefined;
+      const previousWizardBrief = previousRaw
+        ? (JSON.parse(previousRaw).wizardBrief as Record<string, unknown> | undefined)
+        : undefined;
+      const previousRevisions = previousRaw
+        ? (JSON.parse(previousRaw).imageRevisions as FloorPlanImageRevision[] | undefined)
+        : undefined;
+      const previousJob = previousRaw
+        ? (JSON.parse(previousRaw).generationJob as GenerationJobRecord | undefined)
+        : undefined;
       const category = normalizeBuildingCategory(envelope.category);
       const candidateProgram = envelope.spaceProgram ?? previousProgram;
       const spaceProgram = candidateProgram?.category === category
@@ -234,6 +282,14 @@ export class LocalStorageProjectStorage {
         floorPlanImage: envelope.floorPlanImage === null
           ? undefined
           : envelope.floorPlanImage ?? previousImage,
+        imageRevisions: envelope.imageRevisions ?? previousRevisions,
+        generationJob: envelope.generationJob === null
+          ? undefined
+          : envelope.generationJob ?? previousJob,
+        pendingAiGeneration: envelope.pendingAiGeneration,
+        wizardBrief: envelope.wizardBrief === null
+          ? undefined
+          : envelope.wizardBrief ?? previousWizardBrief,
         generationControl: validateGenerationControl(
           envelope.generationControl ?? previousControl ?? createGenerationControlState(),
           envelope.building,
@@ -253,7 +309,15 @@ export class LocalStorageProjectStorage {
       const raw = localStorage.getItem(STORAGE_KEY_PREFIX + projectId);
       if (!raw) return null;
       const parsed = JSON.parse(raw);
-      const building = deserializeBuilding(JSON.stringify(parsed.building));
+      const normalizeBuildingFloorIds = (b: Record<string, unknown> | undefined) => {
+        if (!b || typeof b !== 'object') return b;
+        const bId = typeof b.id === 'string' && b.id.length > 0 ? b.id : 'bldg_default';
+        const floors = Array.isArray(b.floors)
+          ? b.floors.map((f: Record<string, unknown>) => ({ ...f, buildingId: bId }))
+          : b.floors;
+        return { ...b, id: bId, floors };
+      };
+      const building = deserializeBuilding(JSON.stringify(normalizeBuildingFloorIds(parsed.building)));
       const category = normalizeBuildingCategory(parsed.category);
       const savedProgram = parsed.spaceProgram as SpaceProgram | undefined;
       const savedFootprint = parsed.footprintIntent as FootprintIntent | undefined;
@@ -278,7 +342,7 @@ export class LocalStorageProjectStorage {
           ...savedGeneration,
           candidates: savedGeneration.candidates.map(candidate => ({
             ...candidate,
-            building: deserializeBuilding(JSON.stringify(candidate.building)),
+            building: deserializeBuilding(JSON.stringify(normalizeBuildingFloorIds(candidate.building as unknown as Record<string, unknown>))),
           })),
         } : undefined,
         floorPlanImage: normalizeFloorPlanImageSession(parsed.floorPlanImage),

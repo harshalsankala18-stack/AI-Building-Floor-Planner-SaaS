@@ -1,0 +1,15 @@
+{
+  "generationId": "gen_101_mwc2ua2y_60d6f015",
+  "projectId": "proj_5bke77x",
+  "seed": 101,
+  "model": "stepped_polygon_cad_v1",
+  "provider": "deterministic_cad",
+  "promptVersion": 1,
+  "originalPrompt": "Deterministic stepped-polygon CAD schematic: Symmetric Core / Balanced (Mirror-symmetric flats either side of a central common lobby; one stair and lift at each end of the lobby.)",
+  "negativePrompt": "",
+  "width": 512,
+  "height": 512,
+  "mimeType": "image/png",
+  "generatedAt": "2026-11-11T12:10:10.953Z",
+  "latencyMs": 1
+}

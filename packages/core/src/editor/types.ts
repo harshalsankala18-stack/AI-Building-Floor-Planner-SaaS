@@ -149,6 +149,13 @@ export interface EditorState {
 export interface CommandExecutionResult {
   readonly building: Building;
   readonly stateUpdates?: Partial<EditorState>;
+  /**
+   * Why the command declined to change anything. Set this instead of returning
+   * the building unchanged and silently: the UI shows it to the user, so a
+   * control with an unmet precondition explains itself rather than appearing
+   * broken.
+   */
+  readonly rejectedReason?: string;
 }
 
 /**

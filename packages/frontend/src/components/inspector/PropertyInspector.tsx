@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { RotateCcw, RotateCw } from 'lucide-react';
+import { RotateCcw, RotateCw, Trash2 } from 'lucide-react';
 import type { EditorContextValue } from '../../stores/editor-store';
 import {
   UpdateRoomPropertiesCommand,
   UpdateRoomGeometryCommand,
   UpdateDoorPropertiesCommand,
   UpdateWindowPropertiesCommand,
+  UpdateWallPropertiesCommand,
+  DeleteEntityCommand,
   RoomType,
   DoorType,
   SwingDirection,
@@ -31,7 +33,41 @@ function ExactDimensionInput({ label, value, onCommit }: { label: string; value:
     }
     else setDraft(String(Math.round(value)));
   };
-  return <div className="form-group"><label className="form-label">{label}</label><input type="number" step="100" min="500" value={draft} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); if (event.key === 'Escape') setDraft(String(Math.round(value))); }} /></div>;
+  return <div className="form-group"><label className="form-label">{label}</label><input type="number" step="100" min="500" aria-label={label} value={draft} onChange={event => setDraft(event.target.value)} onBlur={commit} onKeyDown={event => { if (event.key === 'Enter') event.currentTarget.blur(); if (event.key === 'Escape') setDraft(String(Math.round(value))); }} /></div>;
+}
+
+/**
+ * Absolute position entry. Unlike a dimension, a coordinate may legitimately be
+ * zero or negative relative to the plot origin, so this does not impose a floor.
+ */
+function ExactPositionInput({ label, value, onCommit }: { label: string; value: number; onCommit: (value: number) => boolean }) {
+  const [draft, setDraft] = useState(String(Math.round(value)));
+  useEffect(() => setDraft(String(Math.round(value))), [value]);
+  const commit = () => {
+    const parsed = Number(draft);
+    if (Number.isFinite(parsed) && parsed !== value) {
+      if (!onCommit(parsed)) setDraft(String(Math.round(value)));
+    } else {
+      setDraft(String(Math.round(value)));
+    }
+  };
+  return (
+    <div className="form-group">
+      <label className="form-label">{label}</label>
+      <input
+        type="number"
+        step="50"
+        aria-label={label}
+        value={draft}
+        onChange={event => setDraft(event.target.value)}
+        onBlur={commit}
+        onKeyDown={event => {
+          if (event.key === 'Enter') event.currentTarget.blur();
+          if (event.key === 'Escape') setDraft(String(Math.round(value)));
+        }}
+      />
+    </div>
+  );
 }
 
 export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, embedded = false }) => {
@@ -57,17 +93,62 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
     ? activeFloor.walls.find(wall => wall.id === selection.entityId) : null;
   const selectedStair = !isMulti && selection?.entityType === 'stair'
     ? activeFloor.stairs.find(stair => stair.id === selection.entityId) : null;
+  const [geometryMessage, setGeometryMessage] = useState<string | null>(null);
+
+  /**
+   * Validate a proposed room rectangle against the floor plate and its
+   * neighbours, and say WHY it was refused rather than snapping the field back
+   * with no explanation.
+   */
+  const checkRoomRect = (rect: { x: number; y: number; width: number; height: number }): string | null => {
+    if (!selectedRoom) return 'No room is selected.';
+    const boundary = { points: [
+      { x: rect.x, y: rect.y }, { x: rect.x + rect.width, y: rect.y },
+      { x: rect.x + rect.width, y: rect.y + rect.height }, { x: rect.x, y: rect.y + rect.height },
+    ] };
+    if (!containsPolygon(activeFloor.boundary, boundary)) {
+      return `That would put "${selectedRoom.name}" outside the ${activeFloor.name} outline. Keep it inside the building footprint.`;
+    }
+    if (selectedRoom.minArea && rect.width * rect.height < selectedRoom.minArea) {
+      return `${(rect.width * rect.height / 1_000_000).toFixed(1)} m² is below this room's ${(selectedRoom.minArea / 1_000_000).toFixed(1)} m² minimum.`;
+    }
+    const clash = activeFloor.rooms.find(
+      room => room.id !== selectedRoom.id && polygonIntersectionArea(boundary, room.boundary) > 2,
+    );
+    if (clash) {
+      return `That would overlap "${clash.name}". Move or resize that room first.`;
+    }
+    return null;
+  };
+
   const commitRoomGeometry = (width: number, height: number): boolean => {
     if (!selectedRoom) return false;
-    const boundary = { points: [
-      { x: selectedRoom.x, y: selectedRoom.y }, { x: selectedRoom.x + width, y: selectedRoom.y },
-      { x: selectedRoom.x + width, y: selectedRoom.y + height }, { x: selectedRoom.x, y: selectedRoom.y + height },
-    ] };
-    const valid = containsPolygon(activeFloor.boundary, boundary)
-      && (!selectedRoom.minArea || width * height >= selectedRoom.minArea)
-      && activeFloor.rooms.every(room => room.id === selectedRoom.id || polygonIntersectionArea(boundary, room.boundary) <= 2);
-    if (valid) executeCommand(new UpdateRoomGeometryCommand(selectedRoom.id, { x: selectedRoom.x, y: selectedRoom.y, width, height }, selectedRoom.name));
-    return valid;
+    const problem = checkRoomRect({ x: selectedRoom.x, y: selectedRoom.y, width, height });
+    if (problem) {
+      setGeometryMessage(problem);
+      return false;
+    }
+    setGeometryMessage(null);
+    executeCommand(new UpdateRoomGeometryCommand(selectedRoom.id, { x: selectedRoom.x, y: selectedRoom.y, width, height }, selectedRoom.name));
+    return true;
+  };
+
+  const commitRoomPosition = (x: number, y: number): boolean => {
+    if (!selectedRoom) return false;
+    const problem = checkRoomRect({ x, y, width: selectedRoom.width, height: selectedRoom.height });
+    if (problem) {
+      setGeometryMessage(problem);
+      return false;
+    }
+    setGeometryMessage(null);
+    executeCommand(
+      new UpdateRoomGeometryCommand(
+        selectedRoom.id,
+        { x, y, width: selectedRoom.width, height: selectedRoom.height },
+        selectedRoom.name,
+      ),
+    );
+    return true;
   };
 
   return (
@@ -142,8 +223,61 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
               </div>
             </div>
             <div className="inspector-section">
+              <span className="inspector-section-title">Position (mm from plot origin)</span>
+              <div className="form-group-row">
+                <ExactPositionInput
+                  label="X (mm)"
+                  value={selectedRoom.x}
+                  onCommit={x => commitRoomPosition(x, selectedRoom.y)}
+                />
+                <ExactPositionInput
+                  label="Y (mm)"
+                  value={selectedRoom.y}
+                  onCommit={y => commitRoomPosition(selectedRoom.x, y)}
+                />
+              </div>
+              {geometryMessage && <p className="inspector-truth-note" role="status" data-testid="room-geometry-message">{geometryMessage}</p>}
+            </div>
+
+            <div className="inspector-section">
               <span className="inspector-section-title">Program traceability</span>
-              <dl className="property-definition-list"><div><dt>Floor</dt><dd>{activeFloor.name}</dd></div><div><dt>Priority</dt><dd>{selectedRoom.priority >= 8 ? 'Required' : 'Preferred'}</dd></div><div><dt>Preferred area</dt><dd>{selectedRoom.minArea ? `${(selectedRoom.minArea / 1_000_000).toFixed(1)} m² minimum` : 'Not configured'}</dd></div><div><dt>Current area</dt><dd>{(selectedRoom.area / 1_000_000).toFixed(1)} m²</dd></div><div><dt>Generation lock</dt><dd>{editor.generationControl.lockedEntityIds.includes(selectedRoom.id) ? 'Locked' : 'Variable'}</dd></div></dl>
+              <dl className="property-definition-list"><div><dt>Floor</dt><dd>{activeFloor.name}</dd></div><div><dt>Priority</dt><dd>{selectedRoom.priority >= 8 ? 'Required' : 'Preferred'}</dd></div><div><dt>Preferred area</dt><dd>{selectedRoom.minArea ? `${(selectedRoom.minArea / 1_000_000).toFixed(1)} m² minimum` : 'Not configured'}</dd></div><div><dt>Current area</dt><dd data-testid="room-area">{(selectedRoom.area / 1_000_000).toFixed(1)} m²</dd></div><div><dt>Generation lock</dt><dd>{editor.generationControl.lockedEntityIds.includes(selectedRoom.id) ? 'Locked' : 'Variable'}</dd></div></dl>
+              {selectedRoom.imageProvenance && (
+                <dl className="property-definition-list">
+                  <div><dt>Source image</dt><dd title={selectedRoom.imageProvenance.sourceImageArtifactId}>{selectedRoom.imageProvenance.sourceImageArtifactId.slice(0, 24)}</dd></div>
+                  <div><dt>Read confidence</dt><dd>{Math.round(selectedRoom.imageProvenance.extractionConfidence * 100)}%</dd></div>
+                  <div><dt>Geometry revision</dt><dd title={selectedRoom.imageProvenance.geometryRevisionId}>{selectedRoom.imageProvenance.geometryRevisionId.slice(-12)}</dd></div>
+                </dl>
+              )}
+            </div>
+
+            <div className="inspector-section">
+              <span className="inspector-section-title">Actions</span>
+              <div className="drafted-quick-actions-row">
+                <button
+                  type="button"
+                  className="drafted-flip-btn"
+                  data-testid="room-lock-toggle"
+                  onClick={() =>
+                    editor.setRoomLocks(
+                      [selectedRoom.id],
+                      !editor.generationControl.lockedEntityIds.includes(selectedRoom.id),
+                    )
+                  }
+                >
+                  {editor.generationControl.lockedEntityIds.includes(selectedRoom.id) ? 'Unlock room' : 'Lock room'}
+                </button>
+                <button
+                  type="button"
+                  className="drafted-flip-btn danger"
+                  data-testid="room-delete"
+                  onClick={() => executeCommand(new DeleteEntityCommand('room', selectedRoom.id, `Delete ${selectedRoom.name}`))}
+                  title="Delete this room and the walls and openings that only served it"
+                >
+                  <Trash2 size={13} />
+                  <span>Delete room</span>
+                </button>
+              </div>
             </div>
           </>
         )}
@@ -158,29 +292,72 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
             <div className="inspector-section">
               <span className="inspector-section-title">Wall Geometry & Assembly</span>
 
-              {/* Wall Thickness Selector */}
+              {/* Wall Assembly: thickness + classification (real domain edits) */}
               <div className="form-group">
                 <label className="form-label">Wall Thickness & Structure</label>
                 <div className="drafted-wall-thickness-toggle">
-                  <button
-                    type="button"
-                    className={`drafted-thickness-option ${selectedWall.thickness === 115 || selectedWall.type === WallType.Partition ? 'active' : ''}`}
-                    onClick={() => {
-                      // Toggle partition
-                    }}
-                  >
-                    115 mm (4.5″ Partition)
-                  </button>
-                  <button
-                    type="button"
-                    className={`drafted-thickness-option ${selectedWall.thickness === 230 || selectedWall.type === WallType.External ? 'active' : ''}`}
-                    onClick={() => {
-                      // Toggle exterior
-                    }}
-                  >
-                    230 mm (9″ Structural)
-                  </button>
+                  {([
+                    { thickness: 115, type: WallType.Partition, label: '115 mm (4.5″ Partition)', bearing: false },
+                    { thickness: 230, type: WallType.External, label: '230 mm (9″ Structural)', bearing: true },
+                  ] as const).map(option => (
+                    <button
+                      key={option.thickness}
+                      type="button"
+                      data-testid={`wall-thickness-${option.thickness}`}
+                      className={`drafted-thickness-option ${selectedWall.thickness === option.thickness ? 'active' : ''}`}
+                      aria-pressed={selectedWall.thickness === option.thickness}
+                      onClick={() =>
+                        executeCommand(
+                          new UpdateWallPropertiesCommand(selectedWall.id, {
+                            thickness: option.thickness,
+                            type: option.type,
+                            loadBearing: option.bearing,
+                          }),
+                        )
+                      }
+                    >
+                      {option.label}
+                    </button>
+                  ))}
                 </div>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Custom Thickness (mm)</label>
+                <input
+                  type="number"
+                  step="5"
+                  min="50"
+                  max="600"
+                  data-testid="wall-thickness-input"
+                  value={selectedWall.thickness}
+                  onChange={event => {
+                    const next = Number(event.target.value);
+                    if (Number.isFinite(next) && next >= 50 && next <= 600) {
+                      executeCommand(new UpdateWallPropertiesCommand(selectedWall.id, { thickness: next }));
+                    }
+                  }}
+                />
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Classification</label>
+                <select
+                  data-testid="wall-type-select"
+                  value={selectedWall.type}
+                  onChange={event =>
+                    executeCommand(
+                      new UpdateWallPropertiesCommand(selectedWall.id, {
+                        type: event.target.value as WallType,
+                        loadBearing: event.target.value === WallType.External,
+                      }),
+                    )
+                  }
+                >
+                  {Object.values(WallType).map(type => (
+                    <option key={type} value={type}>{type.replace(/_/g, ' ')}</option>
+                  ))}
+                </select>
               </div>
 
               <dl className="property-definition-list" style={{ marginTop: 12 }}>
@@ -202,6 +379,25 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                 </div>
               </dl>
               <p className="inspector-truth-note">Walls are derived from canonical room boundaries. Reshaping room corners automatically articulates wall angles in 2D and 3D.</p>
+              <button
+                type="button"
+                className="drafted-flip-btn danger"
+                data-testid="wall-delete"
+                onClick={() => executeCommand(new DeleteEntityCommand('wall', selectedWall.id, 'Delete wall'))}
+                title={
+                  hostedDoors.length + hostedWindows.length > 0
+                    ? `Deleting this wall also removes the ${hostedDoors.length} door(s) and ${hostedWindows.length} window(s) it hosts`
+                    : 'Delete this wall'
+                }
+              >
+                <Trash2 size={13} />
+                <span>
+                  Delete wall
+                  {hostedDoors.length + hostedWindows.length > 0
+                    ? ` (+${hostedDoors.length + hostedWindows.length} opening${hostedDoors.length + hostedWindows.length === 1 ? '' : 's'})`
+                    : ''}
+                </span>
+              </button>
             </div>
           );
         })()}
@@ -327,6 +523,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                   </div>
                 </div>
               )}
+
+              <button
+                type="button"
+                className="drafted-flip-btn danger"
+                data-testid="door-delete"
+                onClick={() => executeCommand(new DeleteEntityCommand('door', selectedDoor.id, 'Delete door'))}
+              >
+                <Trash2 size={13} />
+                <span>Delete door</span>
+              </button>
             </div>
           );
         })()}
@@ -452,6 +658,16 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                   </div>
                 </div>
               )}
+
+              <button
+                type="button"
+                className="drafted-flip-btn danger"
+                data-testid="window-delete"
+                onClick={() => executeCommand(new DeleteEntityCommand('window', selectedWindow.id, 'Delete window'))}
+              >
+                <Trash2 size={13} />
+                <span>Delete window</span>
+              </button>
             </div>
           );
         })()}

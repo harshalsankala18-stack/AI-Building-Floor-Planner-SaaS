@@ -136,7 +136,9 @@ export {
   type ApartmentPlanValidationResult,
 } from './interpretation/apartment-plan';
 export {
+  containsPolygon,
   containsPolygonWithTolerance,
+  detectRoomCollisions,
   pointInPolygonWithTolerance,
   isValidPolygon,
   segmentCrossesOutsidePolygon,
@@ -150,3 +152,13 @@ export {
   getStrategyProfile,
   type ArchitecturalStrategyProfile,
 } from './strategy/design-strategy';
+export {
+  StructuralCoordinationEngine,
+  STRUCTURAL_COORDINATION_DISCLAIMER,
+  type StructuralGridLine,
+  type ConceptualBeam,
+  type StructuralClash,
+  type StructuralDiagnostic,
+  type ConceptualStructuralSystem,
+  type BuildingStructuralCoordination,
+} from './structural/structural-coordination-engine';

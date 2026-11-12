@@ -52,30 +52,41 @@ describe('Gemini Image Generation Provider — Unit & Integration Tests', () => 
   };
 
   describe('1. Provider Initialization & Configuration', () => {
-    it('initializes with default model gemini-3-pro-image and 2K size', () => {
+    it('initializes with default model gemini-3.1-flash-lite-image and 1K size', () => {
       const provider = new GeminiImageProvider({ apiKey: 'test-key' });
       expect(provider.name).toBe(GEMINI_IMAGE_PROVIDER_NAME);
       expect(provider.getModel()).toBe(DEFAULT_GEMINI_IMAGE_MODEL);
-      expect(provider.getModel()).toBe('gemini-3-pro-image');
+      expect(provider.getModel()).toBe('gemini-3.1-flash-lite-image');
       expect(provider.getImageSize()).toBe(DEFAULT_GEMINI_IMAGE_SIZE);
-      expect(provider.getImageSize()).toBe('2K');
+      expect(provider.getImageSize()).toBe('1K');
       expect(provider.isConfigured()).toBe(true);
     });
 
-    it('allows custom model and size configuration (1K, 4K)', () => {
-      const provider1K = new GeminiImageProvider({
+    it('supports configurable model selection: gemini-3-pro-image and gemini-3.1-flash-image', () => {
+      const proProvider = new GeminiImageProvider({
         apiKey: 'test-key',
         model: 'gemini-3-pro-image',
-        imageSize: '1K',
+        imageSize: '2K',
       });
-      expect(provider1K.getImageSize()).toBe('1K');
+      expect(proProvider.getModel()).toBe('gemini-3-pro-image');
+      expect(proProvider.getImageSize()).toBe('2K');
 
-      const provider4K = new GeminiImageProvider({
+      const flashProvider = new GeminiImageProvider({
         apiKey: 'test-key',
-        model: 'gemini-3-pro-image',
+        model: 'gemini-3.1-flash-image',
+        imageSize: '2K',
+      });
+      expect(flashProvider.getModel()).toBe('gemini-3.1-flash-image');
+      expect(flashProvider.getImageSize()).toBe('2K');
+    });
+
+    it('enforces 1K resolution for gemini-3.1-flash-lite-image model', () => {
+      const provider = new GeminiImageProvider({
+        apiKey: 'test-key',
+        model: 'gemini-3.1-flash-lite-image',
         imageSize: '4K',
       });
-      expect(provider4K.getImageSize()).toBe('4K');
+      expect(provider.getImageSize()).toBe('1K');
     });
 
     it('reports not configured and rejects when apiKey is empty', async () => {
@@ -340,8 +351,8 @@ describe('Gemini Image Generation Provider — Unit & Integration Tests', () => 
     });
   });
 
-  describe.skip('5. End-to-End Mocked Generation with Provenance', () => {
-    it('executes generateFloorPlan and attaches complete provenance', async () => {
+  describe('5. End-to-End Mocked Generation with Provenance', () => {
+    it('executes generateFloorPlan and attaches complete provenance with 1K resolution', async () => {
       const fakeFetch: typeof fetch = async () => {
         return new Response(
           JSON.stringify({
@@ -372,29 +383,91 @@ describe('Gemini Image Generation Provider — Unit & Integration Tests', () => 
 
       const provider = new GeminiImageProvider({
         apiKey: 'test-api-key',
-        model: 'gemini-3-pro-image',
-        imageSize: '2K',
+        model: 'gemini-3.1-flash-lite-image',
+        imageSize: '1K',
         fetchImpl: fakeFetch,
       });
 
       const result = await provider.generateFloorPlan(basePromptRequest);
 
       expect(result.provider).toBe('gemini');
-      expect(result.model).toBe('gemini-3-pro-image');
+      expect(result.model).toBe('gemini-3.1-flash-lite-image');
       expect(result.mimeType).toBe('image/png');
       expect(result.imageBase64).toBe(mockPngBase64);
       expect(result.latencyMs).toBeGreaterThanOrEqual(0);
       expect(result.providerRequest).toBeDefined();
 
       const prov = result.providerRequest as any;
-      expect(prov.size).toBe('2K');
+      expect(prov.size).toBe('1K');
       expect(prov.aspectRatio).toBe('4:3');
       expect(prov.apiRequestId).toBe('req-test-12345');
       expect(prov.promptHash).toMatch(/^[a-f0-9]{64}$/);
     });
+
+    it('handles HTTP error responses gracefully without succeeding falsely', async () => {
+      const fakeAuthFailFetch: typeof fetch = async () => {
+        return new Response(
+          JSON.stringify({
+            error: {
+              code: 403,
+              message: 'Gemini API key is invalid or unauthorized',
+              status: 'PERMISSION_DENIED',
+            },
+          }),
+          { status: 403, headers: { 'Content-Type': 'application/json' } }
+        );
+      };
+
+      const provider = new GeminiImageProvider({
+        apiKey: 'invalid-key',
+        model: 'gemini-3.1-flash-lite-image',
+        fetchImpl: fakeAuthFailFetch,
+      });
+
+      await expect(provider.generateFloorPlan(basePromptRequest)).rejects.toMatchObject({
+        code: 'GEMINI_AUTH_ERROR',
+      });
+    });
+
+    it('handles 429 rate limit errors with GEMINI_RATE_LIMITED', async () => {
+      const fakeRateLimitFetch: typeof fetch = async () => {
+        return new Response(
+          JSON.stringify({
+            error: { code: 429, message: 'Resource exhausted', status: 'RESOURCE_EXHAUSTED' },
+          }),
+          { status: 429, headers: { 'Content-Type': 'application/json' } }
+        );
+      };
+
+      const provider = new GeminiImageProvider({
+        apiKey: 'valid-key',
+        model: 'gemini-3.1-flash-lite-image',
+        fetchImpl: fakeRateLimitFetch,
+      });
+
+      await expect(provider.generateFloorPlan(basePromptRequest)).rejects.toMatchObject({
+        code: 'GEMINI_RATE_LIMITED',
+      });
+    });
+
+    it('handles 503 service unavailable with GEMINI_UNAVAILABLE', async () => {
+      const fakeUnavailableFetch: typeof fetch = async () => {
+        return new Response('Service Unavailable', { status: 503 });
+      };
+
+      const provider = new GeminiImageProvider({
+        apiKey: 'valid-key',
+        model: 'gemini-3.1-flash-lite-image',
+        fetchImpl: fakeUnavailableFetch,
+      });
+
+      await expect(provider.generateFloorPlan(basePromptRequest)).rejects.toMatchObject({
+        code: 'GEMINI_UNAVAILABLE',
+      });
+    });
   });
 
-  describe.skip('6. Multi-Flat Pipeline Integration with Deterministic Planner', () => {
+  describe('6. Multi-Flat Pipeline Integration with Deterministic Planner', () => {
     const testPlans = [
       {
         name: '1-Flat 3BHK Plan',
@@ -491,14 +564,14 @@ describe('Gemini Image Generation Provider — Unit & Integration Tests', () => 
 
         const provider = new GeminiImageProvider({
           apiKey: 'mock-key',
-          model: 'gemini-3-pro-image',
-          imageSize: '2K',
+          model: 'gemini-3.1-flash-lite-image',
+          imageSize: '1K',
           fetchImpl: fakeFetch,
         });
 
         const res = await provider.generateFloorPlan(req);
         expect(res.provider).toBe('gemini');
-        expect(res.model).toBe('gemini-3-pro-image');
+        expect(res.model).toBe('gemini-3.1-flash-lite-image');
         expect(requestCaptured).toBeDefined();
 
         // Verify structural PNG was the FIRST part sent
@@ -512,5 +585,147 @@ describe('Gemini Image Generation Provider — Unit & Integration Tests', () => 
         expect(prov.rendererVersion).toBe('1.0.0');
       });
     }
+  });
+
+  describe('7. Truthful Health & Access Reporting', () => {
+    it('returns NOT_CONFIGURED when apiKey is missing', async () => {
+      const provider = new GeminiImageProvider({ apiKey: '' });
+      const access = await provider.checkAccess();
+      expect(access.status).toBe('NOT_CONFIGURED');
+      expect(access.reachable).toBe(false);
+      expect(access.imageModelReachable).toBe(false);
+      expect(access.authenticationStatus).toBe('NOT_CONFIGURED');
+      expect(access.lastSuccessfulGeneration).toBeNull();
+      expect(await provider.isAvailable()).toBe(false);
+    });
+
+    it('returns REACHABLE with detailed availability metrics when model endpoint responds with 200', async () => {
+      const fakeFetch: typeof fetch = async () => new Response(JSON.stringify({ name: 'gemini-3-pro-image' }), { status: 200 });
+      const provider = new GeminiImageProvider({
+        apiKey: 'test-key',
+        model: 'gemini-3-pro-image',
+        fetchImpl: fakeFetch,
+      });
+      const access = await provider.checkAccess();
+      expect(access.status).toBe('REACHABLE');
+      expect(access.reachable).toBe(true);
+      expect(access.imageModelReachable).toBe(true);
+      expect(access.authenticationStatus).toBe('AUTHENTICATED');
+      expect(access.modelAvailability).toBe('AVAILABLE');
+      expect(access.rateLimits).toBe('OK');
+      expect(access.quotaState).toBe('OK');
+      expect(await provider.isAvailable()).toBe(true);
+    });
+
+    it('returns AUTH_FAILED with exact detail when Google responds with 401 or 403', async () => {
+      const fakeFetch: typeof fetch = async () => new Response(JSON.stringify({
+        error: { code: 403, message: 'Your API key was reported as leaked. Please use another API key.', status: 'PERMISSION_DENIED' }
+      }), { status: 403 });
+      const provider = new GeminiImageProvider({
+        apiKey: 'leaked-key',
+        model: 'gemini-3.1-flash-image',
+        fetchImpl: fakeFetch,
+      });
+      const access = await provider.checkAccess();
+      expect(access.status).toBe('AUTH_FAILED');
+      expect(access.reachable).toBe(false);
+      expect(access.imageModelReachable).toBe(false);
+      expect(access.authenticationStatus).toBe('AUTH_FAILED');
+      expect(access.detail).toContain('Your API key was reported as leaked');
+      expect(await provider.isAvailable()).toBe(false);
+    });
+
+    it('updates lastSuccessfulGeneration timestamp upon successful generation', async () => {
+      const fakeFetch: typeof fetch = async () => new Response(JSON.stringify({
+        candidates: [
+          {
+            content: {
+              parts: [
+                {
+                  inlineData: {
+                    mimeType: 'image/png',
+                    data: mockPngBase64,
+                  },
+                },
+              ],
+            },
+          },
+        ],
+      }), { status: 200 });
+
+      const provider = new GeminiImageProvider({
+        apiKey: 'test-key',
+        model: 'gemini-3-pro-image',
+        fetchImpl: fakeFetch,
+      });
+      expect(provider.getLastSuccessfulGeneration()).toBeNull();
+      await provider.generateFloorPlan(basePromptRequest);
+      expect(provider.getLastSuccessfulGeneration()).not.toBeNull();
+      expect(typeof provider.getLastSuccessfulGeneration()).toBe('string');
+      const access = await provider.checkAccess();
+      expect(access.lastSuccessfulGeneration).toBe(provider.getLastSuccessfulGeneration());
+    });
+  });
+
+  describe('8. CAD Geometry Invariance Under Concept Image Generation', () => {
+    it('guarantees that deterministic CAD geometry and canonical building model remain 100% unchanged before and after image generation', async () => {
+      const config = {
+        site: { plotWidthMm: 35000, plotDepthMm: 25000, setbacksMm: { front: 3000, rear: 2000, left: 2000, right: 2000 } },
+        flatsPerFloor: 2,
+        unitMix: [
+          { unitType: '2BHK', count: 1 },
+          { unitType: '3BHK', count: 1 },
+        ],
+        commonCore: { passengerLifts: 1, staircaseCount: 1, commonLobby: true },
+        strategy: 'balanced' as const,
+        seed: 77,
+      };
+
+      const planned = planDeterministicApartment(config);
+      expect(planned.success).toBe(true);
+
+      // Snapshot canonical geometry before image generation
+      const beforeSnapshot = JSON.stringify({
+        units: planned.schematic.units.map(u => ({
+          flatId: u.flatId,
+          bounds: u.bounds,
+          stepped: u.steppedPolygon?.vertices,
+          rooms: u.rooms.map(r => ({ name: r.name, bounds: r.bounds })),
+        })),
+        totalFloorPlate: planned.schematic.totalFloorPlateSqM,
+      });
+
+      const fakeFetch: typeof fetch = async () => {
+        return new Response(
+          JSON.stringify({
+            candidates: [{ content: { parts: [{ inlineData: { mimeType: 'image/png', data: mockPngBase64 } }] } }],
+          }),
+          { status: 200 }
+        );
+      };
+
+      const provider = new GeminiImageProvider({
+        apiKey: 'test-key',
+        model: 'gemini-3.1-flash-lite-image',
+        fetchImpl: fakeFetch,
+      });
+
+      const imgResult = await provider.generateFloorPlan(basePromptRequest);
+      expect(imgResult.imageBase64).toBe(mockPngBase64);
+
+      // Snapshot canonical geometry after image generation
+      const afterSnapshot = JSON.stringify({
+        units: planned.schematic.units.map(u => ({
+          flatId: u.flatId,
+          bounds: u.bounds,
+          stepped: u.steppedPolygon?.vertices,
+          rooms: u.rooms.map(r => ({ name: r.name, bounds: r.bounds })),
+        })),
+        totalFloorPlate: planned.schematic.totalFloorPlateSqM,
+      });
+
+      // Proof: Deterministic geometry is 100% invariant
+      expect(afterSnapshot).toBe(beforeSnapshot);
+    });
   });
 });

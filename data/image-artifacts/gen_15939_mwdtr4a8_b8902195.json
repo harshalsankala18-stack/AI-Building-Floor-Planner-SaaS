@@ -1,0 +1,34 @@
+{
+  "generationId": "gen_15939_mwdtr4a8_b8902195",
+  "projectId": "proj_r1khjd3",
+  "seed": 15939,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Vasant Vihar Residence, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing North.\nSETBACKS: front 2134mm, rear 1219mm, left 1219mm, right 1219mm.\nROOM PROGRAM: 3 bedroom(s), 2 bathroom(s), living room, kitchen, dining room, staircase.\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: 3 bedrooms, 2 bathrooms, living room, dining room, kitchen, balcony, parking, vastu compliant orientation. Footprint shape: flexible. Plot size 40x60 ft, road facing north.\n\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #3, Previous Score: 63/100):\n- RESOLVE HARD VIOLATIONS: Vastu orientation significantly misaligned (Kitchen in East/NE, Master Bedroom in NW); Layout appears to be a single floor plate rather than a demonstrated 2-floor residential duplex design\n- FIX SPATIAL DEFECTS: The central living area is effectively a core void with limited exterior wall access; The kitchen is positioned in the NE/East region, violating Vastu; Master bedroom is located in the NW corner, violating SW Vastu principles; Bathroom layout in the foyer is inefficient\n- ARCHITECTURAL CORRECTIONS: Relocate the kitchen to the Southeast (SE) corner of the floor plan for Vastu compliance; Relocate the Master Bedroom to the Southwest (SW) corner; Move the main entrance/foyer slightly to the East to align with traditional North-facing house layouts; Open up the living area to at least one exterior wall to ensure natural light and ventilation\nEnsure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n- Use the supplied reference images for visual drafting style. Current project requirements always override references.\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 896,
+  "height": 1200,
+  "requestedWidth": 832,
+  "requestedHeight": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-12T17:31:19.277Z",
+  "latencyMs": 5175,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "referenceHashes": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "aspectRatio": "3:4",
+    "promptHash": "806a16877cf684790cffb317f6e885e05d63012e21de20277e70de81a177151e"
+  }
+}

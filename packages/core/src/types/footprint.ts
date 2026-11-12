@@ -1,6 +1,19 @@
 import type { Point, Polygon } from './geometry';
 
-export type FootprintShapeType = 'rectangle' | 'l_shape' | 'u_shape' | 't_shape' | 'courtyard' | 'linear' | 'custom';
+export type FootprintShapeType =
+  | 'rectangle'
+  | 'square'
+  | 'l_shape'
+  | 'u_shape'
+  | 'courtyard'
+  | 'h_shape'
+  | 't_shape'
+  | 'v_shape'
+  | 'z_shape'
+  | 'linear'
+  | 'stepped'
+  | 'custom'
+  | 'flexible';
 export type FloorPlateStrategy = 'same_all_levels' | 'custom_per_floor';
 export type FootprintStatus = 'VALID' | 'WARNING' | 'INVALID' | 'PROGRAM_TOO_LARGE' | 'PROGRAM_TIGHT' | 'NOT_CONFIGURED';
 export type CoreAnchor = 'center' | 'front' | 'rear' | 'left' | 'right';
@@ -14,6 +27,11 @@ export interface FootprintParameters {
   readonly barDepth?: number;
   readonly courtyardWidth?: number;
   readonly courtyardDepth?: number;
+  readonly openingDirection?: 'north' | 'east' | 'south' | 'west';
+  readonly courtyardSize?: 'compact' | 'medium' | 'spacious';
+  readonly wingOrientation?: 'balanced' | 'deep' | 'wide';
+  readonly entranceSide?: 'front' | 'rear' | 'left' | 'right';
+  readonly openSpacePreference?: 'garden' | 'compact' | 'balanced';
 }
 
 export interface FootprintTransform {

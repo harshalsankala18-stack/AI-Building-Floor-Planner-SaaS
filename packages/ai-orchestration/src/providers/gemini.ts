@@ -182,9 +182,19 @@ export class GeminiProvider extends BaseAIProvider {
             throw err;
           }
 
-          // 2. If client error (400, 404), throw immediately - no retry
-          if (status === 400 || status === 404) {
+          // 2. If client error (400, 404), throw immediately — unless 404 is a retired model and fallbackModel exists
+          const isModelRetired404 =
+            status === 404 &&
+            err instanceof Error &&
+            err.message.includes('no longer available');
+          if (status === 400 || (status === 404 && (!isModelRetired404 || !fallbackModel))) {
             throw err;
+          }
+          if (isModelRetired404 && fallbackModel) {
+            console.warn(
+              `[GeminiProvider] Model "${currentModel}" returned 404 (no longer available). Falling forward to "${fallbackModel}"...`,
+            );
+            break;
           }
 
           const isTimeout = err instanceof Error && (err.message.includes('timed out') || err.name === 'AbortError');

@@ -103,6 +103,15 @@ export interface ExtractedBoundary {
 export interface ExtractionMetadata {
   readonly imageWidePixels: number;
   readonly imageTallPixels: number;
+  /**
+   * Coordinate frame the interpretation's x/y/width/height are expressed in.
+   * The vision layer returns a fixed normalized frame (e.g. 1000x1000), which
+   * is NOT the image's pixel size — mapping to millimetres must use this, not
+   * `imageWidePixels`/`imageTallPixels` (which are provenance only, and may
+   * record the *requested* rather than the returned raster size).
+   */
+  readonly frameWidth: number;
+  readonly frameHeight: number;
   readonly imageAspectRatio: number;
   readonly plotAspectRatio: number;
   readonly aspectMismatchRatio: number;

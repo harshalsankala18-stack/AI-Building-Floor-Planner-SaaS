@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   Direction, FOOTPRINT_SHAPES, RoomType, addProgramItem, applyFootprintToBuilding,
   applySpaceProgramPreset, autoFitFootprint, buildingHasDesignedGeometry,
-  calculateFootprintMetrics, createBuilding, createDefaultFootprintIntent, createProgramItem,
+  calculateFootprintMetrics, checkFootprintFeasibility, createBuilding, createDefaultFootprintIntent, createProgramItem,
   createRoom, deriveFootprintIntent, generateFootprintPolygon, getFootprintEnvelope,
   getSpaceDefinition, getSpaceProgramPresets, polygonArea, recenterFootprint,
   snapFootprintToEnvelope, validateFootprint,
@@ -37,16 +37,54 @@ function fitted(shape: FootprintShapeType, building = testBuilding()): Footprint
 
 describe('parametric footprint geometry', () => {
   it('exposes the complete initial professional shape library', () => {
-    expect(FOOTPRINT_SHAPES.map(shape => shape.id)).toEqual(['rectangle', 'l_shape', 'u_shape', 't_shape', 'courtyard', 'linear', 'custom']);
+    expect(FOOTPRINT_SHAPES.map(shape => shape.id)).toEqual([
+      'rectangle',
+      'square',
+      'l_shape',
+      'u_shape',
+      'courtyard',
+      'h_shape',
+      't_shape',
+      'v_shape',
+      'z_shape',
+      'linear',
+      'stepped',
+      'custom',
+      'flexible',
+    ]);
     expect(FOOTPRINT_SHAPES.find(shape => shape.id === 'courtyard')).toMatchObject({ customSupport: 'limited' });
   });
 
-  it.each(['rectangle', 'l_shape', 'u_shape', 't_shape', 'courtyard', 'linear'] as FootprintShapeType[])('%s generates valid positive-area geometry', shape => {
+  it.each([
+    'rectangle',
+    'square',
+    'l_shape',
+    'u_shape',
+    'courtyard',
+    'h_shape',
+    't_shape',
+    'v_shape',
+    'z_shape',
+    'linear',
+    'stepped',
+    'flexible',
+  ] as FootprintShapeType[])('%s generates valid positive-area geometry', shape => {
     const building = testBuilding();
     const intent = fitted(shape, building);
     const validation = validateFootprint(building, intent);
     expect(validation.status).toBe('VALID');
     expect(polygonArea(generateFootprintPolygon(intent))).toBeGreaterThan(0);
+  });
+
+  it('validates footprint feasibility and flags tight envelopes with alternatives', () => {
+    const tightBuilding = testBuilding({ width: 6000, depth: 6000 }); // 6x6m plot, envelope ~4x4m
+    const checkU = checkFootprintFeasibility(tightBuilding, 'u_shape');
+    expect(checkU.feasible).toBe(false);
+    expect(checkU.reason).toContain('cannot accommodate a U-Shaped footprint');
+    expect(checkU.suggestedAlternatives.length).toBeGreaterThan(0);
+
+    const checkRect = checkFootprintFeasibility(tightBuilding, 'rectangle');
+    expect(checkRect.feasible).toBe(true);
   });
 
   it('computes exact rectangular area from canonical dimensions', () => {

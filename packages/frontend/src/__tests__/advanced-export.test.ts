@@ -41,26 +41,27 @@ describe('Phase 11 advanced export', () => {
   it('creates a valid single-page PDF structure with vector drawing content', () => {
     const building = createCanonical30x50_2BHK();
     const artifact = createExportArtifact(building, settings({ format: 'pdf' }));
+    const content = typeof artifact.content === 'string' ? artifact.content : new TextDecoder().decode(artifact.content);
 
     expect(artifact.mimeType).toBe('application/pdf');
-    expect(artifact.content.startsWith('%PDF-1.4')).toBe(true);
-    expect(artifact.content).toContain('/Type /Page');
-    expect(artifact.content).toContain('xref');
-    expect(artifact.content).toContain('startxref');
-    expect(artifact.content.endsWith('%%EOF')).toBe(true);
+    expect(content.startsWith('%PDF-1.4')).toBe(true);
+    expect(content).toContain('/Type /Page');
+    expect(content).toContain('xref');
+    expect(content).toContain('startxref');
+    expect(content.endsWith('%%EOF')).toBe(true);
     expect(artifact.byteSize).toBeGreaterThan(1000);
 
-    const xrefOffset = Number(artifact.content.match(/startxref\n(\d+)/)?.[1]);
-    expect(artifact.content.slice(xrefOffset, xrefOffset + 4)).toBe('xref');
-    const objectOffsets = artifact.content
+    const xrefOffset = Number(content.match(/startxref\n(\d+)/)?.[1]);
+    expect(content.slice(xrefOffset, xrefOffset + 4)).toBe('xref');
+    const objectOffsets = content
       .split('xref\n')[1]!
       .split('trailer')[0]!
       .split('\n')
       .slice(2)
-      .filter(line => line.endsWith(' n '))
-      .map(line => Number(line.slice(0, 10)));
-    objectOffsets.forEach((offset, index) => {
-      expect(artifact.content.slice(offset)).toMatch(new RegExp(`^${index + 1} 0 obj`));
+      .filter((line: string) => line.endsWith(' n '))
+      .map((line: string) => Number(line.slice(0, 10)));
+    objectOffsets.forEach((offset: number, index: number) => {
+      expect(content.slice(offset)).toMatch(new RegExp(`^${index + 1} 0 obj`));
     });
   });
 
@@ -71,7 +72,8 @@ describe('Phase 11 advanced export', () => {
       revision: '07',
       projectNumber: 'HOUSE-2026',
     }));
-    const parsed = JSON.parse(artifact.content);
+    const content = typeof artifact.content === 'string' ? artifact.content : new TextDecoder().decode(artifact.content);
+    const parsed = JSON.parse(content);
 
     expect(parsed.exportManifest.revision).toBe('07');
     expect(parsed.exportManifest.projectNumber).toBe('HOUSE-2026');

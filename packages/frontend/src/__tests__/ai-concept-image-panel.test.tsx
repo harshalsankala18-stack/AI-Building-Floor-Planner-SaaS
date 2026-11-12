@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { createBuilding, createEmptySpaceProgram, createProgramItem, getSpaceDefinition, Direction } from '@ai-floor-planner/core';
 import { AiConceptImagePanel } from '../components/generation/AiConceptImagePanel';
+import { compileImageRequest } from '../services/ai-concept-image';
 import { CURRENT_PROJECT_SCHEMA_VERSION, LocalStorageProjectStorage, type FloorPlanImageSession, type ProjectEnvelope } from '../services/storage';
 
 const mockStore: Record<string, string> = {};
@@ -109,5 +110,67 @@ describe('Phase 2 — AI concept image panel honesty', () => {
     const stored: ProjectEnvelope = { ...value, floorPlanImage: session };
     new LocalStorageProjectStorage().save(stored);
     expect(render(stored)).toContain('generated from an earlier revision');
+  });
+
+  it('renders Phase 2.5 zoom/download toolbar, instruction editor, and revision history when a concept image exists', () => {
+    const value = envelope();
+    const session: FloorPlanImageSession = {
+      schemaVersion: 1,
+      generationId: 'gen_rev_1',
+      seed: 101,
+      attempt: 0,
+      generatedAt: '2026-09-19T00:00:00Z',
+      promptVersion: 1,
+      model: 'gemini-3.1-flash-lite-image',
+      provider: 'gemini',
+      mimeType: 'image/jpeg',
+      imageBase64: 'QUJD',
+      request: {
+        schemaVersion: 1,
+        promptVersion: 1,
+        prompt: 'top-down plan',
+        negativePrompt: 'perspective',
+        seed: 101,
+        width: 1024,
+        height: 1024,
+        metadata: { projectName: 'Panel Phase 2', plotWidthMm: 9144, plotDepthMm: 15240, floorsCount: 1, roadFacing: 'north' },
+      },
+      contextSignature: `${value.building.id}:${value.building.version}:9144x15240`,
+      editInstruction: 'Make the living room larger',
+    };
+    const stored: ProjectEnvelope = {
+      ...value,
+      floorPlanImage: session,
+      imageRevisions: [
+        { ...session, revisionNumber: 1, editInstruction: undefined },
+        { ...session, generationId: 'gen_rev_2', revisionNumber: 2, editInstruction: 'Make the living room larger' },
+      ],
+    };
+    new LocalStorageProjectStorage().save(stored);
+    const html = render(stored);
+    expect(html).toContain('Download Image');
+    expect(html).toContain('Edit Concept Image with Instructions');
+    expect(html).toContain('Apply Edit &amp; Sync CAD');
+    expect(html).toContain('Revision History (2)');
+    expect(html).toContain('Rev #1');
+    expect(html).toContain('Rev #2');
+  });
+
+  it('compiles reference-guided image editing requests with referenceImage and additionalPrompt', () => {
+    const value = envelope();
+    const req = compileImageRequest(value, 1, {
+      editInstruction: 'Widen front verandah and move kitchen to SE',
+      referenceImage: { mimeType: 'image/jpeg', imageBase64: 'REF_BASE64' },
+    });
+    expect(req).toBeDefined();
+    expect(req?.referenceImages).toEqual([
+      {
+        id: 'concept_edit_reference',
+        name: 'concept_edit_reference.jpg',
+        mimeType: 'image/jpeg',
+        base64Data: 'REF_BASE64',
+      },
+    ]);
+    expect(req?.prompt).toContain('EDITING INSTRUCTIONS ON ATTACHED REFERENCE PLAN: Widen front verandah and move kitchen to SE');
   });
 });

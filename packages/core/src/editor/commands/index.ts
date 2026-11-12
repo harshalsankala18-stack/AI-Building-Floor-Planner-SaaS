@@ -33,6 +33,12 @@ export {
 } from './window-commands';
 
 export {
+  UpdateWallPropertiesCommand,
+  UpdateWallGeometryCommand,
+  type WallPropertyUpdates,
+} from './wall-commands';
+
+export {
   DeleteEntityCommand,
 } from './delete-commands';
 

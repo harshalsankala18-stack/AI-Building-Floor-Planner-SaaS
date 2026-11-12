@@ -44,8 +44,8 @@ export function extractPlanToBuilding(
   const diagnostics: DiagnosticFragment[] = [];
   const siteRect = { plotWidth: site.plotWidth, plotDepth: site.plotDepth };
 
-  const wide = extracted.metadata.imageWidePixels;
-  const tall = extracted.metadata.imageTallPixels;
+  const wide = extracted.metadata.frameWidth > 0 ? extracted.metadata.frameWidth : extracted.metadata.imageWidePixels;
+  const tall = extracted.metadata.frameHeight > 0 ? extracted.metadata.frameHeight : extracted.metadata.imageTallPixels;
   const boundaryPolygon = {
     points: extracted.boundary.points.map(point => ({
       x: (point.x / wide) * site.plotWidth,

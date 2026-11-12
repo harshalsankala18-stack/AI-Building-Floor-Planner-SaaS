@@ -16,16 +16,25 @@ export interface NormalizationSite {
   readonly roadFacing: string;
 }
 
-/** Site dimensions are authoritative; extraction must fit them, not vice versa. */
+/**
+ * Site dimensions are authoritative; extraction must fit them, not vice versa.
+ *
+ * The divisor is the interpretation's COORDINATE FRAME, never the raster's
+ * pixel size: the vision layer returns a fixed normalized frame, and an
+ * artifact's recorded pixel size can differ from the image actually returned.
+ * Using pixels here silently scaled every room by frame/pixels.
+ */
 export function normalizationScales(
   metadata: ExtractionMetadata,
   site: { readonly plotWidth: number; readonly plotDepth: number },
 ): { scaleX: number; scaleY: number } | null {
-  if (metadata.imageWidePixels <= 0 || metadata.imageTallPixels <= 0) return null;
+  const frameWidth = metadata.frameWidth > 0 ? metadata.frameWidth : metadata.imageWidePixels;
+  const frameHeight = metadata.frameHeight > 0 ? metadata.frameHeight : metadata.imageTallPixels;
+  if (frameWidth <= 0 || frameHeight <= 0) return null;
   if (site.plotWidth <= 0 || site.plotDepth <= 0) return null;
   return {
-    scaleX: site.plotWidth / metadata.imageWidePixels,
-    scaleY: site.plotDepth / metadata.imageTallPixels,
+    scaleX: site.plotWidth / frameWidth,
+    scaleY: site.plotDepth / frameHeight,
   };
 }
 

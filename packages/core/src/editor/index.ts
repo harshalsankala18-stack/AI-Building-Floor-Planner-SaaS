@@ -57,11 +57,17 @@ export {
   MoveWindowCommand,
   UpdateWindowPropertiesCommand,
   RemoveWindowCommand,
+  UpdateWallPropertiesCommand,
+  UpdateWallGeometryCommand,
+  type WallPropertyUpdates,
   DeleteEntityCommand,
   BatchCommand,
   ReplaceBuildingCommand,
   UpdateSiteCommand,
   type UpdateSiteParams,
+  AddFloorCommand,
+  RemoveFloorCommand,
+  type AddFloorParams,
 } from './commands/index';
 
 // Editor Engine

@@ -1,0 +1,17 @@
+{
+  "generationId": "gen_1475_mwdtfsir_05aa6539",
+  "projectId": "proj_1794222367225",
+  "seed": 1475,
+  "model": "stepped_polygon_cad_v1",
+  "provider": "deterministic_cad",
+  "promptVersion": 1,
+  "originalPrompt": "Deterministic stepped-polygon CAD schematic: Corridor-Hugging / Circulation (Compact core with grouped lifts and the shortest common lobby; minimal internal passage.)",
+  "negativePrompt": "",
+  "width": 512,
+  "height": 512,
+  "requestedWidth": 512,
+  "requestedHeight": 512,
+  "mimeType": "image/png",
+  "generatedAt": "2026-11-12T17:22:30.812Z",
+  "latencyMs": 1
+}

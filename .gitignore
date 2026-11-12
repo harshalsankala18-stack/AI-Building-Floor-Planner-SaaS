@@ -28,12 +28,15 @@ Thumbs.db
 .turbo/
 .vite/
 
-# Logs
+# Logs & Agent Caches
 *.log
 npm-debug.log*
 pnpm-debug.log*
 _tmp_*
 playwright-report/
 test-results/
+.audit/
+.claude/
+scratch-test-vision.cjs
 
 scripts/.cache/

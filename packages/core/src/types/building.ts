@@ -5,6 +5,7 @@
  */
 
 import type { Point, Polygon } from './geometry';
+import type { EntityImageProvenance } from './image-provenance';
 import type {
   AdjacencyStrength,
   ChangeSource,
@@ -130,6 +131,12 @@ export interface Room {
   readonly privacyRequirement: PrivacyLevel;
   readonly ventilationRequired: boolean;
   readonly isFixed: boolean;
+  /**
+   * Traceability back to the master image this room was reconstructed from.
+   * Present only on image-derived geometry; preserved across edits so an edited
+   * room never loses its origin.
+   */
+  readonly imageProvenance?: EntityImageProvenance;
 }
 
 // ─── Wall ───────────────────────────────────────────────────────────────────
@@ -161,6 +168,8 @@ export interface Door {
   readonly type: DoorType;
   readonly swingDirection: SwingDirection;
   readonly connectsRooms: readonly [string, string];
+  /** Traceability back to the master image this door was read from. */
+  readonly imageProvenance?: EntityImageProvenance;
 }
 
 // ─── Window ─────────────────────────────────────────────────────────────────
@@ -176,6 +185,8 @@ export interface Window {
   readonly sillHeight: number;
   readonly type: WindowType;
   readonly roomId: string;
+  /** Traceability back to the master image this window was read from. */
+  readonly imageProvenance?: EntityImageProvenance;
 }
 
 // ─── Stair ──────────────────────────────────────────────────────────────────

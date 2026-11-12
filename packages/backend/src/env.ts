@@ -33,7 +33,7 @@ export interface ImageServiceConfig {
   readonly pollinationsImageModel: string;
   readonly pollinationsBaseUrl: string;
   readonly pollinationsTimeoutMs: number;
-  /** Dedicated Gemini Image generation model (defaults to gemini-3-pro-image). */
+  /** Dedicated Gemini Image generation model (defaults to gemini-3.1-flash-lite-image). */
   readonly geminiImageModel: string;
   /** Gemini Image output resolution (defaults to 2K). */
   readonly geminiImageSize: string;

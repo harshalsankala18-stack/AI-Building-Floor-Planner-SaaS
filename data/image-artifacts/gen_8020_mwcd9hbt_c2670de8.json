@@ -1,0 +1,28 @@
+{
+  "generationId": "gen_8020_mwcd9hbt_c2670de8",
+  "projectId": "proj_ufaggs5",
+  "seed": 8020,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Vasant Vihar Residence — Offset Stepped Wings (Service-Articulated), 2-storey.\nPLOT PROPORTIONS: 18.29m (width) x 18.29m (depth), road facing North.\nSETBACKS: front 2134mm, rear 1219mm, left 1219mm, right 1219mm.\nROOM PROGRAM: Living Room (~18.0 m2), Dining (~12.0 m2), Kitchen (~9.0 m2), Primary Bedroom (~16.0 m2), 2 x Bedroom (~13.0 m2 each), Primary Bathroom (~4.5 m2), 2 x Common Bathroom (~4.0 m2 each), Utility (~5.0 m2), Pooja Room (~3.5 m2), Car Parking (~15.0 m2), Staircase (~7.5 m2), Balcony (~5.0 m2).\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: Make the living room larger and widen the front verandah\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.\n\nEDITING INSTRUCTIONS ON ATTACHED REFERENCE PLAN: Make the living room larger and widen the front verandah\nPreserve the overall plot orientation and architectural drafting style while applying the requested spatial modification.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 1024,
+  "height": 1024,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T17:01:56.340Z",
+  "latencyMs": 5364,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "concept_edit_reference"
+    ],
+    "referenceHashes": [
+      "concept_edit_reference"
+    ],
+    "aspectRatio": "1:1",
+    "promptHash": "1b90565a86d385e400522bbb726a66264b85af82947849988a25fbf0bed6a865"
+  }
+}

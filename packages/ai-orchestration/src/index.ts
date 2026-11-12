@@ -108,6 +108,8 @@ export {
   type GeminiImageSize,
   type GeminiImageProviderOptions,
   type GeminiImageRequestProvenance,
+  type GeminiAccessStatus,
+  type GeminiAccessCheck,
 } from './providers/gemini-image';
 
 export {
@@ -187,6 +189,11 @@ export {
   ARCHITECTURAL_EVALUATION_SCHEMA,
   type ArchitecturalEvaluationOptions,
   type ArchitecturalEvaluationResult,
+  MASTER_IMAGE_EVALUATION_SCHEMA,
+  MASTER_QUALITY_GATE_THRESHOLD,
+  evaluateMasterImageWithGemini,
+  type MasterImageEvaluationOptions,
+  type MasterImageEvaluationResult,
 } from './orchestration/architectural-evaluation';
 export {
   runGeminiApartmentPreflight,

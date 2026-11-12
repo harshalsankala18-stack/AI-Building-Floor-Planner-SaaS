@@ -4,8 +4,8 @@
   "totalChecks": 117,
   "passedChecks": 117,
   "failedChecks": 0,
-  "expectedElements": 307,
-  "actualElements": 305,
+  "expectedElements": 295,
+  "actualElements": 293,
   "missingElements": [],
   "unexpectedElements": [],
   "duplicates": [],
@@ -119,8 +119,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "073e842f-4176-4df4-9f10-60e3aeaff391",
-      "archlangId": "r_073e842f_4176_4df4_9f10_60e3aeaff391",
+      "canonicalId": "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+      "archlangId": "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -144,8 +144,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "784f703d-75df-4431-9cac-1205346d2708",
-      "archlangId": "r_784f703d_75df_4431_9cac_1205346d2708",
+      "canonicalId": "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec",
+      "archlangId": "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -169,8 +169,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-      "archlangId": "r_0eff9e03_951d_4b05_84de_7f9340a45d9e",
+      "canonicalId": "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+      "archlangId": "r_636f927b_fb9f_47d2_8132_3bd6fd569abe",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -194,8 +194,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "06c89d39-e523-44d5-a895-4ec543ef7f9f",
-      "archlangId": "r_06c89d39_e523_44d5_a895_4ec543ef7f9f",
+      "canonicalId": "f18e402c-f3c3-4a5e-8214-31e81746794d",
+      "archlangId": "r_f18e402c_f3c3_4a5e_8214_31e81746794d",
       "elementType": "room",
       "expected": {
         "x": 26500,
@@ -219,8 +219,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "1660066a-f1df-4859-8681-8b261c2dc581",
-      "archlangId": "r_1660066a_f1df_4859_8681_8b261c2dc581",
+      "canonicalId": "276837c9-da43-4609-8fc0-37640951b899",
+      "archlangId": "r_276837c9_da43_4609_8fc0_37640951b899",
       "elementType": "room",
       "expected": {
         "x": 29250,
@@ -244,8 +244,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "34bf3c9a-8e79-4b2b-8ba6-3a6fb13a2ffd",
-      "archlangId": "r_34bf3c9a_8e79_4b2b_8ba6_3a6fb13a2ffd",
+      "canonicalId": "606a477f-48ef-4632-b0ce-83f2394a1023",
+      "archlangId": "r_606a477f_48ef_4632_b0ce_83f2394a1023",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -269,8 +269,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "3dae15ce-a6b6-410f-af84-02978aaa8347",
-      "archlangId": "r_3dae15ce_a6b6_410f_af84_02978aaa8347",
+      "canonicalId": "2893169e-ae04-4302-9d61-bc40f7bea2a2",
+      "archlangId": "r_2893169e_ae04_4302_9d61_bc40f7bea2a2",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -294,8 +294,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "5a6efecf-bd3e-427c-a4af-10de95284642",
-      "archlangId": "r_5a6efecf_bd3e_427c_a4af_10de95284642",
+      "canonicalId": "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+      "archlangId": "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -319,8 +319,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f414d884-f51b-45d5-b9b8-6c794dcc326e",
-      "archlangId": "r_f414d884_f51b_45d5_b9b8_6c794dcc326e",
+      "canonicalId": "52f001c7-6c01-4647-9359-f214e9299767",
+      "archlangId": "r_52f001c7_6c01_4647_9359_f214e9299767",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -344,8 +344,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6ae386be-409e-4510-86dc-4e050173c651",
-      "archlangId": "r_6ae386be_409e_4510_86dc_4e050173c651",
+      "canonicalId": "39fe5787-a73c-4f5f-b299-3c915fd7c635",
+      "archlangId": "r_39fe5787_a73c_4f5f_b299_3c915fd7c635",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -369,8 +369,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-      "archlangId": "r_b8cea045_bc13_4328_ada5_ad18a9179b4d",
+      "canonicalId": "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+      "archlangId": "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -394,8 +394,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "d8775344-6d10-4beb-a07d-e28cca0fdbba",
-      "archlangId": "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
+      "canonicalId": "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5",
+      "archlangId": "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -419,8 +419,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2ac38568-df4c-462b-acd1-478a293268dc",
-      "archlangId": "r_2ac38568_df4c_462b_acd1_478a293268dc",
+      "canonicalId": "0252863d-dada-4591-94aa-035f4df521b5",
+      "archlangId": "r_0252863d_dada_4591_94aa_035f4df521b5",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -444,8 +444,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2da9db14-5f2a-4ee7-a09a-5fe4dff11ab4",
-      "archlangId": "r_2da9db14_5f2a_4ee7_a09a_5fe4dff11ab4",
+      "canonicalId": "ab282e80-c3f0-405c-bc4c-c4fb6436116d",
+      "archlangId": "r_ab282e80_c3f0_405c_bc4c_c4fb6436116d",
       "elementType": "room",
       "expected": {
         "x": 40750,
@@ -469,8 +469,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9954c3c6-f923-4662-8be4-782deb3383a5",
-      "archlangId": "r_9954c3c6_f923_4662_8be4_782deb3383a5",
+      "canonicalId": "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+      "archlangId": "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -494,8 +494,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "fbf52259-4329-423b-9f77-ab7088dc76c1",
-      "archlangId": "r_fbf52259_4329_423b_9f77_ab7088dc76c1",
+      "canonicalId": "29e3bcad-79b1-4702-bfb5-becbd5588035",
+      "archlangId": "r_29e3bcad_79b1_4702_bfb5_becbd5588035",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -519,8 +519,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "8140fb57-9298-45f7-a05c-85e8c7ef8b84",
-      "archlangId": "r_8140fb57_9298_45f7_a05c_85e8c7ef8b84",
+      "canonicalId": "260fdb61-a387-41f9-8ec4-cdb778f73805",
+      "archlangId": "r_260fdb61_a387_41f9_8ec4_cdb778f73805",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -544,8 +544,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "e9e8140e-76b6-47c2-b89c-06db1508d667",
-      "archlangId": "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
+      "canonicalId": "c88c09f8-b054-4062-8ba0-1be63098942c",
+      "archlangId": "r_c88c09f8_b054_4062_8ba0_1be63098942c",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -569,8 +569,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "8a1c1461-42a3-4d69-a526-4d509ccd2105",
-      "archlangId": "r_8a1c1461_42a3_4d69_a526_4d509ccd2105",
+      "canonicalId": "e7350109-6516-4c68-8271-6e81dc72250d",
+      "archlangId": "r_e7350109_6516_4c68_8271_6e81dc72250d",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -594,8 +594,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "0ee4a994-74d6-4d1d-a42e-34bce509d329",
-      "archlangId": "r_0ee4a994_74d6_4d1d_a42e_34bce509d329",
+      "canonicalId": "21ed68a8-2088-4226-81ee-727d8c282f0b",
+      "archlangId": "r_21ed68a8_2088_4226_81ee_727d8c282f0b",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -619,8 +619,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9b40a2b2-027b-49af-8532-8913f1bd3255",
-      "archlangId": "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
+      "canonicalId": "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+      "archlangId": "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -644,8 +644,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "ee65f99f-49c9-41a9-bd50-a8977c552648",
-      "archlangId": "r_ee65f99f_49c9_41a9_bd50_a8977c552648",
+      "canonicalId": "95260fd3-3b59-403e-b8d5-06dd0bd3ba18",
+      "archlangId": "r_95260fd3_3b59_403e_b8d5_06dd0bd3ba18",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -669,8 +669,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "87145a56-44fc-4f8c-b3c7-527cfea09717",
-      "archlangId": "r_87145a56_44fc_4f8c_b3c7_527cfea09717",
+      "canonicalId": "553b3534-152c-46fd-b7e8-1d9446b43ee7",
+      "archlangId": "r_553b3534_152c_46fd_b7e8_1d9446b43ee7",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -694,8 +694,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-      "archlangId": "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe",
+      "canonicalId": "918dffff-c8c3-4345-b52d-a441154fdd7f",
+      "archlangId": "r_918dffff_c8c3_4345_b52d_a441154fdd7f",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -719,8 +719,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9",
-      "archlangId": "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
+      "canonicalId": "2ac781fc-c7a9-422f-b312-1b20f876ec74",
+      "archlangId": "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -744,8 +744,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-      "archlangId": "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07",
+      "canonicalId": "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+      "archlangId": "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -769,8 +769,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "05535eb8-5f53-44c6-bd33-d307cd229ae0",
-      "archlangId": "r_05535eb8_5f53_44c6_bd33_d307cd229ae0",
+      "canonicalId": "04433d05-c3b7-4ce4-ad5b-c7dadb133b5a",
+      "archlangId": "r_04433d05_c3b7_4ce4_ad5b_c7dadb133b5a",
       "elementType": "room",
       "expected": {
         "x": 26500,
@@ -794,8 +794,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "fb8a038d-666d-41a7-bb60-556bd43684e6",
-      "archlangId": "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
+      "canonicalId": "13d8ff22-4978-4ab1-99b9-544c782534f2",
+      "archlangId": "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
       "elementType": "room",
       "expected": {
         "x": 29250,
@@ -819,8 +819,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "e7394670-52dd-4ab2-8ea6-9fa22d4a18c9",
-      "archlangId": "r_e7394670_52dd_4ab2_8ea6_9fa22d4a18c9",
+      "canonicalId": "2570d39b-92e7-4001-b9cd-670071a95e12",
+      "archlangId": "r_2570d39b_92e7_4001_b9cd_670071a95e12",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -844,8 +844,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "a8d3a4be-c3d1-45bf-a7ad-35a1bc7e31e1",
-      "archlangId": "r_a8d3a4be_c3d1_45bf_a7ad_35a1bc7e31e1",
+      "canonicalId": "375a8d60-6c7a-46ec-9318-2adcb506722e",
+      "archlangId": "r_375a8d60_6c7a_46ec_9318_2adcb506722e",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -869,8 +869,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "09bd8b19-c8c0-4c91-b234-610318e1377c",
-      "archlangId": "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
+      "canonicalId": "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+      "archlangId": "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -894,8 +894,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "288ceab7-c697-45ce-920d-21e28951e4fb",
-      "archlangId": "r_288ceab7_c697_45ce_920d_21e28951e4fb",
+      "canonicalId": "f1459b1f-b1d1-4e0d-b22d-d0edfe8d0567",
+      "archlangId": "r_f1459b1f_b1d1_4e0d_b22d_d0edfe8d0567",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -919,8 +919,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "484277b0-0bc1-4298-ad25-f883df20f7d8",
-      "archlangId": "r_484277b0_0bc1_4298_ad25_f883df20f7d8",
+      "canonicalId": "7e388564-b60a-4787-8c08-2a0c5b7e5433",
+      "archlangId": "r_7e388564_b60a_4787_8c08_2a0c5b7e5433",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -944,8 +944,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-      "archlangId": "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
+      "canonicalId": "491d5250-95fc-48ae-b624-54fb617dcb7b",
+      "archlangId": "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -969,8 +969,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "80bb0add-fc98-42b3-8454-9873284949a7",
-      "archlangId": "r_80bb0add_fc98_42b3_8454_9873284949a7",
+      "canonicalId": "424c00e1-1adb-4b73-bf46-3488ebcf5296",
+      "archlangId": "r_424c00e1_1adb_4b73_bf46_3488ebcf5296",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -994,8 +994,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "4f8a7db3-e328-41cc-9b03-735299946b1c",
-      "archlangId": "r_4f8a7db3_e328_41cc_9b03_735299946b1c",
+      "canonicalId": "e6874b6e-6525-440e-8a60-4208214ade7f",
+      "archlangId": "r_e6874b6e_6525_440e_8a60_4208214ade7f",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1019,8 +1019,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-      "archlangId": "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2",
+      "canonicalId": "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+      "archlangId": "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1044,8 +1044,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "eec531ee-d418-43eb-9f7b-45db2c784701",
-      "archlangId": "r_eec531ee_d418_43eb_9f7b_45db2c784701",
+      "canonicalId": "88d06d24-55d0-4a47-b57a-ba4a7f3865f1",
+      "archlangId": "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1069,8 +1069,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-      "archlangId": "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49",
+      "canonicalId": "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+      "archlangId": "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -1094,8 +1094,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "cea7161a-ae10-4609-a0f2-e7b1f7545698",
-      "archlangId": "r_cea7161a_ae10_4609_a0f2_e7b1f7545698",
+      "canonicalId": "ba184000-23d2-4689-9660-23a22b2d6b4f",
+      "archlangId": "r_ba184000_23d2_4689_9660_23a22b2d6b4f",
       "elementType": "room",
       "expected": {
         "x": 40750,
@@ -1119,8 +1119,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-      "archlangId": "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
+      "canonicalId": "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+      "archlangId": "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -1144,8 +1144,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "79136bcf-b7cd-45c6-a615-1fd530aadd4f",
-      "archlangId": "r_79136bcf_b7cd_45c6_a615_1fd530aadd4f",
+      "canonicalId": "aea01355-a238-445d-b46c-100eac37ff8d",
+      "archlangId": "r_aea01355_a238_445d_b46c_100eac37ff8d",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1169,8 +1169,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "ef8baf76-bb2e-4ad1-aa70-e69776d0dd0b",
-      "archlangId": "r_ef8baf76_bb2e_4ad1_aa70_e69776d0dd0b",
+      "canonicalId": "9bdbba61-052f-4889-9285-d54287626513",
+      "archlangId": "r_9bdbba61_052f_4889_9285_d54287626513",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1194,8 +1194,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b33a3842-2ab5-4db9-b124-c49786132293",
-      "archlangId": "r_b33a3842_2ab5_4db9_b124_c49786132293",
+      "canonicalId": "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+      "archlangId": "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -1219,8 +1219,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "1285f739-1a58-47cb-a5f2-36467df9d71a",
-      "archlangId": "r_1285f739_1a58_47cb_a5f2_36467df9d71a",
+      "canonicalId": "7d0aa35b-65cd-420c-9aeb-fd07760f3957",
+      "archlangId": "r_7d0aa35b_65cd_420c_9aeb_fd07760f3957",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1244,8 +1244,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6a9a559e-5ada-4858-b86e-e65a6c7329d0",
-      "archlangId": "r_6a9a559e_5ada_4858_b86e_e65a6c7329d0",
+      "canonicalId": "52a268ee-f219-4dad-b2a9-1da50d1394fd",
+      "archlangId": "r_52a268ee_f219_4dad_b2a9_1da50d1394fd",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -1269,8 +1269,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "52407492-7874-4281-bb26-2b3b6c261c77",
-      "archlangId": "r_52407492_7874_4281_bb26_2b3b6c261c77",
+      "canonicalId": "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+      "archlangId": "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
       "elementType": "room",
       "expected": {
         "x": 32750,
@@ -1294,8 +1294,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6c19bf96-ea2a-44e5-8553-43939930bc0b",
-      "archlangId": "balc_6c19bf96_ea2a_44e5_8553_43939930bc0b",
+      "canonicalId": "7396dda4-9bf5-46e1-ab46-9b86e9185a3d",
+      "archlangId": "balc_7396dda4_9bf5_46e1_ab46_9b86e9185a3d",
       "elementType": "balcony",
       "expected": {
         "x": 24200,
@@ -1319,8 +1319,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6618cfe0-7f9d-4aae-a8c4-8c4b6a6ec7b6",
-      "archlangId": "balc_6618cfe0_7f9d_4aae_a8c4_8c4b6a6ec7b6",
+      "canonicalId": "76a7b88f-46eb-4241-b008-c7c1fbed25f7",
+      "archlangId": "balc_76a7b88f_46eb_4241_b008_c7c1fbed25f7",
       "elementType": "balcony",
       "expected": {
         "x": 44300,
@@ -1344,8 +1344,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9edd57ee-29a1-4ca4-902c-4f1ebbcb3f06",
-      "archlangId": "balc_9edd57ee_29a1_4ca4_902c_4f1ebbcb3f06",
+      "canonicalId": "87cff09e-eee0-4826-9f21-03fb3779c017",
+      "archlangId": "balc_87cff09e_eee0_4826_9f21_03fb3779c017",
       "elementType": "balcony",
       "expected": {
         "x": 24200,
@@ -1369,8 +1369,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "3d05e0f4-e121-4129-9341-8d08098f45c4",
-      "archlangId": "balc_3d05e0f4_e121_4129_9341_8d08098f45c4",
+      "canonicalId": "45b7a7aa-28c7-48ca-91e7-b7f675e88f49",
+      "archlangId": "balc_45b7a7aa_28c7_48ca_91e7_b7f675e88f49",
       "elementType": "balcony",
       "expected": {
         "x": 44300,
@@ -1400,15 +1400,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "073e842f-4176-4df4-9f10-60e3aeaff391",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_073e842f_4176_4df4_9f10_60e3aeaff391"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875"
         ]
       },
       "difference": {
@@ -1423,15 +1423,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "073e842f-4176-4df4-9f10-60e3aeaff391",
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e"
+          "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_073e842f_4176_4df4_9f10_60e3aeaff391",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875",
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -1446,15 +1446,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "784f703d-75df-4431-9cac-1205346d2708"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_784f703d_75df_4431_9cac_1205346d2708",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -1469,15 +1469,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "1660066a-f1df-4859-8681-8b261c2dc581"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "276837c9-da43-4609-8fc0-37640951b899"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e",
-          "r_1660066a_f1df_4859_8681_8b261c2dc581"
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe",
+          "r_276837c9_da43_4609_8fc0_37640951b899"
         ]
       },
       "difference": {
@@ -1492,15 +1492,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "06c89d39-e523-44d5-a895-4ec543ef7f9f"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "f18e402c-f3c3-4a5e-8214-31e81746794d"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_06c89d39_e523_44d5_a895_4ec543ef7f9f",
-          "r_1660066a_f1df_4859_8681_8b261c2dc581"
+          "r_f18e402c_f3c3_4a5e_8214_31e81746794d",
+          "r_276837c9_da43_4609_8fc0_37640951b899"
         ]
       },
       "difference": {
@@ -1515,15 +1515,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "784f703d-75df-4431-9cac-1205346d2708",
-          "34bf3c9a-8e79-4b2b-8ba6-3a6fb13a2ffd"
+          "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec",
+          "606a477f-48ef-4632-b0ce-83f2394a1023"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_784f703d_75df_4431_9cac_1205346d2708",
-          "r_34bf3c9a_8e79_4b2b_8ba6_3a6fb13a2ffd"
+          "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
+          "r_606a477f_48ef_4632_b0ce_83f2394a1023"
         ]
       },
       "difference": {
@@ -1538,15 +1538,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "3dae15ce-a6b6-410f-af84-02978aaa8347"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "2893169e-ae04-4302-9d61-bc40f7bea2a2"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_1660066a_f1df_4859_8681_8b261c2dc581",
-          "r_3dae15ce_a6b6_410f_af84_02978aaa8347"
+          "r_276837c9_da43_4609_8fc0_37640951b899",
+          "r_2893169e_ae04_4302_9d61_bc40f7bea2a2"
         ]
       },
       "difference": {
@@ -1561,15 +1561,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "5a6efecf-bd3e-427c-a4af-10de95284642",
-          "6ae386be-409e-4510-86dc-4e050173c651"
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+          "39fe5787-a73c-4f5f-b299-3c915fd7c635"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642",
-          "r_6ae386be_409e_4510_86dc_4e050173c651"
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
+          "r_39fe5787_a73c_4f5f_b299_3c915fd7c635"
         ]
       },
       "difference": {
@@ -1584,15 +1584,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "5a6efecf-bd3e-427c-a4af-10de95284642"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_1660066a_f1df_4859_8681_8b261c2dc581",
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642"
+          "r_276837c9_da43_4609_8fc0_37640951b899",
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7"
         ]
       },
       "difference": {
@@ -1607,15 +1607,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "5a6efecf-bd3e-427c-a4af-10de95284642",
-          "f414d884-f51b-45d5-b9b8-6c794dcc326e"
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+          "52f001c7-6c01-4647-9359-f214e9299767"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642",
-          "r_f414d884_f51b_45d5_b9b8_6c794dcc326e"
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
+          "r_52f001c7_6c01_4647_9359_f214e9299767"
         ]
       },
       "difference": {
@@ -1630,15 +1630,14 @@
       "expected": {
         "width": 1366,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "6c19bf96-ea2a-44e5-8553-43939930bc0b"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "7396dda4-9bf5-46e1-ab46-9b86e9185a3d"
         ]
       },
       "actual": {
         "width": 1366,
         "between": [
-          "exterior",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -1653,15 +1652,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_b8cea045_bc13_4328_ada5_ad18a9179b4d"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16"
         ]
       },
       "difference": {
@@ -1676,15 +1675,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-          "2ac38568-df4c-462b-acd1-478a293268dc"
+          "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+          "0252863d-dada-4591-94aa-035f4df521b5"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_b8cea045_bc13_4328_ada5_ad18a9179b4d",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16",
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -1699,15 +1698,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "d8775344-6d10-4beb-a07d-e28cca0fdbba"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -1722,15 +1721,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "9954c3c6-f923-4662-8be4-782deb3383a5"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2ac38568_df4c_462b_acd1_478a293268dc",
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5"
+          "r_0252863d_dada_4591_94aa_035f4df521b5",
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1"
         ]
       },
       "difference": {
@@ -1745,15 +1744,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "2da9db14-5f2a-4ee7-a09a-5fe4dff11ab4"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "ab282e80-c3f0-405c-bc4c-c4fb6436116d"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2da9db14_5f2a_4ee7_a09a_5fe4dff11ab4",
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5"
+          "r_ab282e80_c3f0_405c_bc4c_c4fb6436116d",
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1"
         ]
       },
       "difference": {
@@ -1768,15 +1767,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "d8775344-6d10-4beb-a07d-e28cca0fdbba",
-          "fbf52259-4329-423b-9f77-ab7088dc76c1"
+          "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5",
+          "29e3bcad-79b1-4702-bfb5-becbd5588035"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
-          "r_fbf52259_4329_423b_9f77_ab7088dc76c1"
+          "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
+          "r_29e3bcad_79b1_4702_bfb5_becbd5588035"
         ]
       },
       "difference": {
@@ -1791,15 +1790,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "8140fb57-9298-45f7-a05c-85e8c7ef8b84"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "260fdb61-a387-41f9-8ec4-cdb778f73805"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5",
-          "r_8140fb57_9298_45f7_a05c_85e8c7ef8b84"
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
+          "r_260fdb61_a387_41f9_8ec4_cdb778f73805"
         ]
       },
       "difference": {
@@ -1814,15 +1813,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "e9e8140e-76b6-47c2-b89c-06db1508d667",
-          "0ee4a994-74d6-4d1d-a42e-34bce509d329"
+          "c88c09f8-b054-4062-8ba0-1be63098942c",
+          "21ed68a8-2088-4226-81ee-727d8c282f0b"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
-          "r_0ee4a994_74d6_4d1d_a42e_34bce509d329"
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c",
+          "r_21ed68a8_2088_4226_81ee_727d8c282f0b"
         ]
       },
       "difference": {
@@ -1837,15 +1836,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "e9e8140e-76b6-47c2-b89c-06db1508d667"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "c88c09f8-b054-4062-8ba0-1be63098942c"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5",
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667"
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c"
         ]
       },
       "difference": {
@@ -1860,15 +1859,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "e9e8140e-76b6-47c2-b89c-06db1508d667",
-          "8a1c1461-42a3-4d69-a526-4d509ccd2105"
+          "c88c09f8-b054-4062-8ba0-1be63098942c",
+          "e7350109-6516-4c68-8271-6e81dc72250d"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
-          "r_8a1c1461_42a3_4d69_a526_4d509ccd2105"
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c",
+          "r_e7350109_6516_4c68_8271_6e81dc72250d"
         ]
       },
       "difference": {
@@ -1883,15 +1882,14 @@
       "expected": {
         "width": 1366,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "6618cfe0-7f9d-4aae-a8c4-8c4b6a6ec7b6"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "76a7b88f-46eb-4241-b008-c7c1fbed25f7"
         ]
       },
       "actual": {
         "width": 1366,
         "between": [
-          "exterior",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -1906,15 +1904,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9b40a2b2-027b-49af-8532-8913f1bd3255",
-          "87145a56-44fc-4f8c-b3c7-527cfea09717"
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+          "553b3534-152c-46fd-b7e8-1d9446b43ee7"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_87145a56_44fc_4f8c_b3c7_527cfea09717"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_553b3534_152c_46fd_b7e8_1d9446b43ee7"
         ]
       },
       "difference": {
@@ -1929,15 +1927,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "9b40a2b2-027b-49af-8532-8913f1bd3255"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -1952,15 +1950,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9b40a2b2-027b-49af-8532-8913f1bd3255",
-          "ee65f99f-49c9-41a9-bd50-a8977c552648"
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+          "95260fd3-3b59-403e-b8d5-06dd0bd3ba18"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_ee65f99f_49c9_41a9_bd50_a8977c552648"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_95260fd3_3b59_403e_b8d5_06dd0bd3ba18"
         ]
       },
       "difference": {
@@ -1975,15 +1973,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "918dffff-c8c3-4345-b52d-a441154fdd7f",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_918dffff_c8c3_4345_b52d_a441154fdd7f"
         ]
       },
       "difference": {
@@ -1998,15 +1996,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07"
+          "918dffff-c8c3-4345-b52d-a441154fdd7f",
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_918dffff_c8c3_4345_b52d_a441154fdd7f",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -2021,15 +2019,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "2ac781fc-c7a9-422f-b312-1b20f876ec74"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -2044,15 +2042,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "fb8a038d-666d-41a7-bb60-556bd43684e6"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "13d8ff22-4978-4ab1-99b9-544c782534f2"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07",
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6"
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39",
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2"
         ]
       },
       "difference": {
@@ -2067,15 +2065,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "05535eb8-5f53-44c6-bd33-d307cd229ae0"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "04433d05-c3b7-4ce4-ad5b-c7dadb133b5a"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_05535eb8_5f53_44c6_bd33_d307cd229ae0",
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6"
+          "r_04433d05_c3b7_4ce4_ad5b_c7dadb133b5a",
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2"
         ]
       },
       "difference": {
@@ -2090,15 +2088,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9",
-          "e7394670-52dd-4ab2-8ea6-9fa22d4a18c9"
+          "2ac781fc-c7a9-422f-b312-1b20f876ec74",
+          "2570d39b-92e7-4001-b9cd-670071a95e12"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
-          "r_e7394670_52dd_4ab2_8ea6_9fa22d4a18c9"
+          "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
+          "r_2570d39b_92e7_4001_b9cd_670071a95e12"
         ]
       },
       "difference": {
@@ -2113,15 +2111,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "a8d3a4be-c3d1-45bf-a7ad-35a1bc7e31e1"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "375a8d60-6c7a-46ec-9318-2adcb506722e"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
-          "r_a8d3a4be_c3d1_45bf_a7ad_35a1bc7e31e1"
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
+          "r_375a8d60_6c7a_46ec_9318_2adcb506722e"
         ]
       },
       "difference": {
@@ -2136,15 +2134,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "09bd8b19-c8c0-4c91-b234-610318e1377c",
-          "484277b0-0bc1-4298-ad25-f883df20f7d8"
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+          "7e388564-b60a-4787-8c08-2a0c5b7e5433"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
-          "r_484277b0_0bc1_4298_ad25_f883df20f7d8"
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
+          "r_7e388564_b60a_4787_8c08_2a0c5b7e5433"
         ]
       },
       "difference": {
@@ -2159,15 +2157,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "09bd8b19-c8c0-4c91-b234-610318e1377c"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c"
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33"
         ]
       },
       "difference": {
@@ -2182,15 +2180,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "09bd8b19-c8c0-4c91-b234-610318e1377c",
-          "288ceab7-c697-45ce-920d-21e28951e4fb"
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+          "f1459b1f-b1d1-4e0d-b22d-d0edfe8d0567"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
-          "r_288ceab7_c697_45ce_920d_21e28951e4fb"
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
+          "r_f1459b1f_b1d1_4e0d_b22d_d0edfe8d0567"
         ]
       },
       "difference": {
@@ -2205,15 +2203,14 @@
       "expected": {
         "width": 1500,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "9edd57ee-29a1-4ca4-902c-4f1ebbcb3f06"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "87cff09e-eee0-4826-9f21-03fb3779c017"
         ]
       },
       "actual": {
         "width": 1500,
         "between": [
-          "exterior",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -2228,15 +2225,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-          "4f8a7db3-e328-41cc-9b03-735299946b1c"
+          "491d5250-95fc-48ae-b624-54fb617dcb7b",
+          "e6874b6e-6525-440e-8a60-4208214ade7f"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_4f8a7db3_e328_41cc_9b03_735299946b1c"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_e6874b6e_6525_440e_8a60_4208214ade7f"
         ]
       },
       "difference": {
@@ -2251,15 +2248,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "491d5250-95fc-48ae-b624-54fb617dcb7b"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -2274,15 +2271,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-          "80bb0add-fc98-42b3-8454-9873284949a7"
+          "491d5250-95fc-48ae-b624-54fb617dcb7b",
+          "424c00e1-1adb-4b73-bf46-3488ebcf5296"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_80bb0add_fc98_42b3_8454_9873284949a7"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_424c00e1_1adb_4b73_bf46_3488ebcf5296"
         ]
       },
       "difference": {
@@ -2297,15 +2294,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6"
         ]
       },
       "difference": {
@@ -2320,15 +2317,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49"
+          "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -2343,15 +2340,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "eec531ee-d418-43eb-9f7b-45db2c784701"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "88d06d24-55d0-4a47-b57a-ba4a7f3865f1"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_eec531ee_d418_43eb_9f7b_45db2c784701",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -2366,15 +2363,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49",
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4"
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3",
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738"
         ]
       },
       "difference": {
@@ -2389,15 +2386,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "cea7161a-ae10-4609-a0f2-e7b1f7545698"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "ba184000-23d2-4689-9660-23a22b2d6b4f"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_cea7161a_ae10_4609_a0f2_e7b1f7545698",
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4"
+          "r_ba184000_23d2_4689_9660_23a22b2d6b4f",
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738"
         ]
       },
       "difference": {
@@ -2412,15 +2409,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "eec531ee-d418-43eb-9f7b-45db2c784701",
-          "79136bcf-b7cd-45c6-a615-1fd530aadd4f"
+          "88d06d24-55d0-4a47-b57a-ba4a7f3865f1",
+          "aea01355-a238-445d-b46c-100eac37ff8d"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_eec531ee_d418_43eb_9f7b_45db2c784701",
-          "r_79136bcf_b7cd_45c6_a615_1fd530aadd4f"
+          "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
+          "r_aea01355_a238_445d_b46c_100eac37ff8d"
         ]
       },
       "difference": {
@@ -2435,15 +2432,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "ef8baf76-bb2e-4ad1-aa70-e69776d0dd0b"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "9bdbba61-052f-4889-9285-d54287626513"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
-          "r_ef8baf76_bb2e_4ad1_aa70_e69776d0dd0b"
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
+          "r_9bdbba61_052f_4889_9285_d54287626513"
         ]
       },
       "difference": {
@@ -2458,15 +2455,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "b33a3842-2ab5-4db9-b124-c49786132293",
-          "6a9a559e-5ada-4858-b86e-e65a6c7329d0"
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+          "52a268ee-f219-4dad-b2a9-1da50d1394fd"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_b33a3842_2ab5_4db9_b124_c49786132293",
-          "r_6a9a559e_5ada_4858_b86e_e65a6c7329d0"
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
+          "r_52a268ee_f219_4dad_b2a9_1da50d1394fd"
         ]
       },
       "difference": {
@@ -2481,15 +2478,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "b33a3842-2ab5-4db9-b124-c49786132293"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
-          "r_b33a3842_2ab5_4db9_b124_c49786132293"
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa"
         ]
       },
       "difference": {
@@ -2504,15 +2501,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "b33a3842-2ab5-4db9-b124-c49786132293",
-          "1285f739-1a58-47cb-a5f2-36467df9d71a"
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+          "7d0aa35b-65cd-420c-9aeb-fd07760f3957"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_b33a3842_2ab5_4db9_b124_c49786132293",
-          "r_1285f739_1a58_47cb_a5f2_36467df9d71a"
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
+          "r_7d0aa35b_65cd_420c_9aeb_fd07760f3957"
         ]
       },
       "difference": {
@@ -2527,15 +2524,14 @@
       "expected": {
         "width": 1500,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "3d05e0f4-e121-4129-9341-8d08098f45c4"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "45b7a7aa-28c7-48ca-91e7-b7f675e88f49"
         ]
       },
       "actual": {
         "width": 1500,
         "between": [
-          "exterior",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -2550,15 +2546,14 @@
       "expected": {
         "width": 1200,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "07ce5ccc-8b36-4b6d-ba5a-c0f2be8c1b51"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "a67e596e-aa84-4d4a-b4c8-376677c0ef9a"
         ]
       },
       "actual": {
         "width": 1200,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -2573,15 +2568,14 @@
       "expected": {
         "width": 1200,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "80b8877c-cc03-482d-a1a3-be10d6715cfb"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "1cfb4fe7-8140-4b63-98d3-1785c8f65e74"
         ]
       },
       "actual": {
         "width": 1200,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -2596,15 +2590,14 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "da574617-50ef-457f-b7a0-e6aa3d2f5e64"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "07dabb00-452a-4ef4-965c-131942f4e144"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -2619,15 +2612,14 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "3dad74db-f654-4a39-aad9-89252677350f"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "c90be964-d14d-4779-afe5-c2f691477b46"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -2714,10 +2706,10 @@
       "archlangId": "WALL_DECLARATIONS",
       "elementType": "wall",
       "expected": {
-        "count": 192
+        "count": 180
       },
       "actual": {
-        "count": 192
+        "count": 180
       },
       "status": "PASS"
     }
@@ -2828,8 +2820,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "073e842f-4176-4df4-9f10-60e3aeaff391",
-      "archlangId": "r_073e842f_4176_4df4_9f10_60e3aeaff391",
+      "canonicalId": "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+      "archlangId": "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -2853,8 +2845,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "784f703d-75df-4431-9cac-1205346d2708",
-      "archlangId": "r_784f703d_75df_4431_9cac_1205346d2708",
+      "canonicalId": "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec",
+      "archlangId": "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -2878,8 +2870,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-      "archlangId": "r_0eff9e03_951d_4b05_84de_7f9340a45d9e",
+      "canonicalId": "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+      "archlangId": "r_636f927b_fb9f_47d2_8132_3bd6fd569abe",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -2903,8 +2895,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "06c89d39-e523-44d5-a895-4ec543ef7f9f",
-      "archlangId": "r_06c89d39_e523_44d5_a895_4ec543ef7f9f",
+      "canonicalId": "f18e402c-f3c3-4a5e-8214-31e81746794d",
+      "archlangId": "r_f18e402c_f3c3_4a5e_8214_31e81746794d",
       "elementType": "room",
       "expected": {
         "x": 26500,
@@ -2928,8 +2920,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "1660066a-f1df-4859-8681-8b261c2dc581",
-      "archlangId": "r_1660066a_f1df_4859_8681_8b261c2dc581",
+      "canonicalId": "276837c9-da43-4609-8fc0-37640951b899",
+      "archlangId": "r_276837c9_da43_4609_8fc0_37640951b899",
       "elementType": "room",
       "expected": {
         "x": 29250,
@@ -2953,8 +2945,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "34bf3c9a-8e79-4b2b-8ba6-3a6fb13a2ffd",
-      "archlangId": "r_34bf3c9a_8e79_4b2b_8ba6_3a6fb13a2ffd",
+      "canonicalId": "606a477f-48ef-4632-b0ce-83f2394a1023",
+      "archlangId": "r_606a477f_48ef_4632_b0ce_83f2394a1023",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -2978,8 +2970,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "3dae15ce-a6b6-410f-af84-02978aaa8347",
-      "archlangId": "r_3dae15ce_a6b6_410f_af84_02978aaa8347",
+      "canonicalId": "2893169e-ae04-4302-9d61-bc40f7bea2a2",
+      "archlangId": "r_2893169e_ae04_4302_9d61_bc40f7bea2a2",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3003,8 +2995,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "5a6efecf-bd3e-427c-a4af-10de95284642",
-      "archlangId": "r_5a6efecf_bd3e_427c_a4af_10de95284642",
+      "canonicalId": "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+      "archlangId": "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -3028,8 +3020,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f414d884-f51b-45d5-b9b8-6c794dcc326e",
-      "archlangId": "r_f414d884_f51b_45d5_b9b8_6c794dcc326e",
+      "canonicalId": "52f001c7-6c01-4647-9359-f214e9299767",
+      "archlangId": "r_52f001c7_6c01_4647_9359_f214e9299767",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3053,8 +3045,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6ae386be-409e-4510-86dc-4e050173c651",
-      "archlangId": "r_6ae386be_409e_4510_86dc_4e050173c651",
+      "canonicalId": "39fe5787-a73c-4f5f-b299-3c915fd7c635",
+      "archlangId": "r_39fe5787_a73c_4f5f_b299_3c915fd7c635",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3078,8 +3070,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-      "archlangId": "r_b8cea045_bc13_4328_ada5_ad18a9179b4d",
+      "canonicalId": "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+      "archlangId": "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3103,8 +3095,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "d8775344-6d10-4beb-a07d-e28cca0fdbba",
-      "archlangId": "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
+      "canonicalId": "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5",
+      "archlangId": "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3128,8 +3120,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2ac38568-df4c-462b-acd1-478a293268dc",
-      "archlangId": "r_2ac38568_df4c_462b_acd1_478a293268dc",
+      "canonicalId": "0252863d-dada-4591-94aa-035f4df521b5",
+      "archlangId": "r_0252863d_dada_4591_94aa_035f4df521b5",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3153,8 +3145,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2da9db14-5f2a-4ee7-a09a-5fe4dff11ab4",
-      "archlangId": "r_2da9db14_5f2a_4ee7_a09a_5fe4dff11ab4",
+      "canonicalId": "ab282e80-c3f0-405c-bc4c-c4fb6436116d",
+      "archlangId": "r_ab282e80_c3f0_405c_bc4c_c4fb6436116d",
       "elementType": "room",
       "expected": {
         "x": 40750,
@@ -3178,8 +3170,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9954c3c6-f923-4662-8be4-782deb3383a5",
-      "archlangId": "r_9954c3c6_f923_4662_8be4_782deb3383a5",
+      "canonicalId": "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+      "archlangId": "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3203,8 +3195,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "fbf52259-4329-423b-9f77-ab7088dc76c1",
-      "archlangId": "r_fbf52259_4329_423b_9f77_ab7088dc76c1",
+      "canonicalId": "29e3bcad-79b1-4702-bfb5-becbd5588035",
+      "archlangId": "r_29e3bcad_79b1_4702_bfb5_becbd5588035",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3228,8 +3220,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "8140fb57-9298-45f7-a05c-85e8c7ef8b84",
-      "archlangId": "r_8140fb57_9298_45f7_a05c_85e8c7ef8b84",
+      "canonicalId": "260fdb61-a387-41f9-8ec4-cdb778f73805",
+      "archlangId": "r_260fdb61_a387_41f9_8ec4_cdb778f73805",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3253,8 +3245,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "e9e8140e-76b6-47c2-b89c-06db1508d667",
-      "archlangId": "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
+      "canonicalId": "c88c09f8-b054-4062-8ba0-1be63098942c",
+      "archlangId": "r_c88c09f8_b054_4062_8ba0_1be63098942c",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3278,8 +3270,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "8a1c1461-42a3-4d69-a526-4d509ccd2105",
-      "archlangId": "r_8a1c1461_42a3_4d69_a526_4d509ccd2105",
+      "canonicalId": "e7350109-6516-4c68-8271-6e81dc72250d",
+      "archlangId": "r_e7350109_6516_4c68_8271_6e81dc72250d",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3303,8 +3295,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "0ee4a994-74d6-4d1d-a42e-34bce509d329",
-      "archlangId": "r_0ee4a994_74d6_4d1d_a42e_34bce509d329",
+      "canonicalId": "21ed68a8-2088-4226-81ee-727d8c282f0b",
+      "archlangId": "r_21ed68a8_2088_4226_81ee_727d8c282f0b",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3328,8 +3320,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9b40a2b2-027b-49af-8532-8913f1bd3255",
-      "archlangId": "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
+      "canonicalId": "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+      "archlangId": "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -3353,8 +3345,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "ee65f99f-49c9-41a9-bd50-a8977c552648",
-      "archlangId": "r_ee65f99f_49c9_41a9_bd50_a8977c552648",
+      "canonicalId": "95260fd3-3b59-403e-b8d5-06dd0bd3ba18",
+      "archlangId": "r_95260fd3_3b59_403e_b8d5_06dd0bd3ba18",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3378,8 +3370,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "87145a56-44fc-4f8c-b3c7-527cfea09717",
-      "archlangId": "r_87145a56_44fc_4f8c_b3c7_527cfea09717",
+      "canonicalId": "553b3534-152c-46fd-b7e8-1d9446b43ee7",
+      "archlangId": "r_553b3534_152c_46fd_b7e8_1d9446b43ee7",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3403,8 +3395,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-      "archlangId": "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe",
+      "canonicalId": "918dffff-c8c3-4345-b52d-a441154fdd7f",
+      "archlangId": "r_918dffff_c8c3_4345_b52d_a441154fdd7f",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3428,8 +3420,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9",
-      "archlangId": "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
+      "canonicalId": "2ac781fc-c7a9-422f-b312-1b20f876ec74",
+      "archlangId": "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3453,8 +3445,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-      "archlangId": "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07",
+      "canonicalId": "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+      "archlangId": "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -3478,8 +3470,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "05535eb8-5f53-44c6-bd33-d307cd229ae0",
-      "archlangId": "r_05535eb8_5f53_44c6_bd33_d307cd229ae0",
+      "canonicalId": "04433d05-c3b7-4ce4-ad5b-c7dadb133b5a",
+      "archlangId": "r_04433d05_c3b7_4ce4_ad5b_c7dadb133b5a",
       "elementType": "room",
       "expected": {
         "x": 26500,
@@ -3503,8 +3495,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "fb8a038d-666d-41a7-bb60-556bd43684e6",
-      "archlangId": "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
+      "canonicalId": "13d8ff22-4978-4ab1-99b9-544c782534f2",
+      "archlangId": "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
       "elementType": "room",
       "expected": {
         "x": 29250,
@@ -3528,8 +3520,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "e7394670-52dd-4ab2-8ea6-9fa22d4a18c9",
-      "archlangId": "r_e7394670_52dd_4ab2_8ea6_9fa22d4a18c9",
+      "canonicalId": "2570d39b-92e7-4001-b9cd-670071a95e12",
+      "archlangId": "r_2570d39b_92e7_4001_b9cd_670071a95e12",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3553,8 +3545,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "a8d3a4be-c3d1-45bf-a7ad-35a1bc7e31e1",
-      "archlangId": "r_a8d3a4be_c3d1_45bf_a7ad_35a1bc7e31e1",
+      "canonicalId": "375a8d60-6c7a-46ec-9318-2adcb506722e",
+      "archlangId": "r_375a8d60_6c7a_46ec_9318_2adcb506722e",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3578,8 +3570,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "09bd8b19-c8c0-4c91-b234-610318e1377c",
-      "archlangId": "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
+      "canonicalId": "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+      "archlangId": "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
       "elementType": "room",
       "expected": {
         "x": 25700,
@@ -3603,8 +3595,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "288ceab7-c697-45ce-920d-21e28951e4fb",
-      "archlangId": "r_288ceab7_c697_45ce_920d_21e28951e4fb",
+      "canonicalId": "f1459b1f-b1d1-4e0d-b22d-d0edfe8d0567",
+      "archlangId": "r_f1459b1f_b1d1_4e0d_b22d_d0edfe8d0567",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3628,8 +3620,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "484277b0-0bc1-4298-ad25-f883df20f7d8",
-      "archlangId": "r_484277b0_0bc1_4298_ad25_f883df20f7d8",
+      "canonicalId": "7e388564-b60a-4787-8c08-2a0c5b7e5433",
+      "archlangId": "r_7e388564_b60a_4787_8c08_2a0c5b7e5433",
       "elementType": "room",
       "expected": {
         "x": 30350,
@@ -3653,8 +3645,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-      "archlangId": "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
+      "canonicalId": "491d5250-95fc-48ae-b624-54fb617dcb7b",
+      "archlangId": "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3678,8 +3670,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "80bb0add-fc98-42b3-8454-9873284949a7",
-      "archlangId": "r_80bb0add_fc98_42b3_8454_9873284949a7",
+      "canonicalId": "424c00e1-1adb-4b73-bf46-3488ebcf5296",
+      "archlangId": "r_424c00e1_1adb_4b73_bf46_3488ebcf5296",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3703,8 +3695,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "4f8a7db3-e328-41cc-9b03-735299946b1c",
-      "archlangId": "r_4f8a7db3_e328_41cc_9b03_735299946b1c",
+      "canonicalId": "e6874b6e-6525-440e-8a60-4208214ade7f",
+      "archlangId": "r_e6874b6e_6525_440e_8a60_4208214ade7f",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3728,8 +3720,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-      "archlangId": "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2",
+      "canonicalId": "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+      "archlangId": "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3753,8 +3745,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "eec531ee-d418-43eb-9f7b-45db2c784701",
-      "archlangId": "r_eec531ee_d418_43eb_9f7b_45db2c784701",
+      "canonicalId": "88d06d24-55d0-4a47-b57a-ba4a7f3865f1",
+      "archlangId": "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3778,8 +3770,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-      "archlangId": "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49",
+      "canonicalId": "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+      "archlangId": "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3803,8 +3795,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "cea7161a-ae10-4609-a0f2-e7b1f7545698",
-      "archlangId": "r_cea7161a_ae10_4609_a0f2_e7b1f7545698",
+      "canonicalId": "ba184000-23d2-4689-9660-23a22b2d6b4f",
+      "archlangId": "r_ba184000_23d2_4689_9660_23a22b2d6b4f",
       "elementType": "room",
       "expected": {
         "x": 40750,
@@ -3828,8 +3820,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-      "archlangId": "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
+      "canonicalId": "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+      "archlangId": "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3853,8 +3845,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "79136bcf-b7cd-45c6-a615-1fd530aadd4f",
-      "archlangId": "r_79136bcf_b7cd_45c6_a615_1fd530aadd4f",
+      "canonicalId": "aea01355-a238-445d-b46c-100eac37ff8d",
+      "archlangId": "r_aea01355_a238_445d_b46c_100eac37ff8d",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3878,8 +3870,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "ef8baf76-bb2e-4ad1-aa70-e69776d0dd0b",
-      "archlangId": "r_ef8baf76_bb2e_4ad1_aa70_e69776d0dd0b",
+      "canonicalId": "9bdbba61-052f-4889-9285-d54287626513",
+      "archlangId": "r_9bdbba61_052f_4889_9285_d54287626513",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3903,8 +3895,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "b33a3842-2ab5-4db9-b124-c49786132293",
-      "archlangId": "r_b33a3842_2ab5_4db9_b124_c49786132293",
+      "canonicalId": "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+      "archlangId": "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
       "elementType": "room",
       "expected": {
         "x": 39650,
@@ -3928,8 +3920,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "1285f739-1a58-47cb-a5f2-36467df9d71a",
-      "archlangId": "r_1285f739_1a58_47cb_a5f2_36467df9d71a",
+      "canonicalId": "7d0aa35b-65cd-420c-9aeb-fd07760f3957",
+      "archlangId": "r_7d0aa35b_65cd_420c_9aeb_fd07760f3957",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3953,8 +3945,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6a9a559e-5ada-4858-b86e-e65a6c7329d0",
-      "archlangId": "r_6a9a559e_5ada_4858_b86e_e65a6c7329d0",
+      "canonicalId": "52a268ee-f219-4dad-b2a9-1da50d1394fd",
+      "archlangId": "r_52a268ee_f219_4dad_b2a9_1da50d1394fd",
       "elementType": "room",
       "expected": {
         "x": 37250,
@@ -3978,8 +3970,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "52407492-7874-4281-bb26-2b3b6c261c77",
-      "archlangId": "r_52407492_7874_4281_bb26_2b3b6c261c77",
+      "canonicalId": "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+      "archlangId": "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
       "elementType": "room",
       "expected": {
         "x": 32750,
@@ -4003,8 +3995,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6c19bf96-ea2a-44e5-8553-43939930bc0b",
-      "archlangId": "balc_6c19bf96_ea2a_44e5_8553_43939930bc0b",
+      "canonicalId": "7396dda4-9bf5-46e1-ab46-9b86e9185a3d",
+      "archlangId": "balc_7396dda4_9bf5_46e1_ab46_9b86e9185a3d",
       "elementType": "balcony",
       "expected": {
         "x": 24200,
@@ -4028,8 +4020,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "6618cfe0-7f9d-4aae-a8c4-8c4b6a6ec7b6",
-      "archlangId": "balc_6618cfe0_7f9d_4aae_a8c4_8c4b6a6ec7b6",
+      "canonicalId": "76a7b88f-46eb-4241-b008-c7c1fbed25f7",
+      "archlangId": "balc_76a7b88f_46eb_4241_b008_c7c1fbed25f7",
       "elementType": "balcony",
       "expected": {
         "x": 44300,
@@ -4053,8 +4045,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "9edd57ee-29a1-4ca4-902c-4f1ebbcb3f06",
-      "archlangId": "balc_9edd57ee_29a1_4ca4_902c_4f1ebbcb3f06",
+      "canonicalId": "87cff09e-eee0-4826-9f21-03fb3779c017",
+      "archlangId": "balc_87cff09e_eee0_4826_9f21_03fb3779c017",
       "elementType": "balcony",
       "expected": {
         "x": 24200,
@@ -4078,8 +4070,8 @@
       "status": "PASS"
     },
     {
-      "canonicalId": "3d05e0f4-e121-4129-9341-8d08098f45c4",
-      "archlangId": "balc_3d05e0f4_e121_4129_9341_8d08098f45c4",
+      "canonicalId": "45b7a7aa-28c7-48ca-91e7-b7f675e88f49",
+      "archlangId": "balc_45b7a7aa_28c7_48ca_91e7_b7f675e88f49",
       "elementType": "balcony",
       "expected": {
         "x": 44300,
@@ -4109,15 +4101,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "073e842f-4176-4df4-9f10-60e3aeaff391",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_073e842f_4176_4df4_9f10_60e3aeaff391"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875"
         ]
       },
       "difference": {
@@ -4132,15 +4124,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "073e842f-4176-4df4-9f10-60e3aeaff391",
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e"
+          "9cf275c5-3fed-4f9b-83c4-11a2c2b02875",
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_073e842f_4176_4df4_9f10_60e3aeaff391",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_9cf275c5_3fed_4f9b_83c4_11a2c2b02875",
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -4155,15 +4147,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "784f703d-75df-4431-9cac-1205346d2708"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_784f703d_75df_4431_9cac_1205346d2708",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -4178,15 +4170,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "1660066a-f1df-4859-8681-8b261c2dc581"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "276837c9-da43-4609-8fc0-37640951b899"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e",
-          "r_1660066a_f1df_4859_8681_8b261c2dc581"
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe",
+          "r_276837c9_da43_4609_8fc0_37640951b899"
         ]
       },
       "difference": {
@@ -4201,15 +4193,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "06c89d39-e523-44d5-a895-4ec543ef7f9f"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "f18e402c-f3c3-4a5e-8214-31e81746794d"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_06c89d39_e523_44d5_a895_4ec543ef7f9f",
-          "r_1660066a_f1df_4859_8681_8b261c2dc581"
+          "r_f18e402c_f3c3_4a5e_8214_31e81746794d",
+          "r_276837c9_da43_4609_8fc0_37640951b899"
         ]
       },
       "difference": {
@@ -4224,15 +4216,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "784f703d-75df-4431-9cac-1205346d2708",
-          "34bf3c9a-8e79-4b2b-8ba6-3a6fb13a2ffd"
+          "fcfa2b4d-8fe3-441d-825f-016b8b2f86ec",
+          "606a477f-48ef-4632-b0ce-83f2394a1023"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_784f703d_75df_4431_9cac_1205346d2708",
-          "r_34bf3c9a_8e79_4b2b_8ba6_3a6fb13a2ffd"
+          "r_fcfa2b4d_8fe3_441d_825f_016b8b2f86ec",
+          "r_606a477f_48ef_4632_b0ce_83f2394a1023"
         ]
       },
       "difference": {
@@ -4247,15 +4239,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "3dae15ce-a6b6-410f-af84-02978aaa8347"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "2893169e-ae04-4302-9d61-bc40f7bea2a2"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_1660066a_f1df_4859_8681_8b261c2dc581",
-          "r_3dae15ce_a6b6_410f_af84_02978aaa8347"
+          "r_276837c9_da43_4609_8fc0_37640951b899",
+          "r_2893169e_ae04_4302_9d61_bc40f7bea2a2"
         ]
       },
       "difference": {
@@ -4270,15 +4262,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "5a6efecf-bd3e-427c-a4af-10de95284642",
-          "6ae386be-409e-4510-86dc-4e050173c651"
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+          "39fe5787-a73c-4f5f-b299-3c915fd7c635"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642",
-          "r_6ae386be_409e_4510_86dc_4e050173c651"
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
+          "r_39fe5787_a73c_4f5f_b299_3c915fd7c635"
         ]
       },
       "difference": {
@@ -4293,15 +4285,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "1660066a-f1df-4859-8681-8b261c2dc581",
-          "5a6efecf-bd3e-427c-a4af-10de95284642"
+          "276837c9-da43-4609-8fc0-37640951b899",
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_1660066a_f1df_4859_8681_8b261c2dc581",
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642"
+          "r_276837c9_da43_4609_8fc0_37640951b899",
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7"
         ]
       },
       "difference": {
@@ -4316,15 +4308,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "5a6efecf-bd3e-427c-a4af-10de95284642",
-          "f414d884-f51b-45d5-b9b8-6c794dcc326e"
+          "583d1d2f-2f4b-475d-85c3-f887ce9600e7",
+          "52f001c7-6c01-4647-9359-f214e9299767"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_5a6efecf_bd3e_427c_a4af_10de95284642",
-          "r_f414d884_f51b_45d5_b9b8_6c794dcc326e"
+          "r_583d1d2f_2f4b_475d_85c3_f887ce9600e7",
+          "r_52f001c7_6c01_4647_9359_f214e9299767"
         ]
       },
       "difference": {
@@ -4339,15 +4331,14 @@
       "expected": {
         "width": 1366,
         "connectsRooms": [
-          "0eff9e03-951d-4b05-84de-7f9340a45d9e",
-          "6c19bf96-ea2a-44e5-8553-43939930bc0b"
+          "636f927b-fb9f-47d2-8132-3bd6fd569abe",
+          "7396dda4-9bf5-46e1-ab46-9b86e9185a3d"
         ]
       },
       "actual": {
         "width": 1366,
         "between": [
-          "exterior",
-          "r_0eff9e03_951d_4b05_84de_7f9340a45d9e"
+          "r_636f927b_fb9f_47d2_8132_3bd6fd569abe"
         ]
       },
       "difference": {
@@ -4362,15 +4353,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_b8cea045_bc13_4328_ada5_ad18a9179b4d"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16"
         ]
       },
       "difference": {
@@ -4385,15 +4376,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b8cea045-bc13-4328-ada5-ad18a9179b4d",
-          "2ac38568-df4c-462b-acd1-478a293268dc"
+          "a4e26f8e-5d7f-43e1-83c1-052b8723aa16",
+          "0252863d-dada-4591-94aa-035f4df521b5"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_b8cea045_bc13_4328_ada5_ad18a9179b4d",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_a4e26f8e_5d7f_43e1_83c1_052b8723aa16",
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -4408,15 +4399,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "d8775344-6d10-4beb-a07d-e28cca0fdbba"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -4431,15 +4422,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "9954c3c6-f923-4662-8be4-782deb3383a5"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2ac38568_df4c_462b_acd1_478a293268dc",
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5"
+          "r_0252863d_dada_4591_94aa_035f4df521b5",
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1"
         ]
       },
       "difference": {
@@ -4454,15 +4445,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "2da9db14-5f2a-4ee7-a09a-5fe4dff11ab4"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "ab282e80-c3f0-405c-bc4c-c4fb6436116d"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2da9db14_5f2a_4ee7_a09a_5fe4dff11ab4",
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5"
+          "r_ab282e80_c3f0_405c_bc4c_c4fb6436116d",
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1"
         ]
       },
       "difference": {
@@ -4477,15 +4468,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "d8775344-6d10-4beb-a07d-e28cca0fdbba",
-          "fbf52259-4329-423b-9f77-ab7088dc76c1"
+          "1eff42bc-d8ff-4658-a7da-a2f8c16ea9d5",
+          "29e3bcad-79b1-4702-bfb5-becbd5588035"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_d8775344_6d10_4beb_a07d_e28cca0fdbba",
-          "r_fbf52259_4329_423b_9f77_ab7088dc76c1"
+          "r_1eff42bc_d8ff_4658_a7da_a2f8c16ea9d5",
+          "r_29e3bcad_79b1_4702_bfb5_becbd5588035"
         ]
       },
       "difference": {
@@ -4500,15 +4491,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "8140fb57-9298-45f7-a05c-85e8c7ef8b84"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "260fdb61-a387-41f9-8ec4-cdb778f73805"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5",
-          "r_8140fb57_9298_45f7_a05c_85e8c7ef8b84"
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
+          "r_260fdb61_a387_41f9_8ec4_cdb778f73805"
         ]
       },
       "difference": {
@@ -4523,15 +4514,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "e9e8140e-76b6-47c2-b89c-06db1508d667",
-          "0ee4a994-74d6-4d1d-a42e-34bce509d329"
+          "c88c09f8-b054-4062-8ba0-1be63098942c",
+          "21ed68a8-2088-4226-81ee-727d8c282f0b"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
-          "r_0ee4a994_74d6_4d1d_a42e_34bce509d329"
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c",
+          "r_21ed68a8_2088_4226_81ee_727d8c282f0b"
         ]
       },
       "difference": {
@@ -4546,15 +4537,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "9954c3c6-f923-4662-8be4-782deb3383a5",
-          "e9e8140e-76b6-47c2-b89c-06db1508d667"
+          "dd4de48c-09d6-43ea-b4e0-dcc6f537cac1",
+          "c88c09f8-b054-4062-8ba0-1be63098942c"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_9954c3c6_f923_4662_8be4_782deb3383a5",
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667"
+          "r_dd4de48c_09d6_43ea_b4e0_dcc6f537cac1",
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c"
         ]
       },
       "difference": {
@@ -4569,15 +4560,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "e9e8140e-76b6-47c2-b89c-06db1508d667",
-          "8a1c1461-42a3-4d69-a526-4d509ccd2105"
+          "c88c09f8-b054-4062-8ba0-1be63098942c",
+          "e7350109-6516-4c68-8271-6e81dc72250d"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_e9e8140e_76b6_47c2_b89c_06db1508d667",
-          "r_8a1c1461_42a3_4d69_a526_4d509ccd2105"
+          "r_c88c09f8_b054_4062_8ba0_1be63098942c",
+          "r_e7350109_6516_4c68_8271_6e81dc72250d"
         ]
       },
       "difference": {
@@ -4592,15 +4583,14 @@
       "expected": {
         "width": 1366,
         "connectsRooms": [
-          "2ac38568-df4c-462b-acd1-478a293268dc",
-          "6618cfe0-7f9d-4aae-a8c4-8c4b6a6ec7b6"
+          "0252863d-dada-4591-94aa-035f4df521b5",
+          "76a7b88f-46eb-4241-b008-c7c1fbed25f7"
         ]
       },
       "actual": {
         "width": 1366,
         "between": [
-          "exterior",
-          "r_2ac38568_df4c_462b_acd1_478a293268dc"
+          "r_0252863d_dada_4591_94aa_035f4df521b5"
         ]
       },
       "difference": {
@@ -4615,15 +4605,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9b40a2b2-027b-49af-8532-8913f1bd3255",
-          "87145a56-44fc-4f8c-b3c7-527cfea09717"
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+          "553b3534-152c-46fd-b7e8-1d9446b43ee7"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_87145a56_44fc_4f8c_b3c7_527cfea09717"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_553b3534_152c_46fd_b7e8_1d9446b43ee7"
         ]
       },
       "difference": {
@@ -4638,15 +4628,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "9b40a2b2-027b-49af-8532-8913f1bd3255"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -4661,15 +4651,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "9b40a2b2-027b-49af-8532-8913f1bd3255",
-          "ee65f99f-49c9-41a9-bd50-a8977c552648"
+          "1638f8ef-b6a4-4449-9d2d-03ad5dd06851",
+          "95260fd3-3b59-403e-b8d5-06dd0bd3ba18"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_9b40a2b2_027b_49af_8532_8913f1bd3255",
-          "r_ee65f99f_49c9_41a9_bd50_a8977c552648"
+          "r_1638f8ef_b6a4_4449_9d2d_03ad5dd06851",
+          "r_95260fd3_3b59_403e_b8d5_06dd0bd3ba18"
         ]
       },
       "difference": {
@@ -4684,15 +4674,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "918dffff-c8c3-4345-b52d-a441154fdd7f",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_918dffff_c8c3_4345_b52d_a441154fdd7f"
         ]
       },
       "difference": {
@@ -4707,15 +4697,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "b3da3b10-990f-4a7a-b0ff-fcf1a862afbe",
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07"
+          "918dffff-c8c3-4345-b52d-a441154fdd7f",
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_b3da3b10_990f_4a7a_b0ff_fcf1a862afbe",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_918dffff_c8c3_4345_b52d_a441154fdd7f",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -4730,15 +4720,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "2ac781fc-c7a9-422f-b312-1b20f876ec74"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -4753,15 +4743,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "fb8a038d-666d-41a7-bb60-556bd43684e6"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "13d8ff22-4978-4ab1-99b9-544c782534f2"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07",
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6"
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39",
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2"
         ]
       },
       "difference": {
@@ -4776,15 +4766,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "05535eb8-5f53-44c6-bd33-d307cd229ae0"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "04433d05-c3b7-4ce4-ad5b-c7dadb133b5a"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_05535eb8_5f53_44c6_bd33_d307cd229ae0",
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6"
+          "r_04433d05_c3b7_4ce4_ad5b_c7dadb133b5a",
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2"
         ]
       },
       "difference": {
@@ -4799,15 +4789,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "52a7f1f4-22a9-48ca-b686-45bc3c75a3b9",
-          "e7394670-52dd-4ab2-8ea6-9fa22d4a18c9"
+          "2ac781fc-c7a9-422f-b312-1b20f876ec74",
+          "2570d39b-92e7-4001-b9cd-670071a95e12"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_52a7f1f4_22a9_48ca_b686_45bc3c75a3b9",
-          "r_e7394670_52dd_4ab2_8ea6_9fa22d4a18c9"
+          "r_2ac781fc_c7a9_422f_b312_1b20f876ec74",
+          "r_2570d39b_92e7_4001_b9cd_670071a95e12"
         ]
       },
       "difference": {
@@ -4822,15 +4812,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "a8d3a4be-c3d1-45bf-a7ad-35a1bc7e31e1"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "375a8d60-6c7a-46ec-9318-2adcb506722e"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
-          "r_a8d3a4be_c3d1_45bf_a7ad_35a1bc7e31e1"
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
+          "r_375a8d60_6c7a_46ec_9318_2adcb506722e"
         ]
       },
       "difference": {
@@ -4845,15 +4835,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "09bd8b19-c8c0-4c91-b234-610318e1377c",
-          "484277b0-0bc1-4298-ad25-f883df20f7d8"
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+          "7e388564-b60a-4787-8c08-2a0c5b7e5433"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
-          "r_484277b0_0bc1_4298_ad25_f883df20f7d8"
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
+          "r_7e388564_b60a_4787_8c08_2a0c5b7e5433"
         ]
       },
       "difference": {
@@ -4868,15 +4858,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "fb8a038d-666d-41a7-bb60-556bd43684e6",
-          "09bd8b19-c8c0-4c91-b234-610318e1377c"
+          "13d8ff22-4978-4ab1-99b9-544c782534f2",
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_fb8a038d_666d_41a7_bb60_556bd43684e6",
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c"
+          "r_13d8ff22_4978_4ab1_99b9_544c782534f2",
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33"
         ]
       },
       "difference": {
@@ -4891,15 +4881,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "09bd8b19-c8c0-4c91-b234-610318e1377c",
-          "288ceab7-c697-45ce-920d-21e28951e4fb"
+          "a8a5a361-d92a-40a1-b5bd-caf1dfb32c33",
+          "f1459b1f-b1d1-4e0d-b22d-d0edfe8d0567"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_09bd8b19_c8c0_4c91_b234_610318e1377c",
-          "r_288ceab7_c697_45ce_920d_21e28951e4fb"
+          "r_a8a5a361_d92a_40a1_b5bd_caf1dfb32c33",
+          "r_f1459b1f_b1d1_4e0d_b22d_d0edfe8d0567"
         ]
       },
       "difference": {
@@ -4914,15 +4904,14 @@
       "expected": {
         "width": 1500,
         "connectsRooms": [
-          "2d44ab9a-d6c8-4ed4-8b7f-7a980ad05f07",
-          "9edd57ee-29a1-4ca4-902c-4f1ebbcb3f06"
+          "ead6f271-ab73-4b36-b17d-7a6c0a676b39",
+          "87cff09e-eee0-4826-9f21-03fb3779c017"
         ]
       },
       "actual": {
         "width": 1500,
         "between": [
-          "exterior",
-          "r_2d44ab9a_d6c8_4ed4_8b7f_7a980ad05f07"
+          "r_ead6f271_ab73_4b36_b17d_7a6c0a676b39"
         ]
       },
       "difference": {
@@ -4937,15 +4926,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-          "4f8a7db3-e328-41cc-9b03-735299946b1c"
+          "491d5250-95fc-48ae-b624-54fb617dcb7b",
+          "e6874b6e-6525-440e-8a60-4208214ade7f"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_4f8a7db3_e328_41cc_9b03_735299946b1c"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_e6874b6e_6525_440e_8a60_4208214ade7f"
         ]
       },
       "difference": {
@@ -4960,15 +4949,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "491d5250-95fc-48ae-b624-54fb617dcb7b"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -4983,15 +4972,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "04166fc9-9259-49e8-9638-1c2aaffc56cc",
-          "80bb0add-fc98-42b3-8454-9873284949a7"
+          "491d5250-95fc-48ae-b624-54fb617dcb7b",
+          "424c00e1-1adb-4b73-bf46-3488ebcf5296"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_04166fc9_9259_49e8_9638_1c2aaffc56cc",
-          "r_80bb0add_fc98_42b3_8454_9873284949a7"
+          "r_491d5250_95fc_48ae_b624_54fb617dcb7b",
+          "r_424c00e1_1adb_4b73_bf46_3488ebcf5296"
         ]
       },
       "difference": {
@@ -5006,15 +4995,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-          "52407492-7874-4281-bb26-2b3b6c261c77"
+          "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_52407492_7874_4281_bb26_2b3b6c261c77",
-          "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79",
+          "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6"
         ]
       },
       "difference": {
@@ -5029,15 +5018,15 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "f5985da2-fe65-4a64-82c5-44b1c5445dd2",
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49"
+          "fc186f6a-1dfc-4294-9e37-b4ffc9635fd6",
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "r_f5985da2_fe65_4a64_82c5_44b1c5445dd2",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_fc186f6a_1dfc_4294_9e37_b4ffc9635fd6",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -5052,15 +5041,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "eec531ee-d418-43eb-9f7b-45db2c784701"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "88d06d24-55d0-4a47-b57a-ba4a7f3865f1"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_eec531ee_d418_43eb_9f7b_45db2c784701",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -5075,15 +5064,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49",
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4"
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3",
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738"
         ]
       },
       "difference": {
@@ -5098,15 +5087,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "cea7161a-ae10-4609-a0f2-e7b1f7545698"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "ba184000-23d2-4689-9660-23a22b2d6b4f"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_cea7161a_ae10_4609_a0f2_e7b1f7545698",
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4"
+          "r_ba184000_23d2_4689_9660_23a22b2d6b4f",
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738"
         ]
       },
       "difference": {
@@ -5121,15 +5110,15 @@
       "expected": {
         "width": 800,
         "connectsRooms": [
-          "eec531ee-d418-43eb-9f7b-45db2c784701",
-          "79136bcf-b7cd-45c6-a615-1fd530aadd4f"
+          "88d06d24-55d0-4a47-b57a-ba4a7f3865f1",
+          "aea01355-a238-445d-b46c-100eac37ff8d"
         ]
       },
       "actual": {
         "width": 800,
         "between": [
-          "r_eec531ee_d418_43eb_9f7b_45db2c784701",
-          "r_79136bcf_b7cd_45c6_a615_1fd530aadd4f"
+          "r_88d06d24_55d0_4a47_b57a_ba4a7f3865f1",
+          "r_aea01355_a238_445d_b46c_100eac37ff8d"
         ]
       },
       "difference": {
@@ -5144,15 +5133,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "ef8baf76-bb2e-4ad1-aa70-e69776d0dd0b"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "9bdbba61-052f-4889-9285-d54287626513"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
-          "r_ef8baf76_bb2e_4ad1_aa70_e69776d0dd0b"
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
+          "r_9bdbba61_052f_4889_9285_d54287626513"
         ]
       },
       "difference": {
@@ -5167,15 +5156,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "b33a3842-2ab5-4db9-b124-c49786132293",
-          "6a9a559e-5ada-4858-b86e-e65a6c7329d0"
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+          "52a268ee-f219-4dad-b2a9-1da50d1394fd"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_b33a3842_2ab5_4db9_b124_c49786132293",
-          "r_6a9a559e_5ada_4858_b86e_e65a6c7329d0"
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
+          "r_52a268ee_f219_4dad_b2a9_1da50d1394fd"
         ]
       },
       "difference": {
@@ -5190,15 +5179,15 @@
       "expected": {
         "width": 900,
         "connectsRooms": [
-          "bd3520c9-1ba8-4338-9c42-69797070b5f4",
-          "b33a3842-2ab5-4db9-b124-c49786132293"
+          "5aa84e20-9e43-4fa6-9725-e2e3f1a10738",
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa"
         ]
       },
       "actual": {
         "width": 900,
         "between": [
-          "r_bd3520c9_1ba8_4338_9c42_69797070b5f4",
-          "r_b33a3842_2ab5_4db9_b124_c49786132293"
+          "r_5aa84e20_9e43_4fa6_9725_e2e3f1a10738",
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa"
         ]
       },
       "difference": {
@@ -5213,15 +5202,15 @@
       "expected": {
         "width": 750,
         "connectsRooms": [
-          "b33a3842-2ab5-4db9-b124-c49786132293",
-          "1285f739-1a58-47cb-a5f2-36467df9d71a"
+          "261f53c1-d740-4db2-9c82-8ce19c89b2fa",
+          "7d0aa35b-65cd-420c-9aeb-fd07760f3957"
         ]
       },
       "actual": {
         "width": 750,
         "between": [
-          "r_b33a3842_2ab5_4db9_b124_c49786132293",
-          "r_1285f739_1a58_47cb_a5f2_36467df9d71a"
+          "r_261f53c1_d740_4db2_9c82_8ce19c89b2fa",
+          "r_7d0aa35b_65cd_420c_9aeb_fd07760f3957"
         ]
       },
       "difference": {
@@ -5236,15 +5225,14 @@
       "expected": {
         "width": 1500,
         "connectsRooms": [
-          "f6fdf801-c4a1-456c-b2e2-621f44bd3d49",
-          "3d05e0f4-e121-4129-9341-8d08098f45c4"
+          "1a40a0eb-94c8-44f4-8b4f-6f8c7b9dd0e3",
+          "45b7a7aa-28c7-48ca-91e7-b7f675e88f49"
         ]
       },
       "actual": {
         "width": 1500,
         "between": [
-          "exterior",
-          "r_f6fdf801_c4a1_456c_b2e2_621f44bd3d49"
+          "r_1a40a0eb_94c8_44f4_8b4f_6f8c7b9dd0e3"
         ]
       },
       "difference": {
@@ -5259,15 +5247,14 @@
       "expected": {
         "width": 1200,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "07ce5ccc-8b36-4b6d-ba5a-c0f2be8c1b51"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "a67e596e-aa84-4d4a-b4c8-376677c0ef9a"
         ]
       },
       "actual": {
         "width": 1200,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -5282,15 +5269,14 @@
       "expected": {
         "width": 1200,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "80b8877c-cc03-482d-a1a3-be10d6715cfb"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "1cfb4fe7-8140-4b63-98d3-1785c8f65e74"
         ]
       },
       "actual": {
         "width": 1200,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -5305,15 +5291,14 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "da574617-50ef-457f-b7a0-e6aa3d2f5e64"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "07dabb00-452a-4ef4-965c-131942f4e144"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -5328,15 +5313,14 @@
       "expected": {
         "width": 1000,
         "connectsRooms": [
-          "52407492-7874-4281-bb26-2b3b6c261c77",
-          "3dad74db-f654-4a39-aad9-89252677350f"
+          "1b9655e2-88b3-4d43-81e7-419eb83a0d79",
+          "c90be964-d14d-4779-afe5-c2f691477b46"
         ]
       },
       "actual": {
         "width": 1000,
         "between": [
-          "exterior",
-          "r_52407492_7874_4281_bb26_2b3b6c261c77"
+          "r_1b9655e2_88b3_4d43_81e7_419eb83a0d79"
         ]
       },
       "difference": {
@@ -5423,10 +5407,10 @@
       "archlangId": "WALL_DECLARATIONS",
       "elementType": "wall",
       "expected": {
-        "count": 192
+        "count": 180
       },
       "actual": {
-        "count": 192
+        "count": 180
       },
       "status": "PASS"
     }
@@ -5450,8 +5434,8 @@
     "passed": false
   },
   "wallParity": {
-    "expectedCount": 192,
-    "actualCount": 192,
+    "expectedCount": 180,
+    "actualCount": 180,
     "passed": true
   },
   "coreParity": {

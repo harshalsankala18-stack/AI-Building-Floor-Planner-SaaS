@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Image generation route handlers â€” Master PRD Phase 2 (Â§17/Â§18).
  *
  * The only boundary between the browser and the Cloudflare credentials. The
@@ -58,9 +58,15 @@ export async function handleFloorPlanGeneration(
     return { status: 400, json: { error: { code: 'INVALID_REQUEST', message: 'A projectId and a compiled FloorPlanImagePromptRequest are required.' } } };
   }
   if (!deps.provider || !(await deps.provider.isAvailable())) {
+    const access = deps.provider && 'checkAccess' in deps.provider
+      ? await (deps.provider as any).checkAccess().catch(() => null)
+      : null;
+    const detail = access?.detail || (deps.provider ? `Provider ${deps.provider.name} is unreachable` : 'Floor-plan image generation is not configured on this server.');
+    const code = access?.status === 'AUTH_FAILED' ? 'IMAGE_PROVIDER_AUTH_ERROR' : 'IMAGE_PROVIDER_NOT_CONFIGURED';
+    const status = access?.status === 'AUTH_FAILED' ? 403 : 503;
     return {
-      status: 503,
-      json: { error: { code: 'IMAGE_PROVIDER_NOT_CONFIGURED', message: 'Floor-plan image generation is not configured on this server.' } },
+      status,
+      json: { error: { code, message: detail } },
     };
   }
   try {

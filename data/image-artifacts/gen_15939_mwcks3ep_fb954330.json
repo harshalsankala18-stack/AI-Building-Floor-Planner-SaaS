@@ -1,0 +1,32 @@
+{
+  "generationId": "gen_15939_mwcks3ep_fb954330",
+  "projectId": "proj_aeablw0",
+  "seed": 15939,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Ahmedabad L-Shaped Villa, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing East.\nSETBACKS: front 3048mm, rear 1829mm, left 1524mm, right 1524mm.\nROOM PROGRAM: 3 bedroom(s), 2 bathroom(s), living room, kitchen, dining room, staircase.\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: 3 bedrooms, 2 bathrooms, living room, dining room, kitchen, balcony, parking, vastu compliant orientation. Footprint shape: l shape. Plot size 40x60 ft, road facing east.\n\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #3, Previous Score: 60/100):\n- RESOLVE HARD VIOLATIONS: Incorrect floor plans: The drawing fails to provide a legitimate second floor plan; it replicates the ground floor twice; Vastu violation: Kitchen is not in the Southeast sector\n- FIX SPATIAL DEFECTS: Duplication of floor plans where one should represent the second floor; Layout of the kitchen on the left side is non-optimal for Vastu (usually SE required); Ground floor layout is redundant and does not show proper vertical circulation for a duplex\n- ARCHITECTURAL CORRECTIONS: Redesign the Ground Floor to include the kitchen (SE), living, dining, and one bedroom with an attached bath. Redesign the Second Floor to include the master bedroom (SW) with walk-in wardrobe, second bedroom, shared bathroom, and family lounge with access to the terrace or balcony.; Ensure the second floor plan features the staircase landing correctly leading from the ground floor to the upper lobby.\nEnsure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n- Use the supplied reference images for visual drafting style. Current project requirements always override references.\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 832,
+  "height": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T20:32:22.080Z",
+  "latencyMs": 4773,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "referenceHashes": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "aspectRatio": "3:4",
+    "promptHash": "0b4bde40b77e3378bafa449f1473bb3d70c88cf2df180da59cc36fabd23b45e9"
+  }
+}

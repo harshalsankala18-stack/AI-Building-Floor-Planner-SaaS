@@ -12,7 +12,16 @@ import {
   buildingModelToArchLangSource,
 } from '@ai-floor-planner/ai-orchestration';
 
-export type ExportFormat = 'svg' | 'pdf' | 'json' | 'arch' | 'dxf' | 'png';
+import {
+  generateArchitecturalDxf,
+  generateBuildingObj,
+  generateBuildingStl,
+  generateBuildingGlb,
+  generateProjectBackupZip,
+} from './export-system';
+import { projectStorage, type ProjectEnvelope } from './storage';
+
+export type ExportFormat = 'svg' | 'pdf' | 'json' | 'arch' | 'dxf' | 'png' | 'obj' | 'stl' | 'glb' | 'zip';
 
 export interface AdvancedExportSettings extends ExportOptions {
   readonly format: ExportFormat;
@@ -28,7 +37,7 @@ export interface ExportArtifact {
   readonly filename: string;
   readonly mimeType: string;
   readonly extension: ExportFormat;
-  readonly content: string;
+  readonly content: string | Uint8Array;
   readonly byteSize: number;
 }
 
@@ -355,7 +364,7 @@ export function createExportArtifact(
   const floor = selectedFloor(building, settings.floorId);
   const archlangMeta = (building.metadata as any)?.archlang;
 
-  let content = '';
+  let content: string | Uint8Array = '';
   let mimeType = 'text/plain';
 
   if (settings.format === 'svg') {
@@ -368,8 +377,32 @@ export function createExportArtifact(
     content = compileBuildingToArchLang(building);
     mimeType = 'text/plain';
   } else if (settings.format === 'dxf') {
-    content = compileBuildingToDxf(building, settings.floorId);
+    content = generateArchitecturalDxf(building, {
+      floorId: settings.floorId,
+      includeAllFloors: !settings.floorId,
+      scale: settings.scale,
+    });
     mimeType = 'application/dxf';
+  } else if (settings.format === 'obj') {
+    content = generateBuildingObj(building);
+    mimeType = 'text/plain';
+  } else if (settings.format === 'stl') {
+    content = generateBuildingStl(building);
+    mimeType = 'model/stl';
+  } else if (settings.format === 'glb') {
+    content = generateBuildingGlb(building);
+    mimeType = 'model/gltf-binary';
+  } else if (settings.format === 'zip') {
+    const envelope = projectStorage.load(building.projectId) ?? {
+      projectId: building.projectId,
+      name: building.name,
+      schemaVersion: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      building,
+    } as ProjectEnvelope;
+    content = generateProjectBackupZip(envelope);
+    mimeType = 'application/zip';
   } else if (settings.format === 'png') {
     content = archlangMeta?.png ?? '';
     mimeType = 'image/png';
@@ -379,18 +412,21 @@ export function createExportArtifact(
   }
 
   const filename = `${cleanFilename(building.name)}_${cleanFilename(floor.name)}_r${cleanFilename(settings.revision)}.${settings.format}`;
+  const byteSize = content instanceof Uint8Array ? content.length : byteLength(content);
   return {
     filename,
     mimeType,
     extension: settings.format,
     content,
-    byteSize: byteLength(content),
+    byteSize,
   };
 }
 
 export function downloadExportArtifact(artifact: ExportArtifact): void {
   let blob: Blob;
-  if (artifact.extension === 'png' && typeof artifact.content === 'string' && /^[A-Za-z0-9+/=]+$/.test(artifact.content.trim())) {
+  if (artifact.content instanceof Uint8Array) {
+    blob = new Blob([artifact.content], { type: artifact.mimeType });
+  } else if (artifact.extension === 'png' && typeof artifact.content === 'string' && /^[A-Za-z0-9+/=]+$/.test(artifact.content.trim())) {
     const byteCharacters = atob(artifact.content.trim());
     const byteNumbers = new Array(byteCharacters.length);
     for (let i = 0; i < byteCharacters.length; i++) {

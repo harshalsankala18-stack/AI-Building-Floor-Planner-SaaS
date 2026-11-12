@@ -54,6 +54,9 @@ const SWINGS = new Set(['inward', 'outward', 'left', 'right', 'unknown']);
 export function createExtractionMetadata(params: {
   readonly imageWidePixels: number;
   readonly imageTallPixels: number;
+  /** Coordinate frame the interpretation uses; defaults to the pixel size for legacy callers. */
+  readonly frameWidth?: number;
+  readonly frameHeight?: number;
   readonly plotWidth: number;
   readonly plotDepth: number;
   readonly orientation: number;
@@ -63,9 +66,13 @@ export function createExtractionMetadata(params: {
 }): ExtractionMetadata {
   const imageAspectRatio = params.imageTallPixels > 0 ? params.imageWidePixels / params.imageTallPixels : 0;
   const plotAspectRatio = params.plotDepth > 0 ? params.plotWidth / params.plotDepth : 0;
+  const frameWidth = params.frameWidth && params.frameWidth > 0 ? params.frameWidth : params.imageWidePixels;
+  const frameHeight = params.frameHeight && params.frameHeight > 0 ? params.frameHeight : params.imageTallPixels;
   return {
     imageWidePixels: params.imageWidePixels,
     imageTallPixels: params.imageTallPixels,
+    frameWidth,
+    frameHeight,
     imageAspectRatio,
     plotAspectRatio,
     aspectMismatchRatio: plotAspectRatio > 0 ? Math.abs(imageAspectRatio - plotAspectRatio) / plotAspectRatio : 0,

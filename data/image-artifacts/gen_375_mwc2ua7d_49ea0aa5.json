@@ -1,0 +1,15 @@
+{
+  "generationId": "gen_375_mwc2ua7d_49ea0aa5",
+  "projectId": "proj_5bke77x",
+  "seed": 375,
+  "model": "stepped_polygon_cad_v1",
+  "provider": "deterministic_cad",
+  "promptVersion": 1,
+  "originalPrompt": "Deterministic stepped-polygon CAD schematic: Vastu-Optimized / Privacy (Staggered flats so entrance doors do not face each other; bedrooms grouped in a private wing off a private passage.)",
+  "negativePrompt": "",
+  "width": 512,
+  "height": 512,
+  "mimeType": "image/png",
+  "generatedAt": "2026-11-11T12:10:11.102Z",
+  "latencyMs": 1
+}

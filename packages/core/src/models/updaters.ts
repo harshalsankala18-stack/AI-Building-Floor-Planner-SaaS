@@ -142,7 +142,17 @@ export function addRoom(
   };
 }
 
-/** Remove a room from a floor. Returns new Building. */
+/**
+ * Remove a room from a floor, together with the geometry that only existed to
+ * serve it. Returns new Building.
+ *
+ * A room's removal cascades, because leaving the dependents behind produces
+ * geometry that references an entity that no longer exists:
+ * - walls bounded ONLY by this room (a wall shared with another room stays, and
+ *   loses just this room from its `roomIds`),
+ * - doors and windows hosted on those removed walls,
+ * - windows whose `roomId` was this room.
+ */
 export function removeRoom(
   building: Building,
   roomId: string,
@@ -151,11 +161,30 @@ export function removeRoom(
 
   return {
     ...building,
-    floors: building.floors.map((floor, fi) =>
-      fi === floorIdx
-        ? { ...floor, rooms: floor.rooms.filter(r => r.id !== roomId) }
-        : floor,
-    ),
+    floors: building.floors.map((floor, fi) => {
+      if (fi !== floorIdx) return floor;
+
+      // Walls that existed solely to bound this room go; shared walls survive.
+      const wallsToRemove = new Set(
+        floor.walls
+          .filter(w => w.roomIds.includes(roomId) && w.roomIds.every(id => id === roomId))
+          .map(w => w.id),
+      );
+
+      return {
+        ...floor,
+        rooms: floor.rooms.filter(r => r.id !== roomId),
+        walls: floor.walls
+          .filter(w => !wallsToRemove.has(w.id))
+          .map(w =>
+            w.roomIds.includes(roomId)
+              ? { ...w, roomIds: w.roomIds.filter(id => id !== roomId) }
+              : w,
+          ),
+        doors: floor.doors.filter(d => !wallsToRemove.has(d.wallId)),
+        windows: floor.windows.filter(w => !wallsToRemove.has(w.wallId) && w.roomId !== roomId),
+      };
+    }),
     updatedAt: new Date().toISOString(),
   };
 }
@@ -468,7 +497,14 @@ export function addWall(
   };
 }
 
-/** Remove a wall from its floor. Returns new Building. */
+/**
+ * Remove a wall from its floor, together with the openings it hosted.
+ * Returns new Building.
+ *
+ * A door or window exists ON a wall; keeping it after the wall is gone leaves
+ * an opening whose `wallId` resolves to nothing, which breaks both the 2D
+ * renderer and the 3D projection.
+ */
 export function removeWall(building: Building, wallId: string): Building {
   const floorIdx = building.floors.findIndex(f => f.walls.some(w => w.id === wallId));
   if (floorIdx === -1) throw new EntityNotFoundError('Wall', wallId);
@@ -477,7 +513,12 @@ export function removeWall(building: Building, wallId: string): Building {
     ...building,
     floors: building.floors.map((floor, fi) =>
       fi === floorIdx
-        ? { ...floor, walls: floor.walls.filter(w => w.id !== wallId) }
+        ? {
+            ...floor,
+            walls: floor.walls.filter(w => w.id !== wallId),
+            doors: floor.doors.filter(d => d.wallId !== wallId),
+            windows: floor.windows.filter(w => w.wallId !== wallId),
+          }
         : floor,
     ),
     updatedAt: new Date().toISOString(),

@@ -46,6 +46,7 @@ export class EditorEngine {
   private state: EditorState;
   private history: CommandHistory;
   private listeners = new Set<EditorListener>();
+  private lastRejection: { reason: string; command: string; at: number } | null = null;
 
   constructor(building: Building, options: EditorEngineOptions = {}) {
     this.building = building;
@@ -160,8 +161,27 @@ export class EditorEngine {
       this.emit('validation_requested', command);
       this.emit('render_requested', command);
     } else {
+      // A command that declined to act says why, so the UI can tell the user
+      // instead of leaving a control looking broken.
+      this.lastRejection = result.rejectedReason
+        ? { reason: result.rejectedReason, command: command.description, at: Date.now() }
+        : null;
       this.emit('state_changed', command, prevState);
     }
+  }
+
+  /**
+   * Why the most recent command declined to change the model, or null when the
+   * last command was applied. Consumed by the editor UI to surface a helpful
+   * instruction for an unmet precondition.
+   */
+  getLastRejection(): { readonly reason: string; readonly command: string; readonly at: number } | null {
+    return this.lastRejection;
+  }
+
+  /** Clear a rejection the UI has shown. */
+  clearLastRejection(): void {
+    this.lastRejection = null;
   }
 
   /** Undo the most recent reversible command. */

@@ -1,17 +1,17 @@
 /* Deliberate, readable studio chrome; the drawing remains a separate surface. */
 html body {
-  --bg-app: #0b111a;
-  --bg-panel: #151e2b;
-  --bg-card: #1b2736;
-  --text-muted: #91a2b7;
-  --inspector-width: 310px;
+  --bg-app: #F7F7F4;
+  --bg-panel: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --text-muted: #7E877C;
+  --inspector-width: 320px;
 }
-html body .modal-card { background: #121c29; color: #edf3f9; border: 1px solid #3a4b61; box-shadow: 0 32px 100px #0009; }
-html body .ai-design-dialog { --bg-canvas: #182536; --bg-selection: #183c38; }
-html body .modal-card .modal-header { padding: 20px 24px; background: #172334; position: sticky; top: 0; z-index: 3; }
-html body .modal-card .modal-title { font-size: 20px; font-weight: 650; letter-spacing: -.025em; }
+html body .modal-card { background: #FFFFFF; color: #1C1E1B; border: 1px solid #DFE2DA; box-shadow: 0 24px 60px -12px rgba(28, 30, 27, 0.25); }
+html body .ai-design-dialog { --bg-canvas: #FFFFFF; --bg-selection: rgba(30, 58, 47, 0.08); }
+html body .modal-card .modal-header { padding: 20px 24px; background: #FAFAF7; border-bottom: 1px solid #DFE2DA; position: sticky; top: 0; z-index: 3; }
+html body .modal-card .modal-title { font-size: 18px; font-weight: 650; color: #1C1E1B; letter-spacing: -.025em; }
 html body .modal-card .modal-body { padding: 24px; }
-html body .modal-card .form-label { font-size: 12px; line-height: 1.5; color: #c2cfde; }
+html body .modal-card .form-label { font-size: 12px; line-height: 1.5; color: #4D534B; }
 html body .modal-card input, html body .modal-card select { min-height: 40px; }
 html body .modal-card input[readonly] { color: #a7dace; background: #102923; }
 html body .modal-card button:disabled { opacity: .48; cursor: not-allowed; }

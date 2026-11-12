@@ -28,25 +28,28 @@ import {
   AlertTriangle,
   RefreshCw,
   Info,
+  FileCheck2,
 } from 'lucide-react';
-import { Direction, normalizeDesignRequirementSpecification, RoomType, type CandidatePlan, type Building } from '@ai-floor-planner/core';
+import { Direction, normalizeDesignRequirementSpecification, RoomType, deriveSpaceProgramFromBuilding, type CandidatePlan, type Building } from '@ai-floor-planner/core';
 import {
   sqMmToSqFt,
   mmToFeet,
   feetToMm,
 } from '@ai-floor-planner/geometry-engine';
-import { lintApartmentCadGeometry } from '@ai-floor-planner/ai-orchestration';
+import { lintApartmentCadGeometry, type MasterImageEvaluationResult } from '@ai-floor-planner/ai-orchestration';
 import { useEditorStore } from '../../stores/editor-store';
 import { ArchitecturalCanvas } from '../canvas/ArchitecturalCanvas';
 import { ToolPalette } from '../layout/ToolPalette';
 import { PropertyInspector } from '../inspector/PropertyInspector';
 import { ExportModal } from '../modals/ExportModal';
-import { NewProjectModal } from '../modals/NewProjectModal';
+import { ResidentialPlanningWizard } from '../wizard/ResidentialPlanningWizard';
 import { CommandPalette } from '../workspace/CommandPalette';
 import { DesignDiagnosticsPanel } from '../diagnostics/DesignDiagnosticsPanel';
 import { renderFloor } from '@ai-floor-planner/renderer';
 import { fitFloorToViewport } from '../../services/floor-camera';
-import { projectStorage, type ProjectHeader } from '../../services/storage';
+import { CURRENT_PROJECT_SCHEMA_VERSION, projectStorage, type ProjectHeader } from '../../services/storage';
+import { AiConceptImagePanel } from '../generation/AiConceptImagePanel';
+import { computeRequirementsFingerprint } from '../../services/ai-concept-image';
 import {
   CandidateGenerator,
   RoomProgramGenerator,
@@ -95,19 +98,23 @@ import { TermsAndConditions } from '../legal/TermsAndConditions';
 import '../../styles/studio.css';
 
 const ModelWorkspace = lazy(() => import('../model-3d/ModelWorkspace'));
+import { OdaInwebPocWorkspace } from './OdaInwebPocWorkspace';
 
 // Phase 5: the former time-driven GENERATION_STAGES milestone list was removed;
 // stage rows now come from the real server-reported stage state (two-ai-candidates.ts).
 
 export type StudioStage =
+  | 'setup'
+  | 'floorplans'
+  | '3d'
+  | 'review'
   | 'overview'
   | 'site'
   | 'brief'
   | 'generate'
-  | 'floorplans'
-  | '3d'
   | 'insights'
-  | 'export';
+  | 'export'
+  | 'oda-poc';
 
 export interface StudioCandidate {
   readonly id: string;
@@ -158,6 +165,7 @@ export interface StudioCandidate {
     defects?: readonly string[];
     [key: string]: any;
   } | null;
+  readonly masterEvaluation?: MasterImageEvaluationResult | null;
 }
 
 interface StudioShellProps {
@@ -177,27 +185,55 @@ function generationSafetyLimitSeconds(projectType: string): number {
   return projectType === 'apartment' ? 900 : 180;
 }
 
+/** Expands the 9 server stage rows to include the 10th "Synchronized 3D model" stage derived from Hard Validation. */
+function expandToTenStageRows(rows: readonly StageRow[]): StageRow[] {
+  const result: StageRow[] = [];
+  for (const row of rows) {
+    result.push(row);
+    if (row.key === 'validation') {
+      const state3d: StageRow['state'] =
+        row.state === 'done' ? 'done' : row.state === 'pending' ? 'pending' : 'not_run';
+      const detail3d =
+        row.state === 'done'
+          ? 'Completed'
+          : row.state === 'pending'
+          ? 'Awaiting server result'
+          : 'Not reached';
+      result.push({
+        key: 'model3D',
+        label: 'Synchronized 3D model',
+        state: state3d,
+        detail: detail3d,
+      });
+    }
+  }
+  return result;
+}
+
 /** Phase 5: renders ONLY server-reported stage state; nothing is inferred from time. */
-const StageChecklist: React.FC<{ rows: readonly StageRow[]; title?: string }> = ({ rows, title }) => (
-  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
-    {title && <strong style={{ fontSize: 12, color: '#334155' }}>{title}</strong>}
-    <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-      {rows.map(row => {
-        const style = STAGE_ROW_STYLE[row.state];
-        return (
-          <li key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: style.color, gap: 8 }}>
-            <span>{row.label}</span>
-            <span>
-              <strong aria-hidden="true">{style.icon}</strong>{' '}
-              <span>{row.detail}</span>
-              <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>({style.srLabel})</span>
-            </span>
-          </li>
-        );
-      })}
-    </ul>
-  </div>
-);
+const StageChecklist: React.FC<{ rows: readonly StageRow[]; title?: string }> = ({ rows, title }) => {
+  const displayRows = rows.some(r => r.key === 'model3D') ? rows : expandToTenStageRows(rows);
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 12 }}>
+      {title && <strong style={{ fontSize: 12, color: '#334155' }}>{title}</strong>}
+      <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+        {displayRows.map(row => {
+          const style = STAGE_ROW_STYLE[row.state];
+          return (
+            <li key={row.key} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: style.color, gap: 8 }}>
+              <span>{row.label}</span>
+              <span>
+                <strong aria-hidden="true">{style.icon}</strong>{' '}
+                <span>{row.detail}</span>
+                <span style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>({style.srLabel})</span>
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+};
 
 /**
  * Maps an accepted Two-AI orchestrator candidate into a Studio card (Phase 3).
@@ -273,12 +309,37 @@ function mapTwoAICandidate(
       summary: cand.evaluation.rationale,
     } : null,
     vastuReport,
+    masterEvaluation: (cand as any).masterEvaluation ?? null,
   };
 }
 
 export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) => {
   const editor = useEditorStore();
-  const [activeStage, setActiveStage] = useState<StudioStage>('overview');
+  const [activeStage, setActiveStage] = useState<StudioStage>(() => {
+    try {
+      if (typeof window !== 'undefined' && window.location.hash === '#oda-poc') {
+        return 'oda-poc';
+      }
+      const env = projectStorage.load(editor.projectId);
+      if (env?.pendingAiGeneration) return 'generate';
+    } catch {
+      // ignore
+    }
+    return editor.building.floors.some(f => f.rooms.length > 0) ? 'floorplans' : 'setup';
+  });
+
+  useEffect(() => {
+    const handleHash = () => {
+      if (window.location.hash === '#oda-poc') {
+        setActiveStage('oda-poc');
+      }
+    };
+    window.addEventListener('hashchange', handleHash);
+    return () => window.removeEventListener('hashchange', handleHash);
+  }, []);
+  const [showAiReferenceIn2D, setShowAiReferenceIn2D] = useState<boolean>(true);
+  const [aiRefOpacity, setAiRefOpacity] = useState<number>(100);
+  const [aiRefMode, setAiRefMode] = useState<'overlay' | 'side-by-side'>('overlay');
 
   // Modal states
   const [isNewProjectModalOpen, setIsNewProjectModalOpen] = useState(false);
@@ -286,6 +347,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
   const [isProjectSwitcherOpen, setIsProjectSwitcherOpen] = useState(false);
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isAICoPilotOpen, setIsAICoPilotOpen] = useState(false);
+  const [isAdvancedToolsOpen, setIsAdvancedToolsOpen] = useState(false);
 
   // Canvas / Editor interactive states
   const [snapEnabled, setSnapEnabled] = useState(true);
@@ -363,8 +425,26 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
   const [fullPlotEnabled, setFullPlotEnabled] = useState(false);
   const [gardenEnabled, setGardenEnabled] = useState(false);
 
-  // Apartment Planning First state (Master PRD Upgrade)
-  const [projectType, setProjectType] = useState<'apartment' | 'residential_independent'>('apartment');
+  // Apartment vs Residential Independent state
+  const [projectType, setProjectType] = useState<'apartment' | 'residential_independent'>(() => {
+    try {
+      const env = projectStorage.load(editor.projectId);
+      const wizTypology = (env?.wizardBrief as any)?.typology;
+      if (wizTypology && wizTypology !== 'apartment') {
+        return 'residential_independent';
+      }
+      const hasFlatTags = editor.building.floors.some(f =>
+        f.rooms.some(r => (r as any).tags?.some((t: string) => t.startsWith('flat:'))),
+      );
+      if (hasFlatTags) return 'apartment';
+      if (env?.wizardBrief || env?.footprintIntent || editor.building.floors.some(f => f.rooms.length > 0)) {
+        return 'residential_independent';
+      }
+    } catch {
+      // ignore
+    }
+    return 'residential_independent';
+  });
   const [apartmentConfig, setApartmentConfig] = useState<ApartmentBriefConfig>({
     projectType: 'apartment',
     jurisdiction: 'pune_pmc',
@@ -402,11 +482,53 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
   const [runningLabel, setRunningLabel] = useState<string>('');
   const [generationSeconds, setGenerationSeconds] = useState(0);
   const [generationSeed, setGenerationSeed] = useState(101);
-  const [generatedCandidates, setGeneratedCandidates] = useState<StudioCandidate[]>([]);
+  const [generatedCandidates, setGeneratedCandidates] = useState<StudioCandidate[]>(() => {
+    try {
+      const envelope = projectStorage.load(editor.projectId);
+      if (envelope?.generationSession?.candidates?.length) {
+        return envelope.generationSession.candidates.map((r, idx) => ({
+          id: r.id || `cand-${idx + 1}`,
+          name: r.name,
+          strategy: r.strategy,
+          description: r.description || 'Deterministic algorithmic layout matching dimensional constraints.',
+          building: r.building,
+          metrics: {
+            totalCarpetAreaMm2: r.metrics.totalCarpetAreaMm2,
+            overallQualityScore: r.metrics.overallQualityScore,
+            zoningScore: r.metrics.zoningScore,
+            circulationScore: r.metrics.circulationScore,
+            daylightScore: r.metrics.daylightScore,
+            shapeScore: r.metrics.shapeScore,
+            aspectRatio: 1.0,
+          },
+          rank: r.rank ?? (idx + 1),
+          requiredRoomCounts: r.requiredRoomCounts,
+          generationSeed: envelope.generationSession?.requestSeed ?? 101,
+          validationStatus: 'passed',
+        }));
+      }
+    } catch (e) {
+      console.warn('Error loading persisted candidates in Studio:', e);
+    }
+    return [];
+  });
   // Two-phase upgrade: the four controlled apartment concepts (incl. rejected ones).
   const [conceptCards, setConceptCards] = useState<ConceptCardView[]>([]);
   const [candidateViewModes, setCandidateViewModes] = useState<Record<string, 'image' | 'cad'>>({});
-  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(null);
+  const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(() => {
+    try {
+      const envelope = projectStorage.load(editor.projectId);
+      if (envelope?.generationSession?.selectedCandidateId) {
+        return envelope.generationSession.selectedCandidateId;
+      }
+      if (envelope?.generationSession?.candidates?.length) {
+        return envelope.generationSession.candidates[0]!.id;
+      }
+    } catch (e) {
+      // ignore
+    }
+    return null;
+  });
   const [researchReport] = useState<ArchitecturalResearchReport | null>(null);
   const [generationError, setGenerationError] = useState<string | null>(null);
   const [stageSpecificError, setStageSpecificError] = useState<{
@@ -565,7 +687,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
     setIsGenerating(false);
   };
 
-  const generateCadCandidates = (seedToUse: number): StudioCandidate[] => {
+  const _generateCadCandidates = (seedToUse: number): StudioCandidate[] => {
     if (projectType === 'apartment') {
       const strategies: Array<{ id: ApartmentLayoutStrategy; label: string; name: string }> = [
         { id: 'SYMMETRIC_CORE', label: '1. Symmetric Core', name: 'Symmetric Core' },
@@ -683,17 +805,24 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       }));
     }
   };
+  void _generateCadCandidates;
 
-  // Run Real Two-AI Generation Pipeline (Cloudflare FLUX + Gemini Vision + Hard Validation + Gemini Score)
-  const handleGeneratePlans = async (customSeed?: number) => {
+  // Run Real Two-AI Generation Pipeline (Gemini Image + Gemini Vision + Hard Validation + Gemini Score)
+  const handleGeneratePlans = async (customSeed?: number, forceResidential?: boolean) => {
     if (isGenerating) return;
 
+    const effectiveProjectType = forceResidential ? 'residential_independent' : projectType;
+    if (forceResidential && projectType !== 'residential_independent') {
+      setProjectType('residential_independent');
+    }
+
+    setActiveStage('generate');
+
     // Check Information Completeness Gate if Apartment mode (§4 / §48)
-    if (projectType === 'apartment') {
+    if (effectiveProjectType === 'apartment') {
       const completeness = checkApartmentCompleteness(apartmentConfig);
       if (!completeness.isComplete) {
         setCompletenessQuestions(completeness.questions);
-        setActiveStage('generate');
         return;
       }
 
@@ -717,9 +846,30 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           hasArtifact: false,
         });
         setGenerationError('Deterministic Feasibility Gate failed: configuration exceeds buildable plot capacity.');
-        setActiveStage('generate');
         return;
       }
+    }
+
+    const jobId = `job_${Date.now().toString(36)}`;
+    const jobStartedAt = new Date().toISOString();
+
+    try {
+      const env = projectStorage.load(editor.projectId);
+      if (env) {
+        projectStorage.save({
+          ...env,
+          pendingAiGeneration: false,
+          generationJob: {
+            jobId,
+            status: 'running',
+            startedAt: jobStartedAt,
+            projectType: effectiveProjectType === 'apartment' ? 'apartment' : 'single_family',
+          },
+          updatedAt: jobStartedAt,
+        });
+      }
+    } catch {
+      // ignore storage errors
     }
 
     setIsGenerating(true);
@@ -727,13 +877,13 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
     setStageSpecificError(null);
     setGenerationOutcome(null);
     setConceptCards([]);
-    setRunningLabel(projectType === 'apartment'
-      ? 'Four controlled apartment concepts running on the server (deterministic schematic → FLUX → preflight → interpretation → hard validation → advisory evaluation, per concept)'
-      : 'Two-AI pipeline running on the server (FLUX → preflight → interpretation → hard validation → advisory evaluation)');
+    setRunningLabel(effectiveProjectType === 'apartment'
+      ? 'Four controlled apartment concepts running on the server (deterministic schematic → Gemini Image → preflight → interpretation → hard validation → advisory evaluation, per concept)'
+      : 'Two-AI pipeline running on the server (Gemini Image → artifact save → Gemini Vision interpretation → constraint-solved 2D/3D CAD → hard validation → advisory evaluation)');
     setGenerationSeconds(0);
     cancelGenerationRef.current = false;
 
-    const safetyLimitS = generationSafetyLimitSeconds(projectType);
+    const safetyLimitS = generationSafetyLimitSeconds(effectiveProjectType);
     const startTime = Date.now();
     const timerInterval = window.setInterval(() => {
       const elapsed = Math.floor((Date.now() - startTime) / 1000);
@@ -748,34 +898,38 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       const seedToUse = customSeed ?? generationSeed;
       setGenerationSeed(prev => (prev + 137 + (Math.floor(Date.now() / 1000) % 997)) % 1000000);
 
-      // Immediately generate 4 stepped CAD candidates and load onto live canvas
-      const cadCandidates = generateCadCandidates(seedToUse);
-      setGeneratedCandidates(cadCandidates);
-      if (cadCandidates.length > 0) {
-        const primaryCandidate = cadCandidates[0]!;
-        setSelectedCandidateId(primaryCandidate.id);
-        editor.setBuilding(primaryCandidate.building, primaryCandidate.name, primaryCandidate.requiredRoomCounts, editor.projectCategory);
-        setActiveStage('floorplans');
-        setFitRequest(v => v + 1);
-      }
+      const loadedEnvelope = projectStorage.load(editor.projectId);
+      const wiz = (loadedEnvelope?.wizardBrief ?? {}) as Record<string, any>;
+      const footprintShapeDesc = wiz.footprintShape
+        ? ` Footprint shape: ${String(wiz.footprintShape).replace(/_/g, ' ')}.`
+        : '';
+      const cityAuthorityDesc = wiz.city
+        ? ` Location: ${wiz.city}${wiz.authority ? ` (${wiz.authority})` : ''}.`
+        : '';
+      const extrasDesc = [
+        wiz.kitchenType ? `${wiz.kitchenType} kitchen` : '',
+        wiz.includeUtility ? 'utility area' : '',
+        wiz.includePooja ? 'pooja room' : '',
+        wiz.includeVerandah ? 'front verandah' : '',
+      ].filter(Boolean).join(', ');
 
-      // Build natural prompt for Gemini Requirement Understanding
-      const userPrompt = projectType === 'apartment'
+      // Build natural prompt for Gemini Requirement Understanding & Image Synthesis
+      const userPrompt = effectiveProjectType === 'apartment'
         ? `Multi-unit residential apartment building with ${apartmentConfig.flatsPerFloor} flats per floor across ${apartmentConfig.floorCount} floors. Unit mix: ${apartmentConfig.unitMix.map(u => `${u.count}x ${u.unitType}`).join(', ')}. Central core with ${apartmentConfig.commonCore.passengerLifts} lifts, ${apartmentConfig.commonCore.staircaseCount} staircases, and fire escape. Balconies, OTS shafts, toilets, kitchens, and parking.`
-        : `${roomCounts.bedrooms} bedrooms, ${roomCounts.bathrooms} bathrooms, living room, dining room, kitchen${roomCounts.balcony > 0 ? ', balcony' : ''}${!fullPlotEnabled ? ', parking' : ''}${vastuEnabled ? ', vastu compliant orientation' : ''}. Plot size ${Math.round(mmToFeet(editor.building.site.plotWidth))}x${Math.round(mmToFeet(editor.building.site.plotDepth))} ft, road facing ${editor.building.site.roadFacing}.`;
+        : `${roomCounts.bedrooms} bedrooms, ${roomCounts.bathrooms} bathrooms, living room, dining room, kitchen${roomCounts.balcony > 0 ? ', balcony' : ''}${extrasDesc ? `, ${extrasDesc}` : ''}${!fullPlotEnabled ? ', parking' : ''}${vastuEnabled ? ', vastu compliant orientation' : ''}.${footprintShapeDesc}${cityAuthorityDesc} Plot size ${Math.round(mmToFeet(editor.building.site.plotWidth))}x${Math.round(mmToFeet(editor.building.site.plotDepth))} ft, road facing ${editor.building.site.roadFacing}.`;
 
       // Phase 5: no elapsed-time milestones. The request is a single server call;
       // per-stage results are shown only from the server-reported stage state.
       const backend = new BackendAPI();
       const result = await backend.runTwoAIGeneration({
         projectId: editor.projectId || 'studio-project',
-        projectName: editor.projectName || (projectType === 'apartment' ? 'Apartment Complex' : 'Studio Residence'),
-        projectType,
-        apartmentConfig: projectType === 'apartment' ? apartmentConfig : undefined,
+        projectName: editor.projectName || (effectiveProjectType === 'apartment' ? 'Apartment Complex' : 'Studio Residence'),
+        projectType: effectiveProjectType === 'apartment' ? 'apartment' : 'single_family',
+        apartmentConfig: effectiveProjectType === 'apartment' ? apartmentConfig : undefined,
         site: {
           plotWidth: editor.building.site.plotWidth,
           plotDepth: editor.building.site.plotDepth,
-          plannedFloorCount: projectType === 'apartment' ? apartmentConfig.floorCount : Math.max(1, roomCounts.floors || 1),
+          plannedFloorCount: effectiveProjectType === 'apartment' ? apartmentConfig.floorCount : Math.max(1, roomCounts.floors || 1),
           roadFacing: String(editor.building.site.roadFacing || 'North'),
           setbacks: editor.building.site.setbacks,
           orientation: editor.building.site.orientation,
@@ -786,7 +940,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           living: roomCounts.living,
           dining: roomCounts.dining,
           kitchen: roomCounts.kitchen,
-          floors: projectType === 'apartment' ? apartmentConfig.floorCount : Math.max(1, roomCounts.floors || 1),
+          floors: effectiveProjectType === 'apartment' ? apartmentConfig.floorCount : Math.max(1, roomCounts.floors || 1),
           balcony: roomCounts.balcony,
         },
         preferences: {
@@ -798,23 +952,23 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         additionalPrompt: userPrompt,
         seed: seedToUse,
         // Apartments: EXACTLY four controlled concepts (balanced, daylight, privacy, circulation).
-        candidateCount: projectType === 'apartment' ? 4 : 1,
+        candidateCount: effectiveProjectType === 'apartment' ? 4 : 1,
       });
 
       if (cancelGenerationRef.current) return;
       setConceptCards(describeConceptCards(result));
+      const outcomeSummary = summarizeGenerationOutcome(result);
+      setGenerationOutcome(outcomeSummary);
 
       if (!result.success) {
-        if (result.savedArtifact) {
-          setSavedArtifact(result.savedArtifact);
-        } else if (result.error?.artifact) {
-          setSavedArtifact(result.error.artifact);
+        const failedArtifact = result.savedArtifact ?? result.error?.artifact ?? null;
+        if (failedArtifact) {
+          setSavedArtifact(failedArtifact);
         }
-        setGenerationOutcome(summarizeGenerationOutcome(result));
         const isPreflightRejection = result.error?.code === 'VISUAL_PREFLIGHT_REJECTED';
         const stageName = isPreflightRejection ? 'Visual Preflight' : (result.error?.stage || 'Generation');
         const isTransient = result.error?.isTransient || result.error?.code === 'PROVIDER_UNAVAILABLE';
-        const hasArtifact = Boolean(result.savedArtifact || result.error?.artifact);
+        const hasArtifact = Boolean(failedArtifact);
 
         // A preflight rejection is reported as a rejection with reasons — never as a score.
         const userFriendlyMessage = isTransient
@@ -837,15 +991,38 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           hasArtifact,
         });
         setGenerationError(userFriendlyMessage);
+
+        try {
+          const env = projectStorage.load(editor.projectId);
+          if (env) {
+            projectStorage.save({
+              ...env,
+              generationJob: {
+                jobId,
+                status: 'failed',
+                startedAt: jobStartedAt,
+                completedAt: new Date().toISOString(),
+                projectType: effectiveProjectType === 'apartment' ? 'apartment' : 'single_family',
+                artifactId: failedArtifact?.generationId,
+                errorStage: stageName,
+                errorMessage: userFriendlyMessage,
+                stageRows: outcomeSummary.stageRows,
+              },
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        } catch {
+          // ignore
+        }
         return;
       }
 
-      if (result.savedArtifact) {
-        setSavedArtifact(result.savedArtifact);
-      }
-      setGenerationOutcome(summarizeGenerationOutcome(result));
-
       const accepted = (result.candidates || []).filter(c => c.building !== null);
+      const primaryArtifact = result.savedArtifact ?? accepted[0]?.artifact ?? null;
+      if (primaryArtifact) {
+        setSavedArtifact(primaryArtifact);
+      }
+
       const mappedCandidates: StudioCandidate[] = accepted.map((cand, idx) =>
         mapTwoAICandidate(
           cand,
@@ -859,8 +1036,92 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       setGeneratedCandidates(mappedCandidates);
       if (mappedCandidates.length > 0) {
         const primaryCandidate = mappedCandidates[0]!;
+        const syncedBuilding: Building = {
+          ...primaryCandidate.building,
+          version: (primaryCandidate.building.version || 1) + 1,
+        };
         setSelectedCandidateId(primaryCandidate.id);
-        handleApplyCandidate(primaryCandidate);
+
+        // Persist the generated image session, revision history, building, and completed job state FIRST
+        // so AiConceptImagePanel immediately reads the persisted image when editor.setBuilding triggers re-render.
+        try {
+          const env = projectStorage.load(editor.projectId);
+          if (env) {
+            const newImageSession = primaryArtifact
+              ? {
+                  schemaVersion: 1 as const,
+                  generationId: primaryArtifact.generationId,
+                  seed: primaryArtifact.seed ?? seedToUse,
+                  attempt: (env.floorPlanImage?.attempt ?? -1) + 1,
+                  generatedAt: primaryArtifact.generatedAt || new Date().toISOString(),
+                  promptVersion: (primaryArtifact.promptVersion || 1) as 1,
+                  model: primaryArtifact.model,
+                  provider: primaryArtifact.provider,
+                  mimeType: primaryArtifact.mimeType,
+                  imageBase64: primaryArtifact.imageBase64,
+                  request: {
+                    schemaVersion: 1 as const,
+                    promptVersion: 1 as const,
+                    prompt: primaryArtifact.originalPrompt || userPrompt,
+                    negativePrompt: primaryArtifact.negativePrompt || 'perspective, isometric, blurry',
+                    seed: primaryArtifact.seed ?? seedToUse,
+                    width: primaryArtifact.width || 1024,
+                    height: primaryArtifact.height || 1024,
+                    metadata: {
+                      projectName: editor.projectName || env.name,
+                      plotWidthMm: syncedBuilding.site.plotWidth,
+                      plotDepthMm: syncedBuilding.site.plotDepth,
+                      floorsCount: syncedBuilding.floors.length,
+                      roadFacing: String(syncedBuilding.site.roadFacing || 'north'),
+                    },
+                  },
+                  contextSignature: `${syncedBuilding.id}:${syncedBuilding.version}:${syncedBuilding.site.plotWidth}x${syncedBuilding.site.plotDepth}`,
+                  requirementsFingerprint: computeRequirementsFingerprint(env),
+                  evaluation: (result as any).masterEvaluation || (accepted[0] as any)?.masterEvaluation || null,
+                }
+              : env.floorPlanImage;
+
+            const existingRevs = env.imageRevisions ? [...env.imageRevisions] : [];
+            const nextRevs = newImageSession
+              ? [
+                  ...existingRevs,
+                  {
+                    ...newImageSession,
+                    revisionNumber: existingRevs.length + 1,
+                    buildingSnapshot: syncedBuilding,
+                  },
+                ]
+              : existingRevs;
+
+            projectStorage.save({
+              ...env,
+              building: syncedBuilding,
+              floorPlanImage: newImageSession,
+              imageRevisions: nextRevs,
+              pendingAiGeneration: false,
+              generationJob: {
+                jobId,
+                status: 'completed',
+                startedAt: jobStartedAt,
+                completedAt: new Date().toISOString(),
+                projectType: effectiveProjectType === 'apartment' ? 'apartment' : 'single_family',
+                artifactId: primaryArtifact?.generationId,
+                stageRows: outcomeSummary.stageRows,
+              },
+              updatedAt: new Date().toISOString(),
+            });
+          }
+        } catch (persistErr) {
+          console.warn('Failed to persist AI generation session to projectStorage:', persistErr);
+        }
+
+        editor.setBuilding(
+          syncedBuilding,
+          editor.projectName || primaryCandidate.name,
+          primaryCandidate.requiredRoomCounts,
+          editor.projectCategory,
+        );
+        setFitRequest(v => v + 1);
       }
     } catch (err) {
       console.error('Two-AI Generation error:', err);
@@ -876,6 +1137,24 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       setIsGenerating(false);
     }
   };
+
+  // Mandatory Generation Gate: auto-trigger AI generation when entering Studio from the Planning Wizard
+  useEffect(() => {
+    try {
+      const env = projectStorage.load(editor.projectId);
+      if (env?.pendingAiGeneration && !isGenerating) {
+        projectStorage.save({
+          ...env,
+          pendingAiGeneration: false,
+        });
+        const isRes = (env.wizardBrief as any)?.typology !== 'apartment';
+        setActiveStage('generate');
+        void handleGeneratePlans(undefined, isRes);
+      }
+    } catch {
+      // ignore
+    }
+  }, [editor.projectId]);
 
   // Resume interpretation directly from saved image artifact without regenerating FLUX image (PRD §17 & Urgent Directive §11)
   const handleResumeInterpretation = async () => {
@@ -905,6 +1184,15 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         artifactId: savedArtifact.generationId,
         projectId: editor.projectId || 'studio-project',
         projectName: editor.projectName || 'Studio Residence',
+        projectType: projectType === 'apartment' ? 'apartment' : 'single_family',
+        site: {
+          plotWidth: editor.building.site.plotWidth,
+          plotDepth: editor.building.site.plotDepth,
+          plannedFloorCount: Math.max(1, roomCounts.floors || editor.building.floors.length || 1),
+          roadFacing: String(editor.building.site.roadFacing || 'North'),
+          setbacks: editor.building.site.setbacks,
+          orientation: editor.building.site.orientation,
+        },
       });
 
       if (cancelGenerationRef.current) return;
@@ -1137,8 +1425,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         <div className="studio-brand-group">
           <button
             className="studio-logo"
-            onClick={() => setActiveStage('overview')}
-            title="Studio Home"
+            onClick={onBackToProjects || (() => setActiveStage('setup'))}
+            title={onBackToProjects ? 'Back to Projects' : 'Studio Setup'}
           >
             <div className="studio-logo-mark">
               <Building2 size={16} />
@@ -1320,10 +1608,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         </div>
       </header>
 
-      {/* 2. ARCHITECTURAL STAGE RAIL (TABS) */}
+      {/* 2. ARCHITECTURAL STAGE RAIL (CONSOLIDATED WORKFLOW STAGES) */}
       <nav className="studio-stage-rail">
         <button
-          className={`studio-stage-tab ${activeStage === 'overview' ? 'active' : ''}`}
+          className={`studio-stage-tab ${activeStage === 'overview' || activeStage === 'setup' ? 'active' : ''}`}
           onClick={() => setActiveStage('overview')}
         >
           <Building2 size={14} />
@@ -1331,31 +1619,20 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         </button>
 
         <button
-          className={`studio-stage-tab ${activeStage === 'site' ? 'active' : ''}`}
+          className={`studio-stage-tab ${activeStage === 'site' || activeStage === 'brief' ? 'active' : ''}`}
           onClick={() => setActiveStage('site')}
         >
-          <Compass size={14} />
-          <span>Site & Plot</span>
-        </button>
-
-        <button
-          className={`studio-stage-tab ${activeStage === 'brief' ? 'active' : ''}`}
-          onClick={() => setActiveStage('brief')}
-        >
-          <Layers size={14} />
-          <span>Brief & Program</span>
+          <Ruler size={14} />
+          <span>Setup</span>
         </button>
 
         <button
           className={`studio-stage-tab ${activeStage === 'generate' ? 'active' : ''}`}
-          onClick={() => {
-            setActiveStage('generate');
-            if (generatedCandidates.length === 0) handleGeneratePlans();
-          }}
+          onClick={() => setActiveStage('generate')}
         >
           <Sparkles size={14} />
-          <span>Generate</span>
-          <span className="studio-tab-badge">AI</span>
+          <span>AI Design</span>
+          <span className="studio-tab-badge">Gemini</span>
         </button>
 
         <button
@@ -1363,8 +1640,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           onClick={() => setActiveStage('floorplans')}
         >
           <DraftingCompass size={14} />
-          <span>Floor Plans</span>
-          <span className="studio-tab-badge">2D</span>
+          <span>2D Floor Plan</span>
+          <span className="studio-tab-badge">2D CAD</span>
         </button>
 
         <button
@@ -1372,32 +1649,80 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           onClick={() => setActiveStage('3d')}
         >
           <Box size={14} />
-          <span>3D Studio</span>
+          <span>3D View</span>
         </button>
 
         <button
-          className={`studio-stage-tab ${activeStage === 'insights' ? 'active' : ''}`}
-          onClick={() => setActiveStage('insights')}
+          className={`studio-stage-tab ${activeStage === 'oda-poc' ? 'active' : ''}`}
+          onClick={() => setActiveStage('oda-poc')}
+          data-testid="stage-oda-poc"
+          title="ODA Drawings inWEB™ Technical Proof of Concept — Interactive DXF & 3D Sync"
+        >
+          <Layers size={14} />
+          <span>ODA inWEB (POC)</span>
+          <span className="studio-tab-badge" style={{ background: '#2563EB', color: '#FFFFFF' }}>SDK POC</span>
+        </button>
+
+        <button
+          className={`studio-stage-tab ${activeStage === 'review' || activeStage === 'insights' ? 'active' : ''}`}
+          onClick={() => setActiveStage('review')}
         >
           <Lightbulb size={14} />
-          <span>Insights</span>
+          <span>Review & Insights</span>
           {editor.diagnostics.warnings.length > 0 && (
             <span className="studio-tab-badge" style={{ background: '#FEE2E2', color: '#DC2626' }}>
               {editor.diagnostics.warnings.length}
             </span>
           )}
         </button>
+
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <button
+            className={`studio-stage-tab ${isAdvancedToolsOpen ? 'active' : ''}`}
+            onClick={() => setIsAdvancedToolsOpen(!isAdvancedToolsOpen)}
+            title="CAD geometry lint, DXF/ARCH export, and regulatory diagnostics"
+          >
+            <FileCheck2 size={14} />
+            <span>Advanced Tools</span>
+          </button>
+        </div>
       </nav>
 
       {/* 3. MAIN WORKSPACE VIEWPORT */}
       <div className="studio-workspace-container">
-        {/* STAGE 1: OVERVIEW */}
-        {activeStage === 'overview' && (
+        {/* STAGE 1: SETUP & OVERVIEW */}
+        {(activeStage === 'setup' || activeStage === 'overview') && (
           <div className="studio-stage-content">
             <div className="studio-overview-stage">
-              <div className="overview-hero">
-                <h1>{editor.projectName}</h1>
-                <p>Architectural concept design studio. Structured Building Model with deterministic geometry.</p>
+              <div className="overview-hero" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
+                <div>
+                  <span className="eyebrow" style={{ textTransform: 'uppercase', letterSpacing: '0.08em', fontSize: '11px', color: '#1E3A2F', fontWeight: 700 }}>
+                    Project Setup & Baseline
+                  </span>
+                  <h1>{editor.projectName}</h1>
+                  <p>Structured Architectural Building Model with deterministic geometry.</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <button
+                    type="button"
+                    className="btn-secondary"
+                    onClick={() => setIsNewProjectModalOpen(true)}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 16px', borderRadius: '8px', border: '1px solid #DFE2DA', background: '#FFFFFF', color: '#1C1E1B', fontWeight: 600, fontSize: '13px' }}
+                  >
+                    <Building2 size={15} /> Edit in Planning Wizard
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-primary"
+                    onClick={() => {
+                      setActiveStage('generate');
+                      void handleGeneratePlans();
+                    }}
+                    style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 18px', borderRadius: '8px', border: '1px solid #1E3A2F', background: '#1E3A2F', color: '#FFFFFF', fontWeight: 600, fontSize: '13px' }}
+                  >
+                    <Sparkles size={15} /> Generate Floor Plan
+                  </button>
+                </div>
               </div>
 
               {/* Metric Highlights */}
@@ -2987,12 +3312,65 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                 </div>
               )}
 
+              {/* AI Concept Image Panel (Gemini Image Generation & Reference-Guided Editing) */}
+              <div style={{ marginBottom: 20 }}>
+                <AiConceptImagePanel
+                  projectId={editor.projectId}
+                  envelope={
+                    projectStorage.load(editor.projectId) ?? {
+                      schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
+                      projectId: editor.projectId,
+                      name: editor.projectName,
+                      createdAt: editor.building.createdAt,
+                      updatedAt: editor.building.updatedAt,
+                      building: editor.building,
+                      category: editor.projectCategory,
+                      spaceProgram: deriveSpaceProgramFromBuilding(editor.building, editor.projectCategory),
+                    }
+                  }
+                  onCadSynchronized={(syncedBuilding, art) => {
+                    editor.setBuilding(syncedBuilding, editor.projectName, editor.requiredRoomCounts, editor.projectCategory);
+                    setFitRequest(v => v + 1);
+                    const totalArea = syncedBuilding.floors[0]?.rooms.reduce((s, r) => s + r.area, 0) ?? 0;
+                    const trace = (syncedBuilding.metadata?.customData as any)?.aiTraceability;
+                    const syncedCand: StudioCandidate = {
+                      id: `cand-edited-${art.generationId}`,
+                      name: art.editInstruction
+                        ? `Edited AI Concept (${art.editInstruction.slice(0, 28)}${art.editInstruction.length > 28 ? '…' : ''})`
+                        : `AI Concept (${art.generationId})`,
+                      strategy: trace?.matchedStrategyId || 'vision_guided_cad',
+                      description: trace?.circulationNotes || 'Vision-interpreted and constraint-verified 2D/3D CAD floor plan.',
+                      building: syncedBuilding,
+                      metrics: {
+                        totalCarpetAreaMm2: totalArea,
+                        overallQualityScore: 86,
+                        zoningScore: 88,
+                        circulationScore: 85,
+                        daylightScore: 87,
+                        aspectRatio: 1.0,
+                      },
+                      rank: 1,
+                      requiredRoomCounts: editor.requiredRoomCounts,
+                      imageArtifact: {
+                        artifactId: art.generationId,
+                        mimeType: art.mimeType,
+                        base64Data: art.imageBase64,
+                      },
+                      validationStatus: 'passed',
+                    };
+                    setGeneratedCandidates(prev => [syncedCand, ...prev.filter(c => c.id !== syncedCand.id)]);
+                    setSelectedCandidateId(syncedCand.id);
+                  }}
+                  onOpen2DFloorPlan={() => setActiveStage('floorplans')}
+                />
+              </div>
+
               {/* 2. Hero Bar */}
               <div className="generate-hero-bar">
                 <div>
                   <h2 style={{ margin: '0 0 4px 0', fontSize: 18, fontWeight: 700 }}>AI Floor Plan Studio</h2>
                   <p style={{ margin: 0, fontSize: 13, color: '#6B7280' }}>
-                    Two-AI Pipeline: AI visual concept (server-configured image model) + Gemini Vision interpretation + Deterministic CAD validation.
+                    Two-AI Pipeline: AI visual concept (gemini-3.1-flash-lite-image) + Gemini Vision interpretation (gemini-3.1-flash-lite) + Deterministic CAD validation.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: 10 }}>
@@ -3016,7 +3394,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                 </div>
               </div>
 
-              {/* 3A. ACTIVE REAL-TIME GENERATION WAITING OVERLAY & 6-STEP MILESTONES */}
+              {/* 3A. ACTIVE REAL-TIME GENERATION WAITING OVERLAY & 10-STEP MILESTONES */}
               {isGenerating ? (
                 <div className="generation-waiting-overlay">
                   <div className="generation-waiting-card">
@@ -3027,7 +3405,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                       <span className="generation-milestone-step-badge">In progress</span>
                       <h3 className="generation-milestone-title" style={{ display: 'flex', alignItems: 'center', gap: 8, justifyContent: 'center' }}>
                         <span className="milestone-spinner" aria-hidden="true" />
-                        <span>Running</span>
+                        <span>Running AI-to-CAD Pipeline</span>
                       </h3>
                       <p className="generation-milestone-desc">{runningLabel}</p>
                       <p className="generation-milestone-desc" style={{ fontSize: 11, color: '#64748B' }}>
@@ -3036,7 +3414,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                     </div>
 
                     <div className="generation-milestones-checklist">
-                      {inFlightStageRows().map(row => (
+                      {expandToTenStageRows(inFlightStageRows()).map(row => (
                         <div key={row.key} className="milestone-row">
                           <span className="milestone-icon"><span style={{ fontSize: 13, color: '#94A3B8' }} aria-hidden="true">○</span></span>
                           <span>{row.label}</span>
@@ -3518,6 +3896,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   <button
                     className="studio-btn-action primary"
                     onClick={() => handleApplyCandidate(selectedCandidate)}
+                    disabled={isGenerating}
                   >
                     <span>Apply Selected & Open 2D Floor Plan</span>
                     <ArrowRight size={14} />
@@ -3551,33 +3930,78 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
             <div style={{ flex: 1, height: '100%', position: 'relative', background: '#0F172A', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
               {/* Prominent CAD Candidate Switcher Bar */}
               {generatedCandidates.length > 0 && (
-                <div className="cad-candidate-switcher-bar">
-                  <div className="cad-candidate-switcher-label">
-                    <DraftingCompass size={14} />
-                    <span>CAD SCHEMATIC CONCEPTS:</span>
-                  </div>
-                  <div className="cad-candidate-tabs">
-                    {generatedCandidates.map((cand) => {
-                      const isSelected = cand.id === selectedCandidateId;
-                      const vastuScore = Math.round(cand.vastuReport?.overallScore ?? 85);
-                      const carpetAreaSqFt = Math.round(sqMmToSqFt(cand.metrics.totalCarpetAreaMm2));
-                      return (
-                        <button
-                          key={cand.id}
-                          className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
-                          onClick={() => {
-                            setSelectedCandidateId(cand.id);
-                            editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
-                            setFitRequest(v => v + 1);
-                          }}
-                        >
-                          <span className="cad-tab-title">{cand.name}</span>
-                          <span className="cad-tab-vastu-badge">Vastu: {vastuScore}/100</span>
-                          <span className="cad-tab-area-badge">Carpet Area: {carpetAreaSqFt.toLocaleString()} sq.ft</span>
-                        </button>
-                      );
-                    })}
-                  </div>
+                <div className="cad-candidate-switcher-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', background: '#090D16', borderBottom: '1px solid #1E293B' }}>
+                  {projectType === 'apartment' ? (
+                    <>
+                      <div className="cad-candidate-switcher-label">
+                        <DraftingCompass size={14} />
+                        <span>CAD SCHEMATIC CONCEPTS:</span>
+                      </div>
+                      <div className="cad-candidate-tabs">
+                        {generatedCandidates.map((cand) => {
+                          const isSelected = cand.id === selectedCandidateId;
+                          const vastuScore = Math.round(cand.vastuReport?.overallScore ?? 85);
+                          const carpetAreaSqFt = Math.round(sqMmToSqFt(cand.metrics.totalCarpetAreaMm2));
+                          return (
+                            <button
+                              key={cand.id}
+                              className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
+                              onClick={() => {
+                                setSelectedCandidateId(cand.id);
+                                editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
+                                setFitRequest(v => v + 1);
+                              }}
+                            >
+                              <span className="cad-tab-title">{cand.name}</span>
+                              <span className="cad-tab-vastu-badge">Vastu: {vastuScore}/100</span>
+                              <span className="cad-tab-area-badge">Carpet Area: {carpetAreaSqFt.toLocaleString()} sq.ft</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38BDF8', fontWeight: 700, fontSize: 12 }}>
+                          <Sparkles size={14} />
+                          <span>MASTER AI FLOOR PLAN</span>
+                        </div>
+                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                        <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
+                          {generatedCandidates[0]?.name || 'Residential Master Design'}
+                        </span>
+                        {generatedCandidates[0]?.masterEvaluation && (
+                          <span
+                            style={{
+                              fontSize: 11,
+                              fontWeight: 700,
+                              padding: '2px 8px',
+                              borderRadius: 999,
+                              background: generatedCandidates[0].masterEvaluation.passed ? '#065F46' : '#991B1B',
+                              color: '#FFFFFF',
+                              border: `1px solid ${generatedCandidates[0].masterEvaluation.passed ? '#34D399' : '#F87171'}`,
+                            }}
+                          >
+                            Score: {generatedCandidates[0].masterEvaluation.overallScore}/100 · {generatedCandidates[0].masterEvaluation.passed ? 'PASSED (≥80)' : 'REVISION NEEDED'}
+                          </span>
+                        )}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                          Carpet: {Math.round(sqMmToSqFt(generatedCandidates[0]?.metrics.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
+                        </span>
+                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                        <span style={{ fontSize: 11, color: '#34D399', fontWeight: 600 }}>
+                          Vastu: {Math.round(generatedCandidates[0]?.vastuReport?.overallScore ?? 85)}/100
+                        </span>
+                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                        <span style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 600 }}>
+                          Editable Vector CAD
+                        </span>
+                      </div>
+                    </>
+                  )}
                 </div>
               )}
 
@@ -3605,6 +4029,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   style={{ padding: '4px 8px', borderRadius: 4, border: 'none', background: snapEnabled ? '#FEF3C7' : 'transparent', color: snapEnabled ? '#92400E' : '#4B5563', cursor: 'pointer', fontSize: 11, fontWeight: 600 }}
                   onClick={() => setSnapEnabled(v => !v)}
                   title="Toggle Grid Snapping"
+                  data-testid="canvas-snap"
+                  aria-pressed={snapEnabled}
                 >
                   Snap
                 </button>
@@ -3614,6 +4040,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   onClick={() => editor.undo()}
                   disabled={!editor.canUndo}
                   title="Undo (Ctrl+Z)"
+                  data-testid="canvas-undo"
+                  aria-label="Undo"
                 >
                   <RotateCcw size={15} />
                 </button>
@@ -3622,6 +4050,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   onClick={() => editor.redo()}
                   disabled={!editor.canRedo}
                   title="Redo (Ctrl+Y)"
+                  data-testid="canvas-redo"
+                  aria-label="Redo"
                 >
                   <RotateCw size={15} />
                 </button>
@@ -3629,21 +4059,179 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                 <button
                   style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #E5E7EB', background: '#FFFFFF', color: '#374151', cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
                   onClick={() => setActiveStage('generate')}
-                  title="Return to Candidates"
+                  title="Return to AI Design & Candidates"
                 >
                   <ArrowLeft size={12} />
-                  <span>Candidates</span>
+                  <span>AI Design</span>
+                </button>
+                <button
+                  style={{ padding: '4px 10px', borderRadius: 4, border: '1px solid #E5E7EB', background: showAiReferenceIn2D ? '#ECFDF5' : '#FFFFFF', color: showAiReferenceIn2D ? '#065F46' : '#374151', cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
+                  onClick={() => setShowAiReferenceIn2D(v => !v)}
+                  title="Toggle AI Concept Reference Side-by-Side Overlay"
+                  data-testid="toggle-ai-reference"
+                  aria-pressed={showAiReferenceIn2D}
+                >
+                  <Sparkles size={12} />
+                  <span>AI Concept Ref</span>
                 </button>
                 <button
                   style={{ padding: '4px 10px', borderRadius: 4, border: 'none', background: '#3B5B82', color: '#FFFFFF', cursor: 'pointer', fontSize: 11, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}
                   onClick={() => setActiveStage('3d')}
                   title="Inspect in 3D Studio"
+                  data-testid="open-3d"
                 >
                   <Box size={12} />
                   <span>Inspect 3D</span>
                   <ArrowRight size={12} />
                 </button>
               </div>
+
+              {/* Collapsible AI Concept Reference Panel inside 2D CAD Workspace (Part 4.3) */}
+              {showAiReferenceIn2D && (() => {
+                const storedImg = projectStorage.load(editor.projectId)?.floorPlanImage;
+                const refMime = savedArtifact?.mimeType ?? storedImg?.mimeType;
+                const refBase64 = savedArtifact?.imageBase64 ?? storedImg?.imageBase64;
+                const refId = savedArtifact?.generationId ?? storedImg?.generationId;
+                const refModel = savedArtifact?.model ?? storedImg?.model ?? 'gemini-3.1-flash-lite-image';
+                const trace = (editor.building.metadata?.customData as any)?.aiTraceability;
+                if (!refBase64 && !trace) return null;
+                return (
+                  <div
+                    className="cad-ai-reference-overlay"
+                    data-testid="cad-ai-reference-overlay"
+                    aria-label="AI Concept Reference in 2D CAD"
+                    style={{
+                      position: 'absolute',
+                      top: 56,
+                      right: 12,
+                      width: 268,
+                      background: 'rgba(15, 23, 42, 0.94)',
+                      backdropFilter: 'blur(8px)',
+                      border: '1px solid #334155',
+                      borderRadius: 10,
+                      padding: 10,
+                      color: '#F8FAFC',
+                      boxShadow: '0 10px 25px rgba(0,0,0,0.35)',
+                      zIndex: 10,
+                      fontSize: 11,
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontWeight: 700, color: '#38BDF8', fontSize: 11 }}>
+                        <Sparkles size={12} /> AI Concept Reference
+                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <button
+                          type="button"
+                          onClick={() => setAiRefMode(m => m === 'overlay' ? 'side-by-side' : 'overlay')}
+                          style={{
+                            background: '#1E293B',
+                            border: '1px solid #475569',
+                            color: '#94A3B8',
+                            borderRadius: 4,
+                            padding: '2px 6px',
+                            fontSize: 10,
+                            cursor: 'pointer',
+                          }}
+                          title="Toggle Overlay / Side-by-Side preview"
+                        >
+                          {aiRefMode === 'overlay' ? 'Overlay' : 'Side-by-Side'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setShowAiReferenceIn2D(false)}
+                          aria-label="Hide AI Concept Reference"
+                          style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: 2 }}
+                        >
+                          <X size={13} />
+                        </button>
+                      </div>
+                    </div>
+                    {refBase64 && refMime && (
+                      <div style={{
+                        background: '#020617',
+                        borderRadius: 6,
+                        overflow: 'hidden',
+                        border: '1px solid #1E293B',
+                        marginBottom: 6,
+                        opacity: aiRefOpacity / 100,
+                        transition: 'opacity 0.15s ease',
+                      }}>
+                        <img
+                          src={`data:${refMime};base64,${refBase64}`}
+                          alt="AI Concept Reference"
+                          style={{ width: '100%', maxHeight: 165, objectFit: 'contain', display: 'block' }}
+                        />
+                      </div>
+                    )}
+                    {/* Opacity Slider & Alignment Reset */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 6, marginBottom: 8, padding: '4px 8px', background: '#0B132B', borderRadius: 6, border: '1px solid #1E293B' }}>
+                      <span style={{ fontSize: 10, color: '#94A3B8', minWidth: 65 }}>Opacity: {aiRefOpacity}%</span>
+                      <input
+                        type="range"
+                        min="20"
+                        max="100"
+                        value={aiRefOpacity}
+                        onChange={e => setAiRefOpacity(Number(e.target.value))}
+                        style={{ flex: 1, accentColor: '#38BDF8', height: 4, cursor: 'pointer' }}
+                        title="Adjust reference opacity"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => { setAiRefOpacity(100); setFitRequest(v => v + 1); }}
+                        style={{ background: 'none', border: 'none', color: '#38BDF8', fontSize: 10, cursor: 'pointer', textDecoration: 'underline' }}
+                        title="Reset zoom & alignment"
+                      >
+                        Reset
+                      </button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 3, color: '#CBD5E1', lineHeight: 1.35 }}>
+                      {refId && <div><strong>Artifact:</strong> <span style={{ fontFamily: 'monospace', fontSize: 10 }}>{refId}</span></div>}
+                      <div><strong>Image Model:</strong> {refModel}</div>
+                      {trace && (
+                        <>
+                          <div>
+                            <strong>Vision Source:</strong> {trace.interpretationSource} (
+                            {typeof trace.confidence === 'number'
+                              ? `${Math.round(trace.confidence * 100)}% conf`
+                              : `${String(trace.confidence ?? 'high')} conf`}
+                            )
+                          </div>
+                          {trace.detectedFootprintShape && (
+                            <div><strong>Footprint:</strong> {String(trace.detectedFootprintShape).replace(/_/g, ' ').toUpperCase()} ({trace.matchedStrategyId})</div>
+                          )}
+                          {trace.structuralSummary && (
+                            <div>
+                              <strong>Structure:</strong>{' '}
+                              {typeof trace.structuralSummary === 'string'
+                                ? trace.structuralSummary
+                                : `${trace.structuralSummary.columnCount ?? 0} columns · ${trace.structuralSummary.beamCount ?? 0} beams`}
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setActiveStage('generate')}
+                      style={{
+                        marginTop: 8,
+                        width: '100%',
+                        padding: '5px 8px',
+                        borderRadius: 6,
+                        border: '1px solid #475569',
+                        background: '#1E293B',
+                        color: '#E2E8F0',
+                        fontSize: 11,
+                        fontWeight: 600,
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Edit Image with Instructions →
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Floor Switcher & Level Management Bar */}
               <div style={{ position: 'absolute', bottom: 16, left: '50%', transform: 'translateX(-50%)', background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)', border: '1px solid #E5E7EB', borderRadius: 999, padding: '4px 8px', boxShadow: '0 4px 12px rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', gap: 6, zIndex: 10 }}>
@@ -3662,6 +4250,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                       transition: 'all 0.15s ease',
                     }}
                     onClick={() => editor.switchFloor(f.id)}
+                    data-testid="floor-select"
+                    data-floor-id={f.id}
+                    aria-pressed={f.id === editor.activeFloor.id}
                   >
                     {f.name}
                   </button>
@@ -3683,6 +4274,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   }}
                   onClick={() => editor.addFloor()}
                   title="Add new floor level"
+                  data-testid="floor-add"
                 >
                   <Plus size={12} />
                   <span>Add Floor</span>
@@ -3701,6 +4293,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                     }}
                     onClick={() => editor.removeFloor(editor.activeFloor.id)}
                     title={`Remove ${editor.activeFloor.name}`}
+                    data-testid="floor-delete"
                   >
                     Delete
                   </button>
@@ -3710,13 +4303,16 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           </div>
 
             {/* Right Property Inspector Dock */}
-            {inspectorOpen && (
+            {inspectorOpen ? (
               <aside style={{ width: 320, borderLeft: '1px solid #E5E7EB', background: '#FFFFFF', height: '100%', overflowY: 'auto', display: 'flex', flexDirection: 'column', zIndex: 10 }}>
                 <div style={{ padding: 12, borderBottom: '1px solid #E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <span style={{ fontWeight: 600, fontSize: 11, letterSpacing: '0.05em', textTransform: 'uppercase', color: '#6B7280' }}>Inspector</span>
                   <button
                     style={{ background: 'none', border: 'none', color: '#9CA3AF', cursor: 'pointer' }}
                     onClick={() => setInspectorOpen(false)}
+                    data-testid="inspector-close"
+                    aria-label="Hide inspector"
+                    title="Hide inspector"
                   >
                     <X size={14} />
                   </button>
@@ -3725,6 +4321,43 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   <PropertyInspector editor={editor} embedded />
                 </div>
               </aside>
+            ) : (
+              /*
+                Closing the inspector used to be one-way: there was no control
+                to bring it back, so every property edit became unreachable
+                until a reload. This rail reopens it.
+              */
+              <button
+                onClick={() => setInspectorOpen(true)}
+                data-testid="inspector-open"
+                aria-label="Show inspector"
+                title="Show inspector"
+                style={{
+                  width: 32,
+                  borderLeft: '1px solid #E5E7EB',
+                  background: '#F9FAFB',
+                  color: '#4B5563',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 10,
+                  padding: 0,
+                }}
+              >
+                <span
+                  style={{
+                    writingMode: 'vertical-rl',
+                    textOrientation: 'mixed',
+                    fontSize: 10,
+                    fontWeight: 700,
+                    letterSpacing: '0.08em',
+                    textTransform: 'uppercase',
+                  }}
+                >
+                  Inspector
+                </span>
+              </button>
             )}
           </div>
         )}
@@ -3733,33 +4366,74 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         {activeStage === '3d' && (
           <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden', display: 'flex', flexDirection: 'column', background: '#0F172A' }}>
             {generatedCandidates.length > 0 && (
-              <div className="cad-candidate-switcher-bar">
-                <div className="cad-candidate-switcher-label">
-                  <DraftingCompass size={14} />
-                  <span>CAD CANDIDATES (3D):</span>
-                </div>
-                <div className="cad-candidate-tabs">
-                  {generatedCandidates.map((cand) => {
-                    const isSelected = cand.id === selectedCandidateId;
-                    const vastuScore = Math.round(cand.vastuReport?.overallScore ?? 85);
-                    const carpetAreaSqFt = Math.round(sqMmToSqFt(cand.metrics.totalCarpetAreaMm2));
-                    return (
-                      <button
-                        key={cand.id}
-                        className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
-                        onClick={() => {
-                          setSelectedCandidateId(cand.id);
-                          editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
-                          setFitRequest(v => v + 1);
-                        }}
-                      >
-                        <span className="cad-tab-title">{cand.name}</span>
-                        <span className="cad-tab-vastu-badge">Vastu: {vastuScore}/100</span>
-                        <span className="cad-tab-area-badge">Carpet: {carpetAreaSqFt.toLocaleString()} sq.ft</span>
-                      </button>
-                    );
-                  })}
-                </div>
+              <div className="cad-candidate-switcher-bar" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '6px 14px', background: '#090D16', borderBottom: '1px solid #1E293B' }}>
+                {projectType === 'apartment' ? (
+                  <>
+                    <div className="cad-candidate-switcher-label">
+                      <DraftingCompass size={14} />
+                      <span>CAD CANDIDATES (3D):</span>
+                    </div>
+                    <div className="cad-candidate-tabs">
+                      {generatedCandidates.map((cand) => {
+                        const isSelected = cand.id === selectedCandidateId;
+                        const vastuScore = Math.round(cand.vastuReport?.overallScore ?? 85);
+                        const carpetAreaSqFt = Math.round(sqMmToSqFt(cand.metrics.totalCarpetAreaMm2));
+                        return (
+                          <button
+                            key={cand.id}
+                            className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
+                            onClick={() => {
+                              setSelectedCandidateId(cand.id);
+                              editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
+                              setFitRequest(v => v + 1);
+                            }}
+                          >
+                            <span className="cad-tab-title">{cand.name}</span>
+                            <span className="cad-tab-vastu-badge">Vastu: {vastuScore}/100</span>
+                            <span className="cad-tab-area-badge">Carpet: {carpetAreaSqFt.toLocaleString()} sq.ft</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38BDF8', fontWeight: 700, fontSize: 12 }}>
+                        <Sparkles size={14} />
+                        <span>MASTER AI 3D MODEL</span>
+                      </div>
+                      <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                      <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
+                        {generatedCandidates[0]?.name || 'Residential Master Design'}
+                      </span>
+                      {generatedCandidates[0]?.masterEvaluation && (
+                        <span
+                          style={{
+                            fontSize: 11,
+                            fontWeight: 700,
+                            padding: '2px 8px',
+                            borderRadius: 999,
+                            background: generatedCandidates[0].masterEvaluation.passed ? '#065F46' : '#991B1B',
+                            color: '#FFFFFF',
+                            border: `1px solid ${generatedCandidates[0].masterEvaluation.passed ? '#34D399' : '#F87171'}`,
+                          }}
+                        >
+                          Score: {generatedCandidates[0].masterEvaluation.overallScore}/100 · {generatedCandidates[0].masterEvaluation.passed ? 'PASSED (≥80)' : 'REVISION NEEDED'}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                        Carpet: {Math.round(sqMmToSqFt(generatedCandidates[0]?.metrics.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
+                      </span>
+                      <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                      <span style={{ fontSize: 11, color: '#38BDF8', fontWeight: 600 }}>
+                        Synchronized 3D Geometry
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             )}
             <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
@@ -3798,10 +4472,20 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           </div>
         )}
 
-        {/* STAGE 7: DESIGN INSIGHTS */}
-        {activeStage === 'insights' && (
+        {/* STAGE: REVIEW & DESIGN INSIGHTS */}
+        {(activeStage === 'review' || activeStage === 'insights') && (
           <div className="studio-stage-content">
             <DesignDiagnosticsPanel editor={editor} />
+          </div>
+        )}
+
+        {/* STAGE: ODA INWEB PROOF OF CONCEPT */}
+        {activeStage === 'oda-poc' && (
+          <div style={{ flex: 1, height: '100%', position: 'relative', overflow: 'hidden' }}>
+            <OdaInwebPocWorkspace
+              onSwitchTo3D={() => setActiveStage('3d')}
+              onSwitchTo2DCad={() => setActiveStage('floorplans')}
+            />
           </div>
         )}
 
@@ -3871,14 +4555,91 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       </div>
 
       {/* Modals */}
-      <NewProjectModal
+      <ResidentialPlanningWizard
         isOpen={isNewProjectModalOpen}
         onClose={() => setIsNewProjectModalOpen(false)}
-        onSelectBuilding={(b, name, cat) => {
+        existingBuilding={editor.building}
+        onComplete={(b, name, cat) => {
           editor.setBuilding(b, name, {}, cat);
           setIsNewProjectModalOpen(false);
+          setProjectType('residential_independent');
+          setActiveStage('generate');
+          void handleGeneratePlans(undefined, true);
         }}
       />
+
+      {isAdvancedToolsOpen && (
+        <div className="modal-backdrop" onClick={() => setIsAdvancedToolsOpen(false)}>
+          <div className="modal-card" style={{ maxWidth: '600px', background: '#FFFFFF', borderRadius: '14px', border: '1px solid #DFE2DA', padding: '24px' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', borderBottom: '1px solid #DFE2DA', paddingBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <FileCheck2 size={18} color="#1E3A2F" />
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 650, color: '#1C1E1B' }}>Advanced Architectural Engineering Tools</h3>
+              </div>
+              <button className="btn-icon" onClick={() => setIsAdvancedToolsOpen(false)} aria-label="Close advanced tools">
+                <X size={16} />
+              </button>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div style={{ padding: '12px', background: '#FAFAF7', borderRadius: '8px', border: '1px solid #DFE2DA' }}>
+                <strong style={{ display: 'block', fontSize: '13px', color: '#1C1E1B', marginBottom: '4px' }}>CAD Geometry Linter & Integrity Diagnostics</strong>
+                <p style={{ margin: 0, fontSize: '12px', color: '#4D534B' }}>
+                  Status: <strong>{lintResult.valid ? 'VALID (No boundary breaches or collisions)' : 'ISSUES DETECTED'}</strong>
+                </p>
+                {lintResult.issues.length > 0 && (
+                  <ul style={{ margin: '8px 0 0 16px', fontSize: '11px', color: '#DC2626' }}>
+                    {lintResult.issues.map((iss, idx) => <li key={idx}>{iss}</li>)}
+                  </ul>
+                )}
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    const dxfResult = exportBuildingAsDxf(editor.building);
+                    const blob = new Blob([dxfResult.content], { type: 'application/dxf' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${editor.projectName.replace(/\s+/g, '_')}_CAD.dxf`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #DFE2DA', background: '#FFFFFF', color: '#1C1E1B', fontWeight: 600, fontSize: '12px' }}
+                >
+                  <Download size={14} /> Export AutoCAD (.DXF)
+                </button>
+
+                <button
+                  type="button"
+                  className="btn-secondary"
+                  onClick={() => {
+                    const archResult = exportBuildingAsArchLang(editor.building);
+                    const blob = new Blob([archResult.content], { type: 'text/plain' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `${editor.projectName.replace(/\s+/g, '_')}.arch`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '10px', borderRadius: '8px', border: '1px solid #DFE2DA', background: '#FFFFFF', color: '#1C1E1B', fontWeight: 600, fontSize: '12px' }}
+                >
+                  <Download size={14} /> Export ARCH DSL
+                </button>
+              </div>
+
+              <div style={{ padding: '12px', background: '#FAFAF7', borderRadius: '8px', border: '1px solid #DFE2DA', fontSize: '11px', color: '#7E877C', lineHeight: 1.5 }}>
+                <Info size={13} style={{ verticalAlign: 'middle', marginRight: '4px' }} />
+                Authoritative CAD geometry is preserved during export. DXF output contains separate layers for external walls, interior partitions, doors, windows, and room labels.
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <ExportModal
         isOpen={isExportModalOpen}

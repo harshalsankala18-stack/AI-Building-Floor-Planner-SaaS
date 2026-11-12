@@ -5,6 +5,7 @@ import {
   extractedRoomType,
   imageRectToMillimetres,
   inspectExtractionStructure,
+  normalizationScales,
   normalizeExtractedPlan,
 } from '../interpretation/extraction-analysis';
 import {
@@ -37,6 +38,10 @@ function extractionFixture(overrides: Partial<ExtractedPlan> = {}): ExtractedPla
     metadata: {
       imageWidePixels: 1024,
       imageTallPixels: 768,
+      // This fixture's coordinates are expressed in the image's pixel space,
+      // so the interpretation frame equals the pixel size here.
+      frameWidth: 1024,
+      frameHeight: 768,
       imageAspectRatio: 1024 / 768,
       plotAspectRatio: 0,
       aspectMismatchRatio: 0,
@@ -75,11 +80,41 @@ describe('Phase 3 — extraction normalization (PRD 22)', () => {
     expect(diagnostics.some(issue => issue.code === 'NORMALIZATION_ASPECT_MISMATCH')).toBe(true);
   });
 
-  it('refuses to normalize when dimensions are zero', () => {
-    const plan = extractionFixture({ metadata: { ...extractionFixture().metadata, imageWidePixels: 0, imageTallPixels: 0 } });
+  it('refuses to normalize when the coordinate frame is degenerate', () => {
+    // The interpretation's coordinate frame is what maps extracted numbers to
+    // millimetres, so a zero frame is the degenerate case. (Zero *pixel* dims
+    // alone no longer are: pixels are provenance, not the scale divisor.)
+    const plan = extractionFixture({
+      metadata: {
+        ...extractionFixture().metadata,
+        imageWidePixels: 0,
+        imageTallPixels: 0,
+        frameWidth: 0,
+        frameHeight: 0,
+      },
+    });
     const { normalized, diagnostics } = normalizeExtractedPlan(plan, site);
     expect(normalized).toBeNull();
     expect(diagnostics.some(issue => issue.code === 'NORMALIZATION_FAILED_ZERO_DIMENSIONS')).toBe(true);
+  });
+
+  it('scales by the interpretation frame, not the raster pixel size', () => {
+    // A provider may return an image at a different size than requested, so
+    // mapping by pixels silently rescaled every room. Here the frame is
+    // 1000x1000 while the recorded pixels are deliberately different.
+    const plan = extractionFixture({
+      metadata: {
+        ...extractionFixture().metadata,
+        imageWidePixels: 832,
+        imageTallPixels: 1280,
+        frameWidth: 1000,
+        frameHeight: 1000,
+      },
+    });
+    const scales = normalizationScales(plan.metadata, site);
+    expect(scales).not.toBeNull();
+    expect(scales!.scaleX).toBeCloseTo(site.plotWidth / 1000, 6);
+    expect(scales!.scaleY).toBeCloseTo(site.plotDepth / 1000, 6);
   });
 
   it('maps common vision labels to canonical types', () => {

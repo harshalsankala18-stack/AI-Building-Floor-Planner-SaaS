@@ -15,6 +15,18 @@ export {
   formatLength,
   formatArea,
 } from './render-config';
+
+// Intelligent Annotation Engine — Phase 2.4
+export {
+  AnnotationEngine,
+  getAbbreviation,
+  ROOM_ABBREVIATIONS,
+} from './annotation-engine';
+export type {
+  BoundingBox,
+  RoomLabelPlacement,
+} from './annotation-engine';
+
 export type {
   RenderConfig,
   DisplayUnit,

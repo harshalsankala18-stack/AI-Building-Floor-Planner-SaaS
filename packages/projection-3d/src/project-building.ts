@@ -102,12 +102,14 @@ function wallSolidSegments(
   return solids;
 }
 
-function projectOpenings(floor: Floor, elevation: number, _settings: Building3DProjectionSettings): readonly Opening3D[] {
+function projectOpenings(floor: Floor, elevation: number, settings: Building3DProjectionSettings): readonly Opening3D[] {
   const wallById = new Map(floor.walls.map(wall => [wall.id, wall]));
   const doors: Opening3D[] = floor.doors.flatMap(door => {
     const wall = wallById.get(door.wallId);
     if (!wall) return [];
-    // Doors: from 0mm to 2100mm height (standard door height)
+    // The door entity's own height is authoritative; the project default only
+    // fills in for a door that never had one recorded.
+    const height = door.height > 0 ? door.height : settings.defaultDoorHeight.value;
     return [{
       sourceEntityId: door.id,
       sourceEntityType: 'door',
@@ -118,22 +120,25 @@ function projectOpenings(floor: Floor, elevation: number, _settings: Building3DP
       alongWall: distanceAlongWall(door.position, wall),
       width: door.width,
       bottom: 0,
-      height: 2100, // fixed door height as per requirement
+      height,
       elevation,
     }];
   });
   const windows: Opening3D[] = floor.windows.flatMap(window => {
     const wall = wallById.get(window.wallId);
     if (!wall) return [];
-    // Determine if window belongs to a bathroom for special sill height
-    const roomId = window.roomId;
-    const room = floor.rooms.find(r => r.id === roomId);
-    const isBathroom = room &&
-      [RoomType.Bathroom].includes(room.type as RoomType);
-    // Windows: from 900mm to 2100mm height (standard window)
-    // Bathroom ventilators: from 1800mm to 2100mm height
-    const bottom = isBathroom ? 1800 : 900;
-    const height = 2100 - bottom; // 300mm for bathroom, 1200mm for regular windows
+    // A window's sill height and height are canonical properties the user can
+    // edit, so read them. Hardcoding them here meant a 2D sill-height edit
+    // never reached 3D — the model and the view silently disagreed.
+    const room = floor.rooms.find(r => r.id === window.roomId);
+    const isBathroom = room !== undefined && room.type === (RoomType.Bathroom as typeof room.type);
+    const bottom = Number.isFinite(window.sillHeight) && window.sillHeight >= 0
+      ? window.sillHeight
+      // No recorded sill: a bathroom gets a high ventilator, others a standard sill.
+      : isBathroom
+        ? 1800
+        : settings.defaultWindowSillHeight.value;
+    const height = window.height > 0 ? window.height : settings.defaultWindowHeight.value;
     return [{
       sourceEntityId: window.id,
       sourceEntityType: 'window',
@@ -142,8 +147,8 @@ function projectOpenings(floor: Floor, elevation: number, _settings: Building3DP
       position: window.position,
       alongWall: distanceAlongWall(window.position, wall),
       width: window.width,
-      bottom: bottom,
-      height: height,
+      bottom,
+      height,
       elevation,
     }];
   });

@@ -19,7 +19,8 @@ import { getFloorContentBounds, computeStairSolids, polygonBoundingBox } from '@
 import { worldToScreen, fitToView, scaleToScreen } from './coordinate-transform';
 import { resolveConfig } from './render-config';
 import type { DeepPartial, RenderConfig } from './render-config';
-import { furniturePlacement, renderReferenceFurniture } from './reference-furniture';
+import { renderReferenceFurniture } from './reference-furniture';
+import { AnnotationEngine } from './annotation-engine';
 
 // ─── Room Colors ────────────────────────────────────────────────────────────
 
@@ -68,7 +69,7 @@ function escapeXml(str: string): string {
     .replace(/"/g, '&quot;');
 }
 
-function sqMmToSqM(sqMm: number): string {
+export function sqMmToSqM(sqMm: number): string {
   return (sqMm / 1_000_000).toFixed(1);
 }
 
@@ -77,7 +78,7 @@ function mmToFtDisplay(mm: number): string {
 }
 
 /** Convert millimetres to architectural Feet‑Inches string, e.g. 3658 mm → 12'-0" */
-function formatFeetInches(mm: number): string {
+export function formatFeetInches(mm: number): string {
   const totalInches = mm / 25.4;
   const feet = Math.floor(totalInches / 12);
   const inches = Math.round(totalInches - feet * 12);
@@ -276,12 +277,18 @@ function renderRooms(
   showLabels: boolean = true,
   showAreas: boolean = true,
   labelsOnly = false,
-  withFurniture = false,
+  _withFurniture = false,
   building?: Building,
 ): string {
+  if (labelsOnly) {
+    const placements = AnnotationEngine.computeRoomLabels(floor, transform, building, {
+      showLabels,
+      showAreas,
+    });
+    return `<g class="layer-rooms" data-layer="${RenderLayer.Rooms}">\n${AnnotationEngine.renderLabelsSvg(placements)}\n</g>`;
+  }
+
   const elements: string[] = [];
-  const vastuReport = (building?.metadata as any)?.vastuReport ?? (building?.metadata as any)?.apartmentSchematic?.vastuReport;
-  const vastuCompliance = Array.isArray(vastuReport?.roomCompliance) ? vastuReport.roomCompliance : [];
 
   for (const room of floor.rooms) {
     const isOTS = room.type === RoomType.ServiceShaft || room.type === RoomType.OTS || /ots|shaft/i.test(room.name);
@@ -291,81 +298,36 @@ function renderRooms(
     const points = polygonToSvgPoints(room.boundary, transform);
 
     // 1. Room fill & patterns
-    if (!labelsOnly) {
-      if (isOTS) {
-        // Cross-Hatched OTS Shafts: Recessed gray fill (#E2E8F0) with crisp diagonal cross (X)
-        elements.push(
-          `<polygon points="${points}" fill="#E2E8F0" fill-opacity="0.95" stroke="#94A3B8" stroke-width="0.75" data-entity-type="room" data-entity-id="${room.id}"/>`,
-        );
-        const tl = worldToScreen({ x: room.x, y: room.y }, transform);
-        const br = worldToScreen({ x: room.x + room.width, y: room.y + room.height }, transform);
-        const tr = worldToScreen({ x: room.x + room.width, y: room.y }, transform);
-        const bl = worldToScreen({ x: room.x, y: room.y + room.height }, transform);
-        elements.push(
-          `<line x1="${tl.x.toFixed(1)}" y1="${tl.y.toFixed(1)}" x2="${br.x.toFixed(1)}" y2="${br.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
-          `<line x1="${tr.x.toFixed(1)}" y1="${tr.y.toFixed(1)}" x2="${bl.x.toFixed(1)}" y2="${bl.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
-        );
-      } else if (isBalcony || isUtility) {
-        // Balconies & Utilities: Deck plank lines with double-line railing border
-        elements.push(
-          `<polygon points="${points}" fill="#F8FAFC" fill-opacity="0.9" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
-          `<polygon points="${points}" fill="url(#deck-plank-pattern)" pointer-events="none"/>`,
-          `<polygon points="${points}" fill="none" stroke="#475569" stroke-width="1.2" pointer-events="none"/>`,
-          `<polygon points="${points}" fill="none" stroke="#94A3B8" stroke-width="0.6" stroke-dasharray="4,2" pointer-events="none"/>`,
-        );
-      } else {
-        elements.push(
-          `<polygon points="${points}" fill="${color}" fill-opacity="0.35" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
-        );
-        const hatch = room.type === RoomType.Bathroom ? 'wet-hatch' : 'tile-hatch';
-        if (![RoomType.Staircase, RoomType.Lift].includes(room.type)) {
-          elements.push(`<polygon points="${points}" fill="url(#${hatch})" pointer-events="none"/>`);
-        }
+    if (isOTS) {
+      // Cross-Hatched OTS Shafts: Recessed gray fill (#E2E8F0) with crisp diagonal cross (X)
+      elements.push(
+        `<polygon points="${points}" fill="#E2E8F0" fill-opacity="0.95" stroke="#94A3B8" stroke-width="0.75" data-entity-type="room" data-entity-id="${room.id}"/>`,
+      );
+      const tl = worldToScreen({ x: room.x, y: room.y }, transform);
+      const br = worldToScreen({ x: room.x + room.width, y: room.y + room.height }, transform);
+      const tr = worldToScreen({ x: room.x + room.width, y: room.y }, transform);
+      const bl = worldToScreen({ x: room.x, y: room.y + room.height }, transform);
+      elements.push(
+        `<line x1="${tl.x.toFixed(1)}" y1="${tl.y.toFixed(1)}" x2="${br.x.toFixed(1)}" y2="${br.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
+        `<line x1="${tr.x.toFixed(1)}" y1="${tr.y.toFixed(1)}" x2="${bl.x.toFixed(1)}" y2="${bl.y.toFixed(1)}" stroke="#64748B" stroke-width="0.8" stroke-dasharray="4,2" pointer-events="none"/>`,
+      );
+    } else if (isBalcony || isUtility) {
+      // Balconies & Utilities: Deck plank lines with double-line railing border
+      elements.push(
+        `<polygon points="${points}" fill="#F8FAFC" fill-opacity="0.9" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
+        `<polygon points="${points}" fill="url(#deck-plank-pattern)" pointer-events="none"/>`,
+        `<polygon points="${points}" fill="none" stroke="#475569" stroke-width="1.2" pointer-events="none"/>`,
+        `<polygon points="${points}" fill="none" stroke="#94A3B8" stroke-width="0.6" stroke-dasharray="4,2" pointer-events="none"/>`,
+      );
+    } else {
+      elements.push(
+        `<polygon points="${points}" fill="${color}" fill-opacity="0.35" stroke="none" data-entity-type="room" data-entity-id="${room.id}"/>`,
+      );
+      const hatch = room.type === RoomType.Bathroom ? 'wet-hatch' : 'tile-hatch';
+      if (![RoomType.Staircase, RoomType.Lift].includes(room.type)) {
+        elements.push(`<polygon points="${points}" fill="url(#${hatch})" pointer-events="none"/>`);
       }
     }
-
-    // 2. Rich 3-Line Room Label Callouts
-    const furniture = withFurniture ? furniturePlacement(room, floor) : undefined;
-    const labelY = furniture
-      ? (furniture.y > room.y + room.height / 2 ? room.y + 500 : room.y + room.height - 400)
-      : room.y + room.height / 2;
-    const cx = worldToScreen(
-      { x: room.x + (room.type === RoomType.Staircase ? Math.min(500, room.width / 2) : room.width / 2), y: labelY },
-      transform,
-    );
-    const fontSize = Math.max(8, Math.min(14, scaleToScreen(400, transform)));
-    const areaFontSize = Math.max(7, fontSize - 2);
-
-    const rotateLabel = [RoomType.Corridor, RoomType.Staircase].includes(room.type) && room.height > room.width;
-    elements.push(`<g${rotateLabel ? ` transform="rotate(-90 ${cx.x} ${cx.y})"` : ''} style="paint-order:stroke;stroke:#fff;stroke-width:3px;stroke-linejoin:round" pointer-events="none">`);
-
-    const dimFtIn = `${formatFeetInches(room.width)} × ${formatFeetInches(room.height)}`;
-    const sqFt = Math.round((room.area / 1_000_000) * 10.7639);
-    const sqMText = `${sqMmToSqM(room.area)} sq m`;
-
-    // Vastu audit check
-    const audit = vastuCompliance.find((c: any) =>
-      (c.roomName && c.roomName.toLowerCase() === room.name.toLowerCase()) ||
-      (c.roomType && c.roomType.toLowerCase() === room.type.toLowerCase())
-    );
-    const vastuTag = audit?.zone ? `${audit.zone} • ${(audit.status ?? 'IDEAL').toUpperCase()}`
-      : (room as any).metadata?.vastuZone ? `${(room as any).metadata.vastuZone} • IDEAL`
-      : '';
-
-    const displayName = isOTS ? 'OTS SHAFT' : escapeXml(room.name);
-
-    if (showLabels) {
-      elements.push(
-        `<text x="${cx.x.toFixed(1)}" y="${(cx.y - fontSize * 0.6).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${fontSize.toFixed(1)}" fill="#0F172A" font-weight="700" style="text-transform:uppercase">${displayName}</text>`,
-        `<text x="${cx.x.toFixed(1)}" y="${(cx.y + fontSize * 0.4).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${areaFontSize.toFixed(1)}" fill="#334155" font-weight="500">${dimFtIn}</text>`,
-      );
-    }
-    if (showAreas) {
-      elements.push(
-        `<text x="${cx.x.toFixed(1)}" y="${(cx.y + fontSize * 1.4).toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${areaFontSize.toFixed(1)}" fill="#64748B">${sqFt} sq.ft (${sqMText})${vastuTag ? ` • ${vastuTag}` : ''}</text>`,
-      );
-    }
-    elements.push('</g>');
   }
 
   return `<g class="layer-rooms" data-layer="${RenderLayer.Rooms}">\n${elements.join('\n')}\n</g>`;
@@ -414,6 +376,12 @@ function renderWalls(floor: Floor, transform: ViewTransform): string {
 function renderColumns(floor: Floor, transform: ViewTransform): string {
   const elements: string[] = [];
   const placedKeys = new Set<string>();
+
+  // 0. Render Structural Grid Lines and Bubbles (Phase 2.4)
+  const gridSvg = AnnotationEngine.renderStructuralGrid(floor, transform);
+  if (gridSvg) {
+    elements.push(gridSvg);
+  }
 
   // 1. Explicit floor.columns if present
   for (const col of floor.columns ?? []) {
@@ -654,18 +622,10 @@ function renderDimensions(floor: Floor, building: Building, transform: ViewTrans
     'vertical',
   ));
 
-  // Room dimensions
-  for (const room of floor.rooms) {
-    const roomTopLeft = worldToScreen({ x: room.x, y: room.y + room.height }, transform);
-    const roomTopRight = worldToScreen({ x: room.x + room.width, y: room.y + room.height }, transform);
-
-    const fontSize = Math.max(6, Math.min(9, scaleToScreen(250, transform)));
-    const midX = (roomTopLeft.x + roomTopRight.x) / 2;
-    const dimY = roomTopLeft.y + 12;
-
-    elements.push(
-      `<text x="${midX.toFixed(1)}" y="${dimY.toFixed(1)}" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="${fontSize.toFixed(1)}" fill="#0066cc">${mmToFtDisplay(room.width)}' × ${mmToFtDisplay(room.height)}'</text>`,
-    );
+  // Professional Exterior Building Dimensions (Phase 2.4)
+  const extBuildingDims = AnnotationEngine.renderExteriorBuildingDimensions(floor, transform);
+  if (extBuildingDims) {
+    elements.push(extBuildingDims);
   }
 
   return `<g class="layer-annotations" data-layer="${RenderLayer.Annotations}">\n${elements.join('\n')}\n</g>`;

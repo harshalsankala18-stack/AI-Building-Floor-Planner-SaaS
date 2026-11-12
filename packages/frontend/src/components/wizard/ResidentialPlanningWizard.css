@@ -1,0 +1,646 @@
+/* ==========================================================================
+   RESIDENTIAL PLANNING WIZARD — ARCHITECTURAL STUDIO DESIGN SYSTEM
+   Palette: Warm Porcelain (#F7F7F4), Crisp White (#FFFFFF),
+            Graphite Typography (#1C1E1B), Deep Forest Green (#1E3A2F)
+   ========================================================================== */
+
+.wizard-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  background-color: rgba(28, 30, 27, 0.55);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.wizard-container {
+  width: min(980px, 100%);
+  max-height: min(92vh, 880px);
+  background-color: #FFFFFF;
+  border: 1px solid #DFE2DA;
+  border-radius: 16px;
+  box-shadow: 0 24px 60px -12px rgba(28, 30, 27, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: wizardFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes wizardFadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(0.99); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header & Progress Steps */
+.wizard-header {
+  padding: 20px 28px 16px;
+  border-bottom: 1px solid #DFE2DA;
+  background-color: #FAFAF7;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wizard-title-group h2 {
+  font-size: 18px;
+  font-weight: 650;
+  color: #1C1E1B;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.wizard-title-group p {
+  font-size: 13px;
+  color: #4D534B;
+  margin: 3px 0 0;
+}
+
+.wizard-close-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid #DFE2DA;
+  background: #FFFFFF;
+  color: #7E877C;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wizard-close-btn:hover {
+  background: #F2F4EE;
+  color: #1C1E1B;
+}
+
+/* Step Bar */
+.wizard-steps-rail {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  position: relative;
+}
+
+.wizard-step-node {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 4px 6px;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.wizard-step-number {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid #DFE2DA;
+  background: #FFFFFF;
+  color: #7E877C;
+  font-size: 11px;
+  font-weight: 600;
+  display: grid;
+  place-items: center;
+  transition: all 0.15s ease;
+}
+
+.wizard-step-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7E877C;
+  white-space: nowrap;
+}
+
+.wizard-step-node.active .wizard-step-number {
+  background: #1E3A2F;
+  border-color: #1E3A2F;
+  color: #FFFFFF;
+}
+
+.wizard-step-node.active .wizard-step-label {
+  color: #1C1E1B;
+  font-weight: 650;
+}
+
+.wizard-step-node.completed .wizard-step-number {
+  background: #EBF4F0;
+  border-color: #A3D4BE;
+  color: #1E5E3A;
+}
+
+.wizard-step-divider {
+  flex: 1;
+  height: 1px;
+  background: #DFE2DA;
+  min-width: 12px;
+}
+
+/* Content Area */
+.wizard-body {
+  padding: 24px 28px;
+  overflow-y: auto;
+  flex: 1;
+  background-color: #FFFFFF;
+}
+
+/* Cards & Grids */
+.wizard-section-title {
+  font-size: 14px;
+  font-weight: 650;
+  color: #1C1E1B;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wizard-typology-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.wizard-typology-card {
+  padding: 14px;
+  border: 1px solid #DFE2DA;
+  border-radius: 10px;
+  background: #FFFFFF;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wizard-typology-card:hover {
+  border-color: #1E3A2F;
+  background-color: #FAFAF7;
+}
+
+.wizard-typology-card.selected {
+  border-color: #1E3A2F;
+  background-color: rgba(30, 58, 47, 0.04);
+  box-shadow: 0 0 0 1px #1E3A2F;
+}
+
+.wizard-typology-card strong {
+  font-size: 13px;
+  color: #1C1E1B;
+}
+
+.wizard-typology-card span {
+  font-size: 11px;
+  color: #7E877C;
+  line-height: 1.4;
+}
+
+/* Site Details Layout (2 Columns) */
+.wizard-site-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 24px;
+  align-items: start;
+}
+
+.wizard-form-group {
+  margin-bottom: 16px;
+}
+
+.wizard-form-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #4D534B;
+  margin-bottom: 6px;
+}
+
+.wizard-row {
+  display: flex;
+  gap: 12px;
+}
+
+.wizard-row > * {
+  flex: 1;
+}
+
+.wizard-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #DFE2DA;
+  border-radius: 8px;
+  background: #FFFFFF;
+  color: #1C1E1B;
+  font-size: 13px;
+}
+
+.wizard-input:focus {
+  border-color: #1E3A2F;
+  box-shadow: 0 0 0 2px rgba(30, 58, 47, 0.08);
+}
+
+.wizard-pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.wizard-pill-btn {
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1px solid #DFE2DA;
+  background: #FFFFFF;
+  color: #4D534B;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wizard-pill-btn:hover {
+  background: #F2F4EE;
+  color: #1C1E1B;
+}
+
+.wizard-pill-btn.active {
+  background: #1E3A2F;
+  border-color: #1E3A2F;
+  color: #FFFFFF;
+  font-weight: 600;
+}
+
+/* Site Preview Box */
+.wizard-site-preview-card {
+  border: 1px solid #DFE2DA;
+  border-radius: 12px;
+  padding: 16px;
+  background: #FAFAF7;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wizard-site-preview-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wizard-site-preview-header h4 {
+  font-size: 12px;
+  font-weight: 650;
+  color: #1C1E1B;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.wizard-site-svg-container {
+  width: 100%;
+  height: 240px;
+  background: #FFFFFF;
+  border: 1px solid #DFE2DA;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.wizard-site-metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.wizard-site-metric-cell {
+  background: #FFFFFF;
+  border: 1px solid #DFE2DA;
+  border-radius: 6px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.wizard-site-metric-cell span {
+  color: #7E877C;
+  font-size: 10px;
+}
+
+.wizard-site-metric-cell strong {
+  color: #1C1E1B;
+  font-size: 12px;
+}
+
+/* Footprint Shape Grid (13 Shapes) */
+.wizard-shapes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.wizard-shape-card {
+  padding: 12px;
+  border: 1px solid #DFE2DA;
+  border-radius: 10px;
+  background: #FFFFFF;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.wizard-shape-card:hover {
+  border-color: #1E3A2F;
+  background-color: #FAFAF7;
+}
+
+.wizard-shape-card.selected {
+  border-color: #1E3A2F;
+  background-color: rgba(30, 58, 47, 0.04);
+  box-shadow: 0 0 0 1px #1E3A2F;
+}
+
+.wizard-shape-card.infeasible {
+  opacity: 0.65;
+  border-color: #E2B276;
+  background-color: #FFFDF9;
+}
+
+.wizard-shape-icon {
+  width: 72px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.wizard-shape-title {
+  font-size: 12px;
+  font-weight: 650;
+  color: #1C1E1B;
+  margin: 0;
+}
+
+.wizard-shape-desc {
+  font-size: 10px;
+  color: #7E877C;
+  line-height: 1.3;
+}
+
+/* Feasibility Notice */
+.wizard-feasibility-alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.wizard-feasibility-alert.warning {
+  background: #FFF9ED;
+  border: 1px solid #E6CA9E;
+  color: #8A5610;
+}
+
+.wizard-feasibility-alert.success {
+  background: #EBF4F0;
+  border: 1px solid #A3D4BE;
+  color: #1E5E3A;
+}
+
+.wizard-suggested-shapes {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.wizard-suggested-pill {
+  padding: 3px 10px;
+  border-radius: 12px;
+  border: 1px solid #1E3A2F;
+  background: #FFFFFF;
+  color: #1E3A2F;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.wizard-suggested-pill:hover {
+  background: #1E3A2F;
+  color: #FFFFFF;
+}
+
+/* BHK Presets & Counters */
+.wizard-bhk-rail {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.wizard-room-counter-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
+}
+
+.wizard-room-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid #DFE2DA;
+  border-radius: 8px;
+  background: #FFFFFF;
+}
+
+.wizard-room-info strong {
+  display: block;
+  font-size: 13px;
+  color: #1C1E1B;
+}
+
+.wizard-room-info span {
+  font-size: 11px;
+  color: #7E877C;
+}
+
+.wizard-counter-ctrl {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wizard-counter-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  border: 1px solid #DFE2DA;
+  background: #FAFAF7;
+  color: #1C1E1B;
+  font-size: 14px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.wizard-counter-btn:hover:not(:disabled) {
+  background: #F2F4EE;
+  border-color: #1E3A2F;
+}
+
+.wizard-counter-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.wizard-counter-val {
+  min-width: 20px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 650;
+  color: #1C1E1B;
+}
+
+/* Review Step Cards */
+.wizard-review-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.wizard-review-card {
+  padding: 16px;
+  border: 1px solid #DFE2DA;
+  border-radius: 10px;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.wizard-review-card h4 {
+  font-size: 13px;
+  font-weight: 650;
+  color: #1C1E1B;
+  margin: 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #DFE2DA;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wizard-review-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.wizard-review-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+}
+
+.wizard-review-item .label {
+  color: #7E877C;
+}
+
+.wizard-review-item .val {
+  color: #1C1E1B;
+  font-weight: 600;
+  text-align: right;
+}
+
+/* Footer & Actions */
+.wizard-footer {
+  padding: 16px 28px;
+  border-top: 1px solid #DFE2DA;
+  background-color: #FAFAF7;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.wizard-footer-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wizard-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.wizard-btn-secondary {
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 1px solid #DFE2DA;
+  background: #FFFFFF;
+  color: #1C1E1B;
+  font-size: 13px;
+  font-weight: 550;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.wizard-btn-secondary:hover {
+  background: #F2F4EE;
+  border-color: #BCB8AD;
+}
+
+.wizard-btn-primary {
+  padding: 8px 22px;
+  border-radius: 8px;
+  border: 1px solid #1E3A2F;
+  background: #1E3A2F;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 2px 6px rgba(30, 58, 47, 0.2);
+}
+
+.wizard-btn-primary:hover {
+  background: #152A22;
+  border-color: #152A22;
+  box-shadow: 0 4px 10px rgba(30, 58, 47, 0.25);
+}
+

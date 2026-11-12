@@ -1,0 +1,24 @@
+{
+  "generationId": "gen_1234_mwc1rmym_7f94857e",
+  "projectId": "smoke-test",
+  "seed": 1234,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 1,
+  "originalPrompt": "Create a premium architectural floor-plan concept illustration for a modern Indian L-shaped 3-bedroom villa.\n\nThe villa is designed for a 40 ft × 60 ft east-facing residential plot in Ahmedabad, Gujarat.\n\nCreate a clean, sophisticated, top-down orthographic architectural floor-plan visualization with a clearly recognizable L-shaped building footprint.\n\nInclude these architectural spaces:\n- Spacious living room.\n- Dining area connected naturally to the living room.\n- Semi-open kitchen.\n- Three appropriately positioned bedrooms.\n- Attached and common bathrooms.\n- Dedicated northeast Pooja room.\n- Utility space toward the southeast.\n- Front verandah or traditional otla.\n- Parking provision.\n- Internal circulation and staircase provision for a possible G+1 design.\n\nFollow the specified east-facing site orientation and strict Vastu preferences. Make the layout feel realistic, spacious, practical, and architecturally intentional.\n\nUse varied but coherent room proportions, thoughtful circulation, realistic door and window placement, and natural daylight considerations.\n\nVisual style:\n- Professional architectural presentation.\n- Fine dark architectural outlines.\n- Subtle neutral floor finishes.\n- Refined material representation.\n- Clear spatial separation.\n- Minimal visual clutter.\n- Balanced composition.\n- High-quality architectural visualization.\n\nThe result should look like a professionally prepared architectural concept presentation, not a generic collection of rectangular boxes.\n\nDo not invent dimensions, room labels, technical annotations, structural calculations, or building-code certifications. Do not present this generated image as an engineering-approved construction drawing.\n\nGenerate an actual image, not a textual description.",
+  "negativePrompt": "perspective, 3d exterior render, realistic photography, dimensions, technical text annotations",
+  "width": 1024,
+  "height": 768,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-11T11:40:08.052Z",
+  "latencyMs": 6576,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [],
+    "referenceHashes": [],
+    "aspectRatio": "4:3",
+    "promptHash": "ef400091331edbe0f7ddbfb2af2c48e370f7ac0081fb53298a81f8ce1e1a0799"
+  }
+}

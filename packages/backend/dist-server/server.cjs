@@ -30,10 +30,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// ../ai-orchestration/dist/providers/base.js
+// packages/ai-orchestration/dist/providers/base.js
 var BaseAIProvider, AISafetyError;
 var init_base = __esm({
-  "../ai-orchestration/dist/providers/base.js"() {
+  "packages/ai-orchestration/dist/providers/base.js"() {
     "use strict";
     BaseAIProvider = class {
     };
@@ -48,10 +48,10 @@ var init_base = __esm({
   }
 });
 
-// ../core/dist/types/enums.js
+// packages/core/dist/types/enums.js
 var RoomType, Direction, DaylightLevel, PrivacyLevel, PreferenceLevel, AdjacencyStrength, WallType, DoorType, SwingDirection, WindowType, StairType, ColumnShape, ProjectStatus, ChangeSource, PlotShape, AITaskType;
 var init_enums = __esm({
-  "../core/dist/types/enums.js"() {
+  "packages/core/dist/types/enums.js"() {
     "use strict";
     (function(RoomType2) {
       RoomType2["ServiceShaft"] = "service_shaft";
@@ -172,10 +172,10 @@ var init_enums = __esm({
   }
 });
 
-// ../core/dist/types/rendering.js
+// packages/core/dist/types/rendering.js
 var RenderLayer;
 var init_rendering = __esm({
-  "../core/dist/types/rendering.js"() {
+  "packages/core/dist/types/rendering.js"() {
     "use strict";
     (function(RenderLayer2) {
       RenderLayer2["Grid"] = "grid";
@@ -195,10 +195,10 @@ var init_rendering = __esm({
   }
 });
 
-// ../core/dist/types/design-intelligence.js
+// packages/core/dist/types/design-intelligence.js
 var FunctionalZone, AdjacencyRelationType, HumanVerificationStatus;
 var init_design_intelligence = __esm({
-  "../core/dist/types/design-intelligence.js"() {
+  "packages/core/dist/types/design-intelligence.js"() {
     "use strict";
     (function(FunctionalZone2) {
       FunctionalZone2["Public"] = "public";
@@ -225,17 +225,27 @@ var init_design_intelligence = __esm({
   }
 });
 
-// ../core/dist/types/index.js
+// packages/core/dist/types/image-provenance.js
+var IMAGE_DERIVED_TAG;
+var init_image_provenance = __esm({
+  "packages/core/dist/types/image-provenance.js"() {
+    "use strict";
+    IMAGE_DERIVED_TAG = "source:image_reconstruction";
+  }
+});
+
+// packages/core/dist/types/index.js
 var init_types = __esm({
-  "../core/dist/types/index.js"() {
+  "packages/core/dist/types/index.js"() {
     "use strict";
     init_enums();
     init_rendering();
     init_design_intelligence();
+    init_image_provenance();
   }
 });
 
-// ../core/dist/models/id.js
+// packages/core/dist/models/id.js
 function generateId() {
   if (seed !== null) {
     counter++;
@@ -246,17 +256,17 @@ function generateId() {
 }
 var seed, counter;
 var init_id = __esm({
-  "../core/dist/models/id.js"() {
+  "packages/core/dist/models/id.js"() {
     "use strict";
     seed = null;
     counter = 0;
   }
 });
 
-// ../core/dist/models/errors.js
+// packages/core/dist/models/errors.js
 var DomainError, InvalidDimensionError, InvalidCoordinateError;
 var init_errors = __esm({
-  "../core/dist/models/errors.js"() {
+  "packages/core/dist/models/errors.js"() {
     "use strict";
     DomainError = class extends Error {
       code;
@@ -281,10 +291,10 @@ var init_errors = __esm({
   }
 });
 
-// ../core/dist/constants.js
+// packages/core/dist/constants.js
 var DEFAULTS, TOLERANCES, MINIMUM_ROOM_AREAS, MINIMUM_DIMENSIONS;
 var init_constants = __esm({
-  "../core/dist/constants.js"() {
+  "packages/core/dist/constants.js"() {
     "use strict";
     DEFAULTS = {
       WALL_THICKNESS_EXTERNAL: 230,
@@ -370,7 +380,7 @@ var init_constants = __esm({
   }
 });
 
-// ../core/dist/models/factory.js
+// packages/core/dist/models/factory.js
 function assertFinite(field, value) {
   if (!Number.isFinite(value)) {
     throw new InvalidCoordinateError(field, value);
@@ -541,6 +551,36 @@ function createWall(params) {
     loadBearing: params.loadBearing ?? false
   };
 }
+function createDoor(params) {
+  assertFinite("position.x", params.position.x);
+  assertFinite("position.y", params.position.y);
+  return {
+    id: generateId(),
+    floorId: params.floorId,
+    wallId: params.wallId,
+    position: params.position,
+    width: params.width ?? DEFAULTS.DOOR_WIDTH,
+    height: params.height ?? DEFAULTS.DOOR_HEIGHT,
+    type: params.type ?? DoorType.Single,
+    swingDirection: params.swingDirection ?? SwingDirection.Inward,
+    connectsRooms: params.connectsRooms
+  };
+}
+function createWindow(params) {
+  assertFinite("position.x", params.position.x);
+  assertFinite("position.y", params.position.y);
+  return {
+    id: generateId(),
+    floorId: params.floorId,
+    wallId: params.wallId,
+    position: params.position,
+    width: params.width ?? DEFAULTS.WINDOW_WIDTH,
+    height: params.height ?? DEFAULTS.WINDOW_HEIGHT,
+    sillHeight: params.sillHeight ?? DEFAULTS.WINDOW_SILL_HEIGHT,
+    type: params.type ?? WindowType.Sliding,
+    roomId: params.roomId
+  };
+}
 function createStair(params) {
   assertFinite("x", params.x);
   assertFinite("y", params.y);
@@ -567,7 +607,7 @@ function createStair(params) {
   };
 }
 var init_factory = __esm({
-  "../core/dist/models/factory.js"() {
+  "packages/core/dist/models/factory.js"() {
     "use strict";
     init_types();
     init_constants();
@@ -576,44 +616,44 @@ var init_factory = __esm({
   }
 });
 
-// ../core/dist/models/updaters.js
+// packages/core/dist/models/updaters.js
 var init_updaters = __esm({
-  "../core/dist/models/updaters.js"() {
+  "packages/core/dist/models/updaters.js"() {
     "use strict";
     init_errors();
     init_factory();
   }
 });
 
-// ../core/dist/models/validation.js
+// packages/core/dist/models/validation.js
 var VALID_ROOM_TYPES;
 var init_validation = __esm({
-  "../core/dist/models/validation.js"() {
+  "packages/core/dist/models/validation.js"() {
     "use strict";
     init_types();
     VALID_ROOM_TYPES = new Set(Object.values(RoomType));
   }
 });
 
-// ../core/dist/models/serialization.js
+// packages/core/dist/models/serialization.js
 var init_serialization = __esm({
-  "../core/dist/models/serialization.js"() {
+  "packages/core/dist/models/serialization.js"() {
     "use strict";
     init_validation();
     init_errors();
   }
 });
 
-// ../core/dist/models/versioning.js
+// packages/core/dist/models/versioning.js
 var init_versioning = __esm({
-  "../core/dist/models/versioning.js"() {
+  "packages/core/dist/models/versioning.js"() {
     "use strict";
     init_id();
     init_serialization();
   }
 });
 
-// ../core/dist/models/requirements-normalization.js
+// packages/core/dist/models/requirements-normalization.js
 function asRecord(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -730,7 +770,7 @@ function normalizeDesignRequirementSpecification(input) {
 }
 var ROOM_TYPES, DIRECTIONS, PLOT_SHAPES, PREFERENCE_LEVELS;
 var init_requirements_normalization = __esm({
-  "../core/dist/models/requirements-normalization.js"() {
+  "packages/core/dist/models/requirements-normalization.js"() {
     "use strict";
     init_enums();
     ROOM_TYPES = new Set(Object.values(RoomType));
@@ -740,10 +780,10 @@ var init_requirements_normalization = __esm({
   }
 });
 
-// ../core/dist/capabilities.js
+// packages/core/dist/capabilities.js
 var BUILDING_CAPABILITIES, SUPPORTED_FLOOR_COUNTS;
 var init_capabilities = __esm({
-  "../core/dist/capabilities.js"() {
+  "packages/core/dist/capabilities.js"() {
     "use strict";
     BUILDING_CAPABILITIES = Object.freeze({
       minimumFloorCount: 1,
@@ -753,16 +793,16 @@ var init_capabilities = __esm({
   }
 });
 
-// ../core/dist/models/site-intelligence.js
+// packages/core/dist/models/site-intelligence.js
 var init_site_intelligence = __esm({
-  "../core/dist/models/site-intelligence.js"() {
+  "packages/core/dist/models/site-intelligence.js"() {
     "use strict";
     init_capabilities();
     init_types();
   }
 });
 
-// ../core/dist/models/space-catalog.js
+// packages/core/dist/models/space-catalog.js
 function definition(id, displayName, categories, group2, zone, minimumM2, preferredM2, options = {}) {
   const occupancy = options.occupancy ?? (categories[0] === "educational" ? "educational" : categories[0] === "commercial" ? "commercial" : "residential");
   return {
@@ -787,7 +827,7 @@ function definition(id, displayName, categories, group2, zone, minimumM2, prefer
 }
 var M2, R, C, E, residential, commercial, educational, SPACE_CATALOG, SPACE_PROGRAM_PRESETS;
 var init_space_catalog = __esm({
-  "../core/dist/models/space-catalog.js"() {
+  "packages/core/dist/models/space-catalog.js"() {
     "use strict";
     init_types();
     M2 = 1e6;
@@ -945,10 +985,10 @@ var init_space_catalog = __esm({
   }
 });
 
-// ../core/dist/models/space-program.js
+// packages/core/dist/models/space-program.js
 var CIRCULATION_RESERVE_RATIO, VERTICAL_CORE_RESERVE_RATIO, WALL_SERVICE_RESERVE_RATIO, TOTAL_RESERVE_RATIO, DERIVATION_MAP;
 var init_space_program = __esm({
-  "../core/dist/models/space-program.js"() {
+  "packages/core/dist/models/space-program.js"() {
     "use strict";
     init_types();
     init_site_intelligence();
@@ -979,10 +1019,10 @@ var init_space_program = __esm({
   }
 });
 
-// ../core/dist/models/footprint.js
+// packages/core/dist/models/footprint.js
 var CIRCULATION_RATIO, CORE_RATIO, WALL_SERVICE_RATIO, USABLE_RATIO, FOOTPRINT_SHAPES;
 var init_footprint = __esm({
-  "../core/dist/models/footprint.js"() {
+  "packages/core/dist/models/footprint.js"() {
     "use strict";
     init_factory();
     init_site_intelligence();
@@ -991,27 +1031,33 @@ var init_footprint = __esm({
     WALL_SERVICE_RATIO = 0.06;
     USABLE_RATIO = 1 - CIRCULATION_RATIO - CORE_RATIO - WALL_SERVICE_RATIO;
     FOOTPRINT_SHAPES = Object.freeze([
-      { id: "rectangle", name: "Rectangle", description: "Efficient universal floor plate", recommendedCategories: ["residential", "commercial", "mixed_use"] },
-      { id: "l_shape", name: "L Shape", description: "Two wings around an open edge", recommendedCategories: ["residential", "commercial", "educational", "mixed_use"] },
-      { id: "u_shape", name: "U Shape", description: "Three-sided court or arrival space", recommendedCategories: ["educational", "commercial"] },
-      { id: "t_shape", name: "T Shape", description: "Primary bar with a central wing", recommendedCategories: ["educational", "commercial"] },
-      { id: "courtyard", name: "Courtyard", description: "Limited perimeter plate with an access slot; not polygon-hole topology", recommendedCategories: ["residential", "commercial", "educational"], customSupport: "limited" },
-      { id: "linear", name: "Linear", description: "Shallow elongated building plate", recommendedCategories: ["commercial", "educational"] },
-      { id: "custom", name: "Custom", description: "Preserved existing or imported polygon", recommendedCategories: [], customSupport: "limited" }
+      { id: "rectangle", name: "Rectangular", description: "Simple, compact and highly efficient universal footprint.", recommendedCategories: ["residential", "commercial", "mixed_use"] },
+      { id: "square", name: "Square", description: "Balanced, symmetrical footprint ideal for proportionate sites.", recommendedCategories: ["residential", "commercial"] },
+      { id: "l_shape", name: "L-Shaped", description: "Two connected wings maximizing corner garden and dual-aspect rooms.", recommendedCategories: ["residential", "commercial", "educational", "mixed_use"] },
+      { id: "u_shape", name: "U-Shaped", description: "Three wings surrounding an open arrival court or central garden.", recommendedCategories: ["residential", "educational", "commercial"] },
+      { id: "courtyard", name: "C-Shaped / Courtyard", description: "Footprint organized around an inward-facing open courtyard.", recommendedCategories: ["residential", "commercial", "educational"], customSupport: "limited" },
+      { id: "h_shape", name: "H-Shaped", description: "Two parallel wings connected by a central link section for zoning privacy.", recommendedCategories: ["residential", "commercial"] },
+      { id: "t_shape", name: "T-Shaped", description: "Central spine with a primary cross-wing separating public and private zones.", recommendedCategories: ["residential", "educational", "commercial"] },
+      { id: "v_shape", name: "V-Shaped", description: "Articulated angled wings meeting at a central focal entry point.", recommendedCategories: ["residential"] },
+      { id: "z_shape", name: "Z-Shaped", description: "Offset connected wings creating distinct front and rear private courts.", recommendedCategories: ["residential"] },
+      { id: "linear", name: "Linear / Bar", description: "Long, narrow footprint ideal for deep plots and continuous daylighting.", recommendedCategories: ["residential", "commercial", "educational"] },
+      { id: "stepped", name: "Stepped / Articulated", description: "Articulated stepped contour adapting to setbacks and varied orientations.", recommendedCategories: ["residential", "mixed_use"] },
+      { id: "custom", name: "Custom Footprint", description: "User-defined outline or surveyed plot boundary.", recommendedCategories: [], customSupport: "limited" },
+      { id: "flexible", name: "Flexible (Planner Choice)", description: "Allows the deterministic planner to choose the most suitable footprint.", recommendedCategories: ["residential", "commercial", "mixed_use"] }
     ]);
   }
 });
 
-// ../core/dist/models/generation-control.js
+// packages/core/dist/models/generation-control.js
 var init_generation_control = __esm({
-  "../core/dist/models/generation-control.js"() {
+  "packages/core/dist/models/generation-control.js"() {
     "use strict";
   }
 });
 
-// ../core/dist/models/index.js
+// packages/core/dist/models/index.js
 var init_models = __esm({
-  "../core/dist/models/index.js"() {
+  "packages/core/dist/models/index.js"() {
     "use strict";
     init_id();
     init_errors();
@@ -1029,106 +1075,116 @@ var init_models = __esm({
   }
 });
 
-// ../core/dist/editor/types.js
+// packages/core/dist/editor/types.js
 var init_types2 = __esm({
-  "../core/dist/editor/types.js"() {
+  "packages/core/dist/editor/types.js"() {
     "use strict";
   }
 });
 
-// ../core/dist/editor/history.js
+// packages/core/dist/editor/history.js
 var init_history = __esm({
-  "../core/dist/editor/history.js"() {
+  "packages/core/dist/editor/history.js"() {
     "use strict";
   }
 });
 
-// ../core/dist/editor/commands/selection-commands.js
+// packages/core/dist/editor/commands/selection-commands.js
 var init_selection_commands = __esm({
-  "../core/dist/editor/commands/selection-commands.js"() {
+  "packages/core/dist/editor/commands/selection-commands.js"() {
     "use strict";
     init_id();
   }
 });
 
-// ../core/dist/editor/commands/room-commands.js
+// packages/core/dist/editor/commands/room-commands.js
 var init_room_commands = __esm({
-  "../core/dist/editor/commands/room-commands.js"() {
+  "packages/core/dist/editor/commands/room-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// ../core/dist/editor/commands/door-commands.js
+// packages/core/dist/editor/commands/door-commands.js
 var init_door_commands = __esm({
-  "../core/dist/editor/commands/door-commands.js"() {
+  "packages/core/dist/editor/commands/door-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// ../core/dist/editor/commands/window-commands.js
+// packages/core/dist/editor/commands/window-commands.js
 var init_window_commands = __esm({
-  "../core/dist/editor/commands/window-commands.js"() {
+  "packages/core/dist/editor/commands/window-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// ../core/dist/editor/commands/delete-commands.js
+// packages/core/dist/editor/commands/wall-commands.js
+var init_wall_commands = __esm({
+  "packages/core/dist/editor/commands/wall-commands.js"() {
+    "use strict";
+    init_id();
+    init_updaters();
+  }
+});
+
+// packages/core/dist/editor/commands/delete-commands.js
 var init_delete_commands = __esm({
-  "../core/dist/editor/commands/delete-commands.js"() {
+  "packages/core/dist/editor/commands/delete-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// ../core/dist/editor/commands/batch-command.js
+// packages/core/dist/editor/commands/batch-command.js
 var init_batch_command = __esm({
-  "../core/dist/editor/commands/batch-command.js"() {
+  "packages/core/dist/editor/commands/batch-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// ../core/dist/editor/commands/replace-building-command.js
+// packages/core/dist/editor/commands/replace-building-command.js
 var init_replace_building_command = __esm({
-  "../core/dist/editor/commands/replace-building-command.js"() {
+  "packages/core/dist/editor/commands/replace-building-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// ../core/dist/editor/commands/update-site-command.js
+// packages/core/dist/editor/commands/update-site-command.js
 var init_update_site_command = __esm({
-  "../core/dist/editor/commands/update-site-command.js"() {
+  "packages/core/dist/editor/commands/update-site-command.js"() {
     "use strict";
     init_factory();
     init_id();
   }
 });
 
-// ../core/dist/editor/commands/floor-commands.js
+// packages/core/dist/editor/commands/floor-commands.js
 var init_floor_commands = __esm({
-  "../core/dist/editor/commands/floor-commands.js"() {
+  "packages/core/dist/editor/commands/floor-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// ../core/dist/editor/commands/index.js
+// packages/core/dist/editor/commands/index.js
 var init_commands = __esm({
-  "../core/dist/editor/commands/index.js"() {
+  "packages/core/dist/editor/commands/index.js"() {
     "use strict";
     init_selection_commands();
     init_room_commands();
     init_door_commands();
     init_window_commands();
+    init_wall_commands();
     init_delete_commands();
     init_batch_command();
     init_replace_building_command();
@@ -1137,9 +1193,9 @@ var init_commands = __esm({
   }
 });
 
-// ../core/dist/editor/engine.js
+// packages/core/dist/editor/engine.js
 var init_engine = __esm({
-  "../core/dist/editor/engine.js"() {
+  "packages/core/dist/editor/engine.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1147,9 +1203,9 @@ var init_engine = __esm({
   }
 });
 
-// ../core/dist/editor/index.js
+// packages/core/dist/editor/index.js
 var init_editor = __esm({
-  "../core/dist/editor/index.js"() {
+  "packages/core/dist/editor/index.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1158,32 +1214,32 @@ var init_editor = __esm({
   }
 });
 
-// ../core/dist/architectural-review.js
+// packages/core/dist/architectural-review.js
 var init_architectural_review = __esm({
-  "../core/dist/architectural-review.js"() {
+  "packages/core/dist/architectural-review.js"() {
     "use strict";
   }
 });
 
-// ../core/dist/types/building-budget.js
+// packages/core/dist/types/building-budget.js
 var init_building_budget = __esm({
-  "../core/dist/types/building-budget.js"() {
+  "packages/core/dist/types/building-budget.js"() {
     "use strict";
   }
 });
 
-// ../core/dist/models/building-budget.js
+// packages/core/dist/models/building-budget.js
 var init_building_budget2 = __esm({
-  "../core/dist/models/building-budget.js"() {
+  "packages/core/dist/models/building-budget.js"() {
     "use strict";
     init_space_program();
     init_site_intelligence();
   }
 });
 
-// ../core/dist/models/reviewed-generation.js
+// packages/core/dist/models/reviewed-generation.js
 var init_reviewed_generation = __esm({
-  "../core/dist/models/reviewed-generation.js"() {
+  "packages/core/dist/models/reviewed-generation.js"() {
     "use strict";
     init_building_budget2();
     init_space_program();
@@ -1191,9 +1247,9 @@ var init_reviewed_generation = __esm({
   }
 });
 
-// ../core/dist/index.js
+// packages/core/dist/index.js
 var init_dist = __esm({
-  "../core/dist/index.js"() {
+  "packages/core/dist/index.js"() {
     "use strict";
     init_types();
     init_models();
@@ -1207,10 +1263,10 @@ var init_dist = __esm({
   }
 });
 
-// ../ai-orchestration/dist/requirements/schema.js
+// packages/ai-orchestration/dist/requirements/schema.js
 var REQUIREMENT_RESPONSE_SCHEMA, REQUIREMENT_EXTRACTION_PROMPT;
 var init_schema = __esm({
-  "../ai-orchestration/dist/requirements/schema.js"() {
+  "packages/ai-orchestration/dist/requirements/schema.js"() {
     "use strict";
     init_dist();
     REQUIREMENT_RESPONSE_SCHEMA = {
@@ -1316,7 +1372,7 @@ Never invent a site location, regulation, approval, or structural claim.`;
   }
 });
 
-// ../ai-orchestration/dist/providers/http.js
+// packages/ai-orchestration/dist/providers/http.js
 function asRecord2(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -1456,7 +1512,7 @@ function response(content, parsed, responseUsage, model, latencyMs) {
 }
 var HttpProviderError;
 var init_http = __esm({
-  "../ai-orchestration/dist/providers/http.js"() {
+  "packages/ai-orchestration/dist/providers/http.js"() {
     "use strict";
     init_base();
     HttpProviderError = class extends Error {
@@ -1476,9 +1532,9 @@ var init_http = __esm({
   }
 });
 
-// ../ai-orchestration/dist/providers/openai.js
+// packages/ai-orchestration/dist/providers/openai.js
 var init_openai = __esm({
-  "../ai-orchestration/dist/providers/openai.js"() {
+  "packages/ai-orchestration/dist/providers/openai.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1487,7 +1543,7 @@ var init_openai = __esm({
   }
 });
 
-// ../ai-orchestration/dist/providers/gemini.js
+// packages/ai-orchestration/dist/providers/gemini.js
 function extractHttpStatus(error) {
   if (error instanceof HttpProviderError)
     return error.status;
@@ -1572,7 +1628,7 @@ function buildGeminiParts(request) {
 }
 var DEFAULT_GEMINI_RETRY_POLICY, GeminiProvider, GEMINI_SUPPORTED_IMAGE_MIME_TYPES;
 var init_gemini = __esm({
-  "../ai-orchestration/dist/providers/gemini.js"() {
+  "packages/ai-orchestration/dist/providers/gemini.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1666,8 +1722,13 @@ var init_gemini = __esm({
               if (isAuthHttpError(status)) {
                 throw err;
               }
-              if (status === 400 || status === 404) {
+              const isModelRetired404 = status === 404 && err instanceof Error && err.message.includes("no longer available");
+              if (status === 400 || status === 404 && (!isModelRetired404 || !fallbackModel)) {
                 throw err;
+              }
+              if (isModelRetired404 && fallbackModel) {
+                console.warn(`[GeminiProvider] Model "${currentModel}" returned 404 (no longer available). Falling forward to "${fallbackModel}"...`);
+                break;
               }
               const isTimeout = err instanceof Error && (err.message.includes("timed out") || err.name === "AbortError");
               const isTransient = isTransientHttpError(status);
@@ -1728,10 +1789,10 @@ var init_gemini = __esm({
   }
 });
 
-// ../ai-orchestration/dist/providers/rule-based.js
+// packages/ai-orchestration/dist/providers/rule-based.js
 var RuleBasedRequirementParser;
 var init_rule_based = __esm({
-  "../ai-orchestration/dist/providers/rule-based.js"() {
+  "packages/ai-orchestration/dist/providers/rule-based.js"() {
     "use strict";
     init_dist();
     RuleBasedRequirementParser = class {
@@ -1860,7 +1921,7 @@ var init_rule_based = __esm({
   }
 });
 
-// ../ai-orchestration/dist/requirements/validation.js
+// packages/ai-orchestration/dist/requirements/validation.js
 function record(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -1960,13 +2021,13 @@ function validateRequirementPayload(payload, rawPrompt) {
   };
 }
 var init_validation2 = __esm({
-  "../ai-orchestration/dist/requirements/validation.js"() {
+  "packages/ai-orchestration/dist/requirements/validation.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// ../ai-orchestration/dist/editing/context.js
+// packages/ai-orchestration/dist/editing/context.js
 function extractAIEditContext(building, activeFloorId, selectedRoomId) {
   const resolvedFloorId = activeFloorId && building.floors.some((floor) => floor.id === activeFloorId) ? activeFloorId : building.floors[0]?.id ?? "";
   const rooms = building.floors.flatMap((floor) => floor.rooms.map((room2) => ({
@@ -1997,12 +2058,12 @@ ${compact}`
   };
 }
 var init_context = __esm({
-  "../ai-orchestration/dist/editing/context.js"() {
+  "packages/ai-orchestration/dist/editing/context.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/editing/target-resolver.js
+// packages/ai-orchestration/dist/editing/target-resolver.js
 function normalize(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -2065,7 +2126,7 @@ function resolveRoomTarget(building, query, activeFloorId, selectedRoomId) {
 }
 var TYPE_ALIASES;
 var init_target_resolver = __esm({
-  "../ai-orchestration/dist/editing/target-resolver.js"() {
+  "packages/ai-orchestration/dist/editing/target-resolver.js"() {
     "use strict";
     init_dist();
     TYPE_ALIASES = [
@@ -2088,7 +2149,7 @@ var init_target_resolver = __esm({
   }
 });
 
-// ../ai-orchestration/dist/editing/parser.js
+// packages/ai-orchestration/dist/editing/parser.js
 function unitToMm(value, unit3) {
   if (unit3?.startsWith("m") && unit3 !== "mm")
     return Math.round(value * 1e3);
@@ -2136,7 +2197,7 @@ function targetQueryFrom(command, building, options) {
 }
 var RuleBasedEditParser;
 var init_parser = __esm({
-  "../ai-orchestration/dist/editing/parser.js"() {
+  "packages/ai-orchestration/dist/editing/parser.js"() {
     "use strict";
     init_target_resolver();
     RuleBasedEditParser = class {
@@ -2213,10 +2274,10 @@ var init_parser = __esm({
   }
 });
 
-// ../ai-orchestration/dist/editing/schema.js
+// packages/ai-orchestration/dist/editing/schema.js
 var AI_EDIT_RESPONSE_SCHEMA, AI_EDIT_SYSTEM_PROMPT;
 var init_schema2 = __esm({
-  "../ai-orchestration/dist/editing/schema.js"() {
+  "packages/ai-orchestration/dist/editing/schema.js"() {
     "use strict";
     AI_EDIT_RESPONSE_SCHEMA = {
       type: "object",
@@ -2255,7 +2316,7 @@ Never claim that the edit is valid; deterministic geometry and constraint engine
   }
 });
 
-// ../ai-orchestration/dist/editing/validation.js
+// packages/ai-orchestration/dist/editing/validation.js
 function record2(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -2299,17 +2360,17 @@ function validateAIEditPayload(payload) {
 }
 var ACTIONS, DIRECTIONS2;
 var init_validation3 = __esm({
-  "../ai-orchestration/dist/editing/validation.js"() {
+  "packages/ai-orchestration/dist/editing/validation.js"() {
     "use strict";
     ACTIONS = /* @__PURE__ */ new Set(["resize_room", "move_room", "rename_room"]);
     DIRECTIONS2 = /* @__PURE__ */ new Set(["north", "south", "east", "west", "auto"]);
   }
 });
 
-// ../ai-orchestration/dist/orchestration/service.js
+// packages/ai-orchestration/dist/orchestration/service.js
 var AIOrchestrationService;
 var init_service = __esm({
-  "../ai-orchestration/dist/orchestration/service.js"() {
+  "packages/ai-orchestration/dist/orchestration/service.js"() {
     "use strict";
     init_dist();
     init_rule_based();
@@ -2500,15 +2561,15 @@ ${context.promptSummary}`,
   }
 });
 
-// ../ai-orchestration/dist/editing/command.js
+// packages/ai-orchestration/dist/editing/command.js
 var init_command = __esm({
-  "../ai-orchestration/dist/editing/command.js"() {
+  "packages/ai-orchestration/dist/editing/command.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// ../planning-engine/dist/requirements/validator.js
+// packages/planning-engine/dist/requirements/validator.js
 function areaFor(type) {
   return MIN_ROOM_AREAS_MM2[type] ?? MIN_ROOM_AREAS_MM2[RoomType.Custom];
 }
@@ -2517,7 +2578,7 @@ function isNonNegativeInteger(value) {
 }
 var MIN_ROOM_AREAS_MM2, CIRCULATION_AND_WALL_RATIO, RequirementValidator;
 var init_validator = __esm({
-  "../planning-engine/dist/requirements/validator.js"() {
+  "packages/planning-engine/dist/requirements/validator.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -2775,48 +2836,48 @@ var init_validator = __esm({
   }
 });
 
-// ../planning-engine/dist/program/generator.js
+// packages/planning-engine/dist/program/generator.js
 var init_generator = __esm({
-  "../planning-engine/dist/program/generator.js"() {
+  "packages/planning-engine/dist/program/generator.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// ../planning-engine/dist/graph/builder.js
+// packages/planning-engine/dist/graph/builder.js
 var init_builder = __esm({
-  "../planning-engine/dist/graph/builder.js"() {
+  "packages/planning-engine/dist/graph/builder.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// ../geometry-engine/dist/errors.js
+// packages/geometry-engine/dist/errors.js
 var init_errors2 = __esm({
-  "../geometry-engine/dist/errors.js"() {
+  "packages/geometry-engine/dist/errors.js"() {
     "use strict";
   }
 });
 
-// ../geometry-engine/dist/vector.js
+// packages/geometry-engine/dist/vector.js
 var init_vector = __esm({
-  "../geometry-engine/dist/vector.js"() {
+  "packages/geometry-engine/dist/vector.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// ../geometry-engine/dist/line.js
+// packages/geometry-engine/dist/line.js
 var init_line = __esm({
-  "../geometry-engine/dist/line.js"() {
+  "packages/geometry-engine/dist/line.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// ../geometry-engine/dist/point.js
+// packages/geometry-engine/dist/point.js
 function distance(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -2865,16 +2926,73 @@ function pointsEqual(a, b, tolerance = TOLERANCES.LINEAR) {
   return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
 }
 var init_point = __esm({
-  "../geometry-engine/dist/point.js"() {
+  "packages/geometry-engine/dist/point.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// ../geometry-engine/dist/segment.js
+// packages/geometry-engine/dist/segment.js
+function segmentLength(segment) {
+  const dx = segment.end.x - segment.start.x;
+  const dy = segment.end.y - segment.start.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+function segmentIntersection(a, b) {
+  const x1 = a.start.x, y1 = a.start.y;
+  const x2 = a.end.x, y2 = a.end.y;
+  const x3 = b.start.x, y3 = b.start.y;
+  const x4 = b.end.x, y4 = b.end.y;
+  const denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+  if (Math.abs(denom) < 1e-10) {
+    const eps2 = TOLERANCES.LINEAR;
+    if (pointOnSegmentDirect(a.start, b, eps2))
+      return a.start;
+    if (pointOnSegmentDirect(a.end, b, eps2))
+      return a.end;
+    if (pointOnSegmentDirect(b.start, a, eps2))
+      return b.start;
+    if (pointOnSegmentDirect(b.end, a, eps2))
+      return b.end;
+    return null;
+  }
+  const t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+  const u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+  const eps = 1e-6;
+  if (t >= -eps && t <= 1 + eps && u >= -eps && u <= 1 + eps) {
+    const clampedT = Math.max(0, Math.min(1, t));
+    return {
+      x: x1 + clampedT * (x2 - x1),
+      y: y1 + clampedT * (y2 - y1)
+    };
+  }
+  return null;
+}
+function pointOnSegmentDirect(p, seg, tolerance) {
+  const d = pointToSegmentDistance(p, seg);
+  return d <= tolerance;
+}
+function pointClosestPoint(point, segment) {
+  const dx = segment.end.x - segment.start.x;
+  const dy = segment.end.y - segment.start.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-10) {
+    return { x: segment.start.x, y: segment.start.y };
+  }
+  let t = ((point.x - segment.start.x) * dx + (point.y - segment.start.y) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return {
+    x: segment.start.x + t * dx,
+    y: segment.start.y + t * dy
+  };
+}
+function pointToSegmentDistance(point, segment) {
+  const closest2 = pointClosestPoint(point, segment);
+  return distance(point, closest2);
+}
 var init_segment = __esm({
-  "../geometry-engine/dist/segment.js"() {
+  "packages/geometry-engine/dist/segment.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -2882,9 +3000,9 @@ var init_segment = __esm({
   }
 });
 
-// ../geometry-engine/dist/rectangle.js
+// packages/geometry-engine/dist/rectangle.js
 var init_rectangle = __esm({
-  "../geometry-engine/dist/rectangle.js"() {
+  "packages/geometry-engine/dist/rectangle.js"() {
     "use strict";
     init_dist();
     init_errors2();
@@ -2892,7 +3010,7 @@ var init_rectangle = __esm({
   }
 });
 
-// ../geometry-engine/dist/polygon.js
+// packages/geometry-engine/dist/polygon.js
 function polygonSignedArea(polygon) {
   const pts = polygon.points;
   const n2 = pts.length;
@@ -2930,6 +3048,24 @@ function polygonBoundingBox(polygon) {
     height: maxY - minY
   };
 }
+function isValidPolygon(polygon) {
+  const pts = polygon.points;
+  if (pts.length < 3)
+    return false;
+  const n2 = pts.length;
+  for (let i = 0; i < n2; i++) {
+    const a = { start: pts[i], end: pts[(i + 1) % n2] };
+    for (let j = i + 2; j < n2; j++) {
+      if (i === 0 && j === n2 - 1)
+        continue;
+      const b = { start: pts[j], end: pts[(j + 1) % n2] };
+      if (segmentIntersection(a, b) !== null) {
+        return false;
+      }
+    }
+  }
+  return polygonArea2(polygon) > TOLERANCES.AREA;
+}
 function containsPolygon(outer, inner) {
   for (const p of inner.points) {
     if (!pointInPolygon(p, outer)) {
@@ -2937,6 +3073,111 @@ function containsPolygon(outer, inner) {
     }
   }
   return true;
+}
+function pointInPolygonWithTolerance(pt4, poly, toleranceMm = 50) {
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const xi = poly[i].x, yi = poly[i].y;
+    const xj = poly[j].x, yj = poly[j].y;
+    const intersect = yi > pt4.y !== yj > pt4.y && pt4.x < (xj - xi) * (pt4.y - yi) / (yj - yi) + xi;
+    if (intersect)
+      inside = !inside;
+  }
+  if (inside)
+    return true;
+  const tolSq = toleranceMm * toleranceMm;
+  for (let i = 0; i < poly.length; i++) {
+    const a = poly[i];
+    const b = poly[(i + 1) % poly.length];
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const lenSq = dx * dx + dy * dy;
+    let distSq;
+    if (lenSq === 0) {
+      distSq = (pt4.x - a.x) * (pt4.x - a.x) + (pt4.y - a.y) * (pt4.y - a.y);
+    } else {
+      const t = Math.max(0, Math.min(1, ((pt4.x - a.x) * dx + (pt4.y - a.y) * dy) / lenSq));
+      const projX = a.x + t * dx;
+      const projY = a.y + t * dy;
+      distSq = (pt4.x - projX) * (pt4.x - projX) + (pt4.y - projY) * (pt4.y - projY);
+    }
+    if (distSq <= tolSq)
+      return true;
+  }
+  return false;
+}
+function containsPolygonWithTolerance(outer, inner, toleranceMm = 50) {
+  if (outer.length < 3)
+    return false;
+  for (const p of inner) {
+    if (!pointInPolygonWithTolerance(p, outer, toleranceMm)) {
+      return false;
+    }
+  }
+  const nInner = inner.length;
+  if (nInner < 2)
+    return true;
+  for (let i = 0; i < nInner; i++) {
+    const edgeStart2 = inner[i];
+    const edgeEnd2 = inner[(i + 1) % nInner];
+    const edge = { start: edgeStart2, end: edgeEnd2 };
+    if (segmentCrossesOutsidePolygon(edge, outer, toleranceMm)) {
+      return false;
+    }
+  }
+  return true;
+}
+function segmentCrossesOutsidePolygon(segment, polygon, toleranceMm = 50) {
+  const { start: p1, end: p2 } = segment;
+  const p1In = pointInPolygonWithTolerance(p1, polygon, toleranceMm);
+  const p2In = pointInPolygonWithTolerance(p2, polygon, toleranceMm);
+  if (!p1In || !p2In)
+    return true;
+  const dx = p2.x - p1.x;
+  const dy = p2.y - p1.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq < 1e-10)
+    return false;
+  const tValues = [0, 1];
+  const nPoly = polygon.length;
+  for (let j = 0; j < nPoly; j++) {
+    const e1 = polygon[j];
+    const e2 = polygon[(j + 1) % nPoly];
+    const edge = { start: e1, end: e2 };
+    const tVertex = ((e1.x - p1.x) * dx + (e1.y - p1.y) * dy) / lenSq;
+    if (tVertex > 0 && tVertex < 1) {
+      const projX = p1.x + tVertex * dx;
+      const projY = p1.y + tVertex * dy;
+      const distSq = (e1.x - projX) * (e1.x - projX) + (e1.y - projY) * (e1.y - projY);
+      if (distSq <= toleranceMm * toleranceMm) {
+        tValues.push(tVertex);
+      }
+    }
+    const inter = segmentIntersection(segment, edge);
+    if (inter !== null) {
+      const t = ((inter.x - p1.x) * dx + (inter.y - p1.y) * dy) / lenSq;
+      const clampedT = Math.max(0, Math.min(1, t));
+      tValues.push(clampedT);
+    }
+  }
+  tValues.sort((a, b) => a - b);
+  const distinctT = [];
+  for (const t of tValues) {
+    if (distinctT.length === 0 || Math.abs(t - distinctT[distinctT.length - 1]) > 1e-4) {
+      distinctT.push(t);
+    }
+  }
+  for (let i = 0; i < distinctT.length - 1; i++) {
+    const tMid = (distinctT[i] + distinctT[i + 1]) / 2;
+    const midPt = {
+      x: p1.x + tMid * dx,
+      y: p1.y + tMid * dy
+    };
+    if (!pointInPolygonWithTolerance(midPt, polygon, toleranceMm)) {
+      return true;
+    }
+  }
+  return false;
 }
 function polygonIntersectionArea(a, b) {
   const clipped = sutherlandHodgmanClip(a.points.slice(), b.points.slice());
@@ -3036,7 +3277,7 @@ function edgesOverlap(a, b, tolerance) {
   return pointsEqual(a.start, b.start, tolerance) && pointsEqual(a.end, b.end, tolerance) || pointsEqual(a.start, b.end, tolerance) && pointsEqual(a.end, b.start, tolerance);
 }
 var init_polygon = __esm({
-  "../geometry-engine/dist/polygon.js"() {
+  "packages/geometry-engine/dist/polygon.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3045,9 +3286,9 @@ var init_polygon = __esm({
   }
 });
 
-// ../geometry-engine/dist/curves.js
+// packages/geometry-engine/dist/curves.js
 var init_curves = __esm({
-  "../geometry-engine/dist/curves.js"() {
+  "packages/geometry-engine/dist/curves.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3055,9 +3296,9 @@ var init_curves = __esm({
   }
 });
 
-// ../geometry-engine/dist/room.js
+// packages/geometry-engine/dist/room.js
 var init_room = __esm({
-  "../geometry-engine/dist/room.js"() {
+  "packages/geometry-engine/dist/room.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3065,9 +3306,9 @@ var init_room = __esm({
   }
 });
 
-// ../geometry-engine/dist/plot.js
+// packages/geometry-engine/dist/plot.js
 var init_plot = __esm({
-  "../geometry-engine/dist/plot.js"() {
+  "packages/geometry-engine/dist/plot.js"() {
     "use strict";
     init_dist();
     init_rectangle();
@@ -3076,10 +3317,10 @@ var init_plot = __esm({
   }
 });
 
-// ../geometry-engine/dist/walls.js
+// packages/geometry-engine/dist/walls.js
 var DEFAULT_WALL_CONFIG;
 var init_walls = __esm({
-  "../geometry-engine/dist/walls.js"() {
+  "packages/geometry-engine/dist/walls.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3093,9 +3334,43 @@ var init_walls = __esm({
   }
 });
 
-// ../geometry-engine/dist/doors.js
+// packages/geometry-engine/dist/doors.js
+function validateDoorPlacement(door2, hostWall, minEdgeDistance = 100) {
+  const wallSeg = { start: hostWall.startPoint, end: hostWall.endPoint };
+  const wallLen = segmentLength(wallSeg);
+  if (door2.width <= 0) {
+    return { valid: false, reason: `Door width must be positive (received ${door2.width}mm)` };
+  }
+  if (wallLen < door2.width + 2 * minEdgeDistance) {
+    return {
+      valid: false,
+      reason: `Wall length (${Math.round(wallLen)}mm) is too short for door width (${door2.width}mm) plus edge clearance (${minEdgeDistance * 2}mm)`
+    };
+  }
+  if (!pointOnSegment(door2.position, wallSeg, TOLERANCES.ADJACENCY)) {
+    return {
+      valid: false,
+      reason: `Door position (${door2.position.x}, ${door2.position.y}) is not on host wall [${hostWall.id}]`
+    };
+  }
+  const distToStart = distance(door2.position, hostWall.startPoint);
+  const distToEnd = distance(door2.position, hostWall.endPoint);
+  if (distToStart < minEdgeDistance - TOLERANCES.LINEAR) {
+    return {
+      valid: false,
+      reason: `Door is too close to wall start point (${Math.round(distToStart)}mm < ${minEdgeDistance}mm)`
+    };
+  }
+  if (distToEnd < door2.width + minEdgeDistance - TOLERANCES.LINEAR) {
+    return {
+      valid: false,
+      reason: `Door extends beyond wall end point (${Math.round(distToEnd)}mm < ${door2.width + minEdgeDistance}mm)`
+    };
+  }
+  return { valid: true };
+}
 var init_doors = __esm({
-  "../geometry-engine/dist/doors.js"() {
+  "packages/geometry-engine/dist/doors.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3105,9 +3380,49 @@ var init_doors = __esm({
   }
 });
 
-// ../geometry-engine/dist/windows.js
+// packages/geometry-engine/dist/windows.js
+function validateWindowPlacement(window, hostWall, minEdgeDistance = 200, allowInternal = false) {
+  const wallSeg = { start: hostWall.startPoint, end: hostWall.endPoint };
+  const wallLen = segmentLength(wallSeg);
+  if (window.width <= 0) {
+    return { valid: false, reason: `Window width must be positive (received ${window.width}mm)` };
+  }
+  if (!allowInternal && hostWall.type !== WallType.External) {
+    return {
+      valid: false,
+      reason: `Windows must be placed on external walls (host wall type is ${hostWall.type})`
+    };
+  }
+  if (wallLen < window.width + 2 * minEdgeDistance) {
+    return {
+      valid: false,
+      reason: `Wall length (${Math.round(wallLen)}mm) is too short for window width (${window.width}mm) plus corner clearance (${minEdgeDistance * 2}mm)`
+    };
+  }
+  if (!pointOnSegment(window.position, wallSeg, TOLERANCES.ADJACENCY)) {
+    return {
+      valid: false,
+      reason: `Window position (${window.position.x}, ${window.position.y}) is not on host wall [${hostWall.id}]`
+    };
+  }
+  const distToStart = distance(window.position, hostWall.startPoint);
+  const distToEnd = distance(window.position, hostWall.endPoint);
+  if (distToStart < minEdgeDistance - TOLERANCES.LINEAR) {
+    return {
+      valid: false,
+      reason: `Window is too close to wall start point (${Math.round(distToStart)}mm < ${minEdgeDistance}mm)`
+    };
+  }
+  if (distToEnd < window.width + minEdgeDistance - TOLERANCES.LINEAR) {
+    return {
+      valid: false,
+      reason: `Window extends beyond wall end point (${Math.round(distToEnd)}mm < ${window.width + minEdgeDistance}mm)`
+    };
+  }
+  return { valid: true };
+}
 var init_windows = __esm({
-  "../geometry-engine/dist/windows.js"() {
+  "packages/geometry-engine/dist/windows.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3116,9 +3431,9 @@ var init_windows = __esm({
   }
 });
 
-// ../geometry-engine/dist/stairs.js
+// packages/geometry-engine/dist/stairs.js
 var init_stairs = __esm({
-  "../geometry-engine/dist/stairs.js"() {
+  "packages/geometry-engine/dist/stairs.js"() {
     "use strict";
     init_rectangle();
     init_polygon();
@@ -3126,15 +3441,15 @@ var init_stairs = __esm({
   }
 });
 
-// ../geometry-engine/dist/collision.js
+// packages/geometry-engine/dist/collision.js
 function detectEntityCollision(polyA, idA, polyB, idB) {
-  const overlapArea4 = polygonIntersectionArea(polyA, polyB);
-  if (overlapArea4 > TOLERANCES.OVERLAP) {
+  const overlapArea5 = polygonIntersectionArea(polyA, polyB);
+  if (overlapArea5 > TOLERANCES.OVERLAP) {
     const clippedPoints = sutherlandHodgmanClip(polyA.points.slice(), polyB.points.slice());
     return {
       entityA: idA,
       entityB: idB,
-      overlapArea: overlapArea4,
+      overlapArea: overlapArea5,
       overlapRegion: { points: clippedPoints }
     };
   }
@@ -3153,7 +3468,7 @@ function detectRoomCollisions(room2, otherRooms) {
   return results;
 }
 var init_collision = __esm({
-  "../geometry-engine/dist/collision.js"() {
+  "packages/geometry-engine/dist/collision.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3162,55 +3477,55 @@ var init_collision = __esm({
   }
 });
 
-// ../geometry-engine/dist/snapping.js
+// packages/geometry-engine/dist/snapping.js
 var init_snapping = __esm({
-  "../geometry-engine/dist/snapping.js"() {
+  "packages/geometry-engine/dist/snapping.js"() {
     "use strict";
   }
 });
 
-// ../geometry-engine/dist/area.js
+// packages/geometry-engine/dist/area.js
 var init_area = __esm({
-  "../geometry-engine/dist/area.js"() {
+  "packages/geometry-engine/dist/area.js"() {
     "use strict";
     init_polygon();
   }
 });
 
-// ../geometry-engine/dist/spatial-index/index.js
+// packages/geometry-engine/dist/spatial-index/index.js
 var init_spatial_index = __esm({
-  "../geometry-engine/dist/spatial-index/index.js"() {
+  "packages/geometry-engine/dist/spatial-index/index.js"() {
     "use strict";
     init_rectangle();
   }
 });
 
-// ../geometry-engine/dist/coordinates.js
+// packages/geometry-engine/dist/coordinates.js
 var init_coordinates = __esm({
-  "../geometry-engine/dist/coordinates.js"() {
+  "packages/geometry-engine/dist/coordinates.js"() {
     "use strict";
     init_errors2();
   }
 });
 
-// ../geometry-engine/dist/floor-bounds.js
+// packages/geometry-engine/dist/floor-bounds.js
 var init_floor_bounds = __esm({
-  "../geometry-engine/dist/floor-bounds.js"() {
+  "packages/geometry-engine/dist/floor-bounds.js"() {
     "use strict";
   }
 });
 
-// ../geometry-engine/dist/units.js
+// packages/geometry-engine/dist/units.js
 var init_units = __esm({
-  "../geometry-engine/dist/units.js"() {
+  "packages/geometry-engine/dist/units.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// ../geometry-engine/dist/debug.js
+// packages/geometry-engine/dist/debug.js
 var init_debug = __esm({
-  "../geometry-engine/dist/debug.js"() {
+  "packages/geometry-engine/dist/debug.js"() {
     "use strict";
     init_walls();
     init_doors();
@@ -3218,9 +3533,9 @@ var init_debug = __esm({
   }
 });
 
-// ../geometry-engine/dist/index.js
+// packages/geometry-engine/dist/index.js
 var init_dist2 = __esm({
-  "../geometry-engine/dist/index.js"() {
+  "packages/geometry-engine/dist/index.js"() {
     "use strict";
     init_errors2();
     init_vector();
@@ -3247,7 +3562,7 @@ var init_dist2 = __esm({
   }
 });
 
-// ../planning-engine/dist/graph/scorer.js
+// packages/planning-engine/dist/graph/scorer.js
 function sourceProgramItemId(itemId) {
   return itemId.replace(/_floor_\d+$/, "");
 }
@@ -3328,17 +3643,17 @@ function evaluateInstanceGraph(building, graph) {
   };
 }
 var init_scorer = __esm({
-  "../planning-engine/dist/graph/scorer.js"() {
+  "packages/planning-engine/dist/graph/scorer.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// ../planning-engine/dist/evidence/architectural-closeout.js
+// packages/planning-engine/dist/evidence/architectural-closeout.js
 var COMMON, TRANSITION, EXPOSURE;
 var init_architectural_closeout = __esm({
-  "../planning-engine/dist/evidence/architectural-closeout.js"() {
+  "packages/planning-engine/dist/evidence/architectural-closeout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3367,10 +3682,10 @@ var init_architectural_closeout = __esm({
   }
 });
 
-// ../planning-engine/dist/evidence/architectural-evidence.js
+// packages/planning-engine/dist/evidence/architectural-evidence.js
 var WET_TYPES, OUTDOOR_TYPES, ACCESS_TYPES, COMMON_TYPES;
 var init_architectural_evidence = __esm({
-  "../planning-engine/dist/evidence/architectural-evidence.js"() {
+  "packages/planning-engine/dist/evidence/architectural-evidence.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3393,7 +3708,7 @@ var init_architectural_evidence = __esm({
   }
 });
 
-// ../planning-engine/dist/multi-floor/planner.js
+// packages/planning-engine/dist/multi-floor/planner.js
 function roomProgramId(room2) {
   const tag = room2.tags.find((value) => value.startsWith("program:"));
   return tag ? sourceProgramItemId(tag.slice("program:".length)) : void 0;
@@ -3495,7 +3810,7 @@ function evaluateMultiFloorPlanning(building) {
 }
 var CORE_TYPES, GROUND_ANCHOR_TYPES;
 var init_planner = __esm({
-  "../planning-engine/dist/multi-floor/planner.js"() {
+  "packages/planning-engine/dist/multi-floor/planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3512,7 +3827,7 @@ var init_planner = __esm({
   }
 });
 
-// ../planning-engine/dist/diagnostics/design-evaluator.js
+// packages/planning-engine/dist/diagnostics/design-evaluator.js
 function evaluateDesign(building, options = {}) {
   const warnings = [];
   const observations = [];
@@ -4049,7 +4364,7 @@ function isInWest(point, bounds, orientation) {
   return rx < 0;
 }
 var init_design_evaluator = __esm({
-  "../planning-engine/dist/diagnostics/design-evaluator.js"() {
+  "packages/planning-engine/dist/diagnostics/design-evaluator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4058,10 +4373,10 @@ var init_design_evaluator = __esm({
   }
 });
 
-// ../planning-engine/dist/repair/engine.js
+// packages/planning-engine/dist/repair/engine.js
 var NON_REASSIGNABLE_TYPES;
 var init_engine2 = __esm({
-  "../planning-engine/dist/repair/engine.js"() {
+  "packages/planning-engine/dist/repair/engine.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4078,10 +4393,10 @@ var init_engine2 = __esm({
   }
 });
 
-// ../planning-engine/dist/vastu/optimizer.js
+// packages/planning-engine/dist/vastu/optimizer.js
 var EXCLUDED_TYPES;
 var init_optimizer = __esm({
-  "../planning-engine/dist/vastu/optimizer.js"() {
+  "packages/planning-engine/dist/vastu/optimizer.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4096,10 +4411,10 @@ var init_optimizer = __esm({
   }
 });
 
-// ../planning-engine/dist/generator/structured-layout.js
+// packages/planning-engine/dist/generator/structured-layout.js
 var LAYOUT_STRATEGIES;
 var init_structured_layout = __esm({
-  "../planning-engine/dist/generator/structured-layout.js"() {
+  "packages/planning-engine/dist/generator/structured-layout.js"() {
     "use strict";
     init_scorer();
     init_planner();
@@ -4149,18 +4464,18 @@ var init_structured_layout = __esm({
   }
 });
 
-// ../planning-engine/dist/regions/orthogonal-decomposition.js
+// packages/planning-engine/dist/regions/orthogonal-decomposition.js
 var init_orthogonal_decomposition = __esm({
-  "../planning-engine/dist/regions/orthogonal-decomposition.js"() {
+  "packages/planning-engine/dist/regions/orthogonal-decomposition.js"() {
     "use strict";
     init_dist2();
   }
 });
 
-// ../planning-engine/dist/generator/polygon-layout.js
+// packages/planning-engine/dist/generator/polygon-layout.js
 var CORE_TYPES2;
 var init_polygon_layout = __esm({
-  "../planning-engine/dist/generator/polygon-layout.js"() {
+  "packages/planning-engine/dist/generator/polygon-layout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4170,10 +4485,10 @@ var init_polygon_layout = __esm({
   }
 });
 
-// ../planning-engine/dist/evidence/candidate-diversity.js
+// packages/planning-engine/dist/evidence/candidate-diversity.js
 var FUNCTIONAL, DISTRIBUTION;
 var init_candidate_diversity = __esm({
-  "../planning-engine/dist/evidence/candidate-diversity.js"() {
+  "packages/planning-engine/dist/evidence/candidate-diversity.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4192,48 +4507,48 @@ var init_candidate_diversity = __esm({
   }
 });
 
-// ../planning-engine/dist/site/site-planner.js
+// packages/planning-engine/dist/site/site-planner.js
 var init_site_planner = __esm({
-  "../planning-engine/dist/site/site-planner.js"() {
+  "packages/planning-engine/dist/site/site-planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// ../planning-engine/dist/site/site-analyzer.js
+// packages/planning-engine/dist/site/site-analyzer.js
 var init_site_analyzer = __esm({
-  "../planning-engine/dist/site/site-analyzer.js"() {
+  "packages/planning-engine/dist/site/site-analyzer.js"() {
     "use strict";
   }
 });
 
-// ../planning-engine/dist/generator/massing-generator.js
+// packages/planning-engine/dist/generator/massing-generator.js
 var init_massing_generator = __esm({
-  "../planning-engine/dist/generator/massing-generator.js"() {
+  "packages/planning-engine/dist/generator/massing-generator.js"() {
     "use strict";
   }
 });
 
-// ../planning-engine/dist/generator/architectural-layout-engine.js
+// packages/planning-engine/dist/generator/architectural-layout-engine.js
 var init_architectural_layout_engine = __esm({
-  "../planning-engine/dist/generator/architectural-layout-engine.js"() {
+  "packages/planning-engine/dist/generator/architectural-layout-engine.js"() {
     "use strict";
     init_dist();
     init_planner();
   }
 });
 
-// ../planning-engine/dist/strategy/design-strategy.js
+// packages/planning-engine/dist/strategy/design-strategy.js
 var init_design_strategy = __esm({
-  "../planning-engine/dist/strategy/design-strategy.js"() {
+  "packages/planning-engine/dist/strategy/design-strategy.js"() {
     "use strict";
   }
 });
 
-// ../planning-engine/dist/generator/candidate-generator.js
+// packages/planning-engine/dist/generator/candidate-generator.js
 var init_candidate_generator = __esm({
-  "../planning-engine/dist/generator/candidate-generator.js"() {
+  "packages/planning-engine/dist/generator/candidate-generator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4255,10 +4570,10 @@ var init_candidate_generator = __esm({
   }
 });
 
-// ../planning-engine/dist/generation/workflow.js
+// packages/planning-engine/dist/generation/workflow.js
 var GENERATION_STAGES;
 var init_workflow = __esm({
-  "../planning-engine/dist/generation/workflow.js"() {
+  "packages/planning-engine/dist/generation/workflow.js"() {
     "use strict";
     init_dist();
     init_design_evaluator();
@@ -4278,18 +4593,18 @@ var init_workflow = __esm({
   }
 });
 
-// ../planning-engine/dist/generation/reviewed-workflow.js
+// packages/planning-engine/dist/generation/reviewed-workflow.js
 var init_reviewed_workflow = __esm({
-  "../planning-engine/dist/generation/reviewed-workflow.js"() {
+  "packages/planning-engine/dist/generation/reviewed-workflow.js"() {
     "use strict";
     init_dist();
     init_workflow();
   }
 });
 
-// ../planning-engine/dist/refinement/targeted-regeneration.js
+// packages/planning-engine/dist/refinement/targeted-regeneration.js
 var init_targeted_regeneration = __esm({
-  "../planning-engine/dist/refinement/targeted-regeneration.js"() {
+  "packages/planning-engine/dist/refinement/targeted-regeneration.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4298,24 +4613,26 @@ var init_targeted_regeneration = __esm({
   }
 });
 
-// ../planning-engine/dist/generator/stair-coordination.js
+// packages/planning-engine/dist/generator/stair-coordination.js
 var init_stair_coordination = __esm({
-  "../planning-engine/dist/generator/stair-coordination.js"() {
+  "packages/planning-engine/dist/generator/stair-coordination.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// ../planning-engine/dist/interpretation/extraction-analysis.js
+// packages/planning-engine/dist/interpretation/extraction-analysis.js
 function normalizationScales(metadata, site) {
-  if (metadata.imageWidePixels <= 0 || metadata.imageTallPixels <= 0)
+  const frameWidth = metadata.frameWidth > 0 ? metadata.frameWidth : metadata.imageWidePixels;
+  const frameHeight = metadata.frameHeight > 0 ? metadata.frameHeight : metadata.imageTallPixels;
+  if (frameWidth <= 0 || frameHeight <= 0)
     return null;
   if (site.plotWidth <= 0 || site.plotDepth <= 0)
     return null;
   return {
-    scaleX: site.plotWidth / metadata.imageWidePixels,
-    scaleY: site.plotDepth / metadata.imageTallPixels
+    scaleX: site.plotWidth / frameWidth,
+    scaleY: site.plotDepth / frameHeight
   };
 }
 function normalizeExtractedPlan(extracted, site) {
@@ -4418,17 +4735,17 @@ function inspectExtractionStructure(plan) {
   return issues;
 }
 var init_extraction_analysis = __esm({
-  "../planning-engine/dist/interpretation/extraction-analysis.js"() {
+  "packages/planning-engine/dist/interpretation/extraction-analysis.js"() {
     "use strict";
   }
 });
 
-// ../planning-engine/dist/interpretation/extraction-building.js
+// packages/planning-engine/dist/interpretation/extraction-building.js
 function extractPlanToBuilding(extracted, site, projectId, name) {
   const diagnostics = [];
   const siteRect = { plotWidth: site.plotWidth, plotDepth: site.plotDepth };
-  const wide = extracted.metadata.imageWidePixels;
-  const tall = extracted.metadata.imageTallPixels;
+  const wide = extracted.metadata.frameWidth > 0 ? extracted.metadata.frameWidth : extracted.metadata.imageWidePixels;
+  const tall = extracted.metadata.frameHeight > 0 ? extracted.metadata.frameHeight : extracted.metadata.imageTallPixels;
   const boundaryPolygon = {
     points: extracted.boundary.points.map((point) => ({
       x: point.x / wide * site.plotWidth,
@@ -4576,7 +4893,7 @@ function attachExtractedOpenings(building, extracted, site) {
 }
 var DOOR_TYPE;
 var init_extraction_building = __esm({
-  "../planning-engine/dist/interpretation/extraction-building.js"() {
+  "packages/planning-engine/dist/interpretation/extraction-building.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -4591,7 +4908,7 @@ var init_extraction_building = __esm({
   }
 });
 
-// ../planning-engine/dist/interpretation/extraction-validation.js
+// packages/planning-engine/dist/interpretation/extraction-validation.js
 function validateExtractedPlan(building, extracted, requirements) {
   const diagnostics = evaluateDesign(building, { requiredRoomTypes: ["living", "bedroom"] });
   const issues = [];
@@ -4608,7 +4925,7 @@ function validateExtractedPlan(building, extracted, requirements) {
     }
   }
   const allRooms = building.floors.flatMap((floor) => floor.rooms);
-  const collisions = allRooms.flatMap((room2) => detectRoomCollisions(room2, allRooms));
+  const collisions = building.floors.flatMap((floor) => floor.rooms.flatMap((room2) => detectRoomCollisions(room2, floor.rooms)));
   if (collisions.length > 0) {
     const sample = collisions.slice(0, 5).map((collision) => [collision.entityA, collision.entityB].join(", ")).join("; ");
     issues.push({
@@ -4621,6 +4938,24 @@ function validateExtractedPlan(building, extracted, requirements) {
   for (const room2 of extracted.rooms) {
     const type = extractedRoomType(room2.type || room2.name);
     extractedCounts[type] = (extractedCounts[type] ?? 0) + 1;
+    const rawCombined = `${room2.type} ${room2.name}`.toLowerCase();
+    if (type === "living" && rawCombined.includes("dining")) {
+      extractedCounts["dining"] = (extractedCounts["dining"] ?? 0) + 1;
+    }
+  }
+  if (extracted.parking.length > 0) {
+    extractedCounts["parking"] = (extractedCounts["parking"] ?? 0) + extracted.parking.length;
+  }
+  if (extracted.stairs.length > 0) {
+    extractedCounts["staircase"] = (extractedCounts["staircase"] ?? 0) + extracted.stairs.length;
+  }
+  const buildingCounts = {};
+  for (const room2 of allRooms) {
+    buildingCounts[room2.type] = (buildingCounts[room2.type] ?? 0) + 1;
+  }
+  const siteParkingZones = (building.site?.siteZones ?? []).filter((z) => String(z.category ?? z.type ?? z.name ?? "").toLowerCase().includes("parking")).length;
+  if (siteParkingZones > 0) {
+    buildingCounts["parking"] = Math.max(buildingCounts["parking"] ?? 0, requirements.hard.parkingSpacesCount || siteParkingZones);
   }
   const requiredFields = [
     ["bedroom", requirements.hard.bedroomCount],
@@ -4631,7 +4966,7 @@ function validateExtractedPlan(building, extracted, requirements) {
     ["parking", requirements.hard.parkingSpacesCount]
   ];
   for (const [type, required] of requiredFields) {
-    const extractedCount = extractedCounts[type] ?? 0;
+    const extractedCount = Math.max(extractedCounts[type] ?? 0, buildingCounts[type] ?? 0);
     if (required > 0 && extractedCount < required) {
       issues.push({
         code: "EXTRACTION_MISSING_REQUIRED_ROOMS",
@@ -4659,7 +4994,7 @@ function validateExtractedPlan(building, extracted, requirements) {
   };
 }
 var init_extraction_validation = __esm({
-  "../planning-engine/dist/interpretation/extraction-validation.js"() {
+  "packages/planning-engine/dist/interpretation/extraction-validation.js"() {
     "use strict";
     init_dist2();
     init_design_evaluator();
@@ -4668,7 +5003,7 @@ var init_extraction_validation = __esm({
   }
 });
 
-// ../planning-engine/dist/interpretation/extraction-parser.js
+// packages/planning-engine/dist/interpretation/extraction-parser.js
 function asRecord3(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -4695,9 +5030,13 @@ function pointList(value) {
 function createExtractionMetadata(params) {
   const imageAspectRatio = params.imageTallPixels > 0 ? params.imageWidePixels / params.imageTallPixels : 0;
   const plotAspectRatio = params.plotDepth > 0 ? params.plotWidth / params.plotDepth : 0;
+  const frameWidth = params.frameWidth && params.frameWidth > 0 ? params.frameWidth : params.imageWidePixels;
+  const frameHeight = params.frameHeight && params.frameHeight > 0 ? params.frameHeight : params.imageTallPixels;
   return {
     imageWidePixels: params.imageWidePixels,
     imageTallPixels: params.imageTallPixels,
+    frameWidth,
+    frameHeight,
     imageAspectRatio,
     plotAspectRatio,
     aspectMismatchRatio: plotAspectRatio > 0 ? Math.abs(imageAspectRatio - plotAspectRatio) / plotAspectRatio : 0,
@@ -4885,14 +5224,17 @@ function parseCoreElements(value, fallbackName, diagnostics) {
 }
 var DOOR_TYPES, SWINGS;
 var init_extraction_parser = __esm({
-  "../planning-engine/dist/interpretation/extraction-parser.js"() {
+  "packages/planning-engine/dist/interpretation/extraction-parser.js"() {
     "use strict";
     DOOR_TYPES = /* @__PURE__ */ new Set(["single", "double", "sliding", "open_passage", "unknown"]);
     SWINGS = /* @__PURE__ */ new Set(["inward", "outward", "left", "right", "unknown"]);
   }
 });
 
-// ../planning-engine/dist/interpretation/apartment-plan.js
+// packages/planning-engine/dist/interpretation/apartment-plan.js
+function normalizeFlatIdentifier(id) {
+  return id.trim().toLowerCase().replace(/[\s_-]+/g, "");
+}
 function apartmentRoomRoles(label) {
   const n2 = ` ${label.toLowerCase().replace(/[_/&,.()-]+/g, " ").replace(/\s+/g, " ").trim()} `;
   const has = (...words) => words.some((w) => n2.includes(w));
@@ -4939,7 +5281,10 @@ function normalizeApartmentUnitType(value) {
   return value.toUpperCase().replace(/[\s_-]+/g, "");
 }
 function bhkBedrooms(unitType) {
-  const match = /^(\d+)BHK$/.exec(normalizeApartmentUnitType(unitType));
+  const norm = normalizeApartmentUnitType(unitType);
+  if (norm === "STUDIO")
+    return 0;
+  const match = /^(\d+)BHK$/.exec(norm);
   return match ? Number(match[1]) : null;
 }
 function area(r) {
@@ -5185,8 +5530,435 @@ function validateApartmentStructure(structure, expectation) {
     issues
   };
 }
+function generateWallsFromRooms(floorId, rooms) {
+  const hSegments = [];
+  const vSegments = [];
+  for (const room2 of rooms) {
+    const x0 = Math.round(room2.x);
+    const y0 = Math.round(room2.y);
+    const x1 = Math.round(room2.x + room2.width);
+    const y1 = Math.round(room2.y + room2.height);
+    const minX = Math.min(x0, x1);
+    const maxX = Math.max(x0, x1);
+    const minY = Math.min(y0, y1);
+    const maxY = Math.max(y0, y1);
+    hSegments.push({ coord: y0, min: minX, max: maxX, roomId: room2.id });
+    hSegments.push({ coord: y1, min: minX, max: maxX, roomId: room2.id });
+    vSegments.push({ coord: x0, min: minY, max: maxY, roomId: room2.id });
+    vSegments.push({ coord: x1, min: minY, max: maxY, roomId: room2.id });
+  }
+  const roomMap = new Map(rooms.map((r) => [r.id, r]));
+  const rawWalls = [];
+  const hByY = /* @__PURE__ */ new Map();
+  for (const seg of hSegments) {
+    const list = hByY.get(seg.coord) ?? [];
+    list.push(seg);
+    hByY.set(seg.coord, list);
+  }
+  for (const [y, segs] of hByY) {
+    const xCoords = /* @__PURE__ */ new Set();
+    for (const s of segs) {
+      xCoords.add(s.min);
+      xCoords.add(s.max);
+    }
+    const sortedX = [...xCoords].sort((a, b) => a - b);
+    for (let i = 0; i < sortedX.length - 1; i++) {
+      const xStart = sortedX[i];
+      const xEnd = sortedX[i + 1];
+      if (xEnd <= xStart)
+        continue;
+      const coveringRooms = /* @__PURE__ */ new Set();
+      for (const s of segs) {
+        if (s.min <= xStart && s.max >= xEnd) {
+          coveringRooms.add(s.roomId);
+        }
+      }
+      if (coveringRooms.size === 0)
+        continue;
+      const roomIds = [...coveringRooms];
+      const roomObjects = roomIds.map((id) => roomMap.get(id)).filter(Boolean);
+      const touchesShaft = roomObjects.some((r) => r?.type === RoomType.ServiceShaft);
+      const isInternal = roomIds.length >= 2 && !touchesShaft;
+      const wallType = isInternal ? WallType.Internal : WallType.External;
+      const thickness = isInternal ? 100 : 200;
+      rawWalls.push(createWall({
+        floorId,
+        startPoint: { x: xStart, y },
+        endPoint: { x: xEnd, y },
+        type: wallType,
+        thickness,
+        roomIds
+      }));
+    }
+  }
+  const vByX = /* @__PURE__ */ new Map();
+  for (const seg of vSegments) {
+    const list = vByX.get(seg.coord) ?? [];
+    list.push(seg);
+    vByX.set(seg.coord, list);
+  }
+  for (const [x, segs] of vByX) {
+    const yCoords = /* @__PURE__ */ new Set();
+    for (const s of segs) {
+      yCoords.add(s.min);
+      yCoords.add(s.max);
+    }
+    const sortedY = [...yCoords].sort((a, b) => a - b);
+    for (let i = 0; i < sortedY.length - 1; i++) {
+      const yStart = sortedY[i];
+      const yEnd = sortedY[i + 1];
+      if (yEnd <= yStart)
+        continue;
+      const coveringRooms = /* @__PURE__ */ new Set();
+      for (const s of segs) {
+        if (s.min <= yStart && s.max >= yEnd) {
+          coveringRooms.add(s.roomId);
+        }
+      }
+      if (coveringRooms.size === 0)
+        continue;
+      const roomIds = [...coveringRooms];
+      const roomObjects = roomIds.map((id) => roomMap.get(id)).filter(Boolean);
+      const touchesShaft = roomObjects.some((r) => r?.type === RoomType.ServiceShaft);
+      const isInternal = roomIds.length >= 2 && !touchesShaft;
+      const wallType = isInternal ? WallType.Internal : WallType.External;
+      const thickness = isInternal ? 100 : 200;
+      rawWalls.push(createWall({
+        floorId,
+        startPoint: { x, y: yStart },
+        endPoint: { x, y: yEnd },
+        type: wallType,
+        thickness,
+        roomIds
+      }));
+    }
+  }
+  return mergeAdjacentCollinearWalls(rawWalls);
+}
+function mergeAdjacentCollinearWalls(walls) {
+  const result = [];
+  const hWalls = walls.filter((w) => Math.abs(w.startPoint.y - w.endPoint.y) <= 1e-6);
+  const vWalls = walls.filter((w) => Math.abs(w.startPoint.x - w.endPoint.x) <= 1e-6);
+  const otherWalls = walls.filter((w) => !hWalls.includes(w) && !vWalls.includes(w));
+  result.push(...otherWalls);
+  const hByY = /* @__PURE__ */ new Map();
+  for (const w of hWalls) {
+    const y = w.startPoint.y;
+    const list = hByY.get(y) ?? [];
+    list.push(w);
+    hByY.set(y, list);
+  }
+  for (const [, list] of hByY) {
+    list.sort((a, b) => Math.min(a.startPoint.x, a.endPoint.x) - Math.min(b.startPoint.x, b.endPoint.x));
+    let current = null;
+    for (const w of list) {
+      const wMin = Math.min(w.startPoint.x, w.endPoint.x);
+      const wMax = Math.max(w.startPoint.x, w.endPoint.x);
+      if (!current) {
+        current = w;
+        continue;
+      }
+      const cMin = Math.min(current.startPoint.x, current.endPoint.x);
+      const cMax = Math.max(current.startPoint.x, current.endPoint.x);
+      const curRooms = [...current.roomIds].sort();
+      const wRooms = [...w.roomIds].sort();
+      const sameRooms = curRooms.length === wRooms.length && curRooms.every((id, idx) => id === wRooms[idx]);
+      const sameProps = current.type === w.type && current.thickness === w.thickness;
+      if (sameRooms && sameProps && Math.abs(cMax - wMin) <= 1e-3) {
+        current = {
+          ...current,
+          startPoint: { x: cMin, y: current.startPoint.y },
+          endPoint: { x: wMax, y: current.startPoint.y }
+        };
+      } else {
+        result.push(current);
+        current = w;
+      }
+    }
+    if (current)
+      result.push(current);
+  }
+  const vByX = /* @__PURE__ */ new Map();
+  for (const w of vWalls) {
+    const x = w.startPoint.x;
+    const list = vByX.get(x) ?? [];
+    list.push(w);
+    vByX.set(x, list);
+  }
+  for (const [, list] of vByX) {
+    list.sort((a, b) => Math.min(a.startPoint.y, a.endPoint.y) - Math.min(b.startPoint.y, b.endPoint.y));
+    let current = null;
+    for (const w of list) {
+      const wMin = Math.min(w.startPoint.y, w.endPoint.y);
+      const wMax = Math.max(w.startPoint.y, w.endPoint.y);
+      if (!current) {
+        current = w;
+        continue;
+      }
+      const cMin = Math.min(current.startPoint.y, current.endPoint.y);
+      const cMax = Math.max(current.startPoint.y, current.endPoint.y);
+      const curRooms = [...current.roomIds].sort();
+      const wRooms = [...w.roomIds].sort();
+      const sameRooms = curRooms.length === wRooms.length && curRooms.every((id, idx) => id === wRooms[idx]);
+      const sameProps = current.type === w.type && current.thickness === w.thickness;
+      if (sameRooms && sameProps && Math.abs(cMax - wMin) <= 1e-3) {
+        current = {
+          ...current,
+          startPoint: { x: current.startPoint.x, y: cMin },
+          endPoint: { x: current.startPoint.x, y: wMax }
+        };
+      } else {
+        result.push(current);
+        current = w;
+      }
+    }
+    if (current)
+      result.push(current);
+  }
+  return result;
+}
+function attachOpeningsToHostWalls(floor, options) {
+  const issues = [];
+  const doorMinEdgeDistance = options?.doorMinEdgeDistance ?? 100;
+  const windowMinEdgeDistance = options?.windowMinEdgeDistance ?? 100;
+  const roomMap = new Map(floor.rooms.map((r) => [r.id, r]));
+  const walls = floor.walls;
+  const updatedDoors = [];
+  for (const door2 of floor.doors) {
+    const [rAId, rBId] = door2.connectsRooms;
+    const isOutsideA = rAId === "__outside__";
+    const isOutsideB = rBId === "__outside__";
+    const isExterior = isOutsideA || isOutsideB;
+    if (isOutsideA && isOutsideB) {
+      issues.push({
+        code: "DOOR_ROOM_NOT_FOUND",
+        severity: "error",
+        message: `Door "${door2.id}" has invalid endpoints: both are outside identifiers.`
+      });
+      continue;
+    }
+    const rA = isOutsideA ? null : roomMap.get(rAId);
+    const rB = isOutsideB ? null : roomMap.get(rBId);
+    if (!isOutsideA && !rA) {
+      issues.push({
+        code: "DOOR_ROOM_NOT_FOUND",
+        severity: "error",
+        message: `Door "${door2.id}" references room "${rAId}" which does not exist on floor ${floor.id}.`
+      });
+      continue;
+    }
+    if (!isOutsideB && !rB) {
+      issues.push({
+        code: "DOOR_ROOM_NOT_FOUND",
+        severity: "error",
+        message: `Door "${door2.id}" references room "${rBId}" which does not exist on floor ${floor.id}.`
+      });
+      continue;
+    }
+    if (!isExterior && rAId === rBId) {
+      issues.push({
+        code: "DOOR_ROOM_NOT_FOUND",
+        severity: "error",
+        message: `Door "${door2.id}" connects room "${rAId}" to itself.`
+      });
+      continue;
+    }
+    let candidates;
+    if (isExterior) {
+      const roomActualId = isOutsideA ? rBId : rAId;
+      candidates = walls.filter((w) => w.type === WallType.External && w.roomIds.includes(roomActualId));
+    } else {
+      candidates = walls.filter((w) => w.roomIds.includes(rAId) && w.roomIds.includes(rBId));
+    }
+    if (candidates.length === 0) {
+      issues.push({
+        code: "DOOR_HOST_WALL_NOT_FOUND",
+        severity: "error",
+        message: isExterior ? `Door "${door2.id}" has no exterior host wall for room "${isOutsideA ? rBId : rAId}".` : `Door "${door2.id}" has no host wall connecting rooms "${rAId}" and "${rBId}".`
+      });
+      continue;
+    }
+    const matching = [];
+    for (const wall2 of candidates) {
+      const minX = Math.min(wall2.startPoint.x, wall2.endPoint.x);
+      const maxX = Math.max(wall2.startPoint.x, wall2.endPoint.x);
+      const minY = Math.min(wall2.startPoint.y, wall2.endPoint.y);
+      const maxY = Math.max(wall2.startPoint.y, wall2.endPoint.y);
+      const isHorizontal2 = Math.abs(wall2.startPoint.y - wall2.endPoint.y) <= 5;
+      const isVertical2 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
+      if (!isHorizontal2 && !isVertical2)
+        continue;
+      let dist = Infinity;
+      let alignedPos = null;
+      let clampingShift = Infinity;
+      if (isHorizontal2) {
+        const wallY = wall2.startPoint.y;
+        dist = Math.abs(door2.position.y - wallY);
+        const wallLen = maxX - minX;
+        if (wallLen >= door2.width + 2 * doorMinEdgeDistance) {
+          const clampedX = Math.max(minX + doorMinEdgeDistance, Math.min(maxX - door2.width - doorMinEdgeDistance, door2.position.x));
+          clampingShift = Math.abs(clampedX - door2.position.x);
+          alignedPos = { x: clampedX, y: wallY };
+        }
+      } else {
+        const wallX = wall2.startPoint.x;
+        dist = Math.abs(door2.position.x - wallX);
+        const wallLen = maxY - minY;
+        if (wallLen >= door2.width + 2 * doorMinEdgeDistance) {
+          const clampedY = Math.max(minY + doorMinEdgeDistance, Math.min(maxY - door2.width - doorMinEdgeDistance, door2.position.y));
+          clampingShift = Math.abs(clampedY - door2.position.y);
+          alignedPos = { x: wallX, y: clampedY };
+        }
+      }
+      if (alignedPos && dist <= 300 && clampingShift <= 100) {
+        matching.push({ wall: wall2, dist, clampingShift, alignedPos });
+      }
+    }
+    if (matching.length === 0) {
+      issues.push({
+        code: "DOOR_HOST_WALL_NOT_FOUND",
+        severity: "error",
+        message: `Door "${door2.id}" could not be geometrically associated with a host wall near (${door2.position.x}, ${door2.position.y}).`
+      });
+      continue;
+    }
+    matching.sort((a, b) => a.dist - b.dist);
+    if (matching.length > 1 && Math.abs(matching[0].dist - matching[1].dist) <= 20) {
+      issues.push({
+        code: "DOOR_HOST_WALL_AMBIGUOUS",
+        severity: "error",
+        message: `Door "${door2.id}" has ambiguous host wall association (multiple candidate walls equidistant within tolerance).`
+      });
+      continue;
+    }
+    const best = matching[0];
+    const updatedDoor = {
+      ...door2,
+      wallId: best.wall.id,
+      position: best.alignedPos
+    };
+    const placement = validateDoorPlacement(updatedDoor, best.wall, doorMinEdgeDistance);
+    if (!placement.valid) {
+      issues.push({
+        code: "DOOR_PLACEMENT_INVALID",
+        severity: "error",
+        message: `Door "${door2.id}" placement on wall "${best.wall.id}" is invalid: ${placement.reason}`
+      });
+      continue;
+    }
+    updatedDoors.push(updatedDoor);
+  }
+  const updatedWindows = [];
+  for (const win of floor.windows) {
+    const room2 = roomMap.get(win.roomId);
+    if (!room2) {
+      issues.push({
+        code: "WINDOW_ROOM_NOT_FOUND",
+        severity: "error",
+        message: `Window "${win.id}" references room "${win.roomId}" which does not exist on floor ${floor.id}.`
+      });
+      continue;
+    }
+    const candidates = walls.filter((w) => {
+      if (!w.roomIds.includes(win.roomId))
+        return false;
+      if (w.type === WallType.External)
+        return true;
+      return w.roomIds.some((id) => roomMap.get(id)?.type === RoomType.ServiceShaft);
+    });
+    if (candidates.length === 0) {
+      issues.push({
+        code: "WINDOW_HOST_WALL_NOT_FOUND",
+        severity: "error",
+        message: `Window "${win.id}" has no exterior or shaft host wall for room "${win.roomId}".`
+      });
+      continue;
+    }
+    const matching = [];
+    for (const wall2 of candidates) {
+      const minX = Math.min(wall2.startPoint.x, wall2.endPoint.x);
+      const maxX = Math.max(wall2.startPoint.x, wall2.endPoint.x);
+      const minY = Math.min(wall2.startPoint.y, wall2.endPoint.y);
+      const maxY = Math.max(wall2.startPoint.y, wall2.endPoint.y);
+      const isHorizontal2 = Math.abs(wall2.startPoint.y - wall2.endPoint.y) <= 5;
+      const isVertical2 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
+      if (!isHorizontal2 && !isVertical2)
+        continue;
+      let dist = Infinity;
+      let alignedPos = null;
+      let clampingShift = Infinity;
+      if (isHorizontal2) {
+        const wallY = wall2.startPoint.y;
+        dist = Math.abs(win.position.y - wallY);
+        const wallLen = maxX - minX;
+        if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
+          const clampedX = Math.max(minX + windowMinEdgeDistance, Math.min(maxX - win.width - windowMinEdgeDistance, win.position.x));
+          clampingShift = Math.abs(clampedX - win.position.x);
+          alignedPos = { x: clampedX, y: wallY };
+        }
+      } else {
+        const wallX = wall2.startPoint.x;
+        dist = Math.abs(win.position.x - wallX);
+        const wallLen = maxY - minY;
+        if (wallLen >= win.width + 2 * windowMinEdgeDistance) {
+          const clampedY = Math.max(minY + windowMinEdgeDistance, Math.min(maxY - win.width - windowMinEdgeDistance, win.position.y));
+          clampingShift = Math.abs(clampedY - win.position.y);
+          alignedPos = { x: wallX, y: clampedY };
+        }
+      }
+      if (alignedPos && dist <= 300 && clampingShift <= 100) {
+        matching.push({ wall: wall2, dist, clampingShift, alignedPos });
+      }
+    }
+    if (matching.length === 0) {
+      issues.push({
+        code: "WINDOW_HOST_WALL_NOT_FOUND",
+        severity: "error",
+        message: `Window "${win.id}" could not be geometrically associated with a host wall near (${win.position.x}, ${win.position.y}).`
+      });
+      continue;
+    }
+    matching.sort((a, b) => a.dist - b.dist);
+    if (matching.length > 1 && Math.abs(matching[0].dist - matching[1].dist) <= 20) {
+      issues.push({
+        code: "WINDOW_HOST_WALL_AMBIGUOUS",
+        severity: "error",
+        message: `Window "${win.id}" has ambiguous host wall association (multiple candidate walls equidistant within tolerance).`
+      });
+      continue;
+    }
+    const best = matching[0];
+    const updatedWindow = {
+      ...win,
+      wallId: best.wall.id,
+      position: best.alignedPos
+    };
+    const placement = validateWindowPlacement(updatedWindow, best.wall, windowMinEdgeDistance, true);
+    if (!placement.valid) {
+      issues.push({
+        code: "WINDOW_PLACEMENT_INVALID",
+        severity: "error",
+        message: `Window "${win.id}" placement on wall "${best.wall.id}" is invalid: ${placement.reason}`
+      });
+      continue;
+    }
+    updatedWindows.push(updatedWindow);
+  }
+  return {
+    doors: updatedDoors,
+    windows: updatedWindows,
+    issues
+  };
+}
 function apartmentStructureToBuilding(structure, site, projectId, name) {
   const diagnostics = [];
+  const flatBoundaries = structure.flats.map((flat) => ({
+    flatId: flat.id,
+    label: flat.label,
+    unitType: flat.unitType,
+    rect: flat.rect,
+    boundary: flat.boundary && flat.boundary.length >= 3 ? { points: flat.boundary.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) })) } : rectToPolygon(flat.rect.x, flat.rect.y, flat.rect.width, flat.rect.height)
+  }));
   const base = createBuilding({
     projectId,
     name,
@@ -5203,7 +5975,10 @@ function apartmentStructureToBuilding(structure, site, projectId, name) {
       level: 0,
       name: "Typical Residential Floor",
       boundary: { points: structure.boundary.map((p) => ({ x: Math.round(p.x), y: Math.round(p.y) })) }
-    }]
+    }],
+    metadata: {
+      flatBoundaries
+    }
   });
   const floorId = base.floors[0].id;
   const sourceTag = `source:${structure.source.toLowerCase()}`;
@@ -5235,7 +6010,7 @@ function apartmentStructureToBuilding(structure, site, projectId, name) {
     const unitTag = `unit-type:${normalizeApartmentUnitType(flat.unitType)}`;
     for (const room2 of flat.rooms) {
       const type = ROLE_ROOM_TYPE[roomRoles(room2)[0] ?? "other"];
-      add2(room2.id, `${flat.label} ${room2.name}`, type, room2.rect, [`flat:${flat.id}`, unitTag], false);
+      add2(room2.id, `${flat.label} ${room2.name}`, type, room2.rect, [`flat:${flat.id}`, unitTag, `apt-canonical-type:${room2.type}`, `apt-flat:${flat.id}`], false);
     }
   }
   for (const room2 of structure.commonRooms) {
@@ -5251,28 +6026,38 @@ function apartmentStructureToBuilding(structure, site, projectId, name) {
     add2(el2.id, el2.name, RoomType.Corridor, el2.rect, ["core:corridor"], true);
   for (const el2 of structure.shafts)
     add2(el2.id, el2.name, RoomType.ServiceShaft, el2.rect, ["core:shaft"], true);
-  const doors = [];
-  const windows = [];
+  const initialDoors = [];
+  const initialWindows = [];
   for (const opening2 of structure.openings) {
     const adjacent = rooms.find((r) => r.tags.includes(`apt-room:${opening2.adjacentRoomId}`));
     if (!adjacent) {
       diagnostics.push({
-        code: "APARTMENT_OPENING_SKIPPED",
-        severity: "warning",
+        code: opening2.kind === "door" ? "APARTMENT_DOOR_ROOM_NOT_FOUND" : "APARTMENT_WINDOW_ROOM_NOT_FOUND",
+        severity: "error",
         message: `${opening2.kind === "door" ? "Door" : "Window"} "${opening2.id}" was not attached: adjacent room "${opening2.adjacentRoomId}" is not in the plan.`
       });
       continue;
     }
     const position = { x: Math.round(opening2.rect.x), y: Math.round(opening2.rect.y) };
     const otherId = opening2.connects?.find((id) => id !== opening2.adjacentRoomId);
-    const other = otherId ? rooms.find((r) => r.tags.includes(`apt-room:${otherId}`)) : void 0;
+    let other = void 0;
+    if (otherId) {
+      other = rooms.find((r) => r.tags.includes(`apt-room:${otherId}`));
+      if (!other && otherId !== "__outside__") {
+        diagnostics.push({
+          code: "APARTMENT_DOOR_ROOM_NOT_FOUND",
+          severity: "error",
+          message: `Door "${opening2.id}" was not attached: connected room "${otherId}" is not in the plan.`
+        });
+        continue;
+      }
+    }
     if (opening2.kind === "door") {
-      doors.push({
+      initialDoors.push({
         id: opening2.id,
         floorId,
         wallId: "__extracted__",
         position,
-        // The opening's long side is the door width (a door in a vertical wall is tall and thin).
         width: Math.max(1, Math.round(Math.max(opening2.rect.width, opening2.rect.height))),
         height: 2100,
         type: DOOR_TYPE2[opening2.doorType ?? "unknown"] ?? "single",
@@ -5281,7 +6066,7 @@ function apartmentStructureToBuilding(structure, site, projectId, name) {
       });
     } else {
       const span = Math.max(1, Math.round(Math.max(opening2.rect.width, opening2.rect.height)));
-      windows.push({
+      initialWindows.push({
         id: opening2.id,
         floorId,
         wallId: "__extracted__",
@@ -5294,13 +6079,87 @@ function apartmentStructureToBuilding(structure, site, projectId, name) {
       });
     }
   }
+  const walls = generateWallsFromRooms(floorId, rooms);
+  const floorCandidate = {
+    ...base.floors[0],
+    rooms,
+    walls,
+    doors: initialDoors,
+    windows: initialWindows
+  };
+  const { doors: attachedDoors, windows: attachedWindows, issues: attachIssues } = attachOpeningsToHostWalls(floorCandidate);
+  const allOpeningDiagnostics = [...diagnostics, ...attachIssues];
   return {
     building: {
       ...base,
-      floors: [{ ...base.floors[0], rooms, doors: [...base.floors[0].doors, ...doors], windows: [...base.floors[0].windows, ...windows] }]
+      floors: [{
+        ...floorCandidate,
+        doors: attachedDoors,
+        windows: attachedWindows
+      }],
+      metadata: {
+        ...base.metadata,
+        flatBoundaries,
+        ...allOpeningDiagnostics.length > 0 ? { openingIssues: allOpeningDiagnostics } : {}
+      }
     },
-    diagnostics
+    diagnostics: allOpeningDiagnostics
   };
+}
+function classifyCanonicalFlatRooms(rooms, unitType) {
+  const normType = normalizeApartmentUnitType(unitType);
+  const isStudio = normType === "STUDIO";
+  const bedrooms = [];
+  const bathrooms = [];
+  const livingRooms = [];
+  const diningAreas = [];
+  const kitchens = [];
+  const utilities = [];
+  const balconies = [];
+  const otherRooms = [];
+  const hasSeparateDining = rooms.some((r) => r.type === RoomType.Dining);
+  for (const r of rooms) {
+    const rawName = r.name.toLowerCase();
+    const canonType = r.tags.find((t) => t.startsWith("apt-canonical-type:"))?.replace("apt-canonical-type:", "") ?? "";
+    if (r.type === RoomType.Bedroom) {
+      bedrooms.push(r);
+    } else if (r.type === RoomType.Bathroom) {
+      bathrooms.push(r);
+    } else if (r.type === RoomType.Kitchen) {
+      kitchens.push(r);
+    } else if (r.type === RoomType.Utility) {
+      utilities.push(r);
+    } else if (r.type === RoomType.Balcony) {
+      balconies.push(r);
+    } else if (r.type === RoomType.Dining) {
+      diningAreas.push(r);
+    } else if (r.type === RoomType.Living) {
+      livingRooms.push(r);
+      const isLivingDining = canonType === "living_dining" || /living.*dining|dining.*living|hall/i.test(rawName);
+      if (!isStudio && isLivingDining && !hasSeparateDining) {
+        diningAreas.push(r);
+      }
+    } else {
+      otherRooms.push(r);
+    }
+  }
+  return {
+    bedrooms,
+    bathrooms,
+    livingRooms,
+    diningAreas,
+    kitchens,
+    utilities,
+    balconies,
+    otherRooms
+  };
+}
+function matchFlatRooms(expectedUnit, allResidentialRooms) {
+  const normExpected = normalizeFlatIdentifier(expectedUnit.label);
+  return allResidentialRooms.filter((r) => {
+    const flatTags = r.tags.filter((t) => t.startsWith("flat:"));
+    return flatTags.some((t) => normalizeFlatIdentifier(t.slice(5)) === normExpected);
+  });
 }
 function measureApartmentBuilding(building) {
   const rooms = building.floors.flatMap((f) => f.rooms);
@@ -5323,26 +6182,531 @@ function measureApartmentBuilding(building) {
     if (room2.type === RoomType.Bedroom && room2.tags.some((t) => t.startsWith("flat:")))
       bedrooms++;
   }
+  const floorStairsCount = building.floors.reduce((sum2, f) => sum2 + (f.stairs?.length ?? 0), 0);
+  stairs = Math.max(stairs, floorStairsCount);
   return { flats: flats.size, lifts, stairs, lobbies, bedrooms };
 }
 function validateCanonicalApartmentBuilding(building, expectation) {
-  const diagnostics = evaluateDesign(building, { requiredRoomTypes: ["living", "bedroom"] });
+  const hasBHK = expectation.units.some((u) => normalizeApartmentUnitType(u.unitType) !== "STUDIO" && u.bedrooms > 0);
+  const requiredRoomTypes = [RoomType.Living];
+  if (hasBHK) {
+    requiredRoomTypes.push(RoomType.Bedroom);
+  }
+  const diagnostics = evaluateDesign(building, { requiredRoomTypes });
   const issues = [];
   for (const warning of diagnostics.warnings) {
     if (warning.severity === "error")
       issues.push({ code: `CANONICAL_${warning.code}`, severity: "error", message: warning.message });
   }
-  const rooms = building.floors.flatMap((f) => f.rooms);
-  const collisions = rooms.flatMap((room2) => detectRoomCollisions(room2, rooms));
-  if (collisions.length > 0) {
-    const names = new Map(rooms.map((r) => [r.id, r.name]));
-    const sample = collisions.slice(0, 4).map((c) => `${names.get(c.entityA)} \u2194 ${names.get(c.entityB)}`).join("; ");
-    issues.push({ code: "CANONICAL_ROOM_COLLISIONS", severity: "error", message: `${collisions.length / 2} room overlap(s): ${sample}.` });
+  for (const floor of building.floors) {
+    for (const room2 of floor.rooms) {
+      if (room2.floorId !== floor.id) {
+        issues.push({
+          code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+          severity: "error",
+          message: `Room "${room2.id}" has floorId "${room2.floorId}" which does not match floor "${floor.id}".`
+        });
+      }
+    }
+    for (const wall2 of floor.walls) {
+      if (wall2.floorId !== floor.id) {
+        issues.push({
+          code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+          severity: "error",
+          message: `Wall "${wall2.id}" has floorId "${wall2.floorId}" which does not match floor "${floor.id}".`
+        });
+      }
+      if (!Number.isFinite(wall2.startPoint.x) || !Number.isFinite(wall2.startPoint.y) || !Number.isFinite(wall2.endPoint.x) || !Number.isFinite(wall2.endPoint.y)) {
+        issues.push({
+          code: "CANONICAL_WALL_GEOMETRY_INVALID",
+          severity: "error",
+          message: `Wall "${wall2.id}" has non-finite coordinates.`
+        });
+      }
+      const len2 = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+      if (len2 <= 0) {
+        issues.push({
+          code: "CANONICAL_WALL_GEOMETRY_INVALID",
+          severity: "error",
+          message: `Wall "${wall2.id}" has zero length.`
+        });
+      }
+      const wallSegment2 = { start: wall2.startPoint, end: wall2.endPoint };
+      const floorBoundaryPoints = floor.boundary.points.map((p) => ({ x: p.x, y: p.y }));
+      let wallOutOfBounds = false;
+      if (segmentCrossesOutsidePolygon(wallSegment2, floorBoundaryPoints, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
+        wallOutOfBounds = true;
+      }
+      if (len2 > 0) {
+        const thickness = wall2.thickness ?? 100;
+        const halfThick = thickness / 2;
+        const dx = (wall2.endPoint.x - wall2.startPoint.x) / len2;
+        const dy = (wall2.endPoint.y - wall2.startPoint.y) / len2;
+        const nx = -dy * halfThick;
+        const ny = dx * halfThick;
+        const wallFootprint = {
+          points: [
+            { x: wall2.startPoint.x + nx, y: wall2.startPoint.y + ny },
+            { x: wall2.endPoint.x + nx, y: wall2.endPoint.y + ny },
+            { x: wall2.endPoint.x - nx, y: wall2.endPoint.y - ny },
+            { x: wall2.startPoint.x - nx, y: wall2.startPoint.y - ny }
+          ]
+        };
+        const tol = wall2.type === WallType.External ? halfThick + CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM : CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM;
+        if (!containsPolygonWithTolerance(floorBoundaryPoints, wallFootprint.points, tol)) {
+          wallOutOfBounds = true;
+        }
+      }
+      if (wallOutOfBounds) {
+        issues.push({
+          code: "CANONICAL_WALL_OUT_OF_BOUNDS",
+          severity: "error",
+          message: `Floor ${floor.level}: Wall "${wall2.id}" extends beyond the floor boundary segment or footprint.`
+        });
+      }
+      for (const rid of wall2.roomIds) {
+        if (!floor.rooms.some((r) => r.id === rid)) {
+          issues.push({
+            code: "CANONICAL_WALL_ROOM_NOT_FOUND",
+            severity: "error",
+            message: `Wall "${wall2.id}" references room "${rid}" which does not exist on floor "${floor.id}".`
+          });
+        }
+      }
+    }
+    const wallMap = new Map(floor.walls.map((w) => [w.id, w]));
+    for (const door2 of floor.doors) {
+      if (door2.floorId !== floor.id) {
+        issues.push({
+          code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+          severity: "error",
+          message: `Door "${door2.id}" has floorId "${door2.floorId}" which does not match floor "${floor.id}".`
+        });
+      }
+      if (!door2.wallId || door2.wallId === "__extracted__") {
+        issues.push({
+          code: "CANONICAL_DOOR_HOST_WALL_INVALID",
+          severity: "error",
+          message: `Door "${door2.id}" retains placeholder or missing wallId ("${door2.wallId}").`
+        });
+        continue;
+      }
+      const hostWall = wallMap.get(door2.wallId);
+      if (!hostWall) {
+        issues.push({
+          code: "CANONICAL_DOOR_HOST_WALL_NOT_FOUND",
+          severity: "error",
+          message: `Door "${door2.id}" references host wall "${door2.wallId}" which does not exist on floor "${floor.id}".`
+        });
+        continue;
+      }
+      const [rA, rB] = door2.connectsRooms;
+      const isOutsideA = rA === "__outside__";
+      const isOutsideB = rB === "__outside__";
+      if (isOutsideA && isOutsideB) {
+        issues.push({
+          code: "CANONICAL_DOOR_ENDPOINTS_INVALID",
+          severity: "error",
+          message: `Door "${door2.id}" connects outside to outside.`
+        });
+      } else if (isOutsideA || isOutsideB) {
+        const roomId = isOutsideA ? rB : rA;
+        if (!floor.rooms.some((r) => r.id === roomId)) {
+          issues.push({
+            code: "CANONICAL_DOOR_ROOM_NOT_FOUND",
+            severity: "error",
+            message: `Exterior door "${door2.id}" references room "${roomId}" which does not exist on floor "${floor.id}".`
+          });
+        }
+        if (hostWall.type !== WallType.External) {
+          issues.push({
+            code: "CANONICAL_DOOR_EXTERIOR_WALL_INVALID",
+            severity: "error",
+            message: `Exterior door "${door2.id}" is attached to internal wall "${hostWall.id}".`
+          });
+        }
+        if (!hostWall.roomIds.includes(roomId)) {
+          issues.push({
+            code: "CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL",
+            severity: "error",
+            message: `Exterior host wall "${hostWall.id}" does not belong to room "${roomId}".`
+          });
+        }
+      } else {
+        if (!floor.rooms.some((r) => r.id === rA)) {
+          issues.push({
+            code: "CANONICAL_DOOR_ROOM_NOT_FOUND",
+            severity: "error",
+            message: `Interior door "${door2.id}" references connected room "${rA}" which does not exist on floor "${floor.id}".`
+          });
+        }
+        if (!floor.rooms.some((r) => r.id === rB)) {
+          issues.push({
+            code: "CANONICAL_DOOR_ROOM_NOT_FOUND",
+            severity: "error",
+            message: `Interior door "${door2.id}" references connected room "${rB}" which does not exist on floor "${floor.id}".`
+          });
+        }
+        if (!hostWall.roomIds.includes(rA) || !hostWall.roomIds.includes(rB)) {
+          issues.push({
+            code: "CANONICAL_DOOR_ROOMS_NOT_ON_HOST_WALL",
+            severity: "error",
+            message: `Interior host wall "${hostWall.id}" does not connect both rooms [${rA}, ${rB}].`
+          });
+        }
+      }
+      const placement = validateDoorPlacement(door2, hostWall, 50);
+      if (!placement.valid) {
+        issues.push({
+          code: "CANONICAL_DOOR_PLACEMENT_INVALID",
+          severity: "error",
+          message: `Door "${door2.id}" placement on wall "${hostWall.id}" is invalid: ${placement.reason}`
+        });
+      }
+    }
+    for (const win of floor.windows) {
+      if (win.floorId !== floor.id) {
+        issues.push({
+          code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+          severity: "error",
+          message: `Window "${win.id}" has floorId "${win.floorId}" which does not match floor "${floor.id}".`
+        });
+      }
+      if (!win.wallId || win.wallId === "__extracted__") {
+        issues.push({
+          code: "CANONICAL_WINDOW_HOST_WALL_INVALID",
+          severity: "error",
+          message: `Window "${win.id}" retains placeholder or missing wallId ("${win.wallId}").`
+        });
+        continue;
+      }
+      const hostWall = wallMap.get(win.wallId);
+      if (!hostWall) {
+        issues.push({
+          code: "CANONICAL_WINDOW_HOST_WALL_NOT_FOUND",
+          severity: "error",
+          message: `Window "${win.id}" references host wall "${win.wallId}" which does not exist on floor "${floor.id}".`
+        });
+        continue;
+      }
+      if (!floor.rooms.some((r) => r.id === win.roomId)) {
+        issues.push({
+          code: "CANONICAL_WINDOW_ROOM_NOT_FOUND",
+          severity: "error",
+          message: `Window "${win.id}" references room "${win.roomId}" which does not exist on floor "${floor.id}".`
+        });
+      }
+      if (!hostWall.roomIds.includes(win.roomId)) {
+        issues.push({
+          code: "CANONICAL_WINDOW_ROOM_NOT_ON_HOST_WALL",
+          severity: "error",
+          message: `Host wall "${hostWall.id}" does not bound window room "${win.roomId}".`
+        });
+      }
+      const touchesShaft = hostWall.roomIds.some((id) => floor.rooms.find((r) => r.id === id)?.type === RoomType.ServiceShaft);
+      if (hostWall.type !== WallType.External && !touchesShaft) {
+        issues.push({
+          code: "CANONICAL_WINDOW_ON_INTERNAL_WALL",
+          severity: "error",
+          message: `Window "${win.id}" is hosted on an internal wall that does not face an exterior facade or service shaft.`
+        });
+      }
+      const placement = validateWindowPlacement(win, hostWall, 50, true);
+      if (!placement.valid) {
+        issues.push({
+          code: "CANONICAL_WINDOW_PLACEMENT_INVALID",
+          severity: "error",
+          message: `Window "${win.id}" placement on wall "${hostWall.id}" is invalid: ${placement.reason}`
+        });
+      }
+    }
+    for (const stair2 of floor.stairs) {
+      if (stair2.floorId !== floor.id) {
+        issues.push({
+          code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+          severity: "error",
+          message: `Stair "${stair2.id}" has floorId "${stair2.floorId}" which does not match floor "${floor.id}".`
+        });
+      }
+      if (!Number.isFinite(stair2.x) || !Number.isFinite(stair2.y) || !Number.isFinite(stair2.width) || !Number.isFinite(stair2.length) || stair2.width <= 0 || stair2.length <= 0) {
+        issues.push({
+          code: "CANONICAL_STAIR_GEOMETRY_INVALID",
+          severity: "error",
+          message: `Stair "${stair2.id}" has invalid dimensions or coordinates.`
+        });
+      } else {
+        const stairPolygon = {
+          points: [
+            { x: stair2.x, y: stair2.y },
+            { x: stair2.x + stair2.width, y: stair2.y },
+            { x: stair2.x + stair2.width, y: stair2.y + stair2.length },
+            { x: stair2.x, y: stair2.y + stair2.length }
+          ]
+        };
+        if (!containsPolygonWithTolerance(floor.boundary.points, stairPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
+          issues.push({
+            code: "CANONICAL_STAIR_OUT_OF_BOUNDS",
+            severity: "error",
+            message: `Floor ${floor.level}: Stair "${stair2.id}" extends beyond the floor boundary polygon.`
+          });
+        }
+      }
+      const [fromLevel, toLevel] = stair2.connectsFloors;
+      if (fromLevel < 0 || toLevel < 0 || !Number.isInteger(fromLevel) || !Number.isInteger(toLevel)) {
+        issues.push({
+          code: "CANONICAL_STAIR_LEVEL_INVALID",
+          severity: "error",
+          message: `Stair "${stair2.id}" references invalid floor levels: [${fromLevel}, ${toLevel}].`
+        });
+      } else if (fromLevel !== floor.level) {
+        issues.push({
+          code: "CANONICAL_STAIR_LEVEL_INVALID",
+          severity: "error",
+          message: `Stair "${stair2.id}" source level (${fromLevel}) does not match owning floor level (${floor.level}).`
+        });
+      } else if (building.floors.length > 1) {
+        const targetFloorExists = building.floors.some((f) => f.level === toLevel);
+        if (!targetFloorExists) {
+          issues.push({
+            code: "CANONICAL_STAIR_TARGET_LEVEL_MISSING",
+            severity: "error",
+            message: `Stair "${stair2.id}" connects to level ${toLevel} which does not exist in the building.`
+          });
+        }
+      }
+    }
+    const columns = floor.columns;
+    if (columns && Array.isArray(columns)) {
+      for (const col of columns) {
+        if (col.floorId && col.floorId !== floor.id) {
+          issues.push({
+            code: "CANONICAL_INVALID_FLOOR_OWNERSHIP",
+            severity: "error",
+            message: `Column "${col.id}" has floorId "${col.floorId}" which does not match floor "${floor.id}".`
+          });
+        }
+        if (!Number.isFinite(col.x) || !Number.isFinite(col.y) || col.width !== void 0 && col.width <= 0 || col.depth !== void 0 && col.depth <= 0) {
+          issues.push({
+            code: "CANONICAL_COLUMN_GEOMETRY_INVALID",
+            severity: "error",
+            message: `Column "${col.id}" has invalid dimensions or coordinates.`
+          });
+        }
+        if (!col.floorId || col.floorId === floor.id) {
+          const colPolygon = {
+            points: [
+              { x: col.x - (col.width ?? 0) / 2, y: col.y - (col.depth ?? 0) / 2 },
+              { x: col.x + (col.width ?? 0) / 2, y: col.y - (col.depth ?? 0) / 2 },
+              { x: col.x + (col.width ?? 0) / 2, y: col.y + (col.depth ?? 0) / 2 },
+              { x: col.x - (col.width ?? 0) / 2, y: col.y + (col.depth ?? 0) / 2 }
+            ]
+          };
+          if (!containsPolygonWithTolerance(floor.boundary.points, colPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM)) {
+            issues.push({
+              code: "CANONICAL_COLUMN_OUT_OF_BOUNDS",
+              severity: "error",
+              message: `Floor ${floor.level}: Column "${col.id}" extends beyond the floor boundary.`
+            });
+          }
+        }
+      }
+    }
+    const collisions = floor.rooms.flatMap((room2) => detectRoomCollisions(room2, floor.rooms));
+    if (collisions.length > 0) {
+      const names = new Map(floor.rooms.map((r) => [r.id, r.name]));
+      const sample = collisions.slice(0, 4).map((c) => `${names.get(c.entityA)} \u2194 ${names.get(c.entityB)}`).join("; ");
+      issues.push({
+        code: "CANONICAL_ROOM_COLLISIONS",
+        severity: "error",
+        message: `Floor ${floor.level}: ${collisions.length / 2} room overlap(s): ${sample}.`
+      });
+    }
+    const outside = floor.rooms.filter((r) => !containsPolygonWithTolerance(floor.boundary.points, r.boundary.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+    if (outside.length > 0) {
+      issues.push({
+        code: "CANONICAL_ROOMS_OUT_OF_BOUNDS",
+        severity: "error",
+        message: `Floor ${floor.level}: ${outside.length} room(s) fall outside the floor boundary.`
+      });
+    }
   }
-  const floor = building.floors[0];
-  const outside = floor ? floor.rooms.filter((r) => !containsPolygon(floor.boundary, r.boundary)) : [];
-  if (outside.length > 0) {
-    issues.push({ code: "CANONICAL_ROOMS_OUT_OF_BOUNDS", severity: "error", message: `${outside.length} room(s) fall outside the floor boundary.` });
+  const allResidentialRooms = building.floors.flatMap((f) => f.rooms).filter((r) => {
+    const isCore = r.tags.some((t) => t.startsWith("core:") || t === "common:room");
+    return !isCore && r.type !== RoomType.Lift && r.type !== RoomType.Staircase && r.type !== RoomType.ServiceShaft;
+  });
+  const expectedFlatMap = /* @__PURE__ */ new Map();
+  for (const u of expectation.units) {
+    const norm = normalizeFlatIdentifier(u.label);
+    if (expectedFlatMap.has(norm)) {
+      issues.push({
+        code: "CANONICAL_DUPLICATE_FLAT_MAPPING",
+        severity: "error",
+        message: `Multiple expected manifest units map to the same normalized label "${norm}".`
+      });
+    } else {
+      expectedFlatMap.set(norm, u);
+    }
+  }
+  const roomOwnershipMap = /* @__PURE__ */ new Map();
+  for (const r of allResidentialRooms) {
+    const flatTags = r.tags.filter((t) => t.startsWith("flat:"));
+    if (flatTags.length === 0) {
+      issues.push({
+        code: "CANONICAL_MISSING_FLAT_OWNERSHIP",
+        severity: "error",
+        message: `Residential room "${r.name}" (${r.id}) has no flat ownership tag.`
+      });
+      continue;
+    }
+    const distinctNormFlatIds = [...new Set(flatTags.map((t) => normalizeFlatIdentifier(t.slice(5))))];
+    if (distinctNormFlatIds.length > 1) {
+      issues.push({
+        code: "CANONICAL_CONFLICTING_FLAT_OWNERSHIP",
+        severity: "error",
+        message: `Residential room "${r.name}" (${r.id}) has conflicting flat ownership tags: ${flatTags.join(", ")}.`
+      });
+      continue;
+    }
+    const normFlatId = distinctNormFlatIds[0];
+    if (!expectedFlatMap.has(normFlatId)) {
+      issues.push({
+        code: "CANONICAL_UNKNOWN_FLAT_OWNERSHIP",
+        severity: "error",
+        message: `Residential room "${r.name}" (${r.id}) references unknown flat ID "${flatTags[0].slice(5)}".`
+      });
+      continue;
+    }
+    roomOwnershipMap.set(r.id, normFlatId);
+  }
+  const allocatedRoomIds = /* @__PURE__ */ new Set();
+  for (const u of expectation.units) {
+    const flatRooms = matchFlatRooms(u, allResidentialRooms);
+    if (flatRooms.length === 0) {
+      issues.push({
+        code: "CANONICAL_FLAT_MISSING_ROOMS",
+        severity: "error",
+        message: `No rooms found for flat "${u.label}" (${u.unitType}) in canonical building model.`
+      });
+      continue;
+    }
+    for (const r of flatRooms) {
+      if (allocatedRoomIds.has(r.id)) {
+        issues.push({
+          code: "CANONICAL_DUPLICATE_ROOM_ALLOCATION",
+          severity: "error",
+          message: `Room "${r.name}" (${r.id}) is claimed by more than one flat.`
+        });
+      }
+      allocatedRoomIds.add(r.id);
+    }
+    const classified = classifyCanonicalFlatRooms(flatRooms, u.unitType);
+    if (classified.bedrooms.length !== u.bedrooms) {
+      const code = classified.bedrooms.length < u.bedrooms ? "CANONICAL_SHORTFALL_BEDROOMS" : "CANONICAL_EXCESS_BEDROOMS";
+      issues.push({
+        code,
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.bedrooms.length} bedrooms; expected ${u.bedrooms}.`
+      });
+    }
+    if (classified.bathrooms.length !== u.bathrooms) {
+      const code = classified.bathrooms.length < u.bathrooms ? "CANONICAL_SHORTFALL_BATHROOMS" : "CANONICAL_EXCESS_BATHROOMS";
+      issues.push({
+        code,
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.bathrooms.length} bathrooms; expected ${u.bathrooms}.`
+      });
+    }
+    if (classified.livingRooms.length !== u.livingRooms) {
+      issues.push({
+        code: "CANONICAL_LIVING_COUNT_MISMATCH",
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.livingRooms.length} living spaces; expected ${u.livingRooms}.`
+      });
+    }
+    if (classified.diningAreas.length !== u.diningRooms) {
+      issues.push({
+        code: "CANONICAL_DINING_COUNT_MISMATCH",
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.diningAreas.length} dining areas; expected ${u.diningRooms}.`
+      });
+    }
+    if (classified.kitchens.length !== u.kitchens) {
+      issues.push({
+        code: "CANONICAL_KITCHEN_COUNT_MISMATCH",
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.kitchens.length} kitchens; expected ${u.kitchens}.`
+      });
+    }
+    if (classified.utilities.length !== u.utilities) {
+      issues.push({
+        code: "CANONICAL_UTILITY_COUNT_MISMATCH",
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.utilities.length} utilities; expected ${u.utilities}.`
+      });
+    }
+    if (classified.balconies.length !== u.balconies) {
+      issues.push({
+        code: "CANONICAL_BALCONY_COUNT_MISMATCH",
+        severity: "error",
+        message: `Flat "${u.label}" has ${classified.balconies.length} balconies; expected ${u.balconies}.`
+      });
+    }
+  }
+  const flatBoundaries = building.metadata?.flatBoundaries;
+  if (flatBoundaries && flatBoundaries.length > 0) {
+    for (const fb of flatBoundaries) {
+      const fbPolygon = fb.boundary;
+      const normFlatId = normalizeFlatIdentifier(fb.flatId);
+      const roomsOfFlat = allResidentialRooms.filter((r) => roomOwnershipMap.get(r.id) === normFlatId);
+      for (const r of roomsOfFlat) {
+        if (r.type === RoomType.Balcony) {
+          const isContained = containsPolygonWithTolerance(fbPolygon.points, r.boundary.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
+          if (!isContained) {
+            const touchingPoints = r.boundary.points.filter((p) => pointInPolygonWithTolerance(p, fbPolygon.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM));
+            if (touchingPoints.length === 0) {
+              issues.push({
+                code: "CANONICAL_BALCONY_ATTACHMENT_INVALID",
+                severity: "error",
+                message: `Balcony "${r.name}" (${r.id}) does not attach to declared flat boundary for "${fb.label}".`
+              });
+            }
+          }
+        } else {
+          const isContained = containsPolygonWithTolerance(fbPolygon.points, r.boundary.points, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM);
+          if (!isContained) {
+            issues.push({
+              code: "CANONICAL_ROOM_OUTSIDE_FLAT_BOUNDARY",
+              severity: "error",
+              message: `Room "${r.name}" (${r.id}) falls outside declared flat boundary for "${fb.label}".`
+            });
+          }
+        }
+      }
+      const otherFlatRooms = allResidentialRooms.filter((r) => roomOwnershipMap.get(r.id) !== normFlatId);
+      for (const otherRoom of otherFlatRooms) {
+        const overlap = polygonIntersectionArea(otherRoom.boundary, fbPolygon);
+        const roomArea = otherRoom.width * otherRoom.height;
+        if (overlap > 0.01 * roomArea && overlap > 5e4) {
+          issues.push({
+            code: "CANONICAL_ROOM_ENCROACHES_OTHER_FLAT",
+            severity: "error",
+            message: `Room "${otherRoom.name}" encroaches into private area of flat "${fb.label}" (${Math.round(overlap / 1e6 * 100) / 100} m\xB2 overlap).`
+          });
+        }
+      }
+      const coreRooms = building.floors.flatMap((f) => f.rooms).filter((r) => r.tags.some((t) => t.startsWith("core:")));
+      for (const core of coreRooms) {
+        const overlap = polygonIntersectionArea(core.boundary, fbPolygon);
+        const coreArea = core.width * core.height;
+        if (overlap > 0.1 * coreArea && overlap > 1e5) {
+          issues.push({
+            code: "CANONICAL_CORE_INSIDE_FLAT",
+            severity: "error",
+            message: `Common core element "${core.name}" sits inside private flat boundary "${fb.label}".`
+          });
+        }
+      }
+    }
   }
   const measured = measureApartmentBuilding(building);
   const expectedBedrooms = expectation.units.reduce((s, u) => s + u.bedrooms, 0);
@@ -5359,6 +6723,31 @@ function validateCanonicalApartmentBuilding(building, expectation) {
   }
   if (expectation.commonLobby && measured.lobbies === 0) {
     issues.push({ code: "CANONICAL_COUNT_MISMATCH", severity: "error", message: "Canonical plan has no common lobby; manifest requires one." });
+  }
+  const stairConnectors = building.floors.flatMap((f) => f.stairs.map((st) => {
+    const [fromLevel, toLevel] = st.connectsFloors;
+    const targetExists = building.floors.some((fl) => fl.level === toLevel);
+    return {
+      stairId: st.id,
+      fromLevel,
+      toLevel,
+      status: targetExists ? "CONNECTED" : "PENDING_UPPER_FLOOR"
+    };
+  }));
+  if (building.metadata) {
+    building.metadata.stairConnectors = stairConnectors;
+  }
+  const metaOpeningIssues = building.metadata?.openingIssues;
+  if (metaOpeningIssues && metaOpeningIssues.length > 0) {
+    for (const oi of metaOpeningIssues) {
+      issues.push({ code: oi.code.startsWith("CANONICAL_") ? oi.code : `CANONICAL_${oi.code}`, severity: oi.severity, message: oi.message });
+    }
+  }
+  const steppedIssues = building.metadata?.steppedPolygonValidationIssues;
+  if (steppedIssues && Array.isArray(steppedIssues) && steppedIssues.length > 0) {
+    for (const si of steppedIssues) {
+      issues.push({ code: si.code, severity: "error", message: si.message });
+    }
   }
   const isValid = issues.length === 0 && diagnostics.geometryHealthy;
   return {
@@ -5405,14 +6794,15 @@ function runApartmentPlanValidation(input) {
     diagnostics: [...verificationIssues, ...converted.diagnostics]
   };
 }
-var APARTMENT_COMMON_FLAT_ID, CORE_ROLES, ROLE_ROOM_TYPE, FLAT_OVERLAP_TOLERANCE, ROOM_CONTAINMENT_MIN, CORE_INSIDE_FLAT_TOLERANCE, DAY_ROLES, DOOR_TYPE2;
+var APARTMENT_COMMON_FLAT_ID, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM, CORE_ROLES, ROLE_ROOM_TYPE, FLAT_OVERLAP_TOLERANCE, ROOM_CONTAINMENT_MIN, CORE_INSIDE_FLAT_TOLERANCE, DAY_ROLES, DOOR_TYPE2;
 var init_apartment_plan = __esm({
-  "../planning-engine/dist/interpretation/apartment-plan.js"() {
+  "packages/planning-engine/dist/interpretation/apartment-plan.js"() {
     "use strict";
     init_dist();
     init_dist2();
     init_design_evaluator();
     APARTMENT_COMMON_FLAT_ID = "COMMON";
+    CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM = 50;
     CORE_ROLES = /* @__PURE__ */ new Set(["lift", "stair", "lobby", "corridor"]);
     ROLE_ROOM_TYPE = {
       bedroom: RoomType.Bedroom,
@@ -5448,9 +6838,363 @@ var init_apartment_plan = __esm({
   }
 });
 
-// ../planning-engine/dist/index.js
+// packages/planning-engine/dist/structural/structural-coordination-engine.js
+function clusterCoordinates(coords, tolerance) {
+  if (coords.length === 0)
+    return [];
+  const sorted3 = [...coords].sort((a, b) => a - b);
+  const clusters = [];
+  let currentCluster = [sorted3[0]];
+  for (let i = 1; i < sorted3.length; i++) {
+    const val = sorted3[i];
+    const clusterAvg = currentCluster.reduce((s, v) => s + v, 0) / currentCluster.length;
+    if (Math.abs(val - clusterAvg) <= tolerance) {
+      currentCluster.push(val);
+    } else {
+      clusters.push(currentCluster);
+      currentCluster = [val];
+    }
+  }
+  clusters.push(currentCluster);
+  return clusters.map((c) => Math.round(c.reduce((s, v) => s + v, 0) / c.length));
+}
+function letterForIndex(idx) {
+  const letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  if (idx < letters.length)
+    return letters[idx];
+  return `A${letters[idx % letters.length]}`;
+}
+function distToSegment(p, v, w) {
+  const l2 = (w.x - v.x) ** 2 + (w.y - v.y) ** 2;
+  if (l2 === 0)
+    return Math.hypot(p.x - v.x, p.y - v.y);
+  let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (v.x + t * (w.x - v.x)), p.y - (v.y + t * (w.y - v.y)));
+}
+var STRUCTURAL_COORDINATION_DISCLAIMER, CLUSTER_TOLERANCE_MM, MAX_RECOMMENDED_SPAN_MM, STANDARD_COLUMN_WIDTH_MM, STANDARD_COLUMN_DEPTH_MM, StructuralCoordinationEngine;
+var init_structural_coordination_engine = __esm({
+  "packages/planning-engine/dist/structural/structural-coordination-engine.js"() {
+    "use strict";
+    init_dist();
+    init_dist2();
+    STRUCTURAL_COORDINATION_DISCLAIMER = "CONCEPTUAL STRUCTURAL COORDINATION \u2014 ENGINEER REVIEW REQUIRED. All structural grids, column locations, and beam spans are preliminary geometric coordination overlays only. They do not constitute certified structural engineering, reinforcement detailing, or load-bearing calculations.";
+    CLUSTER_TOLERANCE_MM = 350;
+    MAX_RECOMMENDED_SPAN_MM = 5500;
+    STANDARD_COLUMN_WIDTH_MM = 230;
+    STANDARD_COLUMN_DEPTH_MM = 380;
+    StructuralCoordinationEngine = class _StructuralCoordinationEngine {
+      /**
+       * Static convenience method
+       */
+      static coordinateBuilding(building) {
+        return new _StructuralCoordinationEngine().coordinateBuilding(building);
+      }
+      /**
+       * Coordinate structural grid, columns, beams and diagnostics for a building.
+       * Returns enriched building with coordinated columns and structural reports.
+       */
+      coordinateBuilding(building) {
+        if (building.floors.length === 0) {
+          return {
+            buildingId: building.id,
+            building,
+            systems: [],
+            allColumns: [],
+            allBeams: [],
+            globalDiagnostics: [],
+            disclaimer: STRUCTURAL_COORDINATION_DISCLAIMER
+          };
+        }
+        const groundFloor = building.floors[0];
+        const allFloorPoints = [];
+        building.floors.forEach((floor) => {
+          floor.rooms.forEach((room2) => {
+            allFloorPoints.push({ x: room2.x, y: room2.y });
+            allFloorPoints.push({ x: room2.x + room2.width, y: room2.y });
+            allFloorPoints.push({ x: room2.x, y: room2.y + room2.height });
+            allFloorPoints.push({ x: room2.x + room2.width, y: room2.y + room2.height });
+            if (room2.boundary && room2.boundary.points) {
+              allFloorPoints.push(...room2.boundary.points);
+            }
+          });
+          floor.walls.forEach((wall2) => {
+            allFloorPoints.push(wall2.startPoint);
+            allFloorPoints.push(wall2.endPoint);
+          });
+          if (floor.boundary && floor.boundary.points) {
+            allFloorPoints.push(...floor.boundary.points);
+          }
+        });
+        const xCoords = clusterCoordinates(allFloorPoints.map((p) => p.x), CLUSTER_TOLERANCE_MM);
+        const yCoords = clusterCoordinates(allFloorPoints.map((p) => p.y), CLUSTER_TOLERANCE_MM);
+        const xGridLines = xCoords.map((x, idx) => ({
+          id: `grid-x-${idx + 1}`,
+          axis: "X",
+          coordinate: x,
+          label: String(idx + 1)
+        }));
+        const yGridLines = yCoords.map((y, idx) => ({
+          id: `grid-y-${idx + 1}`,
+          axis: "Y",
+          coordinate: y,
+          label: letterForIndex(idx)
+        }));
+        const candidateJunctions = [];
+        xGridLines.forEach((xLine) => {
+          yGridLines.forEach((yLine) => {
+            const pt4 = { x: xLine.coordinate, y: yLine.coordinate };
+            const gridRef = `${yLine.label}-${xLine.label}`;
+            let wallMatchCount = 0;
+            let isPerimeterCorner = false;
+            let isRoomCorner = false;
+            let isOnWall = false;
+            groundFloor.walls.forEach((wall2) => {
+              const dStart = Math.hypot(wall2.startPoint.x - pt4.x, wall2.startPoint.y - pt4.y);
+              const dEnd = Math.hypot(wall2.endPoint.x - pt4.x, wall2.endPoint.y - pt4.y);
+              if (dStart <= CLUSTER_TOLERANCE_MM || dEnd <= CLUSTER_TOLERANCE_MM) {
+                wallMatchCount++;
+              }
+              if (distToSegment(pt4, wall2.startPoint, wall2.endPoint) <= CLUSTER_TOLERANCE_MM) {
+                isOnWall = true;
+              }
+            });
+            groundFloor.rooms.forEach((room2) => {
+              const corners2 = [
+                { x: room2.x, y: room2.y },
+                { x: room2.x + room2.width, y: room2.y },
+                { x: room2.x + room2.width, y: room2.y + room2.height },
+                { x: room2.x, y: room2.y + room2.height }
+              ];
+              if (room2.boundary && room2.boundary.points) {
+                corners2.push(...room2.boundary.points);
+              }
+              if (corners2.some((c) => Math.hypot(c.x - pt4.x, c.y - pt4.y) <= CLUSTER_TOLERANCE_MM)) {
+                isRoomCorner = true;
+              }
+            });
+            if (groundFloor.boundary && groundFloor.boundary.points) {
+              const isCorner2 = groundFloor.boundary.points.some((bp) => Math.hypot(bp.x - pt4.x, bp.y - pt4.y) <= CLUSTER_TOLERANCE_MM);
+              if (isCorner2)
+                isPerimeterCorner = true;
+            }
+            if (isPerimeterCorner || isRoomCorner || wallMatchCount >= 1 || isOnWall) {
+              let priority = 20;
+              if (isPerimeterCorner)
+                priority += 50;
+              if (isRoomCorner)
+                priority += 40;
+              if (wallMatchCount >= 2)
+                priority += 30;
+              else if (wallMatchCount === 1)
+                priority += 20;
+              if (isOnWall)
+                priority += 10;
+              candidateJunctions.push({
+                point: pt4,
+                gridRef,
+                priority
+              });
+            }
+          });
+        });
+        const filteredPoints = [];
+        candidateJunctions.sort((a, b) => b.priority - a.priority);
+        for (const cand of candidateJunctions) {
+          const tooClose = filteredPoints.some((existing) => Math.hypot(existing.point.x - cand.point.x, existing.point.y - cand.point.y) < 2200);
+          if (!tooClose) {
+            filteredPoints.push(cand);
+          }
+        }
+        filteredPoints.sort((a, b) => a.point.y !== b.point.y ? a.point.y - b.point.y : a.point.x - b.point.x);
+        const systems = [];
+        const allColumns = [];
+        const allBeams = [];
+        const globalDiagnostics = [];
+        const columnsByLevel = /* @__PURE__ */ new Map();
+        const updatedFloors = building.floors.map((floor) => {
+          const floorColumns = [];
+          const floorClashes = [];
+          const floorDiagnostics = [];
+          filteredPoints.forEach((cand, idx) => {
+            const colId = `col-${floor.level}-${idx + 1}`;
+            const colPos = { ...cand.point };
+            const inBoundary = floor.boundary && floor.boundary.points.length >= 3 ? pointInPolygon(colPos, floor.boundary) : true;
+            if (!inBoundary) {
+              floorDiagnostics.push({
+                id: `diag-outside-${colId}`,
+                code: "COLUMN_OUTSIDE_FOOTPRINT",
+                severity: "WARNING",
+                message: `Column ${colId} at ${cand.gridRef} falls outside floor ${floor.level} boundary.`,
+                explanation: "Columns must be enclosed within the building footprint boundary plate.",
+                affectedEntities: [colId]
+              });
+              return;
+            }
+            floor.doors.forEach((door2) => {
+              const dist = Math.hypot(door2.position.x - colPos.x, door2.position.y - colPos.y);
+              if (dist < door2.width * 0.8) {
+                floorClashes.push({
+                  id: `clash-${colId}-${door2.id}`,
+                  type: "DOOR_INTERSECTION",
+                  columnId: colId,
+                  targetEntityId: door2.id,
+                  description: `Column ${cand.gridRef} encroaches on door opening ${door2.id}.`,
+                  severity: "WARNING"
+                });
+              }
+            });
+            floor.windows.forEach((win) => {
+              const dist = Math.hypot(win.position.x - colPos.x, win.position.y - colPos.y);
+              if (dist < win.width * 0.5) {
+                floorClashes.push({
+                  id: `clash-${colId}-${win.id}`,
+                  type: "WINDOW_INTERSECTION",
+                  columnId: colId,
+                  targetEntityId: win.id,
+                  description: `Column ${cand.gridRef} interferes with glazed window opening ${win.id}.`,
+                  severity: "WARNING"
+                });
+              }
+            });
+            floor.stairs.forEach((stair2) => {
+              const insideStair = stair2.boundary && stair2.boundary.points.length >= 3 ? pointInPolygon(colPos, stair2.boundary) : colPos.x >= stair2.x && colPos.x <= stair2.x + stair2.width && colPos.y >= stair2.y && colPos.y <= stair2.y + stair2.length;
+              if (insideStair) {
+                floorClashes.push({
+                  id: `clash-${colId}-${stair2.id}`,
+                  type: "STAIR_CLEARANCE",
+                  columnId: colId,
+                  targetEntityId: stair2.id,
+                  description: `Column ${cand.gridRef} penetrates staircase flight clearance ${stair2.id}.`,
+                  severity: "ERROR"
+                });
+              }
+            });
+            const column2 = {
+              id: colId,
+              floorId: floor.id,
+              position: colPos,
+              width: STANDARD_COLUMN_WIDTH_MM,
+              depth: STANDARD_COLUMN_DEPTH_MM,
+              shape: ColumnShape.Rectangular,
+              isStructural: true,
+              gridReference: cand.gridRef
+            };
+            floorColumns.push(column2);
+          });
+          const floorBeams = [];
+          for (let i = 0; i < floorColumns.length; i++) {
+            for (let j = i + 1; j < floorColumns.length; j++) {
+              const c1 = floorColumns[i];
+              const c2 = floorColumns[j];
+              const span = Math.hypot(c2.position.x - c1.position.x, c2.position.y - c1.position.y);
+              const isAlignedX = Math.abs(c1.position.x - c2.position.x) <= CLUSTER_TOLERANCE_MM;
+              const isAlignedY = Math.abs(c1.position.y - c2.position.y) <= CLUSTER_TOLERANCE_MM;
+              if ((isAlignedX || isAlignedY) && span <= 9500) {
+                const hasIntermediate = floorColumns.some((other) => {
+                  if (other.id === c1.id || other.id === c2.id)
+                    return false;
+                  if (isAlignedX && Math.abs(other.position.x - c1.position.x) <= CLUSTER_TOLERANCE_MM) {
+                    const minY = Math.min(c1.position.y, c2.position.y);
+                    const maxY = Math.max(c1.position.y, c2.position.y);
+                    return other.position.y > minY + 200 && other.position.y < maxY - 200;
+                  }
+                  if (isAlignedY && Math.abs(other.position.y - c1.position.y) <= CLUSTER_TOLERANCE_MM) {
+                    const minX = Math.min(c1.position.x, c2.position.x);
+                    const maxX = Math.max(c1.position.x, c2.position.x);
+                    return other.position.x > minX + 200 && other.position.x < maxX - 200;
+                  }
+                  return false;
+                });
+                if (!hasIntermediate) {
+                  const beamId = `beam-${floor.level}-${c1.id}-${c2.id}`;
+                  const isExcessiveSpan = span > MAX_RECOMMENDED_SPAN_MM;
+                  if (isExcessiveSpan) {
+                    floorDiagnostics.push({
+                      id: `diag-span-${beamId}`,
+                      code: "EXCESSIVE_SPAN",
+                      severity: "WARNING",
+                      message: `Beam span of ${(span / 1e3).toFixed(1)}m between ${c1.gridReference} and ${c2.gridReference} exceeds 5.5m limit.`,
+                      explanation: "Excessive spans in residential RCC construction require deep beam sections or intermediate transfer columns.",
+                      affectedEntities: [c1.id, c2.id]
+                    });
+                  }
+                  floorBeams.push({
+                    id: beamId,
+                    floorId: floor.id,
+                    startColumnId: c1.id,
+                    endColumnId: c2.id,
+                    startPoint: c1.position,
+                    endPoint: c2.position,
+                    spanMm: Math.round(span),
+                    widthMm: STANDARD_COLUMN_WIDTH_MM,
+                    depthMm: Math.max(350, Math.round(span / 12)),
+                    // L/12 preliminary depth estimate
+                    isPrimary: true,
+                    gridReference: `${c1.gridReference} \u2192 ${c2.gridReference}`
+                  });
+                }
+              }
+            }
+          }
+          columnsByLevel.set(floor.level, floorColumns);
+          allColumns.push(...floorColumns);
+          allBeams.push(...floorBeams);
+          const system = {
+            floorId: floor.id,
+            level: floor.level,
+            columns: floorColumns,
+            beams: floorBeams,
+            xGridLines,
+            yGridLines,
+            clashes: floorClashes,
+            diagnostics: floorDiagnostics,
+            notice: STRUCTURAL_COORDINATION_DISCLAIMER
+          };
+          systems.push(system);
+          return {
+            ...floor,
+            columns: floorColumns
+          };
+        });
+        for (let lvl = 1; lvl < building.floors.length; lvl++) {
+          const upperCols = columnsByLevel.get(lvl) ?? [];
+          const lowerCols = columnsByLevel.get(lvl - 1) ?? [];
+          upperCols.forEach((upCol) => {
+            const supported = lowerCols.some((lowCol) => Math.hypot(lowCol.position.x - upCol.position.x, lowCol.position.y - upCol.position.y) <= 300);
+            if (!supported) {
+              globalDiagnostics.push({
+                id: `diag-vertical-${upCol.id}`,
+                code: "DISCONTINUOUS_VERTICAL_SUPPORT",
+                severity: "WARNING",
+                message: `Upper level column ${upCol.id} (${upCol.gridReference}) has no aligned support column on level ${lvl - 1}.`,
+                explanation: "Discontinuous columns induce severe bending moments in floor slabs and require heavy transfer girders.",
+                affectedEntities: [upCol.id]
+              });
+            }
+          });
+        }
+        const updatedBuilding = {
+          ...building,
+          floors: updatedFloors
+        };
+        return {
+          buildingId: building.id,
+          building: updatedBuilding,
+          systems,
+          allColumns,
+          allBeams,
+          globalDiagnostics,
+          disclaimer: STRUCTURAL_COORDINATION_DISCLAIMER
+        };
+      }
+    };
+  }
+});
+
+// packages/planning-engine/dist/index.js
 var init_dist3 = __esm({
-  "../planning-engine/dist/index.js"() {
+  "packages/planning-engine/dist/index.js"() {
     "use strict";
     init_validator();
     init_generator();
@@ -5474,15 +7218,17 @@ var init_dist3 = __esm({
     init_extraction_validation();
     init_extraction_parser();
     init_apartment_plan();
+    init_dist2();
     init_massing_generator();
     init_architectural_layout_engine();
     init_design_strategy();
+    init_structural_coordination_engine();
   }
 });
 
-// ../ai-orchestration/dist/editing/planner.js
+// packages/ai-orchestration/dist/editing/planner.js
 var init_planner2 = __esm({
-  "../ai-orchestration/dist/editing/planner.js"() {
+  "packages/ai-orchestration/dist/editing/planner.js"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -5491,16 +7237,1541 @@ var init_planner2 = __esm({
   }
 });
 
-// ../ai-orchestration/dist/research/architectural-research-agent.js
+// packages/ai-orchestration/dist/research/architectural-research-agent.js
 var init_architectural_research_agent = __esm({
-  "../ai-orchestration/dist/research/architectural-research-agent.js"() {
+  "packages/ai-orchestration/dist/research/architectural-research-agent.js"() {
     "use strict";
     init_dist();
     init_dist();
   }
 });
 
-// ../ai-orchestration/dist/apartment/jurisdiction.js
+// packages/ai-orchestration/dist/apartment/typologies.js
+function normalizeUnitType(raw) {
+  const trimmed = String(raw ?? "").trim();
+  const lower = trimmed.toLowerCase();
+  if (lower === "studio")
+    return "Studio";
+  if (lower === "1bhk")
+    return "1BHK";
+  if (lower === "2bhk")
+    return "2BHK";
+  if (lower === "3bhk")
+    return "3BHK";
+  if (lower === "4bhk")
+    return "4BHK";
+  throw new UnsupportedUnitTypeError(raw);
+}
+function getExpectedRoomProgramme(unitType) {
+  const canonical = normalizeUnitType(unitType);
+  return CANONICAL_ROOM_PROGRAMMES[canonical];
+}
+function resolveAndValidateUnitMix(unitMix, flatsPerFloor) {
+  if (!Number.isInteger(flatsPerFloor) || flatsPerFloor <= 0) {
+    throw new Error(`flatsPerFloor must be a positive integer, received: ${flatsPerFloor}`);
+  }
+  if (!unitMix || unitMix.length === 0) {
+    return {
+      items: [
+        {
+          unitType: "2BHK",
+          count: flatsPerFloor
+        }
+      ],
+      wasDefaultApplied: true,
+      defaultExplanation: `Unit mix was omitted; applied default policy: ${flatsPerFloor} \xD7 2BHK flats.`
+    };
+  }
+  let totalCount = 0;
+  const validatedItems = [];
+  for (let i = 0; i < unitMix.length; i++) {
+    const item = unitMix[i];
+    if (!item.unitType) {
+      throw new Error(`Unit mix item at index ${i} is missing required field 'unitType'.`);
+    }
+    const canonicalType = normalizeUnitType(item.unitType);
+    if (item.count === void 0 || item.count === null) {
+      throw new Error(`Unit mix item for '${item.unitType}' at index ${i} must specify 'count'.`);
+    }
+    if (!Number.isInteger(item.count) || item.count <= 0) {
+      throw new Error(`Unit mix item for '${item.unitType}' at index ${i} has invalid count: ${item.count}. Count must be a positive integer.`);
+    }
+    if (item.carpetAreaSqM !== void 0 && item.carpetAreaSqM !== null) {
+      if (typeof item.carpetAreaSqM !== "number" || !Number.isFinite(item.carpetAreaSqM) || item.carpetAreaSqM <= 0) {
+        throw new InvalidCarpetAreaError(`unitMix[${i}].carpetAreaSqM`, item.carpetAreaSqM);
+      }
+    }
+    if (item.carpetAreaSqFt !== void 0 && item.carpetAreaSqFt !== null) {
+      if (typeof item.carpetAreaSqFt !== "number" || !Number.isFinite(item.carpetAreaSqFt) || item.carpetAreaSqFt <= 0) {
+        throw new InvalidCarpetAreaError(`unitMix[${i}].carpetAreaSqFt`, item.carpetAreaSqFt);
+      }
+    }
+    totalCount += item.count;
+    validatedItems.push({
+      unitType: canonicalType,
+      count: item.count,
+      carpetAreaSqFt: item.carpetAreaSqFt,
+      carpetAreaSqM: item.carpetAreaSqM
+    });
+  }
+  if (totalCount !== flatsPerFloor) {
+    throw new Error(`Unit mix total count (${totalCount}) does not match flatsPerFloor (${flatsPerFloor}). Silent insertion or truncation of flats is prohibited.`);
+  }
+  return {
+    items: validatedItems,
+    wasDefaultApplied: false
+  };
+}
+function allocateApartmentUnitSpaces(options) {
+  const { unitType, flatLabel = "Flat 01", rulesProfile } = options;
+  const canonicalType = normalizeUnitType(unitType);
+  const template = TYPOLOGY_TEMPLATES[canonicalType];
+  if (!template) {
+    throw new UnsupportedUnitTypeError(String(unitType));
+  }
+  const hasSqM = options.targetCarpetAreaSqM !== void 0 && options.targetCarpetAreaSqM !== null;
+  const hasSqFt = options.targetCarpetAreaSqFt !== void 0 && options.targetCarpetAreaSqFt !== null;
+  if (hasSqM) {
+    const val = options.targetCarpetAreaSqM;
+    if (typeof val !== "number" || !Number.isFinite(val) || val <= 0) {
+      throw new InvalidCarpetAreaError("targetCarpetAreaSqM", val);
+    }
+  }
+  if (hasSqFt) {
+    const val = options.targetCarpetAreaSqFt;
+    if (typeof val !== "number" || !Number.isFinite(val) || val <= 0) {
+      throw new InvalidCarpetAreaError("targetCarpetAreaSqFt", val);
+    }
+  }
+  let targetCarpetAreaSqM;
+  if (hasSqM) {
+    targetCarpetAreaSqM = options.targetCarpetAreaSqM;
+  } else if (hasSqFt) {
+    targetCarpetAreaSqM = options.targetCarpetAreaSqFt * 0.092903;
+  } else {
+    targetCarpetAreaSqM = template.defaultCarpetAreaSqM;
+  }
+  const targetBuiltUpAreaSqM = targetCarpetAreaSqM * 1.15;
+  const targetCarpetAreaSqFt = Math.round(targetCarpetAreaSqM / 0.092903);
+  const targetBuiltUpAreaSqFt = Math.round(targetBuiltUpAreaSqM / 0.092903);
+  const internalCirculationSqM = targetCarpetAreaSqM * 0.08;
+  const internalWallsSqM = targetCarpetAreaSqM * 0.07;
+  let totalMandatoryMinimumsSqM = 0;
+  const roomBaseMinimums = [];
+  for (const rt of template.roomTemplates) {
+    let minArea = 1.5;
+    let minWidth = 1;
+    switch (rt.type) {
+      case "master_bedroom":
+        minArea = rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM;
+        minWidth = rulesProfile.habitableRoomMinimums.masterHabitableRoomMinWidthM;
+        break;
+      case "bedroom":
+        minArea = rulesProfile.habitableRoomMinimums.otherHabitableRoomMinSqM;
+        minWidth = rulesProfile.habitableRoomMinimums.otherHabitableRoomMinWidthM;
+        break;
+      case "living_dining":
+        minArea = Math.max(12, rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM * 1.25);
+        minWidth = 3;
+        break;
+      case "kitchen":
+        minArea = rulesProfile.kitchenMinimums.minAreaSqM;
+        minWidth = rulesProfile.kitchenMinimums.minWidthM;
+        break;
+      case "utility":
+        minArea = rulesProfile.utilityMinimums.minAreaSqM;
+        minWidth = rulesProfile.utilityMinimums.minWidthM;
+        break;
+      case "master_toilet":
+      case "common_toilet":
+        minArea = rulesProfile.combinedToiletMinimums.minAreaSqM;
+        minWidth = rulesProfile.combinedToiletMinimums.minWidthM;
+        break;
+      case "foyer":
+        minArea = 2;
+        minWidth = 1.2;
+        break;
+      case "puja":
+        minArea = 1.2;
+        minWidth = 0.9;
+        break;
+      case "balcony":
+        minArea = 2.5;
+        minWidth = 1.2;
+        break;
+      default:
+        minArea = 1.5;
+        minWidth = 1;
+    }
+    totalMandatoryMinimumsSqM += minArea;
+    roomBaseMinimums.push({ template: rt, minArea, minWidth });
+  }
+  const requiredMinimumCarpetSqM = Number((totalMandatoryMinimumsSqM / (1 - 0.08 - 0.07)).toFixed(2));
+  const rawBalance = targetCarpetAreaSqM - totalMandatoryMinimumsSqM - internalCirculationSqM - internalWallsSqM;
+  if (rawBalance < -1e-6) {
+    const deficitSqM = Number(Math.abs(rawBalance).toFixed(2));
+    throw new InsufficientCarpetAreaError(canonicalType, Number(targetCarpetAreaSqM.toFixed(2)), requiredMinimumCarpetSqM, deficitSqM);
+  }
+  const usablePlanningBalanceSqM = Number(Math.max(0, rawBalance).toFixed(2));
+  const totalWeight = template.roomTemplates.reduce((sum2, r) => sum2 + r.weight, 0);
+  const rooms = roomBaseMinimums.map(({ template: rt, minArea, minWidth }) => {
+    const additionalArea = rt.weight / totalWeight * usablePlanningBalanceSqM;
+    const targetAreaSqM = Number((minArea + additionalArea).toFixed(2));
+    return {
+      id: `${flatLabel.toLowerCase().replace(/\s+/g, "_")}_${rt.id}`,
+      name: rt.name,
+      type: rt.type,
+      tier: rt.tier,
+      minAreaSqM: minArea,
+      minWidthM: minWidth,
+      targetAreaSqM,
+      isEnsuite: rt.isEnsuite,
+      hasBalcony: rt.hasBalcony,
+      vastuZone: rt.vastuZone
+    };
+  });
+  return {
+    unitType: template.unitType,
+    flatLabel,
+    targetCarpetAreaSqM: Number(targetCarpetAreaSqM.toFixed(2)),
+    targetCarpetAreaSqFt,
+    targetBuiltUpAreaSqM: Number(targetBuiltUpAreaSqM.toFixed(2)),
+    targetBuiltUpAreaSqFt,
+    internalCirculationSqM: Number(internalCirculationSqM.toFixed(2)),
+    internalWallsSqM: Number(internalWallsSqM.toFixed(2)),
+    usablePlanningBalanceSqM,
+    requiredMinimumCarpetSqM,
+    isFeasible: true,
+    rooms,
+    planningSequence: template.planningSequence
+  };
+}
+var UnsupportedUnitTypeError, InvalidCarpetAreaError, InsufficientCarpetAreaError, TYPOLOGY_STUDIO_TEMPLATE, TYPOLOGY_1BHK_TEMPLATE, TYPOLOGY_2BHK_TEMPLATE, TYPOLOGY_3BHK_TEMPLATE, TYPOLOGY_4BHK_TEMPLATE, TYPOLOGY_TEMPLATES, CANONICAL_ROOM_PROGRAMMES;
+var init_typologies = __esm({
+  "packages/ai-orchestration/dist/apartment/typologies.js"() {
+    "use strict";
+    UnsupportedUnitTypeError = class extends Error {
+      rawUnitType;
+      constructor(rawUnitType) {
+        super(`Unsupported apartment unit type: "${rawUnitType}". Supported types are: Studio, 1BHK, 2BHK, 3BHK, 4BHK.`);
+        this.rawUnitType = rawUnitType;
+        this.name = "UnsupportedUnitTypeError";
+      }
+    };
+    InvalidCarpetAreaError = class extends Error {
+      field;
+      value;
+      code = "INVALID_CARPET_AREA";
+      constructor(field, value, message) {
+        super(message ?? `Invalid supplied carpet area for '${field}': ${String(value)}. Carpet area must be a finite, positive number.`);
+        this.field = field;
+        this.value = value;
+        this.name = "InvalidCarpetAreaError";
+      }
+    };
+    InsufficientCarpetAreaError = class extends Error {
+      unitType;
+      targetCarpetAreaSqM;
+      requiredMinimumCarpetSqM;
+      deficitSqM;
+      code = "INSUFFICIENT_CARPET_AREA";
+      constructor(unitType, targetCarpetAreaSqM, requiredMinimumCarpetSqM, deficitSqM, message) {
+        super(message ?? `Requested carpet area (${targetCarpetAreaSqM.toFixed(2)} m\xB2) for ${unitType} is insufficient to accommodate mandatory room minimums plus internal circulation and wall allowances (minimum required: ${requiredMinimumCarpetSqM.toFixed(2)} m\xB2, deficit: ${deficitSqM.toFixed(2)} m\xB2).`);
+        this.unitType = unitType;
+        this.targetCarpetAreaSqM = targetCarpetAreaSqM;
+        this.requiredMinimumCarpetSqM = requiredMinimumCarpetSqM;
+        this.deficitSqM = deficitSqM;
+        this.name = "InsufficientCarpetAreaError";
+      }
+    };
+    TYPOLOGY_STUDIO_TEMPLATE = {
+      unitType: "Studio",
+      defaultCarpetAreaSqM: 38,
+      planningSequence: [
+        "Main Entrance Door",
+        "Entrance Foyer",
+        "Studio Living & Sleeping Suite",
+        "Kitchenette / Kitchen",
+        "Bathroom",
+        "Sit-Out Balcony"
+      ],
+      roomTemplates: [
+        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.06 },
+        { id: "living_dining", name: "Studio Living & Sleeping Suite", type: "living_dining", tier: "PUBLIC", weight: 0.58, hasBalcony: true },
+        { id: "kitchen", name: "Kitchenette / Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.18, vastuZone: "SE" },
+        { id: "common_toilet", name: "Bathroom", type: "common_toilet", tier: "PRIVATE", weight: 0.12, vastuZone: "NW" },
+        { id: "living_balcony", name: "Sit-out Balcony", type: "balcony", tier: "PUBLIC", weight: 0.06, hasBalcony: true }
+      ]
+    };
+    TYPOLOGY_1BHK_TEMPLATE = {
+      unitType: "1BHK",
+      defaultCarpetAreaSqM: 52,
+      planningSequence: [
+        "Main Entrance Door",
+        "Entrance Foyer",
+        "Living & Dining Room",
+        "Sit-Out Balcony",
+        "Kitchen",
+        "Dry Utility Balcony",
+        "Master Bedroom",
+        "Common Toilet"
+      ],
+      roomTemplates: [
+        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.05 },
+        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.36, hasBalcony: true },
+        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.14, vastuZone: "SE" },
+        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.06 },
+        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.25, vastuZone: "SW" },
+        { id: "common_toilet", name: "Common Toilet", type: "common_toilet", tier: "PRIVATE", weight: 0.08, vastuZone: "NW" },
+        { id: "living_balcony", name: "Sit-out Balcony", type: "balcony", tier: "PUBLIC", weight: 0.06, hasBalcony: true }
+      ]
+    };
+    TYPOLOGY_2BHK_TEMPLATE = {
+      unitType: "2BHK",
+      defaultCarpetAreaSqM: 70,
+      planningSequence: [
+        "Main Entrance Door",
+        "Entrance Foyer (1.2m x 1.5m)",
+        "Living & Dining Room (Brahmasthana Spine)",
+        "Sit-Out Balcony (Open Facade)",
+        "Puja Alcove (NE Zone)",
+        "Kitchen",
+        "Dry Utility Balcony (1.2m x 1.8m)",
+        "Private Passage (min 1.0m wide)",
+        "Master Bedroom (SW Zone) + Attached Bath + 600mm Wardrobe",
+        "Bedroom 2",
+        "Common Toilet (Clustered on OTS Shaft)"
+      ],
+      roomTemplates: [
+        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.04 },
+        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.35, hasBalcony: true },
+        { id: "puja", name: "Puja Alcove", type: "puja", tier: "PUBLIC", weight: 0.03, vastuZone: "NE" },
+        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.12, vastuZone: "SE" },
+        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.05 },
+        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.2, isEnsuite: true, vastuZone: "SW" },
+        { id: "master_toilet", name: "Master Toilet (En-suite)", type: "master_toilet", tier: "PRIVATE", weight: 0.04, isEnsuite: true },
+        { id: "bedroom_2", name: "Bedroom 2", type: "bedroom", tier: "PRIVATE", weight: 0.13 },
+        { id: "common_toilet", name: "Common Toilet", type: "common_toilet", tier: "PRIVATE", weight: 0.04, vastuZone: "NW" },
+        { id: "living_balcony", name: "Sit-out Balcony", type: "balcony", tier: "PUBLIC", weight: 0, hasBalcony: true }
+      ]
+    };
+    TYPOLOGY_3BHK_TEMPLATE = {
+      unitType: "3BHK",
+      defaultCarpetAreaSqM: 105,
+      planningSequence: [
+        "Main Entrance Door",
+        "Entrance Foyer (1.2m x 1.5m)",
+        "Living & Dining Room (Brahmasthana Spine)",
+        "Sit-Out Balcony (Open Facade)",
+        "Puja Room (NE Zone)",
+        "Kitchen",
+        "Dry Utility Balcony (1.2m x 1.8m)",
+        "Private Passage (min 1.0m wide)",
+        "Master Suite (SW Zone) + Attached Bath + Walk-in Wardrobe",
+        "Bedroom 2 + Attached Bath",
+        "Bedroom 3",
+        "Common Toilet / Powder Room"
+      ],
+      roomTemplates: [
+        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.04 },
+        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.32, hasBalcony: true },
+        { id: "puja", name: "Puja Room", type: "puja", tier: "PUBLIC", weight: 0.03, vastuZone: "NE" },
+        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.11, vastuZone: "SE" },
+        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.05 },
+        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.18, isEnsuite: true, hasBalcony: true, vastuZone: "SW" },
+        { id: "master_toilet", name: "Master Toilet (En-suite)", type: "master_toilet", tier: "PRIVATE", weight: 0.04, isEnsuite: true },
+        { id: "bedroom_2", name: "Bedroom 2", type: "bedroom", tier: "PRIVATE", weight: 0.13, isEnsuite: true },
+        { id: "toilet_2", name: "Toilet 2 (Attached)", type: "master_toilet", tier: "PRIVATE", weight: 0.03, isEnsuite: true },
+        { id: "bedroom_3", name: "Bedroom 3 / Guest Room", type: "bedroom", tier: "PRIVATE", weight: 0.12 },
+        { id: "common_toilet", name: "Common Toilet / Powder", type: "common_toilet", tier: "PRIVATE", weight: 0.03, vastuZone: "NW" },
+        { id: "living_balcony", name: "Living Sit-Out Balcony", type: "balcony", tier: "PUBLIC", weight: 0.02, hasBalcony: true }
+      ]
+    };
+    TYPOLOGY_4BHK_TEMPLATE = {
+      unitType: "4BHK",
+      defaultCarpetAreaSqM: 145,
+      planningSequence: [
+        "Main Entrance Door",
+        "Entrance Foyer",
+        "Living & Dining Room",
+        "Sit-Out Balcony",
+        "Puja Room (NE Zone)",
+        "Kitchen",
+        "Dry Utility Balcony",
+        "Private Passage",
+        "Master Suite (SW Zone) + Attached Bath",
+        "Bedroom 2 + Attached Bath",
+        "Bedroom 3 + Attached Bath",
+        "Bedroom 4 / Guest Room",
+        "Common Toilet / Powder Room"
+      ],
+      roomTemplates: [
+        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.04 },
+        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.28, hasBalcony: true },
+        { id: "puja", name: "Puja Room", type: "puja", tier: "PUBLIC", weight: 0.025, vastuZone: "NE" },
+        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.1, vastuZone: "SE" },
+        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.045 },
+        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.16, isEnsuite: true, hasBalcony: true, vastuZone: "SW" },
+        { id: "master_toilet", name: "Master Toilet (En-suite)", type: "master_toilet", tier: "PRIVATE", weight: 0.035, isEnsuite: true },
+        { id: "bedroom_2", name: "Bedroom 2", type: "bedroom", tier: "PRIVATE", weight: 0.11, isEnsuite: true },
+        { id: "toilet_2", name: "Toilet 2 (Attached)", type: "master_toilet", tier: "PRIVATE", weight: 0.03, isEnsuite: true },
+        { id: "bedroom_3", name: "Bedroom 3", type: "bedroom", tier: "PRIVATE", weight: 0.1, isEnsuite: true },
+        { id: "toilet_3", name: "Toilet 3 (Attached)", type: "master_toilet", tier: "PRIVATE", weight: 0.03, isEnsuite: true },
+        { id: "bedroom_4", name: "Bedroom 4 / Guest Room", type: "bedroom", tier: "PRIVATE", weight: 0.09 },
+        { id: "common_toilet", name: "Common Toilet / Powder", type: "common_toilet", tier: "PRIVATE", weight: 0.03, vastuZone: "NW" },
+        { id: "living_balcony", name: "Living Sit-Out Balcony", type: "balcony", tier: "PUBLIC", weight: 0.025, hasBalcony: true }
+      ]
+    };
+    TYPOLOGY_TEMPLATES = {
+      Studio: TYPOLOGY_STUDIO_TEMPLATE,
+      "1BHK": TYPOLOGY_1BHK_TEMPLATE,
+      "2BHK": TYPOLOGY_2BHK_TEMPLATE,
+      "3BHK": TYPOLOGY_3BHK_TEMPLATE,
+      "4BHK": TYPOLOGY_4BHK_TEMPLATE,
+      studio: TYPOLOGY_STUDIO_TEMPLATE,
+      "1bhk": TYPOLOGY_1BHK_TEMPLATE,
+      "2bhk": TYPOLOGY_2BHK_TEMPLATE,
+      "3bhk": TYPOLOGY_3BHK_TEMPLATE,
+      "4bhk": TYPOLOGY_4BHK_TEMPLATE
+    };
+    CANONICAL_ROOM_PROGRAMMES = {
+      Studio: {
+        unitType: "Studio",
+        bedrooms: 0,
+        bathrooms: 1,
+        livingRooms: 1,
+        diningRooms: 0,
+        kitchens: 1,
+        utilities: 0,
+        balconies: 1
+      },
+      "1BHK": {
+        unitType: "1BHK",
+        bedrooms: 1,
+        bathrooms: 1,
+        livingRooms: 1,
+        diningRooms: 1,
+        kitchens: 1,
+        utilities: 1,
+        balconies: 1
+      },
+      "2BHK": {
+        unitType: "2BHK",
+        bedrooms: 2,
+        bathrooms: 2,
+        livingRooms: 1,
+        diningRooms: 1,
+        kitchens: 1,
+        utilities: 1,
+        balconies: 1
+      },
+      "3BHK": {
+        unitType: "3BHK",
+        bedrooms: 3,
+        bathrooms: 3,
+        livingRooms: 1,
+        diningRooms: 1,
+        kitchens: 1,
+        utilities: 1,
+        balconies: 1
+      },
+      "4BHK": {
+        unitType: "4BHK",
+        bedrooms: 4,
+        bathrooms: 4,
+        livingRooms: 1,
+        diningRooms: 1,
+        kitchens: 1,
+        utilities: 1,
+        balconies: 1
+      }
+    };
+  }
+});
+
+// packages/ai-orchestration/dist/apartment/site-defaults.js
+var DEFAULT_APARTMENT_SETBACKS_MM, DEFAULT_APARTMENT_SETBACKS_M;
+var init_site_defaults = __esm({
+  "packages/ai-orchestration/dist/apartment/site-defaults.js"() {
+    "use strict";
+    DEFAULT_APARTMENT_SETBACKS_MM = {
+      front: 3e3,
+      rear: 2e3,
+      left: 2e3,
+      right: 2e3
+    };
+    DEFAULT_APARTMENT_SETBACKS_M = {
+      front: DEFAULT_APARTMENT_SETBACKS_MM.front / 1e3,
+      rear: DEFAULT_APARTMENT_SETBACKS_MM.rear / 1e3,
+      left: DEFAULT_APARTMENT_SETBACKS_MM.left / 1e3,
+      right: DEFAULT_APARTMENT_SETBACKS_MM.right / 1e3
+    };
+  }
+});
+
+// packages/ai-orchestration/dist/apartment/manifest.js
+function buildApartmentGenerationManifest(input) {
+  const { site, apartmentConfig } = input;
+  const setbacks = site.setbacksMm ?? DEFAULT_APARTMENT_SETBACKS_MM;
+  const plotWidthM = site.plotWidthMm / 1e3;
+  const plotDepthM = site.plotDepthMm / 1e3;
+  const siteAreaSqM = Number((plotWidthM * plotDepthM).toFixed(2));
+  const siteAreaSqFt = Math.round(siteAreaSqM * SQM_TO_SQFT);
+  const buildableWidthM = Math.max(0, (site.plotWidthMm - setbacks.left - setbacks.right) / 1e3);
+  const buildableDepthM = Math.max(0, (site.plotDepthMm - setbacks.front - setbacks.rear) / 1e3);
+  const buildableAreaSqM = Number((buildableWidthM * buildableDepthM).toFixed(2));
+  const buildableAreaSqFt = Math.round(buildableAreaSqM * SQM_TO_SQFT);
+  const currentFloorPlateSqM = Number((buildableAreaSqM * 0.9).toFixed(2));
+  const currentFloorPlateSqFt = Math.round(currentFloorPlateSqM * SQM_TO_SQFT);
+  const jurisdictionName = apartmentConfig.jurisdiction ?? "pune_pmc";
+  const authorityMap = {
+    pune_pmc: {
+      authority: "Pune Municipal Corporation (PMC)",
+      ruleProfile: "UDCPR 2020 Chapter 6 & Rule 6.2.3"
+    },
+    pune_pmrda: {
+      authority: "Pune Metropolitan Region Development Authority (PMRDA)",
+      ruleProfile: "UDCPR 2020 Regional Authority Regulations"
+    },
+    mumbai_mcgm: {
+      authority: "Municipal Corporation of Greater Mumbai (MCGM)",
+      ruleProfile: "DCPR 2034 Regulation 41 & Table 21"
+    },
+    generic_maharashtra: {
+      authority: "Maharashtra State Unified DCPR",
+      ruleProfile: "UDCPR 2020 Standard Baseline"
+    },
+    generic_indian: {
+      authority: "National Building Code of India (NBC 2016)",
+      ruleProfile: "Part 3 (Development Control) & Part 4 (Fire Safety)"
+    }
+  };
+  const jurisdictionInfo = authorityMap[jurisdictionName] ?? {
+    authority: "Indian Urban Planning Authority",
+    ruleProfile: "National Building Code 2016 Baseline"
+  };
+  const resolvedMix = resolveAndValidateUnitMix(apartmentConfig.unitMix, apartmentConfig.flatsPerFloor);
+  const unitsList = [];
+  let unitIndex = 0;
+  for (const item of resolvedMix.items) {
+    const canonicalType = item.unitType;
+    const programme = getExpectedRoomProgramme(canonicalType);
+    for (let c = 0; c < item.count; c++) {
+      unitIndex++;
+      const flatLabel = `FLAT ${unitIndex < 10 ? `0${unitIndex}` : unitIndex}`;
+      let targetAreaSqM;
+      if (item.carpetAreaSqM !== void 0 && item.carpetAreaSqM !== null) {
+        if (typeof item.carpetAreaSqM !== "number" || !Number.isFinite(item.carpetAreaSqM) || item.carpetAreaSqM <= 0) {
+          throw new InvalidCarpetAreaError("carpetAreaSqM", item.carpetAreaSqM);
+        }
+        targetAreaSqM = item.carpetAreaSqM;
+      } else if (item.carpetAreaSqFt !== void 0 && item.carpetAreaSqFt !== null) {
+        if (typeof item.carpetAreaSqFt !== "number" || !Number.isFinite(item.carpetAreaSqFt) || item.carpetAreaSqFt <= 0) {
+          throw new InvalidCarpetAreaError("carpetAreaSqFt", item.carpetAreaSqFt);
+        }
+        targetAreaSqM = Number((item.carpetAreaSqFt * 0.092903).toFixed(2));
+      } else {
+        targetAreaSqM = TYPOLOGY_TEMPLATES[canonicalType]?.defaultCarpetAreaSqM ?? 70;
+      }
+      const targetAreaSqFt = Math.round(targetAreaSqM * SQM_TO_SQFT);
+      unitsList.push({
+        id: `unit_${unitIndex}`,
+        label: flatLabel,
+        type: canonicalType,
+        targetAreaSqFt,
+        targetAreaSqM,
+        bedrooms: programme.bedrooms,
+        bathrooms: programme.bathrooms,
+        livingRooms: programme.livingRooms,
+        diningRooms: programme.diningRooms,
+        kitchens: programme.kitchens,
+        utilities: programme.utilities,
+        balconies: programme.balconies
+      });
+    }
+  }
+  const roomTotals = {
+    bedrooms: unitsList.reduce((acc, u) => acc + u.bedrooms, 0),
+    bathrooms: unitsList.reduce((acc, u) => acc + u.bathrooms, 0),
+    livingRooms: unitsList.reduce((acc, u) => acc + u.livingRooms, 0),
+    diningRooms: unitsList.reduce((acc, u) => acc + u.diningRooms, 0),
+    kitchens: unitsList.reduce((acc, u) => acc + u.kitchens, 0),
+    utilities: unitsList.reduce((acc, u) => acc + u.utilities, 0),
+    balconies: unitsList.reduce((acc, u) => acc + u.balconies, 0)
+  };
+  const liftsCount = Math.max(1, apartmentConfig.commonCore.passengerLifts + apartmentConfig.commonCore.serviceLifts);
+  const stairsCount = Math.max(1, apartmentConfig.commonCore.staircaseCount);
+  const commonCoreSqM = Number((liftsCount * 3.6 + stairsCount * 16 + 18).toFixed(2));
+  const circulationSqM = Number((currentFloorPlateSqM * 0.12).toFixed(2));
+  const servicesSqM = Number((unitsList.length * 2.5 + 5).toFixed(2));
+  const netResidentialSqM = Math.max(0, Number((currentFloorPlateSqM - commonCoreSqM - circulationSqM - servicesSqM).toFixed(2)));
+  const areaAllocations = {
+    siteSqFt: siteAreaSqFt,
+    siteSqM: siteAreaSqM,
+    buildableEnvelopeSqFt: buildableAreaSqFt,
+    buildableEnvelopeSqM: buildableAreaSqM,
+    currentFloorPlateSqFt,
+    currentFloorPlateSqM,
+    commonCoreSqFt: Math.round(commonCoreSqM * SQM_TO_SQFT),
+    commonCoreSqM,
+    circulationSqFt: Math.round(circulationSqM * SQM_TO_SQFT),
+    circulationSqM,
+    servicesSqFt: Math.round(servicesSqM * SQM_TO_SQFT),
+    servicesSqM,
+    netResidentialSqFt: Math.round(netResidentialSqM * SQM_TO_SQFT),
+    netResidentialSqM
+  };
+  const floors = Math.max(1, apartmentConfig.floorCount);
+  const currentFloor = input.currentFloorIndex ?? 1;
+  const floorType = apartmentConfig.floorStrategy ?? "typical";
+  const allAmenities = [
+    ...apartmentConfig.amenities?.groundSiteAmenities ?? [],
+    ...apartmentConfig.amenities?.buildingAmenities ?? []
+  ];
+  return {
+    jurisdiction: jurisdictionInfo,
+    project: {
+      type: "apartment",
+      floors,
+      currentFloor,
+      floorType
+    },
+    site: {
+      widthFt: Math.round(plotWidthM * M_TO_FT),
+      depthFt: Math.round(plotDepthM * M_TO_FT),
+      buildableWidthFt: Math.round(buildableWidthM * M_TO_FT),
+      buildableDepthFt: Math.round(buildableDepthM * M_TO_FT),
+      buildableAreaSqFt,
+      widthM: Number(plotWidthM.toFixed(2)),
+      depthM: Number(plotDepthM.toFixed(2)),
+      buildableAreaSqM
+    },
+    units: {
+      exactCount: unitsList.length,
+      units: unitsList
+    },
+    roomTotals,
+    areaAllocations,
+    commonCore: {
+      lifts: liftsCount,
+      stairs: stairsCount,
+      commonLobby: apartmentConfig.commonCore.commonLobby ?? true,
+      corridor: true
+    },
+    services: {
+      ducts: Math.max(1, Math.ceil(unitsList.length / 2)),
+      shafts: Math.max(1, Math.ceil(unitsList.length / 2)),
+      utilityAreas: roomTotals.utilities
+    },
+    parking: {
+      cars: (apartmentConfig.parking?.residentParkingCount ?? 0) + (apartmentConfig.parking?.visitorParkingCount ?? 0),
+      twoWheelers: apartmentConfig.parking?.twoWheelerParkingCount ?? unitsList.length * 2,
+      visitorSpaces: apartmentConfig.parking?.visitorParkingCount ?? 2
+    },
+    amenities: allAmenities.length > 0 ? allAmenities : ["common_lobby", "society_office"],
+    orientation: {
+      roadSide: (site.roadFacing ?? "north").toUpperCase(),
+      northDirection: site.orientationDegrees ?? 0
+    },
+    requirements: [
+      `Generate EXACTLY ${unitsList.length} separate residential flats on this floor.`,
+      `Preserve the exact unit mix: ${resolvedMix.items.map((u) => `${u.count} x ${u.unitType}`).join(", ")}.`,
+      ...resolvedMix.wasDefaultApplied && resolvedMix.defaultExplanation ? [resolvedMix.defaultExplanation] : [],
+      `Generate EXACTLY ${liftsCount} lift(s) and EXACTLY ${stairsCount} staircase(s).`,
+      "Include a central common lobby providing direct access to all flat entries.",
+      "Flats must have clear boundary walls and independent front doors.",
+      "No standalone villas, no single-family houses, no merged units."
+    ]
+  };
+}
+function classifySchematicUnitRooms(sUnit) {
+  const isStudio = normalizeUnitType(sUnit.unitType) === "Studio";
+  const roomMap = /* @__PURE__ */ new Map();
+  for (const r of sUnit.rooms ?? []) {
+    roomMap.set(r.id, r);
+  }
+  for (const b of sUnit.balconies ?? []) {
+    roomMap.set(b.id, b);
+  }
+  const allRooms = Array.from(roomMap.values());
+  const bedrooms = allRooms.filter((r) => r.type === "master_bedroom" || r.type === "bedroom").length;
+  const bathrooms = allRooms.filter((r) => r.type === "master_toilet" || r.type === "common_toilet" || r.type === "powder_room" || r.type === "toilet").length;
+  const kitchens = allRooms.filter((r) => r.type === "kitchen" || r.type === "kitchenette").length;
+  const livingRooms = allRooms.filter((r) => r.type === "living_dining" || r.type === "living" || r.type === "studio_living").length;
+  const diningRooms = isStudio ? allRooms.filter((r) => r.type === "dining").length : allRooms.filter((r) => r.type === "living_dining" || r.type === "dining").length;
+  const utilities = allRooms.filter((r) => r.type === "utility").length;
+  const balconies = allRooms.filter((r) => r.type === "balcony").length;
+  return {
+    bedrooms,
+    bathrooms,
+    livingRooms,
+    diningRooms,
+    kitchens,
+    utilities,
+    balconies
+  };
+}
+function validateSchematicMatchesManifest(schematic, manifest) {
+  const discrepancies = [];
+  if (schematic.flatCount !== manifest.units.exactCount) {
+    discrepancies.push(`Schematic flat count (${schematic.flatCount}) does not match manifest flat count (${manifest.units.exactCount}).`);
+  }
+  if (schematic.units.length !== manifest.units.units.length) {
+    discrepancies.push(`Schematic unit count (${schematic.units.length}) does not match manifest units list (${manifest.units.units.length}).`);
+  }
+  for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
+    const sUnit = schematic.units[i];
+    const mUnit = manifest.units.units[i];
+    if (normalizeUnitType(sUnit.unitType) !== normalizeUnitType(mUnit.type)) {
+      discrepancies.push(`Unit ${i + 1} type mismatch: Schematic has "${sUnit.unitType}", but manifest requires "${mUnit.type}".`);
+    }
+  }
+  if (schematic.core.lifts.length !== manifest.commonCore.lifts) {
+    discrepancies.push(`Schematic lift count (${schematic.core.lifts.length}) does not match manifest lift count (${manifest.commonCore.lifts}).`);
+  }
+  if (schematic.core.stairs.length !== manifest.commonCore.stairs) {
+    discrepancies.push(`Schematic stair count (${schematic.core.stairs.length}) does not match manifest stair count (${manifest.commonCore.stairs}).`);
+  }
+  for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
+    const sUnit = schematic.units[i];
+    const mUnit = manifest.units.units[i];
+    const actual = classifySchematicUnitRooms(sUnit);
+    if (actual.bedrooms !== mUnit.bedrooms) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.bedrooms} bedroom(s); manifest requires ${mUnit.bedrooms}.`);
+    }
+    if (actual.bathrooms !== mUnit.bathrooms) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.bathrooms} bathroom(s); manifest requires ${mUnit.bathrooms}.`);
+    }
+    if (actual.kitchens !== mUnit.kitchens) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.kitchens} kitchen(s); manifest requires ${mUnit.kitchens}.`);
+    }
+    if (actual.livingRooms !== mUnit.livingRooms) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.livingRooms} living room(s); manifest requires ${mUnit.livingRooms}.`);
+    }
+    if (actual.diningRooms !== mUnit.diningRooms) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.diningRooms} dining area(s); manifest requires ${mUnit.diningRooms}.`);
+    }
+    if (actual.utilities !== mUnit.utilities) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.utilities} utility room(s); manifest requires ${mUnit.utilities}.`);
+    }
+    if (actual.balconies !== mUnit.balconies) {
+      discrepancies.push(`${sUnit.flatLabel} (${sUnit.unitType}) has ${actual.balconies} balcony/balconies; manifest requires ${mUnit.balconies}.`);
+    }
+  }
+  const feasibilityFail = schematic.layoutFits === false;
+  if (feasibilityFail) {
+    discrepancies.push(schematic.areaReport?.floor.message ?? `FEASIBILITY FAIL: ${schematic.layoutIssues.join("; ")}`);
+  }
+  for (const report of schematic.areaReport?.units ?? []) {
+    if (report.status === "FAIL") {
+      discrepancies.push(`${report.flatLabel} area control failed: ${report.actualCarpetSqM} m\xB2 drawn vs ${report.targetCarpetSqM} m\xB2 target (${report.deviationPct}%).`);
+    }
+  }
+  for (const check of schematic.spatialChecks ?? []) {
+    if (check.status === "FAIL")
+      discrepancies.push(`Spatial check ${check.code} failed: ${check.message}`);
+  }
+  return {
+    matches: discrepancies.length === 0,
+    discrepancies,
+    feasibilityFail
+  };
+}
+var SQM_TO_SQFT, M_TO_FT;
+var init_manifest = __esm({
+  "packages/ai-orchestration/dist/apartment/manifest.js"() {
+    "use strict";
+    init_typologies();
+    init_site_defaults();
+    SQM_TO_SQFT = 10.7639104;
+    M_TO_FT = 3.28084;
+  }
+});
+
+// packages/ai-orchestration/dist/orchestration/aspect-ratio.js
+function roundToStep(value, step) {
+  return Math.round(value / step) * step;
+}
+function clamp(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+function computeAspectAdaptedDimensions(plotWidthM, plotDepthM) {
+  const safeWidth = Math.max(0.1, plotWidthM);
+  const safeDepth = Math.max(0.1, plotDepthM);
+  const rawAspect = safeWidth / safeDepth;
+  const aspectRatio = clamp(rawAspect, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+  let width = Math.sqrt(TARGET_PIXEL_BUDGET * aspectRatio);
+  let height = Math.sqrt(TARGET_PIXEL_BUDGET / aspectRatio);
+  width = roundToStep(width, OUTPUT_DIMENSION_STEP_PX);
+  height = roundToStep(height, OUTPUT_DIMENSION_STEP_PX);
+  width = clamp(width, MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX);
+  height = clamp(height, MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX);
+  return { width, height, aspectRatio };
+}
+var MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX, OUTPUT_DIMENSION_STEP_PX, TARGET_PIXEL_BUDGET, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO;
+var init_aspect_ratio = __esm({
+  "packages/ai-orchestration/dist/orchestration/aspect-ratio.js"() {
+    "use strict";
+    MIN_OUTPUT_DIMENSION_PX = 512;
+    MAX_OUTPUT_DIMENSION_PX = 1536;
+    OUTPUT_DIMENSION_STEP_PX = 64;
+    TARGET_PIXEL_BUDGET = 1024 * 1024;
+    MIN_ASPECT_RATIO = 0.5;
+    MAX_ASPECT_RATIO = 2;
+  }
+});
+
+// packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js
+function titleCase(value) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+function buildRoomSchedule(input) {
+  const { requirements, program } = input;
+  const hard = requirements.hard;
+  const soft = requirements.soft;
+  if (program && program.items.length > 0) {
+    const parts2 = program.items.filter((item) => item.quantity > 0).map((item) => {
+      const m2 = (item.preferredAreaMm2 / 1e6).toFixed(1);
+      return item.quantity > 1 ? `${item.quantity} x ${item.name} (~${m2} m2 each)` : `${item.name} (~${m2} m2)`;
+    });
+    if (parts2.length > 0)
+      return parts2.join(", ");
+  }
+  const parts = [];
+  if (hard.bedroomCount > 0)
+    parts.push(`${hard.bedroomCount} bedroom(s)`);
+  if (hard.bathroomCount > 0)
+    parts.push(`${hard.bathroomCount} bathroom(s)`);
+  if (hard.livingRoomRequired)
+    parts.push("living room");
+  if (hard.kitchenRequired)
+    parts.push(soft.openKitchen ? "open kitchen" : "kitchen");
+  if (hard.diningRoomRequired)
+    parts.push("dining room");
+  if (hard.staircaseRequired)
+    parts.push("staircase");
+  if (hard.liftRequired)
+    parts.push("lift");
+  if (soft.poojaRoom)
+    parts.push("pooja room");
+  if (soft.studyRoom)
+    parts.push("study");
+  if (soft.servantQuarter)
+    parts.push("servant quarter");
+  for (const custom of hard.customRooms ?? []) {
+    parts.push(`${custom.count} x ${custom.name ?? String(custom.type)}`);
+  }
+  return parts.join(", ");
+}
+function compileFloorPlanImagePrompt(input) {
+  const { requirements, site } = input;
+  const { hard } = requirements;
+  const { setbacks } = site;
+  const aspect = computeAspectAdaptedDimensions(site.plotWidth / 1e3, site.plotDepth / 1e3);
+  const width = input.width ?? aspect.width;
+  const height = input.height ?? aspect.height;
+  const seed2 = input.seed;
+  const plotWidthM = (site.plotWidth / 1e3).toFixed(2);
+  const plotDepthM = (site.plotDepth / 1e3).toFixed(2);
+  const floors = Math.max(1, hard.floorsCount);
+  const floorLabel = floors === 1 ? "single-storey ground floor" : `${floors}-storey`;
+  const brief = (input.additionalPrompt ?? requirements.rawUserPrompt ?? "").trim();
+  const roomSchedule2 = buildRoomSchedule(input);
+  const directiveLines = [
+    "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).",
+    "",
+    `PROJECT: ${requirements.projectName}, ${floorLabel}.`,
+    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), road facing ${titleCase(site.roadFacing)}.`,
+    `SETBACKS: front ${setbacks.front}mm, rear ${setbacks.rear}mm, left ${setbacks.left}mm, right ${setbacks.right}mm.`,
+    `ROOM PROGRAM: ${roomSchedule2 || "standard residential layout"}.`,
+    ...hard.parkingRequired && hard.parkingSpacesCount > 0 ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s).`] : [],
+    ...brief.length > 0 ? [`ADDITIONAL BRIEF: ${brief}`] : [],
+    "",
+    "MANDATORY DIRECTIVES:",
+    "- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.",
+    "- Clear room separation, proper wall thicknesses, door swings, and window openings.",
+    "- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).",
+    ...input.referenceImages && input.referenceImages.length > 0 ? ["- Use the supplied reference images for visual drafting style. Current project requirements always override references."] : [],
+    "",
+    "STRICT PROHIBITIONS:",
+    "Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text."
+  ];
+  const prompt = directiveLines.join("\n");
+  return {
+    schemaVersion: 1,
+    promptVersion: FLOOR_PLAN_PROMPT_VERSION,
+    prompt,
+    negativePrompt: NEGATIVE_PROMPT,
+    seed: seed2,
+    width,
+    height,
+    referenceImages: input.referenceImages,
+    referenceDiagnostics: input.referenceDiagnostics,
+    metadata: {
+      ...requirements.projectId ? { projectId: requirements.projectId } : {},
+      projectName: requirements.projectName,
+      plotWidthMm: site.plotWidth,
+      plotDepthMm: site.plotDepth,
+      floorsCount: floors,
+      roadFacing: site.roadFacing,
+      projectType: "residential_independent",
+      referenceDiagnostics: input.referenceDiagnostics
+    }
+  };
+}
+function apartmentConceptLabelVocabulary(manifest) {
+  const flats = manifest.units.units.map((u) => u.label.toUpperCase());
+  const types = [...new Set(manifest.units.units.map((u) => u.type.toUpperCase()))];
+  return [...flats, ...types, ...APARTMENT_CONCEPT_ROOM_WORDS, ...APARTMENT_CONCEPT_CORE_WORDS];
+}
+function plural(n2, one, many) {
+  return `${n2} ${n2 === 1 ? one : many}`;
+}
+function compileApartmentConceptPrompt(manifest, concept, styleReferenceCount) {
+  const flats = manifest.units.units.map((u) => {
+    const rooms = [
+      plural(u.bedrooms, "bedroom", "bedrooms"),
+      plural(u.bathrooms, "bath", "baths"),
+      ...u.livingRooms > 0 ? ["living"] : [],
+      ...u.diningRooms > 0 ? ["dining"] : [],
+      ...u.kitchens > 0 ? ["kitchen"] : [],
+      ...u.utilities > 0 ? ["utility"] : []
+    ];
+    return `${u.label.toUpperCase()} ${u.type.toUpperCase()} = ${rooms.join(", ")}`;
+  }).join("; ");
+  const refLine = styleReferenceCount === 0 ? [] : [
+    `${styleReferenceCount === 1 ? "Input image 2 is a" : `Input images 2-${styleReferenceCount + 1} are`} visual style and planning-language reference${styleReferenceCount === 1 ? "" : "s"} only: never copy their flat count, geometry or text.`
+  ];
+  return [
+    "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.",
+    `CONCEPT ${String(concept.candidateNumber).padStart(2, "0")} of ${String(concept.candidateCount).padStart(2, "0")} - ${concept.label}: ${concept.intent}`,
+    "Input image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.",
+    ...refLine,
+    "Priority: user requirements > deterministic layout > reference style.",
+    `EXACTLY ${manifest.units.exactCount} flats: ${flats}.`,
+    `Common core: EXACTLY ${manifest.commonCore.lifts} lifts (square shafts with X), EXACTLY ${manifest.commonCore.stairs} stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.`,
+    "Entry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.",
+    "Keep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.",
+    `English labels only, short and clear, as in image 1: ${apartmentConceptLabelVocabulary(manifest).join(", ")}. No other text, no dimensions.`,
+    "Do not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text."
+  ].join("\n");
+}
+function compileApartmentFloorPlanImagePrompt(input) {
+  const { site, apartmentConfig, seed: seed2 } = input;
+  const aspect = computeAspectAdaptedDimensions(site.plotWidth / 1e3, site.plotDepth / 1e3);
+  const width = input.width ?? aspect.width;
+  const height = input.height ?? aspect.height;
+  const manifest = input.manifest ?? buildApartmentGenerationManifest({
+    site: {
+      plotWidthMm: site.plotWidth,
+      plotDepthMm: site.plotDepth,
+      setbacksMm: site.setbacks,
+      roadFacing: site.roadFacing,
+      orientationDegrees: site.orientation
+    },
+    apartmentConfig
+  });
+  const floorsCount = manifest.project.floors;
+  const floorStrategy = manifest.project.floorType;
+  const unitMixParts = apartmentConfig.unitMix.map((u) => `${u.count} x ${u.unitType}`);
+  const unitMixDescription = unitMixParts.join(", ");
+  const promptLines = [
+    "CREATE ONE PROFESSIONAL 2D INDIAN APARTMENT FLOOR PLAN.",
+    "",
+    `PROJECT: Multi-unit residential apartment (${floorsCount} floors).`,
+    `CURRENT FLOOR: ${floorStrategy.toUpperCase()} RESIDENTIAL FLOOR.`,
+    `JURISDICTION: ${manifest.jurisdiction.authority} (${manifest.jurisdiction.ruleProfile}).`,
+    `PLOT PROPORTIONS: ${manifest.site.widthM}m width \xD7 ${manifest.site.depthM}m depth.`,
+    "",
+    "REFERENCE PRIORITY:",
+    "1. USER/MANIFEST REQUIREMENTS (authoritative for counts & mix)",
+    "2. DETERMINISTIC SCHEMATIC (primary structural reference for layout & core)",
+    "3. REFERENCE IMAGE VISUAL STYLE (architectural drafting style only)",
+    "",
+    "HARD REQUIREMENTS:",
+    `1. Generate EXACTLY ${manifest.units.exactCount} separate residential flats (${manifest.units.units.map((u) => `${u.label}: ${u.type}`).join(", ")}).`,
+    `2. Exact unit mix: ${unitMixDescription}. Total bedrooms across floor: ${manifest.roomTotals.bedrooms}.`,
+    `3. Common core: EXACTLY ${manifest.commonCore.lifts} separate elevator shaft(s) [X], EXACTLY ${manifest.commonCore.stairs} staircase(s), common lobby and corridor.`,
+    "4. Clean 2D orthographic technical drafting, crisp black architectural linework on white background.",
+    "5. English only: readable English architectural labels only (FLAT, LIVING, BEDROOM, KITCHEN, BATH, BALCONY, LIFT, STAIR, COMMON LOBBY).",
+    "",
+    "DO NOT GENERATE:",
+    "No villa, no single-family house, no extra flats, no missing flats, no merged flats. No 3D, no perspective, no photorealism, no furniture clutter, no Cyrillic or non-Latin script."
+  ];
+  const styleReferenceCount = (input.referenceImages ?? []).filter((r) => r.id !== "schematic_scaffold").length;
+  const prompt = input.concept ? compileApartmentConceptPrompt(manifest, input.concept, styleReferenceCount) : promptLines.join("\n");
+  return {
+    schemaVersion: 1,
+    promptVersion: FLOOR_PLAN_PROMPT_VERSION,
+    prompt,
+    negativePrompt: APARTMENT_NEGATIVE_PROMPT,
+    seed: seed2,
+    width,
+    height,
+    referenceImages: input.referenceImages,
+    referenceDiagnostics: input.referenceDiagnostics,
+    metadata: {
+      projectId: input.projectId,
+      projectName: input.projectName ?? "Apartment Building Project",
+      plotWidthMm: site.plotWidth,
+      plotDepthMm: site.plotDepth,
+      floorsCount,
+      roadFacing: site.roadFacing,
+      projectType: "apartment",
+      apartmentConfig,
+      manifest,
+      referenceDiagnostics: input.referenceDiagnostics
+    }
+  };
+}
+var FLOOR_PLAN_PROMPT_VERSION, NEGATIVE_PROMPT, APARTMENT_NEGATIVE_PROMPT, APARTMENT_CONCEPT_ROOM_WORDS, APARTMENT_CONCEPT_CORE_WORDS;
+var init_image_prompt_compiler = __esm({
+  "packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
+    "use strict";
+    init_manifest();
+    init_aspect_ratio();
+    FLOOR_PLAN_PROMPT_VERSION = 3;
+    NEGATIVE_PROMPT = "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo";
+    APARTMENT_NEGATIVE_PROMPT = "NO VILLA, NO SINGLE FAMILY HOUSE, NO EXTRA FLATS, NO MISSING FLATS, NO MERGED FLATS, NO WRONG UNIT MIX, NO EXTRA BEDROOMS, NO MISSING BEDROOMS, NO EXTRA LIFTS, NO MISSING LIFTS, NO EXTRA STAIRS, NO MISSING STAIRS, NO RANDOM CORE, NO RANDOM AMENITIES, NO RANDOM ROOMS, NO CYRILLIC, NO RUSSIAN, NO NON-LATIN SCRIPT, NO GIBBERISH, NO PSEUDO-TEXT, NO RANDOM NUMBERS, NO WATERMARK, NO LOGO, NO 3D, NO PERSPECTIVE, NO PHOTOREALISTIC INTERIOR, NO HAND DRAWING, NO ARTISTIC RENDERING, NO DISTORTED WALLS, NO OVERLAPPING FLATS, NO FLOATING WALLS";
+    APARTMENT_CONCEPT_ROOM_WORDS = ["LIVING", "DINING", "KITCHEN", "BEDROOM", "BATH", "UTILITY", "FOYER"];
+    APARTMENT_CONCEPT_CORE_WORDS = ["LIFT", "STAIR", "LOBBY"];
+  }
+});
+
+// packages/ai-orchestration/dist/providers/image-generation.js
+var ImageProviderError, DEFAULT_FLUX_MODEL, CloudflareImageProvider;
+var init_image_generation = __esm({
+  "packages/ai-orchestration/dist/providers/image-generation.js"() {
+    "use strict";
+    ImageProviderError = class _ImageProviderError extends Error {
+      code;
+      status;
+      constructor(code, message, status) {
+        super(message);
+        this.name = "ImageProviderError";
+        this.code = code;
+        this.status = status;
+        Object.setPrototypeOf(this, _ImageProviderError.prototype);
+      }
+    };
+    DEFAULT_FLUX_MODEL = "@cf/black-forest-labs/flux-2-klein-4b";
+    CloudflareImageProvider = class {
+      name = "cloudflare-workers-ai";
+      model;
+      constructor(_options) {
+        this.model = DEFAULT_FLUX_MODEL;
+      }
+      isConfigured() {
+        return false;
+      }
+      async isAvailable() {
+        return false;
+      }
+      getModel() {
+        return this.model;
+      }
+      async generateFloorPlan(_request) {
+        throw new ImageProviderError("IMAGE_PROVIDER_NOT_CONFIGURED", "Cloudflare image generation is disabled.");
+      }
+    };
+  }
+});
+
+// packages/ai-orchestration/dist/providers/pollinations-image.js
+var POLLINATIONS_PROVIDER_NAME, POLLINATIONS_BASE_URL, DEFAULT_POLLINATIONS_IMAGE_MODEL, PollinationsImageProvider;
+var init_pollinations_image = __esm({
+  "packages/ai-orchestration/dist/providers/pollinations-image.js"() {
+    "use strict";
+    init_image_generation();
+    POLLINATIONS_PROVIDER_NAME = "pollinations";
+    POLLINATIONS_BASE_URL = "https://gen.pollinations.ai";
+    DEFAULT_POLLINATIONS_IMAGE_MODEL = "qwen/qwen-image-2.1";
+    PollinationsImageProvider = class {
+      name = POLLINATIONS_PROVIDER_NAME;
+      model;
+      baseUrl;
+      constructor(options) {
+        this.model = options.model?.trim() || DEFAULT_POLLINATIONS_IMAGE_MODEL;
+        this.baseUrl = (options.baseUrl?.trim() || POLLINATIONS_BASE_URL).replace(/\/+$/, "");
+      }
+      isConfigured() {
+        return false;
+      }
+      async isAvailable() {
+        return false;
+      }
+      getModel() {
+        return this.model;
+      }
+      getBaseUrl() {
+        return this.baseUrl;
+      }
+      async checkAccess() {
+        return { status: "NOT_CONFIGURED", reachable: false, detail: "Pollinations provider disabled.", capabilities: void 0 };
+      }
+      async generateFloorPlan(_request) {
+        throw new ImageProviderError("IMAGE_PROVIDER_NOT_CONFIGURED", "Pollinations image generation is disabled.");
+      }
+    };
+  }
+});
+
+// packages/ai-orchestration/dist/providers/gemini-image.js
+function mapDimensionsToGeminiAspectRatio(width, height) {
+  if (!width || !height || width <= 0 || height <= 0) {
+    return "4:3";
+  }
+  const ratio = width / height;
+  if (Math.abs(ratio - 1) < 0.1)
+    return "1:1";
+  if (Math.abs(ratio - 4 / 3) < 0.15)
+    return "4:3";
+  if (Math.abs(ratio - 3 / 4) < 0.15)
+    return "3:4";
+  if (Math.abs(ratio - 16 / 9) < 0.15)
+    return "16:9";
+  if (Math.abs(ratio - 9 / 16) < 0.15)
+    return "9:16";
+  return ratio > 1 ? "4:3" : "3:4";
+}
+function buildGeminiImagePrompt(request, options) {
+  const parts = [];
+  if (options.hasStructuralPlan) {
+    parts.push("PRIMARY MANDATE (IMAGE 1 \u2014 AUTHORITATIVE STRUCTURAL PLAN)");
+    parts.push("Treat the supplied structural plan as authoritative.");
+    parts.push("Preserve its geometry exactly.");
+    parts.push("Do not redesign the layout.");
+    parts.push("Do not move the core.");
+    parts.push("THE STRUCTURAL PLAN WINS.");
+  }
+  parts.push(request.prompt);
+  parts.push("Do NOT generate 3D perspective views.");
+  parts.push("Do NOT generate exterior building renderings.");
+  parts.push("Do NOT render authoritative room labels.");
+  parts.push("Top-down orthographic 2D floor plan view only.");
+  return parts.join("\n");
+}
+function separateGeminiReferenceImages(images) {
+  const structural = images.find((i) => i.id === "structural_reference");
+  const styles = images.filter((i) => i.id !== "structural_reference");
+  return { structuralRef: structural, styleRefs: [...styles] };
+}
+function buildGeminiImageRequestBody(request, options) {
+  const { structuralRef, styleRefs } = separateGeminiReferenceImages(request.referenceImages ?? []);
+  const aspect = mapDimensionsToGeminiAspectRatio(request.width, request.height);
+  const parts = [];
+  const referenceIdsSent = [];
+  if (structuralRef) {
+    parts.push({ inlineData: { mimeType: structuralRef.mimeType, data: structuralRef.base64Data } });
+    referenceIdsSent.push(structuralRef.id);
+  }
+  for (const ref of styleRefs) {
+    parts.push({ inlineData: { mimeType: ref.mimeType, data: ref.base64Data } });
+    referenceIdsSent.push(ref.id);
+  }
+  parts.push({ text: buildGeminiImagePrompt(request, { hasStructuralPlan: Boolean(structuralRef), styleReferenceCount: styleRefs.length }) });
+  return {
+    structuralRef,
+    styleRefs,
+    referenceIdsSent,
+    aspectRatio: aspect,
+    body: {
+      contents: [
+        {
+          role: "user",
+          parts
+        }
+      ],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+        imageConfig: {
+          aspectRatio: aspect,
+          imageSize: options.imageSize
+        }
+      }
+    }
+  };
+}
+function extractGeminiImageBytes(response2) {
+  if (response2.error) {
+    const code = response2.error.code;
+    if (code === 401 || code === 403 || response2.error.status === "UNAUTHENTICATED" || response2.error.status === "PERMISSION_DENIED") {
+      const err = new ImageProviderError("GEMINI_AUTH_ERROR", response2.error.message || "Gemini authentication failed", code ?? 401);
+      throw err;
+    }
+    if (code === 429 || response2.error.status === "RESOURCE_EXHAUSTED") {
+      const err = new ImageProviderError("GEMINI_RATE_LIMITED", response2.error.message || "Gemini rate limited", 429);
+      throw err;
+    }
+    throw new ImageProviderError("API_ERROR", response2.error.message || "Gemini error", typeof code === "number" ? code : void 0);
+  }
+  const textParts = [];
+  const candidates = response2.candidates ?? [];
+  for (const cand of candidates) {
+    const parts = cand.content?.parts ?? [];
+    for (const part of parts) {
+      if (part.text) {
+        textParts.push(part.text);
+      }
+      const inlineData = part.inlineData ?? part.inline_data;
+      if (inlineData) {
+        const mimeType = inlineData.mimeType ?? inlineData.mime_type;
+        const data = inlineData.data;
+        if (mimeType && data) {
+          const buf = Buffer.from(data, "base64");
+          if (buf.length < 50) {
+            throw new ImageProviderError("IMAGE_EMPTY", "Received empty or suspiciously small image payload from Gemini");
+          }
+          return { mimeType, buffer: buf, ...textParts.length > 0 ? { textParts } : {} };
+        }
+      }
+    }
+  }
+  const predictions = response2.predictions ?? [];
+  for (const pred of predictions) {
+    const mimeType = pred.mimeType ?? pred.mime_type;
+    const data = pred.bytesBase64Encoded ?? pred.bytes_base64_encoded;
+    if (data && mimeType) {
+      const buf = Buffer.from(data, "base64");
+      if (buf.length < 50) {
+        throw new ImageProviderError("IMAGE_EMPTY", "Received empty or suspiciously small image payload from Gemini");
+      }
+      return { mimeType, buffer: buf };
+    }
+  }
+  throw new ImageProviderError("IMAGE_EMPTY", textParts[0] || "No image data in Gemini response");
+}
+var import_node_crypto, DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_IMAGE_SIZE, GEMINI_IMAGE_PROVIDER_NAME, GEMINI_API_BASE_URL, GeminiImageProvider;
+var init_gemini_image = __esm({
+  "packages/ai-orchestration/dist/providers/gemini-image.js"() {
+    "use strict";
+    import_node_crypto = __toESM(require("node:crypto"));
+    init_image_generation();
+    DEFAULT_GEMINI_IMAGE_MODEL = "gemini-3.1-flash-lite-image";
+    DEFAULT_GEMINI_IMAGE_SIZE = "1K";
+    GEMINI_IMAGE_PROVIDER_NAME = "gemini";
+    GEMINI_API_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models";
+    GeminiImageProvider = class {
+      name = GEMINI_IMAGE_PROVIDER_NAME;
+      apiKey;
+      model;
+      endpointBase;
+      imageSize;
+      timeoutMs;
+      fetchImpl;
+      lastSuccessfulGeneration = null;
+      constructor(options) {
+        this.apiKey = (options.apiKey ?? "").trim();
+        this.model = (options.model ?? "").trim() || DEFAULT_GEMINI_IMAGE_MODEL;
+        if (this.model === "gemini-3.1-flash-lite-image") {
+          this.imageSize = "1K";
+        } else {
+          this.imageSize = options.imageSize ?? DEFAULT_GEMINI_IMAGE_SIZE;
+        }
+        this.endpointBase = (options.endpointBase ?? "").trim() || GEMINI_API_BASE_URL;
+        this.timeoutMs = options.timeoutMs ?? 6e4;
+        this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
+      }
+      isConfigured() {
+        return this.apiKey.length > 0;
+      }
+      getLastSuccessfulGeneration() {
+        return this.lastSuccessfulGeneration;
+      }
+      async checkAccess() {
+        if (!this.apiKey) {
+          return {
+            status: "NOT_CONFIGURED",
+            reachable: false,
+            imageModelReachable: false,
+            model: this.model,
+            detail: "GEMINI_API_KEY is not configured",
+            authenticationStatus: "NOT_CONFIGURED",
+            modelAvailability: "UNKNOWN",
+            rateLimits: "UNKNOWN",
+            quotaState: "UNKNOWN",
+            lastSuccessfulGeneration: this.lastSuccessfulGeneration
+          };
+        }
+        try {
+          const url = `${this.endpointBase}/${encodeURIComponent(this.model)}?key=${encodeURIComponent(this.apiKey)}`;
+          const res = await this.fetchImpl(url, {
+            method: "GET",
+            signal: AbortSignal.timeout(Math.min(5e3, this.timeoutMs))
+          });
+          if (res.ok) {
+            return {
+              status: "REACHABLE",
+              reachable: true,
+              imageModelReachable: true,
+              model: this.model,
+              authenticationStatus: "AUTHENTICATED",
+              modelAvailability: "AVAILABLE",
+              rateLimits: "OK",
+              quotaState: "OK",
+              lastSuccessfulGeneration: this.lastSuccessfulGeneration
+            };
+          }
+          let errDetail;
+          try {
+            const body = await res.json();
+            if (body?.error?.message) {
+              errDetail = body.error.message;
+            }
+          } catch {
+          }
+          if (res.status === 401 || res.status === 403) {
+            return {
+              status: "AUTH_FAILED",
+              reachable: false,
+              imageModelReachable: false,
+              model: this.model,
+              detail: errDetail ? `Gemini API key is unauthorized: ${errDetail} (HTTP ${res.status})` : `Gemini API key is invalid or unauthorized (HTTP ${res.status})`,
+              authenticationStatus: "AUTH_FAILED",
+              modelAvailability: "UNKNOWN",
+              rateLimits: "UNKNOWN",
+              quotaState: "UNKNOWN",
+              lastSuccessfulGeneration: this.lastSuccessfulGeneration
+            };
+          }
+          if (res.status === 429) {
+            const isQuota = /quota|exhausted/i.test(errDetail ?? "");
+            return {
+              status: isQuota ? "QUOTA_EXCEEDED" : "RATE_LIMITED",
+              reachable: false,
+              imageModelReachable: false,
+              model: this.model,
+              detail: errDetail || "Gemini rate limit or quota exceeded",
+              authenticationStatus: "AUTHENTICATED",
+              modelAvailability: "AVAILABLE",
+              rateLimits: "EXCEEDED",
+              quotaState: isQuota ? "EXCEEDED" : "OK",
+              lastSuccessfulGeneration: this.lastSuccessfulGeneration
+            };
+          }
+          if (res.status === 404) {
+            return {
+              status: "MODEL_UNAVAILABLE",
+              reachable: false,
+              imageModelReachable: false,
+              model: this.model,
+              detail: errDetail ? `Model ${this.model} not available: ${errDetail}` : `Model ${this.model} not available on account (HTTP 404)`,
+              authenticationStatus: "AUTHENTICATED",
+              modelAvailability: "UNAVAILABLE",
+              rateLimits: "OK",
+              quotaState: "OK",
+              lastSuccessfulGeneration: this.lastSuccessfulGeneration
+            };
+          }
+          return {
+            status: "NETWORK_ERROR",
+            reachable: false,
+            imageModelReachable: false,
+            model: this.model,
+            detail: errDetail ? `HTTP ${res.status}: ${errDetail}` : `HTTP ${res.status}`,
+            authenticationStatus: "UNKNOWN",
+            modelAvailability: "UNKNOWN",
+            rateLimits: "UNKNOWN",
+            quotaState: "UNKNOWN",
+            lastSuccessfulGeneration: this.lastSuccessfulGeneration
+          };
+        } catch (err) {
+          if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) {
+            return {
+              status: "TIMEOUT",
+              reachable: false,
+              imageModelReachable: false,
+              model: this.model,
+              detail: "Gemini health check timed out",
+              authenticationStatus: "UNKNOWN",
+              modelAvailability: "UNKNOWN",
+              rateLimits: "UNKNOWN",
+              quotaState: "UNKNOWN",
+              lastSuccessfulGeneration: this.lastSuccessfulGeneration
+            };
+          }
+          return {
+            status: "NETWORK_ERROR",
+            reachable: false,
+            imageModelReachable: false,
+            model: this.model,
+            detail: err instanceof Error ? err.message : "Network error checking Gemini availability",
+            authenticationStatus: "UNKNOWN",
+            modelAvailability: "UNKNOWN",
+            rateLimits: "UNKNOWN",
+            quotaState: "UNKNOWN",
+            lastSuccessfulGeneration: this.lastSuccessfulGeneration
+          };
+        }
+      }
+      async isAvailable() {
+        if (!this.isConfigured())
+          return false;
+        const access2 = await this.checkAccess();
+        return access2.reachable;
+      }
+      getModel() {
+        return this.model;
+      }
+      getImageSize() {
+        return this.imageSize;
+      }
+      async generateFloorPlan(request) {
+        if (!this.apiKey) {
+          throw new ImageProviderError("GEMINI_AUTH_ERROR", "GEMINI_API_KEY missing", 401);
+        }
+        const { body, aspectRatio, referenceIdsSent } = buildGeminiImageRequestBody(request, {
+          model: this.model,
+          imageSize: this.imageSize
+        });
+        const url = `${this.endpointBase}/${encodeURIComponent(this.model)}:generateContent?key=${encodeURIComponent(this.apiKey)}`;
+        const startTime = Date.now();
+        let res;
+        let apiRequestId;
+        try {
+          res = await this.fetchImpl(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(body),
+            signal: AbortSignal.timeout(this.timeoutMs)
+          });
+          apiRequestId = res.headers.get("x-request-id") ?? res.headers.get("request-id") ?? void 0;
+        } catch (err) {
+          if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) {
+            throw new ImageProviderError("IMAGE_PROVIDER_TIMEOUT", `Gemini request timed out after ${this.timeoutMs}ms`);
+          }
+          throw new ImageProviderError("IMAGE_PROVIDER_NETWORK_ERROR", err instanceof Error ? err.message : "Network error communicating with Gemini");
+        }
+        if (!res.ok) {
+          let errJson = null;
+          try {
+            errJson = await res.json();
+          } catch {
+          }
+          if (errJson && errJson.error) {
+            extractGeminiImageBytes(errJson);
+          }
+          if (res.status === 401 || res.status === 403) {
+            throw new ImageProviderError("GEMINI_AUTH_ERROR", `Gemini authentication failed (HTTP ${res.status})`, 401);
+          }
+          if (res.status === 429) {
+            throw new ImageProviderError("GEMINI_RATE_LIMITED", `Gemini rate limit exceeded (HTTP 429)`, 429);
+          }
+          if (res.status === 503 || res.status === 504) {
+            throw new ImageProviderError("GEMINI_UNAVAILABLE", `Gemini service temporarily unavailable (HTTP ${res.status})`, 503);
+          }
+          throw new ImageProviderError("API_ERROR", `Gemini API returned HTTP ${res.status}`, res.status);
+        }
+        let json;
+        try {
+          json = await res.json();
+        } catch {
+          throw new ImageProviderError("IMAGE_PROVIDER_INVALID_RESPONSE", "Failed to parse Gemini JSON response");
+        }
+        const { mimeType, buffer } = extractGeminiImageBytes(json);
+        this.lastSuccessfulGeneration = (/* @__PURE__ */ new Date()).toISOString();
+        const latencyMs = Date.now() - startTime;
+        const imageBase64 = buffer.toString("base64");
+        const promptHash = import_node_crypto.default?.createHash ? import_node_crypto.default.createHash("sha256").update(request.prompt).digest("hex") : "";
+        const structuralHash = request.metadata?.structuralRepresentationHash;
+        const providerRequest = {
+          endpoint: `${this.endpointBase}/${this.model}:generateContent`,
+          size: this.imageSize,
+          seedSent: false,
+          referenceIdsSent,
+          referenceHashes: request.referenceImages?.map((r) => r.hash || r.id) ?? [],
+          aspectRatio,
+          promptHash,
+          ...structuralHash ? { structuralRepresentationHash: structuralHash, rendererVersion: "1.0.0" } : {},
+          ...apiRequestId ? { apiRequestId } : {}
+        };
+        return {
+          imageBase64,
+          mimeType: mimeType === "image/jpeg" ? "image/jpeg" : "image/png",
+          provider: this.name,
+          model: this.model,
+          seed: request.seed,
+          promptVersion: request.promptVersion,
+          prompt: request.prompt,
+          generatedAt: (/* @__PURE__ */ new Date()).toISOString(),
+          latencyMs,
+          providerRequest
+        };
+      }
+    };
+  }
+});
+
+// packages/ai-orchestration/dist/orchestration/image-quality-gate.js
+function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight = 1024) {
+  const byteSize = imageBuffer.length;
+  if (byteSize < 5e3) {
+    return {
+      valid: false,
+      reason: `Image payload is suspiciously small (${byteSize} bytes); likely corrupted or empty.`,
+      byteSize
+    };
+  }
+  let detectedMime = "application/octet-stream";
+  const isPng = imageBuffer[0] === 137 && imageBuffer[1] === 80 && imageBuffer[2] === 78 && imageBuffer[3] === 71;
+  const isJpeg = imageBuffer[0] === 255 && imageBuffer[1] === 216 && imageBuffer[2] === 255;
+  const isWebp = imageBuffer[0] === 82 && imageBuffer[1] === 73 && imageBuffer[2] === 70 && imageBuffer[3] === 70 && imageBuffer[8] === 87 && imageBuffer[9] === 69 && imageBuffer[10] === 66 && imageBuffer[11] === 80;
+  if (isPng)
+    detectedMime = "image/png";
+  else if (isJpeg)
+    detectedMime = "image/jpeg";
+  else if (isWebp)
+    detectedMime = "image/webp";
+  else {
+    return {
+      valid: false,
+      reason: "Image does not match standard image format header (PNG, JPEG, WebP).",
+      byteSize
+    };
+  }
+  const headerOffset = Math.min(64, Math.floor(byteSize / 10));
+  const payloadBytes = byteSize - headerOffset;
+  const sampleStride = Math.max(1, Math.floor(payloadBytes / 500));
+  let sum2 = 0;
+  let sampleCount = 0;
+  const samples = [];
+  for (let i = headerOffset; i < byteSize; i += sampleStride) {
+    const val = imageBuffer[i];
+    samples.push(val);
+    sum2 += val;
+    sampleCount++;
+    if (sampleCount >= 500)
+      break;
+  }
+  const mean = sum2 / sampleCount;
+  let variance = 0;
+  for (const val of samples) {
+    variance += (val - mean) * (val - mean);
+  }
+  variance = variance / sampleCount;
+  if (variance < 10) {
+    return {
+      valid: false,
+      reason: `Image lacks contrast and architectural detail (byte variance ${variance.toFixed(1)}); appears blank or corrupted.`,
+      byteSize,
+      detectedMime
+    };
+  }
+  return {
+    valid: true,
+    byteSize,
+    detectedMime
+  };
+}
+var init_image_quality_gate = __esm({
+  "packages/ai-orchestration/dist/orchestration/image-quality-gate.js"() {
+    "use strict";
+  }
+});
+
+// packages/ai-orchestration/dist/apartment/jurisdiction.js
 function calculateMaharashtraParking(units, visitorPercent = 0.1) {
   let residentCars = 0;
   let twoWheelers = 0;
@@ -5854,924 +9125,19 @@ function getApartmentRulesProfile(jurisdiction, options = {}) {
   }
 }
 var init_jurisdiction = __esm({
-  "../ai-orchestration/dist/apartment/jurisdiction.js"() {
+  "packages/ai-orchestration/dist/apartment/jurisdiction.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/apartment/typologies.js
-function allocateApartmentUnitSpaces(options) {
-  const { unitType, flatLabel = "Flat 01", rulesProfile } = options;
-  const normalizedType = String(unitType || "").trim().toUpperCase();
-  const template = TYPOLOGY_TEMPLATES[normalizedType] ?? TYPOLOGY_TEMPLATES[unitType] ?? TYPOLOGY_2BHK_TEMPLATE;
-  let targetCarpetAreaSqM;
-  if (options.targetCarpetAreaSqM && options.targetCarpetAreaSqM > 0) {
-    targetCarpetAreaSqM = options.targetCarpetAreaSqM;
-  } else if (options.targetCarpetAreaSqFt && options.targetCarpetAreaSqFt > 0) {
-    targetCarpetAreaSqM = options.targetCarpetAreaSqFt * 0.092903;
-  } else {
-    targetCarpetAreaSqM = template.defaultCarpetAreaSqM;
-  }
-  const targetBuiltUpAreaSqM = targetCarpetAreaSqM * 1.15;
-  const targetCarpetAreaSqFt = Math.round(targetCarpetAreaSqM / 0.092903);
-  const targetBuiltUpAreaSqFt = Math.round(targetBuiltUpAreaSqM / 0.092903);
-  const internalCirculationSqM = targetCarpetAreaSqM * 0.08;
-  const internalWallsSqM = targetCarpetAreaSqM * 0.07;
-  let totalMandatoryMinimumsSqM = 0;
-  const roomBaseMinimums = [];
-  for (const rt of template.roomTemplates) {
-    let minArea = 1.5;
-    let minWidth = 1;
-    switch (rt.type) {
-      case "master_bedroom":
-        minArea = rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM;
-        minWidth = rulesProfile.habitableRoomMinimums.masterHabitableRoomMinWidthM;
-        break;
-      case "bedroom":
-        minArea = rulesProfile.habitableRoomMinimums.otherHabitableRoomMinSqM;
-        minWidth = rulesProfile.habitableRoomMinimums.otherHabitableRoomMinWidthM;
-        break;
-      case "living_dining":
-        minArea = Math.max(12, rulesProfile.habitableRoomMinimums.masterHabitableRoomMinSqM * 1.25);
-        minWidth = 3;
-        break;
-      case "kitchen":
-        minArea = rulesProfile.kitchenMinimums.minAreaSqM;
-        minWidth = rulesProfile.kitchenMinimums.minWidthM;
-        break;
-      case "utility":
-        minArea = rulesProfile.utilityMinimums.minAreaSqM;
-        minWidth = rulesProfile.utilityMinimums.minWidthM;
-        break;
-      case "master_toilet":
-      case "common_toilet":
-        minArea = rulesProfile.combinedToiletMinimums.minAreaSqM;
-        minWidth = rulesProfile.combinedToiletMinimums.minWidthM;
-        break;
-      case "foyer":
-        minArea = 2;
-        minWidth = 1.2;
-        break;
-      case "puja":
-        minArea = 1.2;
-        minWidth = 0.9;
-        break;
-      case "balcony":
-        minArea = 2.5;
-        minWidth = 1.2;
-        break;
-      default:
-        minArea = 1.5;
-        minWidth = 1;
-    }
-    totalMandatoryMinimumsSqM += minArea;
-    roomBaseMinimums.push({ template: rt, minArea, minWidth });
-  }
-  const usablePlanningBalanceSqM = Math.max(0, targetCarpetAreaSqM - totalMandatoryMinimumsSqM - internalCirculationSqM - internalWallsSqM);
-  const totalWeight = template.roomTemplates.reduce((sum2, r) => sum2 + r.weight, 0);
-  const rooms = roomBaseMinimums.map(({ template: rt, minArea, minWidth }) => {
-    const additionalArea = rt.weight / totalWeight * usablePlanningBalanceSqM;
-    const targetAreaSqM = Number((minArea + additionalArea).toFixed(2));
-    return {
-      id: `${flatLabel.toLowerCase().replace(/\s+/g, "_")}_${rt.id}`,
-      name: rt.name,
-      type: rt.type,
-      tier: rt.tier,
-      minAreaSqM: minArea,
-      minWidthM: minWidth,
-      targetAreaSqM,
-      isEnsuite: rt.isEnsuite,
-      hasBalcony: rt.hasBalcony,
-      vastuZone: rt.vastuZone
-    };
-  });
-  return {
-    unitType: template.unitType,
-    flatLabel,
-    targetCarpetAreaSqM: Number(targetCarpetAreaSqM.toFixed(2)),
-    targetCarpetAreaSqFt,
-    targetBuiltUpAreaSqM: Number(targetBuiltUpAreaSqM.toFixed(2)),
-    targetBuiltUpAreaSqFt,
-    internalCirculationSqM: Number(internalCirculationSqM.toFixed(2)),
-    internalWallsSqM: Number(internalWallsSqM.toFixed(2)),
-    usablePlanningBalanceSqM: Number(usablePlanningBalanceSqM.toFixed(2)),
-    rooms,
-    planningSequence: template.planningSequence
-  };
-}
-var TYPOLOGY_2BHK_TEMPLATE, TYPOLOGY_3BHK_TEMPLATE, TYPOLOGY_TEMPLATES;
-var init_typologies = __esm({
-  "../ai-orchestration/dist/apartment/typologies.js"() {
-    "use strict";
-    TYPOLOGY_2BHK_TEMPLATE = {
-      unitType: "2BHK",
-      defaultCarpetAreaSqM: 70,
-      planningSequence: [
-        "Main Entrance Door",
-        "Entrance Foyer (1.2m x 1.5m)",
-        "Living & Dining Room (Brahmasthana Spine)",
-        "Sit-Out Balcony (Open Facade)",
-        "Puja Alcove (NE Zone)",
-        "Kitchen",
-        "Dry Utility Balcony (1.2m x 1.8m)",
-        "Private Passage (min 1.0m wide)",
-        "Master Bedroom (SW Zone) + Attached Bath + 600mm Wardrobe",
-        "Bedroom 2",
-        "Common Toilet (Clustered on OTS Shaft)"
-      ],
-      roomTemplates: [
-        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.04 },
-        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.35, hasBalcony: true },
-        { id: "puja", name: "Puja Alcove", type: "puja", tier: "PUBLIC", weight: 0.03, vastuZone: "NE" },
-        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.12, vastuZone: "SE" },
-        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.05 },
-        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.2, isEnsuite: true, vastuZone: "SW" },
-        { id: "master_toilet", name: "Master Toilet (En-suite)", type: "master_toilet", tier: "PRIVATE", weight: 0.04, isEnsuite: true },
-        { id: "bedroom_2", name: "Bedroom 2", type: "bedroom", tier: "PRIVATE", weight: 0.13 },
-        { id: "common_toilet", name: "Common Toilet", type: "common_toilet", tier: "PRIVATE", weight: 0.04, vastuZone: "NW" },
-        { id: "living_balcony", name: "Sit-out Balcony", type: "balcony", tier: "PUBLIC", weight: 0, hasBalcony: true }
-      ]
-    };
-    TYPOLOGY_3BHK_TEMPLATE = {
-      unitType: "3BHK",
-      defaultCarpetAreaSqM: 105,
-      planningSequence: [
-        "Main Entrance Door",
-        "Entrance Foyer (1.2m x 1.5m)",
-        "Living & Dining Room (Brahmasthana Spine)",
-        "Sit-Out Balcony (Open Facade)",
-        "Puja Room (NE Zone)",
-        "Kitchen",
-        "Dry Utility Balcony (1.2m x 1.8m)",
-        "Private Passage (min 1.0m wide)",
-        "Master Suite (SW Zone) + Attached Bath + Walk-in Wardrobe",
-        "Bedroom 2 + Attached Bath",
-        "Bedroom 3",
-        "Common Toilet / Powder Room"
-      ],
-      roomTemplates: [
-        { id: "foyer", name: "Entrance Foyer", type: "foyer", tier: "PUBLIC", weight: 0.04 },
-        { id: "living_dining", name: "Living & Dining Room", type: "living_dining", tier: "PUBLIC", weight: 0.32, hasBalcony: true },
-        { id: "puja", name: "Puja Room", type: "puja", tier: "PUBLIC", weight: 0.03, vastuZone: "NE" },
-        { id: "kitchen", name: "Kitchen", type: "kitchen", tier: "SEMI_PRIVATE", weight: 0.11, vastuZone: "SE" },
-        { id: "utility", name: "Dry Utility Balcony", type: "utility", tier: "SEMI_PRIVATE", weight: 0.05 },
-        { id: "master_bedroom", name: "Master Bedroom", type: "master_bedroom", tier: "PRIVATE", weight: 0.18, isEnsuite: true, hasBalcony: true, vastuZone: "SW" },
-        { id: "master_toilet", name: "Master Toilet (En-suite)", type: "master_toilet", tier: "PRIVATE", weight: 0.04, isEnsuite: true },
-        { id: "bedroom_2", name: "Bedroom 2", type: "bedroom", tier: "PRIVATE", weight: 0.13, isEnsuite: true },
-        { id: "toilet_2", name: "Toilet 2 (Attached)", type: "master_toilet", tier: "PRIVATE", weight: 0.03, isEnsuite: true },
-        { id: "bedroom_3", name: "Bedroom 3 / Guest Room", type: "bedroom", tier: "PRIVATE", weight: 0.12 },
-        { id: "common_toilet", name: "Common Toilet / Powder", type: "common_toilet", tier: "PRIVATE", weight: 0.03, vastuZone: "NW" },
-        { id: "living_balcony", name: "Living Sit-Out Balcony", type: "balcony", tier: "PUBLIC", weight: 0.02, hasBalcony: true }
-      ]
-    };
-    TYPOLOGY_TEMPLATES = {
-      "1BHK": TYPOLOGY_2BHK_TEMPLATE,
-      // fallback
-      "2BHK": TYPOLOGY_2BHK_TEMPLATE,
-      "3BHK": TYPOLOGY_3BHK_TEMPLATE,
-      "4BHK": TYPOLOGY_3BHK_TEMPLATE,
-      // fallback
-      "1bhk": TYPOLOGY_2BHK_TEMPLATE,
-      "2bhk": TYPOLOGY_2BHK_TEMPLATE,
-      "3bhk": TYPOLOGY_3BHK_TEMPLATE,
-      "4bhk": TYPOLOGY_3BHK_TEMPLATE
-    };
-  }
-});
-
-// ../ai-orchestration/dist/apartment/site-defaults.js
-var DEFAULT_APARTMENT_SETBACKS_MM, DEFAULT_APARTMENT_SETBACKS_M;
-var init_site_defaults = __esm({
-  "../ai-orchestration/dist/apartment/site-defaults.js"() {
-    "use strict";
-    DEFAULT_APARTMENT_SETBACKS_MM = {
-      front: 3e3,
-      rear: 2e3,
-      left: 2e3,
-      right: 2e3
-    };
-    DEFAULT_APARTMENT_SETBACKS_M = {
-      front: DEFAULT_APARTMENT_SETBACKS_MM.front / 1e3,
-      rear: DEFAULT_APARTMENT_SETBACKS_MM.rear / 1e3,
-      left: DEFAULT_APARTMENT_SETBACKS_MM.left / 1e3,
-      right: DEFAULT_APARTMENT_SETBACKS_MM.right / 1e3
-    };
-  }
-});
-
-// ../ai-orchestration/dist/apartment/manifest.js
-function buildApartmentGenerationManifest(input) {
-  const { site, apartmentConfig, rulesProfile } = input;
-  const setbacks = site.setbacksMm ?? DEFAULT_APARTMENT_SETBACKS_MM;
-  const plotWidthM = site.plotWidthMm / 1e3;
-  const plotDepthM = site.plotDepthMm / 1e3;
-  const siteAreaSqM = Number((plotWidthM * plotDepthM).toFixed(2));
-  const siteAreaSqFt = Math.round(siteAreaSqM * SQM_TO_SQFT);
-  const buildableWidthM = Math.max(0, (site.plotWidthMm - setbacks.left - setbacks.right) / 1e3);
-  const buildableDepthM = Math.max(0, (site.plotDepthMm - setbacks.front - setbacks.rear) / 1e3);
-  const buildableAreaSqM = Number((buildableWidthM * buildableDepthM).toFixed(2));
-  const buildableAreaSqFt = Math.round(buildableAreaSqM * SQM_TO_SQFT);
-  const currentFloorPlateSqM = Number((buildableAreaSqM * 0.9).toFixed(2));
-  const currentFloorPlateSqFt = Math.round(currentFloorPlateSqM * SQM_TO_SQFT);
-  const jurisdictionName = apartmentConfig.jurisdiction ?? "pune_pmc";
-  const authorityMap = {
-    pune_pmc: {
-      authority: "Pune Municipal Corporation (PMC)",
-      ruleProfile: "UDCPR 2020 Chapter 6 & Rule 6.2.3"
-    },
-    pune_pmrda: {
-      authority: "Pune Metropolitan Region Development Authority (PMRDA)",
-      ruleProfile: "UDCPR 2020 Regional Authority Regulations"
-    },
-    mumbai_mcgm: {
-      authority: "Municipal Corporation of Greater Mumbai (MCGM)",
-      ruleProfile: "DCPR 2034 Regulation 41 & Table 21"
-    },
-    generic_maharashtra: {
-      authority: "Maharashtra State Unified DCPR",
-      ruleProfile: "UDCPR 2020 Standard Baseline"
-    },
-    generic_indian: {
-      authority: "National Building Code of India (NBC 2016)",
-      ruleProfile: "Part 3 (Development Control) & Part 4 (Fire Safety)"
-    }
-  };
-  const jurisdictionInfo = authorityMap[jurisdictionName] ?? {
-    authority: "Indian Urban Planning Authority",
-    ruleProfile: "National Building Code 2016 Baseline"
-  };
-  const resolvedRulesProfile = rulesProfile ?? getApartmentRulesProfile(jurisdictionName, {
-    floorCount: apartmentConfig.floorCount,
-    tenementsPerFloor: apartmentConfig.flatsPerFloor
-  });
-  const unitsList = [];
-  let unitIndex = 0;
-  for (const item of apartmentConfig.unitMix) {
-    const normType = item.unitType.toUpperCase();
-    for (let c = 0; c < item.count; c++) {
-      unitIndex++;
-      const flatLabel = `FLAT ${unitIndex < 10 ? `0${unitIndex}` : unitIndex}`;
-      const allocation = allocateApartmentUnitSpaces({
-        unitType: normType,
-        targetCarpetAreaSqFt: item.carpetAreaSqFt,
-        rulesProfile: resolvedRulesProfile,
-        flatLabel
-      });
-      const targetAreaSqM = allocation.targetCarpetAreaSqM;
-      const targetAreaSqFt = Math.round(targetAreaSqM * SQM_TO_SQFT);
-      let bedrooms = 0;
-      let bathrooms = 0;
-      let livingRooms = 0;
-      let diningRooms = 0;
-      let kitchens = 0;
-      let utilities = 0;
-      let balconies = 0;
-      for (const r of allocation.rooms) {
-        if (r.type === "master_bedroom" || r.type === "bedroom")
-          bedrooms++;
-        else if (r.type === "master_toilet" || r.type === "common_toilet" || r.type === "powder_room")
-          bathrooms++;
-        else if (r.type === "living_dining") {
-          livingRooms++;
-          diningRooms++;
-        } else if (r.type === "kitchen")
-          kitchens++;
-        else if (r.type === "utility")
-          utilities++;
-        else if (r.type === "balcony")
-          balconies++;
-      }
-      if (bedrooms === 0) {
-        const parsed = parseInt(normType, 10);
-        bedrooms = isNaN(parsed) ? 2 : parsed;
-        bathrooms = Math.max(1, bedrooms);
-        livingRooms = 1;
-        diningRooms = 1;
-        kitchens = 1;
-        utilities = 1;
-        balconies = 1;
-      }
-      unitsList.push({
-        id: `unit_${unitIndex}`,
-        label: flatLabel,
-        type: normType,
-        targetAreaSqFt,
-        targetAreaSqM,
-        bedrooms,
-        bathrooms,
-        livingRooms,
-        diningRooms,
-        kitchens,
-        utilities,
-        balconies
-      });
-    }
-  }
-  const roomTotals = {
-    bedrooms: unitsList.reduce((acc, u) => acc + u.bedrooms, 0),
-    bathrooms: unitsList.reduce((acc, u) => acc + u.bathrooms, 0),
-    livingRooms: unitsList.reduce((acc, u) => acc + u.livingRooms, 0),
-    diningRooms: unitsList.reduce((acc, u) => acc + u.diningRooms, 0),
-    kitchens: unitsList.reduce((acc, u) => acc + u.kitchens, 0),
-    utilities: unitsList.reduce((acc, u) => acc + u.utilities, 0),
-    balconies: unitsList.reduce((acc, u) => acc + u.balconies, 0)
-  };
-  const liftsCount = Math.max(1, apartmentConfig.commonCore.passengerLifts + apartmentConfig.commonCore.serviceLifts);
-  const stairsCount = Math.max(1, apartmentConfig.commonCore.staircaseCount);
-  const commonCoreSqM = Number((liftsCount * 3.6 + stairsCount * 16 + 18).toFixed(2));
-  const circulationSqM = Number((currentFloorPlateSqM * 0.12).toFixed(2));
-  const servicesSqM = Number((unitsList.length * 2.5 + 5).toFixed(2));
-  const netResidentialSqM = Math.max(0, Number((currentFloorPlateSqM - commonCoreSqM - circulationSqM - servicesSqM).toFixed(2)));
-  const areaAllocations = {
-    siteSqFt: siteAreaSqFt,
-    siteSqM: siteAreaSqM,
-    buildableEnvelopeSqFt: buildableAreaSqFt,
-    buildableEnvelopeSqM: buildableAreaSqM,
-    currentFloorPlateSqFt,
-    currentFloorPlateSqM,
-    commonCoreSqFt: Math.round(commonCoreSqM * SQM_TO_SQFT),
-    commonCoreSqM,
-    circulationSqFt: Math.round(circulationSqM * SQM_TO_SQFT),
-    circulationSqM,
-    servicesSqFt: Math.round(servicesSqM * SQM_TO_SQFT),
-    servicesSqM,
-    netResidentialSqFt: Math.round(netResidentialSqM * SQM_TO_SQFT),
-    netResidentialSqM
-  };
-  const floors = Math.max(1, apartmentConfig.floorCount);
-  const currentFloor = input.currentFloorIndex ?? 1;
-  const floorType = apartmentConfig.floorStrategy ?? "typical";
-  const allAmenities = [
-    ...apartmentConfig.amenities?.groundSiteAmenities ?? [],
-    ...apartmentConfig.amenities?.buildingAmenities ?? []
-  ];
-  return {
-    jurisdiction: jurisdictionInfo,
-    project: {
-      type: "apartment",
-      floors,
-      currentFloor,
-      floorType
-    },
-    site: {
-      widthFt: Math.round(plotWidthM * M_TO_FT),
-      depthFt: Math.round(plotDepthM * M_TO_FT),
-      buildableWidthFt: Math.round(buildableWidthM * M_TO_FT),
-      buildableDepthFt: Math.round(buildableDepthM * M_TO_FT),
-      buildableAreaSqFt,
-      widthM: Number(plotWidthM.toFixed(2)),
-      depthM: Number(plotDepthM.toFixed(2)),
-      buildableAreaSqM
-    },
-    units: {
-      exactCount: unitsList.length,
-      units: unitsList
-    },
-    roomTotals,
-    areaAllocations,
-    commonCore: {
-      lifts: liftsCount,
-      stairs: stairsCount,
-      commonLobby: apartmentConfig.commonCore.commonLobby ?? true,
-      corridor: true
-    },
-    services: {
-      ducts: Math.max(1, Math.ceil(unitsList.length / 2)),
-      shafts: Math.max(1, Math.ceil(unitsList.length / 2)),
-      utilityAreas: roomTotals.utilities
-    },
-    parking: {
-      cars: (apartmentConfig.parking?.residentParkingCount ?? 0) + (apartmentConfig.parking?.visitorParkingCount ?? 0),
-      twoWheelers: apartmentConfig.parking?.twoWheelerParkingCount ?? unitsList.length * 2,
-      visitorSpaces: apartmentConfig.parking?.visitorParkingCount ?? 2
-    },
-    amenities: allAmenities.length > 0 ? allAmenities : ["common_lobby", "society_office"],
-    orientation: {
-      roadSide: (site.roadFacing ?? "north").toUpperCase(),
-      northDirection: site.orientationDegrees ?? 0
-    },
-    requirements: [
-      `Generate EXACTLY ${unitsList.length} separate residential flats on this floor.`,
-      `Preserve the exact unit mix: ${apartmentConfig.unitMix.map((u) => `${u.count} x ${u.unitType}`).join(", ")}.`,
-      `Generate EXACTLY ${liftsCount} lift(s) and EXACTLY ${stairsCount} staircase(s).`,
-      "Include a central common lobby providing direct access to all flat entries.",
-      "Flats must have clear boundary walls and independent front doors.",
-      "No standalone villas, no single-family houses, no merged units."
-    ]
-  };
-}
-function validateSchematicMatchesManifest(schematic, manifest) {
-  const discrepancies = [];
-  if (schematic.flatCount !== manifest.units.exactCount) {
-    discrepancies.push(`Schematic flat count (${schematic.flatCount}) does not match manifest flat count (${manifest.units.exactCount}).`);
-  }
-  if (schematic.units.length !== manifest.units.units.length) {
-    discrepancies.push(`Schematic unit count (${schematic.units.length}) does not match manifest units list (${manifest.units.units.length}).`);
-  }
-  for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
-    const sUnit = schematic.units[i];
-    const mUnit = manifest.units.units[i];
-    if (sUnit.unitType.toUpperCase() !== mUnit.type.toUpperCase()) {
-      discrepancies.push(`Unit ${i + 1} type mismatch: Schematic has "${sUnit.unitType}", but manifest requires "${mUnit.type}".`);
-    }
-  }
-  if (schematic.core.lifts.length !== manifest.commonCore.lifts) {
-    discrepancies.push(`Schematic lift count (${schematic.core.lifts.length}) does not match manifest lift count (${manifest.commonCore.lifts}).`);
-  }
-  if (schematic.core.stairs.length !== manifest.commonCore.stairs) {
-    discrepancies.push(`Schematic stair count (${schematic.core.stairs.length}) does not match manifest stair count (${manifest.commonCore.stairs}).`);
-  }
-  for (let i = 0; i < Math.min(schematic.units.length, manifest.units.units.length); i++) {
-    const sUnit = schematic.units[i];
-    const mUnit = manifest.units.units[i];
-    const rooms = [...sUnit.rooms, ...sUnit.balconies];
-    const bedrooms = rooms.filter((r) => r.type === "master_bedroom" || r.type === "bedroom").length;
-    const baths = rooms.filter((r) => r.type === "master_toilet" || r.type === "common_toilet" || r.type === "powder_room").length;
-    if (bedrooms !== mUnit.bedrooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${bedrooms} bedroom(s); manifest requires ${mUnit.bedrooms}.`);
-    }
-    if (baths < mUnit.bathrooms) {
-      discrepancies.push(`${sUnit.flatLabel} has ${baths} bath(s); manifest requires ${mUnit.bathrooms}.`);
-    }
-  }
-  const feasibilityFail = schematic.layoutFits === false;
-  if (feasibilityFail) {
-    discrepancies.push(schematic.areaReport?.floor.message ?? `FEASIBILITY FAIL: ${schematic.layoutIssues.join("; ")}`);
-  }
-  for (const report of schematic.areaReport?.units ?? []) {
-    if (report.status === "FAIL") {
-      discrepancies.push(`${report.flatLabel} area control failed: ${report.actualCarpetSqM} m\xB2 drawn vs ${report.targetCarpetSqM} m\xB2 target (${report.deviationPct}%).`);
-    }
-  }
-  for (const check of schematic.spatialChecks ?? []) {
-    if (check.status === "FAIL")
-      discrepancies.push(`Spatial check ${check.code} failed: ${check.message}`);
-  }
-  return {
-    matches: discrepancies.length === 0,
-    discrepancies,
-    feasibilityFail
-  };
-}
-var SQM_TO_SQFT, M_TO_FT;
-var init_manifest = __esm({
-  "../ai-orchestration/dist/apartment/manifest.js"() {
-    "use strict";
-    init_jurisdiction();
-    init_typologies();
-    init_site_defaults();
-    SQM_TO_SQFT = 10.7639104;
-    M_TO_FT = 3.28084;
-  }
-});
-
-// ../ai-orchestration/dist/orchestration/aspect-ratio.js
-function roundToStep(value, step) {
-  return Math.round(value / step) * step;
-}
-function clamp(value, min, max) {
-  return Math.min(max, Math.max(min, value));
-}
-function computeAspectAdaptedDimensions(plotWidthM, plotDepthM) {
-  const safeWidth = Math.max(0.1, plotWidthM);
-  const safeDepth = Math.max(0.1, plotDepthM);
-  const rawAspect = safeWidth / safeDepth;
-  const aspectRatio = clamp(rawAspect, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-  let width = Math.sqrt(TARGET_PIXEL_BUDGET * aspectRatio);
-  let height = Math.sqrt(TARGET_PIXEL_BUDGET / aspectRatio);
-  width = roundToStep(width, OUTPUT_DIMENSION_STEP_PX);
-  height = roundToStep(height, OUTPUT_DIMENSION_STEP_PX);
-  width = clamp(width, MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX);
-  height = clamp(height, MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX);
-  return { width, height, aspectRatio };
-}
-var MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX, OUTPUT_DIMENSION_STEP_PX, TARGET_PIXEL_BUDGET, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO;
-var init_aspect_ratio = __esm({
-  "../ai-orchestration/dist/orchestration/aspect-ratio.js"() {
-    "use strict";
-    MIN_OUTPUT_DIMENSION_PX = 512;
-    MAX_OUTPUT_DIMENSION_PX = 1536;
-    OUTPUT_DIMENSION_STEP_PX = 64;
-    TARGET_PIXEL_BUDGET = 1024 * 1024;
-    MIN_ASPECT_RATIO = 0.5;
-    MAX_ASPECT_RATIO = 2;
-  }
-});
-
-// ../ai-orchestration/dist/orchestration/image-prompt-compiler.js
-function titleCase(value) {
-  return value.charAt(0).toUpperCase() + value.slice(1);
-}
-function buildRoomSchedule(input) {
-  const { requirements, program } = input;
-  const hard = requirements.hard;
-  const soft = requirements.soft;
-  if (program && program.items.length > 0) {
-    const parts2 = program.items.filter((item) => item.quantity > 0).map((item) => {
-      const m2 = (item.preferredAreaMm2 / 1e6).toFixed(1);
-      return item.quantity > 1 ? `${item.quantity} x ${item.name} (~${m2} m2 each)` : `${item.name} (~${m2} m2)`;
-    });
-    if (parts2.length > 0)
-      return parts2.join(", ");
-  }
-  const parts = [];
-  if (hard.bedroomCount > 0)
-    parts.push(`${hard.bedroomCount} bedroom(s)`);
-  if (hard.bathroomCount > 0)
-    parts.push(`${hard.bathroomCount} bathroom(s)`);
-  if (hard.livingRoomRequired)
-    parts.push("living room");
-  if (hard.kitchenRequired)
-    parts.push(soft.openKitchen ? "open kitchen" : "kitchen");
-  if (hard.diningRoomRequired)
-    parts.push("dining room");
-  if (hard.staircaseRequired)
-    parts.push("staircase");
-  if (hard.liftRequired)
-    parts.push("lift");
-  if (soft.poojaRoom)
-    parts.push("pooja room");
-  if (soft.studyRoom)
-    parts.push("study");
-  if (soft.servantQuarter)
-    parts.push("servant quarter");
-  for (const custom of hard.customRooms ?? []) {
-    parts.push(`${custom.count} x ${custom.name ?? String(custom.type)}`);
-  }
-  return parts.join(", ");
-}
-function compileFloorPlanImagePrompt(input) {
-  const { requirements, site } = input;
-  const { hard } = requirements;
-  const { setbacks } = site;
-  const aspect = computeAspectAdaptedDimensions(site.plotWidth / 1e3, site.plotDepth / 1e3);
-  const width = input.width ?? aspect.width;
-  const height = input.height ?? aspect.height;
-  const seed2 = input.seed;
-  const plotWidthM = (site.plotWidth / 1e3).toFixed(2);
-  const plotDepthM = (site.plotDepth / 1e3).toFixed(2);
-  const floors = Math.max(1, hard.floorsCount);
-  const floorLabel = floors === 1 ? "single-storey ground floor" : `${floors}-storey`;
-  const brief = (input.additionalPrompt ?? requirements.rawUserPrompt ?? "").trim();
-  const roomSchedule2 = buildRoomSchedule(input);
-  const directiveLines = [
-    "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).",
-    "",
-    `PROJECT: ${requirements.projectName}, ${floorLabel}.`,
-    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), road facing ${titleCase(site.roadFacing)}.`,
-    `SETBACKS: front ${setbacks.front}mm, rear ${setbacks.rear}mm, left ${setbacks.left}mm, right ${setbacks.right}mm.`,
-    `ROOM PROGRAM: ${roomSchedule2 || "standard residential layout"}.`,
-    ...hard.parkingRequired && hard.parkingSpacesCount > 0 ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s).`] : [],
-    ...brief.length > 0 ? [`ADDITIONAL BRIEF: ${brief}`] : [],
-    "",
-    "MANDATORY DIRECTIVES:",
-    "- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.",
-    "- Clear room separation, proper wall thicknesses, door swings, and window openings.",
-    "- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).",
-    ...input.referenceImages && input.referenceImages.length > 0 ? ["- Use the supplied reference images for visual drafting style. Current project requirements always override references."] : [],
-    "",
-    "STRICT PROHIBITIONS:",
-    "Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text."
-  ];
-  const prompt = directiveLines.join("\n");
-  return {
-    schemaVersion: 1,
-    promptVersion: FLOOR_PLAN_PROMPT_VERSION,
-    prompt,
-    negativePrompt: NEGATIVE_PROMPT,
-    seed: seed2,
-    width,
-    height,
-    referenceImages: input.referenceImages,
-    referenceDiagnostics: input.referenceDiagnostics,
-    metadata: {
-      ...requirements.projectId ? { projectId: requirements.projectId } : {},
-      projectName: requirements.projectName,
-      plotWidthMm: site.plotWidth,
-      plotDepthMm: site.plotDepth,
-      floorsCount: floors,
-      roadFacing: site.roadFacing,
-      projectType: "residential_independent",
-      referenceDiagnostics: input.referenceDiagnostics
-    }
-  };
-}
-function apartmentConceptLabelVocabulary(manifest) {
-  const flats = manifest.units.units.map((u) => u.label.toUpperCase());
-  const types = [...new Set(manifest.units.units.map((u) => u.type.toUpperCase()))];
-  return [...flats, ...types, ...APARTMENT_CONCEPT_ROOM_WORDS, ...APARTMENT_CONCEPT_CORE_WORDS];
-}
-function plural(n2, one, many) {
-  return `${n2} ${n2 === 1 ? one : many}`;
-}
-function compileApartmentConceptPrompt(manifest, concept, styleReferenceCount) {
-  const flats = manifest.units.units.map((u) => {
-    const rooms = [
-      plural(u.bedrooms, "bedroom", "bedrooms"),
-      plural(u.bathrooms, "bath", "baths"),
-      ...u.livingRooms > 0 ? ["living"] : [],
-      ...u.diningRooms > 0 ? ["dining"] : [],
-      ...u.kitchens > 0 ? ["kitchen"] : [],
-      ...u.utilities > 0 ? ["utility"] : []
-    ];
-    return `${u.label.toUpperCase()} ${u.type.toUpperCase()} = ${rooms.join(", ")}`;
-  }).join("; ");
-  const refLine = styleReferenceCount === 0 ? [] : [
-    `${styleReferenceCount === 1 ? "Input image 2 is a" : `Input images 2-${styleReferenceCount + 1} are`} visual style and planning-language reference${styleReferenceCount === 1 ? "" : "s"} only: never copy their flat count, geometry or text.`
-  ];
-  return [
-    "Generate ONE professional top-down Indian apartment floor plan: clean 2D orthographic drafting, black walls on white.",
-    `CONCEPT ${String(concept.candidateNumber).padStart(2, "0")} of ${String(concept.candidateCount).padStart(2, "0")} - ${concept.label}: ${concept.intent}`,
-    "Input image 1 is the deterministic layout and the primary structural reference: keep its flat boundaries, core, lifts, stairs, common lobby, room arrangement, doors and proportions.",
-    ...refLine,
-    "Priority: user requirements > deterministic layout > reference style.",
-    `EXACTLY ${manifest.units.exactCount} flats: ${flats}.`,
-    `Common core: EXACTLY ${manifest.commonCore.lifts} lifts (square shafts with X), EXACTLY ${manifest.commonCore.stairs} stairs (treads with a centre divider), ONE shaded common lobby touching every flat entrance.`,
-    "Entry in every flat: common lobby > entrance door > foyer > living/dining > bedrooms. The lobby never opens into a bedroom or bath.",
-    "Keep the architectural form natural: varied room proportions and articulated flat outlines; do not convert the layout into a rigid square grid.",
-    `English labels only, short and clear, as in image 1: ${apartmentConceptLabelVocabulary(manifest).join(", ")}. No other text, no dimensions.`,
-    "Do not add or remove flats, change the unit mix or the common core, or turn the project into a villa. No 3D, no perspective, no furniture, no watermark, no non-Latin text."
-  ].join("\n");
-}
-function compileApartmentFloorPlanImagePrompt(input) {
-  const { site, apartmentConfig, seed: seed2 } = input;
-  const aspect = computeAspectAdaptedDimensions(site.plotWidth / 1e3, site.plotDepth / 1e3);
-  const width = input.width ?? aspect.width;
-  const height = input.height ?? aspect.height;
-  const manifest = input.manifest ?? buildApartmentGenerationManifest({
-    site: {
-      plotWidthMm: site.plotWidth,
-      plotDepthMm: site.plotDepth,
-      setbacksMm: site.setbacks,
-      roadFacing: site.roadFacing,
-      orientationDegrees: site.orientation
-    },
-    apartmentConfig
-  });
-  const floorsCount = manifest.project.floors;
-  const floorStrategy = manifest.project.floorType;
-  const unitMixParts = apartmentConfig.unitMix.map((u) => `${u.count} x ${u.unitType}`);
-  const unitMixDescription = unitMixParts.join(", ");
-  const promptLines = [
-    "CREATE ONE PROFESSIONAL 2D INDIAN APARTMENT FLOOR PLAN.",
-    "",
-    `PROJECT: Multi-unit residential apartment (${floorsCount} floors).`,
-    `CURRENT FLOOR: ${floorStrategy.toUpperCase()} RESIDENTIAL FLOOR.`,
-    `JURISDICTION: ${manifest.jurisdiction.authority} (${manifest.jurisdiction.ruleProfile}).`,
-    `PLOT PROPORTIONS: ${manifest.site.widthM}m width \xD7 ${manifest.site.depthM}m depth.`,
-    "",
-    "REFERENCE PRIORITY:",
-    "1. USER/MANIFEST REQUIREMENTS (authoritative for counts & mix)",
-    "2. DETERMINISTIC SCHEMATIC (primary structural reference for layout & core)",
-    "3. REFERENCE IMAGE VISUAL STYLE (architectural drafting style only)",
-    "",
-    "HARD REQUIREMENTS:",
-    `1. Generate EXACTLY ${manifest.units.exactCount} separate residential flats (${manifest.units.units.map((u) => `${u.label}: ${u.type}`).join(", ")}).`,
-    `2. Exact unit mix: ${unitMixDescription}. Total bedrooms across floor: ${manifest.roomTotals.bedrooms}.`,
-    `3. Common core: EXACTLY ${manifest.commonCore.lifts} separate elevator shaft(s) [X], EXACTLY ${manifest.commonCore.stairs} staircase(s), common lobby and corridor.`,
-    "4. Clean 2D orthographic technical drafting, crisp black architectural linework on white background.",
-    "5. English only: readable English architectural labels only (FLAT, LIVING, BEDROOM, KITCHEN, BATH, BALCONY, LIFT, STAIR, COMMON LOBBY).",
-    "",
-    "DO NOT GENERATE:",
-    "No villa, no single-family house, no extra flats, no missing flats, no merged flats. No 3D, no perspective, no photorealism, no furniture clutter, no Cyrillic or non-Latin script."
-  ];
-  const styleReferenceCount = (input.referenceImages ?? []).filter((r) => r.id !== "schematic_scaffold").length;
-  const prompt = input.concept ? compileApartmentConceptPrompt(manifest, input.concept, styleReferenceCount) : promptLines.join("\n");
-  return {
-    schemaVersion: 1,
-    promptVersion: FLOOR_PLAN_PROMPT_VERSION,
-    prompt,
-    negativePrompt: APARTMENT_NEGATIVE_PROMPT,
-    seed: seed2,
-    width,
-    height,
-    referenceImages: input.referenceImages,
-    referenceDiagnostics: input.referenceDiagnostics,
-    metadata: {
-      projectId: input.projectId,
-      projectName: input.projectName ?? "Apartment Building Project",
-      plotWidthMm: site.plotWidth,
-      plotDepthMm: site.plotDepth,
-      floorsCount,
-      roadFacing: site.roadFacing,
-      projectType: "apartment",
-      apartmentConfig,
-      manifest,
-      referenceDiagnostics: input.referenceDiagnostics
-    }
-  };
-}
-var FLOOR_PLAN_PROMPT_VERSION, NEGATIVE_PROMPT, APARTMENT_NEGATIVE_PROMPT, APARTMENT_CONCEPT_ROOM_WORDS, APARTMENT_CONCEPT_CORE_WORDS;
-var init_image_prompt_compiler = __esm({
-  "../ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
-    "use strict";
-    init_manifest();
-    init_aspect_ratio();
-    FLOOR_PLAN_PROMPT_VERSION = 3;
-    NEGATIVE_PROMPT = "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo";
-    APARTMENT_NEGATIVE_PROMPT = "NO VILLA, NO SINGLE FAMILY HOUSE, NO EXTRA FLATS, NO MISSING FLATS, NO MERGED FLATS, NO WRONG UNIT MIX, NO EXTRA BEDROOMS, NO MISSING BEDROOMS, NO EXTRA LIFTS, NO MISSING LIFTS, NO EXTRA STAIRS, NO MISSING STAIRS, NO RANDOM CORE, NO RANDOM AMENITIES, NO RANDOM ROOMS, NO CYRILLIC, NO RUSSIAN, NO NON-LATIN SCRIPT, NO GIBBERISH, NO PSEUDO-TEXT, NO RANDOM NUMBERS, NO WATERMARK, NO LOGO, NO 3D, NO PERSPECTIVE, NO PHOTOREALISTIC INTERIOR, NO HAND DRAWING, NO ARTISTIC RENDERING, NO DISTORTED WALLS, NO OVERLAPPING FLATS, NO FLOATING WALLS";
-    APARTMENT_CONCEPT_ROOM_WORDS = ["LIVING", "DINING", "KITCHEN", "BEDROOM", "BATH", "UTILITY", "FOYER"];
-    APARTMENT_CONCEPT_CORE_WORDS = ["LIFT", "STAIR", "LOBBY"];
-  }
-});
-
-// ../ai-orchestration/dist/providers/image-generation.js
-var ImageProviderError, DEFAULT_FLUX_MODEL, CloudflareImageProvider;
-var init_image_generation = __esm({
-  "../ai-orchestration/dist/providers/image-generation.js"() {
-    "use strict";
-    ImageProviderError = class _ImageProviderError extends Error {
-      code;
-      status;
-      constructor(code, message, status) {
-        super(message);
-        this.name = "ImageProviderError";
-        this.code = code;
-        this.status = status;
-        Object.setPrototypeOf(this, _ImageProviderError.prototype);
-      }
-    };
-    DEFAULT_FLUX_MODEL = "@cf/black-forest-labs/flux-2-klein-4b";
-    CloudflareImageProvider = class {
-      name = "cloudflare-workers-ai";
-      model;
-      constructor(_options) {
-        this.model = DEFAULT_FLUX_MODEL;
-      }
-      isConfigured() {
-        return false;
-      }
-      async isAvailable() {
-        return false;
-      }
-      getModel() {
-        return this.model;
-      }
-      async generateFloorPlan(_request) {
-        throw new ImageProviderError("IMAGE_PROVIDER_NOT_CONFIGURED", "Cloudflare image generation is disabled.");
-      }
-    };
-  }
-});
-
-// ../ai-orchestration/dist/providers/pollinations-image.js
-var POLLINATIONS_PROVIDER_NAME, POLLINATIONS_BASE_URL, DEFAULT_POLLINATIONS_IMAGE_MODEL, PollinationsImageProvider;
-var init_pollinations_image = __esm({
-  "../ai-orchestration/dist/providers/pollinations-image.js"() {
-    "use strict";
-    init_image_generation();
-    POLLINATIONS_PROVIDER_NAME = "pollinations";
-    POLLINATIONS_BASE_URL = "https://gen.pollinations.ai";
-    DEFAULT_POLLINATIONS_IMAGE_MODEL = "qwen/qwen-image-2.1";
-    PollinationsImageProvider = class {
-      name = POLLINATIONS_PROVIDER_NAME;
-      model;
-      baseUrl;
-      constructor(options) {
-        this.model = options.model?.trim() || DEFAULT_POLLINATIONS_IMAGE_MODEL;
-        this.baseUrl = (options.baseUrl?.trim() || POLLINATIONS_BASE_URL).replace(/\/+$/, "");
-      }
-      isConfigured() {
-        return false;
-      }
-      async isAvailable() {
-        return false;
-      }
-      getModel() {
-        return this.model;
-      }
-      getBaseUrl() {
-        return this.baseUrl;
-      }
-      async checkAccess() {
-        return { status: "NOT_CONFIGURED", reachable: false, detail: "Pollinations provider disabled.", capabilities: void 0 };
-      }
-      async generateFloorPlan(_request) {
-        throw new ImageProviderError("IMAGE_PROVIDER_NOT_CONFIGURED", "Pollinations image generation is disabled.");
-      }
-    };
-  }
-});
-
-// ../ai-orchestration/dist/providers/gemini-image.js
-var DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_IMAGE_SIZE, GEMINI_IMAGE_PROVIDER_NAME, GeminiImageProvider;
-var init_gemini_image = __esm({
-  "../ai-orchestration/dist/providers/gemini-image.js"() {
-    "use strict";
-    init_image_generation();
-    DEFAULT_GEMINI_IMAGE_MODEL = "gemini-3-pro-image";
-    DEFAULT_GEMINI_IMAGE_SIZE = "2K";
-    GEMINI_IMAGE_PROVIDER_NAME = "gemini";
-    GeminiImageProvider = class {
-      name = GEMINI_IMAGE_PROVIDER_NAME;
-      apiKey;
-      model;
-      imageSize;
-      constructor(options) {
-        this.apiKey = (options.apiKey ?? "").trim();
-        this.model = (options.model ?? "").trim() || DEFAULT_GEMINI_IMAGE_MODEL;
-        this.imageSize = options.imageSize ?? DEFAULT_GEMINI_IMAGE_SIZE;
-        void options.endpointBase;
-        void options.timeoutMs;
-        void options.fetchImpl;
-      }
-      isConfigured() {
-        return this.apiKey.length > 0;
-      }
-      async isAvailable() {
-        return false;
-      }
-      getModel() {
-        return this.model;
-      }
-      getImageSize() {
-        return this.imageSize;
-      }
-      async generateFloorPlan(_request) {
-        if (!this.apiKey) {
-          throw new ImageProviderError("GEMINI_AUTH_ERROR", "GEMINI_API_KEY missing");
-        }
-        throw new ImageProviderError("IMAGE_PROVIDER_NOT_CONFIGURED", "Gemini image generation is disabled.");
-      }
-    };
-  }
-});
-
-// ../ai-orchestration/dist/orchestration/image-quality-gate.js
-function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight = 1024) {
-  const byteSize = imageBuffer.length;
-  if (byteSize < 5e3) {
-    return {
-      valid: false,
-      reason: `Image payload is suspiciously small (${byteSize} bytes); likely corrupted or empty.`,
-      byteSize
-    };
-  }
-  let detectedMime = "application/octet-stream";
-  const isPng = imageBuffer[0] === 137 && imageBuffer[1] === 80 && imageBuffer[2] === 78 && imageBuffer[3] === 71;
-  const isJpeg = imageBuffer[0] === 255 && imageBuffer[1] === 216 && imageBuffer[2] === 255;
-  const isWebp = imageBuffer[0] === 82 && imageBuffer[1] === 73 && imageBuffer[2] === 70 && imageBuffer[3] === 70 && imageBuffer[8] === 87 && imageBuffer[9] === 69 && imageBuffer[10] === 66 && imageBuffer[11] === 80;
-  if (isPng)
-    detectedMime = "image/png";
-  else if (isJpeg)
-    detectedMime = "image/jpeg";
-  else if (isWebp)
-    detectedMime = "image/webp";
-  else {
-    return {
-      valid: false,
-      reason: "Image does not match standard image format header (PNG, JPEG, WebP).",
-      byteSize
-    };
-  }
-  const headerOffset = Math.min(64, Math.floor(byteSize / 10));
-  const payloadBytes = byteSize - headerOffset;
-  const sampleStride = Math.max(1, Math.floor(payloadBytes / 500));
-  let sum2 = 0;
-  let sampleCount = 0;
-  const samples = [];
-  for (let i = headerOffset; i < byteSize; i += sampleStride) {
-    const val = imageBuffer[i];
-    samples.push(val);
-    sum2 += val;
-    sampleCount++;
-    if (sampleCount >= 500)
-      break;
-  }
-  const mean = sum2 / sampleCount;
-  let variance = 0;
-  for (const val of samples) {
-    variance += (val - mean) * (val - mean);
-  }
-  variance = variance / sampleCount;
-  if (variance < 10) {
-    return {
-      valid: false,
-      reason: `Image lacks contrast and architectural detail (byte variance ${variance.toFixed(1)}); appears blank or corrupted.`,
-      byteSize,
-      detectedMime
-    };
-  }
-  return {
-    valid: true,
-    byteSize,
-    detectedMime
-  };
-}
-var init_image_quality_gate = __esm({
-  "../ai-orchestration/dist/orchestration/image-quality-gate.js"() {
-    "use strict";
-  }
-});
-
-// ../ai-orchestration/dist/apartment/floor-configuration.js
+// packages/ai-orchestration/dist/apartment/floor-configuration.js
 var init_floor_configuration = __esm({
-  "../ai-orchestration/dist/apartment/floor-configuration.js"() {
+  "packages/ai-orchestration/dist/apartment/floor-configuration.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/apartment/layout-planner.js
+// packages/ai-orchestration/dist/apartment/layout-planner.js
 function rectFromEdges(x0, y0, x1, y1) {
   const ax = r3(Math.min(x0, x1));
   const ay = r3(Math.min(y0, y1));
@@ -6898,7 +9264,7 @@ function planUnitUV(flat, p, rules) {
   const foyer = first("foyer") ?? synth("foyer", "Entrance Foyer", "foyer", 2.4, 1.2);
   const ld = first("living_dining") ?? synth("living_dining", "Living & Dining Room", "living_dining", 14, 3);
   const kitchen2 = first("kitchen") ?? synth("kitchen", "Kitchen", "kitchen", 6, 1.8);
-  const utility = first("utility") ?? synth("utility", "Kitchen Utility (Dry Balcony)", "utility", 2.4, 1.2);
+  const utility = first("utility");
   const master = first("master_bedroom");
   const others = all.filter((r5) => r5.type === "bedroom");
   const baths = all.filter((r5) => r5.type === "master_toilet" || r5.type === "common_toilet" || r5.type === "powder_room");
@@ -7146,8 +9512,8 @@ function buildLocalLayout(input, p) {
     if (out.length === 0)
       return out;
     const fys2 = out.map(foyerY);
-    const centre = (Math.min(...fys2.map((f) => f[0])) + Math.max(...fys2.map((f) => f[1]))) / 2;
-    let cursorY = r3(out[0].y0 + clusterCentre - centre);
+    const centre2 = (Math.min(...fys2.map((f) => f[0])) + Math.max(...fys2.map((f) => f[1]))) / 2;
+    let cursorY = r3(out[0].y0 + clusterCentre - centre2);
     for (const pu of out) {
       pu.y0 = cursorY;
       cursorY = r3(pu.y0 + pu.plan.h);
@@ -7229,8 +9595,8 @@ function buildLocalLayout(input, p) {
   });
   const coreParts = [lobby, ...stairs.filter(Boolean), ...lifts.filter(Boolean), ...shafts];
   const coreBounds = unionRect(coreParts);
-  const bbox = unionRect([coreBounds, ...units.map((u) => u.bounds)]);
-  return { units, lobby, lifts, stairs, shafts, coreBounds, bbox, issues };
+  const bbox2 = unionRect([coreBounds, ...units.map((u) => u.bounds)]);
+  return { units, lobby, lifts, stairs, shafts, coreBounds, bbox: bbox2, issues };
 }
 function compactionLadder(p) {
   const ladder = [{ params: p, note: null }];
@@ -7636,7 +10002,7 @@ function buildAreaReport(units, lobby, lifts, stairs, shafts, footprint2, builda
 }
 var APARTMENT_CONCEPT_STRATEGIES, STRATEGY_PARAMS, COMMON_LOBBY_ID, r3, areaOf, sum, clamp2, LOBBY_NODE;
 var init_layout_planner = __esm({
-  "../ai-orchestration/dist/apartment/layout-planner.js"() {
+  "packages/ai-orchestration/dist/apartment/layout-planner.js"() {
     "use strict";
     init_dist();
     APARTMENT_CONCEPT_STRATEGIES = [
@@ -7769,7 +10135,7 @@ var init_layout_planner = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/polygon-layout.js
+// packages/ai-orchestration/dist/apartment/polygon-layout.js
 function shoelaceAreaSqM(vertices) {
   let s = 0;
   const n2 = vertices.length;
@@ -7821,23 +10187,23 @@ function ensureCCW(vertices) {
   return vertices;
 }
 function buildSteppedPolygon(params) {
-  const { flatId, flatLabel, bbox, corridorSide, extraDeadWalls = [] } = params;
-  const x0 = bbox.x;
-  const y0 = bbox.y;
-  const x1 = bbox.x + bbox.width;
-  const y1 = bbox.y + bbox.height;
+  const { flatId, flatLabel, bbox: bbox2, corridorSide, extraDeadWalls = [] } = params;
+  const x0 = bbox2.x;
+  const y0 = bbox2.y;
+  const x1 = bbox2.x + bbox2.width;
+  const y1 = bbox2.y + bbox2.height;
   const insetMm = 1200;
-  const splitY = y0 + bbox.height * 0.58;
+  const splitY = y0 + bbox2.height * 0.58;
   let vertices;
   if (corridorSide === "W" || corridorSide === "E") {
-    const insetX = corridorSide === "W" ? x1 - insetMm / 1e3 : x0 + insetMm / 1e3;
+    const stepX = corridorSide === "W" ? x1 + insetMm / 1e3 : x0 - insetMm / 1e3;
     if (corridorSide === "W") {
       vertices = [
         { x: x0, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: splitY },
-        { x: insetX, y: splitY },
-        { x: insetX, y: y1 },
+        { x: stepX, y: splitY },
+        { x: stepX, y: y1 },
         { x: x0, y: y1 }
       ];
     } else {
@@ -7845,27 +10211,27 @@ function buildSteppedPolygon(params) {
         { x: x0, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: y1 },
-        { x: insetX, y: y1 },
-        { x: insetX, y: splitY },
+        { x: stepX, y: y1 },
+        { x: stepX, y: splitY },
         { x: x0, y: splitY }
       ];
     }
   } else {
-    const insetY = corridorSide === "N" ? y1 - insetMm / 1e3 : y0 + insetMm / 1e3;
-    const splitX = x0 + bbox.width * 0.58;
+    const stepY = corridorSide === "N" ? y1 + insetMm / 1e3 : y0 - insetMm / 1e3;
+    const splitX = x0 + bbox2.width * 0.58;
     if (corridorSide === "N") {
       vertices = [
         { x: x0, y: y0 },
         { x: x1, y: y0 },
-        { x: x1, y: insetY },
-        { x: splitX, y: insetY },
+        { x: x1, y: y1 },
         { x: splitX, y: y1 },
-        { x: x0, y: y1 }
+        { x: splitX, y: stepY },
+        { x: x0, y: stepY }
       ];
     } else {
       vertices = [
-        { x: x0, y: insetY },
-        { x: splitX, y: insetY },
+        { x: x0, y: stepY },
+        { x: splitX, y: stepY },
         { x: splitX, y: y0 },
         { x: x1, y: y0 },
         { x: x1, y: y1 },
@@ -7875,12 +10241,12 @@ function buildSteppedPolygon(params) {
   }
   vertices = simplifyOrthogonal(vertices);
   vertices = ensureCCW(vertices);
-  const ots = carveOtsShaft(flatId, bbox, corridorSide);
+  const ots = carveOtsShaft(flatId, bbox2, corridorSide);
   const openFacade = corridorSide === "W" ? "E" : corridorSide === "E" ? "W" : corridorSide === "N" ? "S" : "N";
   const balcony = projectSitOutBalcony({
     flatId,
     hostRoomId: `${flatId}_living_dining`,
-    bbox,
+    bbox: bbox2,
     openFacade,
     depthMm: 1500
   });
@@ -7891,7 +10257,7 @@ function buildSteppedPolygon(params) {
   const grossAreaSqM = Number(shoelaceAreaSqM(vertices).toFixed(2));
   const otsAreaSqM = ots.widthMm * ots.depthMm / 1e6;
   const netCarpetAreaSqM = Number((grossAreaSqM - otsAreaSqM).toFixed(2));
-  const bb = bbox;
+  const bb = bbox2;
   return {
     flatId,
     flatLabel,
@@ -7907,11 +10273,11 @@ function buildSteppedPolygon(params) {
     grossAreaSqM
   };
 }
-function carveOtsShaft(flatId, bbox, corridorSide) {
+function carveOtsShaft(flatId, bbox2, corridorSide) {
   const wMm = 1200;
   const dMm = 1500;
-  const x = corridorSide === "W" ? bbox.x + 0.3 : corridorSide === "E" ? bbox.x + bbox.width - 0.3 - wMm / 1e3 : bbox.x + bbox.width * 0.35;
-  const y = bbox.y + bbox.height * 0.42;
+  const x = corridorSide === "W" ? bbox2.x + 0.3 : corridorSide === "E" ? bbox2.x + bbox2.width - 0.3 - wMm / 1e3 : bbox2.x + bbox2.width * 0.35;
+  const y = bbox2.y + bbox2.height * 0.42;
   return {
     id: `${flatId}_ots_1`,
     bounds: { x, y, width: wMm / 1e3, height: dMm / 1e3 },
@@ -7921,28 +10287,28 @@ function carveOtsShaft(flatId, bbox, corridorSide) {
   };
 }
 function projectSitOutBalcony(params) {
-  const { flatId, hostRoomId, bbox, openFacade, depthMm = 1500 } = params;
+  const { flatId, hostRoomId, bbox: bbox2, openFacade, depthMm = 1500 } = params;
   const depthM = depthMm / 1e3;
-  const widthM = Math.min(bbox.width * 0.5, 3);
+  const widthM = Math.min(bbox2.width * 0.5, 3);
   let x, y, w, h;
   if (openFacade === "S") {
-    x = bbox.x + (bbox.width - widthM) / 2;
-    y = bbox.y + bbox.height;
+    x = bbox2.x + (bbox2.width - widthM) / 2;
+    y = bbox2.y + bbox2.height;
     w = widthM;
     h = depthM;
   } else if (openFacade === "N") {
-    x = bbox.x + (bbox.width - widthM) / 2;
-    y = bbox.y - depthM;
+    x = bbox2.x + (bbox2.width - widthM) / 2;
+    y = bbox2.y - depthM;
     w = widthM;
     h = depthM;
   } else if (openFacade === "E") {
-    x = bbox.x + bbox.width;
-    y = bbox.y + 0.5;
+    x = bbox2.x + bbox2.width;
+    y = bbox2.y + 0.5;
     w = depthM;
     h = widthM;
   } else {
-    x = bbox.x - depthM;
-    y = bbox.y + 0.5;
+    x = bbox2.x - depthM;
+    y = bbox2.y + 0.5;
     w = depthM;
     h = widthM;
   }
@@ -7956,12 +10322,12 @@ function projectSitOutBalcony(params) {
   };
 }
 var init_polygon_layout2 = __esm({
-  "../ai-orchestration/dist/apartment/polygon-layout.js"() {
+  "packages/ai-orchestration/dist/apartment/polygon-layout.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/apartment/vastu.js
+// packages/ai-orchestration/dist/apartment/vastu.js
 function computePolygonCentroid(vertices) {
   const n2 = vertices.length;
   if (n2 === 0)
@@ -8444,7 +10810,7 @@ function renderVastuChakraSvgOverlay(report, options = {}) {
 }
 var VASTU_16_ZONES;
 var init_vastu = __esm({
-  "../ai-orchestration/dist/apartment/vastu.js"() {
+  "packages/ai-orchestration/dist/apartment/vastu.js"() {
     "use strict";
     VASTU_16_ZONES = [
       { code: "N", traditionalName: "Kuber", label: "N", centerDeg: 0, startDeg: 348.75, endDeg: 11.25 },
@@ -8467,7 +10833,7 @@ var init_vastu = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/schematic.js
+// packages/ai-orchestration/dist/apartment/schematic.js
 function selectBestVastuRoomPermutation(unitId, unitLabel, rooms, vertices, entrancePoint, northAngleDeg = 0) {
   const evalVastu = (candRooms) => {
     return evaluateUnitVastu({
@@ -8572,27 +10938,21 @@ function generateDeterministicApartmentSchematic(options) {
   const buildableWidthM = Math.max(10, siteWidthM - setbacks.left - setbacks.right);
   const buildableDepthM = Math.max(10, siteDepthM - setbacks.front - setbacks.rear);
   const buildable = { x: setbacks.left, y: setbacks.rear, width: buildableWidthM, height: buildableDepthM };
+  const resolvedMix = resolveAndValidateUnitMix(unitMix, flatsPerFloor);
   const flattenedFlats = [];
   let flatIndex = 1;
-  for (const mixItem of unitMix) {
-    const count = mixItem.count || 1;
-    for (let c = 0; c < count; c++) {
-      if (flattenedFlats.length < flatsPerFloor) {
-        flattenedFlats.push({
-          flatLabel: `Flat ${String(flatIndex).padStart(2, "0")}`,
-          unitType: mixItem.unitType?.toUpperCase() || "2BHK",
-          targetCarpetAreaSqM: mixItem.carpetAreaSqM,
-          targetCarpetAreaSqFt: mixItem.carpetAreaSqFt
-        });
-        flatIndex++;
-      }
+  for (const item of resolvedMix.items) {
+    for (let c = 0; c < item.count; c++) {
+      flattenedFlats.push({
+        flatLabel: `Flat ${String(flatIndex).padStart(2, "0")}`,
+        unitType: item.unitType,
+        targetCarpetAreaSqM: item.carpetAreaSqM,
+        targetCarpetAreaSqFt: item.carpetAreaSqFt
+      });
+      flatIndex++;
     }
   }
-  while (flattenedFlats.length < flatsPerFloor) {
-    flattenedFlats.push({ flatLabel: `Flat ${String(flatIndex).padStart(2, "0")}`, unitType: "2BHK" });
-    flatIndex++;
-  }
-  const finalFlats = flattenedFlats.slice(0, flatsPerFloor);
+  const finalFlats = flattenedFlats;
   const passengerLifts = commonCoreConfig.passengerLifts ?? rulesProfile.liftRequirements.minPassengerLifts;
   const liftCount = Math.max(1, passengerLifts + (commonCoreConfig.serviceLifts ?? 0));
   const stairCount = Math.max(1, commonCoreConfig.staircaseCount ?? (rulesProfile.stairRequirements.secondStaircaseRequired ? 2 : 1));
@@ -8772,7 +11132,10 @@ function generateDeterministicApartmentSchematic(options) {
     areaReport: plan.areaReport,
     layoutFits: plan.fits,
     layoutIssues: plan.issues,
-    layoutAdaptations: plan.adaptations,
+    layoutAdaptations: [
+      ...plan.adaptations,
+      ...resolvedMix.wasDefaultApplied && resolvedMix.defaultExplanation ? [resolvedMix.defaultExplanation] : []
+    ],
     vastuReport: schematicVastuReport,
     seed: plan.seed
   };
@@ -8783,7 +11146,7 @@ function generateSchematicSvg(data) {
   const svgHeight = Math.ceil(data.siteDepthM * scale);
   const flatColors = ["#EBF5FB", "#FEF9E7", "#EAFAF1", "#F4ECF7", "#FDEBD0"];
   const R2 = (r) => `x="${(r.x * scale).toFixed(1)}" y="${(r.y * scale).toFixed(1)}" width="${(r.width * scale).toFixed(1)}" height="${(r.height * scale).toFixed(1)}"`;
-  const centre = (r) => ({ x: (r.x + r.width / 2) * scale, y: (r.y + r.height / 2) * scale });
+  const centre2 = (r) => ({ x: (r.x + r.width / 2) * scale, y: (r.y + r.height / 2) * scale });
   const unitsSvg = data.units.map((unit3, idx) => {
     const color = flatColors[idx % flatColors.length];
     const poly = unit3.steppedPolygon;
@@ -8793,7 +11156,7 @@ function generateSchematicSvg(data) {
         <text x="${((ots.bounds.x + ots.bounds.width / 2) * scale).toFixed(1)}" y="${((ots.bounds.y + ots.bounds.height / 2 + 3) * scale).toFixed(1)}" text-anchor="middle" font-size="7" fill="#F8FAFC" font-weight="700">OTS</text>
       `).join("") : "";
     const rooms = [...unit3.rooms, ...unit3.balconies].map((room2) => {
-      const c = centre(room2.bounds);
+      const c = centre2(room2.bounds);
       const dashed = room2.type === "balcony" ? ' stroke-dasharray="3,2"' : "";
       return `
         <rect ${R2(room2.bounds)} fill="none" stroke="#64748B" stroke-width="0.9"${dashed}/>
@@ -8817,14 +11180,14 @@ function generateSchematicSvg(data) {
   const doorsSvg = data.doors.map((d) => `<rect ${R2(d.bounds)} fill="#FFFFFF" stroke="${d.kind === "flat_entrance" ? "#DC2626" : "#0EA5E9"}" stroke-width="1"/>`).join("");
   const coreSvg = `
   <rect ${R2(data.lobbyBounds)} fill="#F8FAFC" stroke="#334155" stroke-width="1.5" />
-  <text x="${centre(data.lobbyBounds).x.toFixed(1)}" y="${(centre(data.lobbyBounds).y + 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#334155">COMMON LOBBY</text>
+  <text x="${centre2(data.lobbyBounds).x.toFixed(1)}" y="${(centre2(data.lobbyBounds).y + 4).toFixed(1)}" text-anchor="middle" font-size="10" font-weight="700" fill="#334155">COMMON LOBBY</text>
   ${data.lifts.map((lift2) => {
     const b = lift2.bounds;
     const x0 = b.x * scale;
     const y0 = b.y * scale;
     const x1 = (b.x + b.width) * scale;
     const y1 = (b.y + b.height) * scale;
-    const c = centre(b);
+    const c = centre2(b);
     return `
     <rect ${R2(b)} fill="#E0F2FE" stroke="#0284C7" stroke-width="1.5" />
     <line x1="${x0}" y1="${y0}" x2="${x1}" y2="${y1}" stroke="#0284C7" stroke-width="0.8" />
@@ -8832,7 +11195,7 @@ function generateSchematicSvg(data) {
     <text x="${c.x.toFixed(1)}" y="${(c.y + 3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="700" fill="#0369A1">${lift2.label}</text>`;
   }).join("")}
   ${data.stairs.map((stair2) => {
-    const c = centre(stair2.bounds);
+    const c = centre2(stair2.bounds);
     return `
     <rect ${R2(stair2.bounds)} fill="url(#stairLines)" stroke="#D97706" stroke-width="1.5" />
     <text x="${c.x.toFixed(1)}" y="${(c.y + 3).toFixed(1)}" text-anchor="middle" font-size="8.5" font-weight="700" fill="#92400E">${stair2.label}</text>`;
@@ -8867,7 +11230,7 @@ function generateSchematicSvg(data) {
 }
 var esc;
 var init_schematic = __esm({
-  "../ai-orchestration/dist/apartment/schematic.js"() {
+  "packages/ai-orchestration/dist/apartment/schematic.js"() {
     "use strict";
     init_typologies();
     init_site_defaults();
@@ -8878,7 +11241,7 @@ var init_schematic = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/feasibility.js
+// packages/ai-orchestration/dist/apartment/feasibility.js
 function validateIndianApartmentFeasibility(options) {
   const { site, floorCount, flatsPerFloor, unitMix, commonCore = {}, jurisdiction = "pune_pmc", floorStrategy = "typical" } = options;
   const conflicts = [];
@@ -9040,14 +11403,14 @@ function validateIndianApartmentFeasibility(options) {
   };
 }
 var init_feasibility = __esm({
-  "../ai-orchestration/dist/apartment/feasibility.js"() {
+  "packages/ai-orchestration/dist/apartment/feasibility.js"() {
     "use strict";
     init_jurisdiction();
     init_site_defaults();
   }
 });
 
-// ../ai-orchestration/dist/apartment/questionnaire.js
+// packages/ai-orchestration/dist/apartment/questionnaire.js
 function checkApartmentCompleteness(config) {
   const missingFields = [];
   const questions = [];
@@ -9113,12 +11476,12 @@ function checkApartmentCompleteness(config) {
   };
 }
 var init_questionnaire = __esm({
-  "../ai-orchestration/dist/apartment/questionnaire.js"() {
+  "packages/ai-orchestration/dist/apartment/questionnaire.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/types/apartment.js
+// packages/ai-orchestration/dist/types/apartment.js
 function validateApartmentFeasibility(site, config) {
   const detailed = validateIndianApartmentFeasibility({
     site,
@@ -9146,7 +11509,7 @@ function validateApartmentFeasibility(site, config) {
   };
 }
 var init_apartment = __esm({
-  "../ai-orchestration/dist/types/apartment.js"() {
+  "packages/ai-orchestration/dist/types/apartment.js"() {
     "use strict";
     init_jurisdiction();
     init_typologies();
@@ -9157,53 +11520,276 @@ var init_apartment = __esm({
   }
 });
 
-// ../ai-orchestration/dist/orchestration/vision-interpretation.js
+// packages/ai-orchestration/dist/orchestration/vision-interpretation.js
 async function interpretPlanImageWithGemini(provider, options) {
-  if (provider && typeof provider.complete === "function") {
-    const res = await provider.complete({
-      taskType: "image_interpretation",
-      systemPrompt: "Interpret the plan image faithfully. Never invent rooms or elements not present, and do not claim code compliance.",
-      userPrompt: `Interpretation for plot width ${options.plotWidthMm}mm, depth ${options.plotDepthMm}mm.${options.userPrompt ? ` Prompt: ${options.userPrompt}` : ""}${options.apartmentContext ? ` context: ${JSON.stringify(options.apartmentContext)}` : ""}${options.requirements ? ` requirements: ${JSON.stringify(options.requirements)}` : ""}`,
-      images: [{ mimeType: options.imageMimeType, data: options.imageBase64 }],
-      responseFormat: "json",
-      responseSchema: options.apartmentContext ? APARTMENT_IMAGE_INTERPRETATION_SCHEMA : IMAGE_INTERPRETATION_SCHEMA
-    });
-    if (!res.parsed || typeof res.parsed === "object" && Object.keys(res.parsed).length === 0) {
-      throw new Error("No parsed interpretation returned by provider.");
-    }
-    return {
-      parsed: res.parsed,
-      model: res.model ?? "stubbed",
-      latencyMs: res.latencyMs ?? 0,
-      usage: res.usage ?? { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
-      coordinateFrame: { kind: "image_pixels" }
-    };
+  const apartment = options.apartmentContext;
+  const frame = INTERPRETATION_FRAME;
+  const systemPrompt = apartment ? [
+    "You are an architectural floor-plan vision interpreter for multi-unit residential apartment buildings.",
+    "Read the attached floor-plan image and return ONLY the JSON object defined by the schema.",
+    `Express every x, y, width, height and boundary point in a normalized 0..${frame.width} by 0..${frame.height} coordinate frame covering the full image (top-left is 0,0; bottom-right is ${frame.width},${frame.height}).`,
+    'Group every residential room under its owning flat in `flats` via `flatId` (e.g. "flat_01", "flat_02").',
+    'Classify each flat `unitType` strictly from what is drawn in the image (e.g. "1BHK", "2BHK", "3BHK", "4BHK", "Studio").',
+    "Use canonical room `type` tokens: `living`, `dining`, `living_dining`, `kitchen`, `bedroom`, `master_bedroom`, `bathroom`, `common_toilet`, `attached_toilet`, `utility`, `balcony`, `foyer`, `passage`.",
+    `Report every elevator shaft in \`lifts\`, every stairwell in \`stairs\`, the shared entrance/elevator lobby in \`lobbies\`, shared corridors in \`corridors\`, and service shafts in \`shafts\` with \`flatId: "${COMMON_AREA_FLAT_ID}"\`.`,
+    "Wait to verify what is actually visible in the image; do not claim building-code compliance."
+  ].join(" ") : [
+    "You are a senior architectural CAD vision interpreter.",
+    "Inspect the attached floor-plan image and extract its complete spatial layout into the structured JSON schema.",
+    `Express every x, y, width, height and boundary point in a normalized 0..${frame.width} by 0..${frame.height} coordinate frame covering the full image (top-left is 0,0; bottom-right is ${frame.width},${frame.height}). Do NOT use the image's pixel dimensions.`,
+    "`boundary.points` must trace the OUTER EDGE of the building footprint as drawn \u2014 follow every step and re-entrant corner of an L-shape, U-shape or stepped plan rather than returning its bounding rectangle.",
+    "Ensure room bounding boxes (`x`, `y`, `width`, `height`) represent the clear interior/partitioned zones of each space without overlapping adjacent rooms, and stay strictly inside `boundary.points`.",
+    "Use clear canonical room `type` values: `living`, `dining`, `kitchen`, `bedroom`, `bathroom`, `staircase`, `parking`, `balcony`, `verandah`, `foyer`, `utility`, `pooja`, `study`, `corridor`, `storage`, `ots`, `shaft`, `dressing`.",
+    "For each room, also identify its `compassZone` (NE, SE, SW, NW, N, S, E, W, CENTER), `floorLevel` (0 for ground floor, 1 for first floor if shown), and `connectedTo` list of adjacent room IDs.",
+    "If the image shows SEVERAL floor plans side by side or stacked, assign every room the `floorLevel` of the plan it is drawn in, and report each plan independently. Report the GROUND-floor outline in `boundary`.",
+    "Report every door in `doors` (with `swingDirection` as drawn) and every window in `windows`, each with the `adjacentRoomId` of the room it serves.",
+    "Identify the overall `footprintShape` (e.g., l-shape, u-shape, courtyard, rectangular) and `entranceSide`.",
+    "Never invent rooms or geometry not visible in the image. Omit what you cannot see rather than guessing. Do not claim code compliance."
+  ].join(" ");
+  const userLines = [
+    `Interpret the attached floor-plan image for a site of ${options.plotWidthMm}mm width by ${options.plotDepthMm}mm depth.`,
+    `Orientation: ${options.orientationDegrees} degrees; road-facing side: ${options.roadFacing}.`
+  ];
+  if (apartment) {
+    userLines.push(`Expected apartment context (for reference): ${JSON.stringify(apartment)}`);
   }
-  throw new Error("Gemini vision interpretation is disabled in this build.");
+  if (options.requirements) {
+    userLines.push(`Requested architectural program: ${JSON.stringify(options.requirements)}`);
+  }
+  if (options.userPrompt) {
+    userLines.push(`Design brief: ${options.userPrompt}`);
+  }
+  const schema = apartment ? APARTMENT_IMAGE_INTERPRETATION_SCHEMA : IMAGE_INTERPRETATION_SCHEMA;
+  const apiResponse = await provider.complete({
+    taskType: "image_interpretation",
+    systemPrompt,
+    userPrompt: userLines.join("\n"),
+    images: [{ mimeType: options.imageMimeType ?? "image/png", data: options.imageBase64 }],
+    responseFormat: "json",
+    responseSchema: schema,
+    maxTokens: apartment ? 16384 : 8192,
+    temperature: 0
+  });
+  const parsed = apiResponse.parsed;
+  if (parsed === void 0 || parsed === null || typeof parsed === "object" && Object.keys(parsed).length === 0) {
+    throw new AISafetyError("Gemini vision interpretation returned no structured payload (no parsed interpretation).");
+  }
+  return {
+    parsed,
+    model: apiResponse.model,
+    latencyMs: apiResponse.latencyMs,
+    usage: apiResponse.usage,
+    // Both paths now request the same normalized frame, so the caller never has
+    // to guess whether the numbers are pixels.
+    coordinateFrame: { kind: "normalized", width: frame.width, height: frame.height }
+  };
 }
-var IMAGE_INTERPRETATION_SCHEMA, APARTMENT_IMAGE_INTERPRETATION_SCHEMA;
+var IMAGE_INTERPRETATION_SCHEMA, COMMON_AREA_FLAT_ID, INTERPRETATION_FRAME, coreBoxItem, APARTMENT_IMAGE_INTERPRETATION_SCHEMA;
 var init_vision_interpretation = __esm({
-  "../ai-orchestration/dist/orchestration/vision-interpretation.js"() {
+  "packages/ai-orchestration/dist/orchestration/vision-interpretation.js"() {
     "use strict";
+    init_base();
     IMAGE_INTERPRETATION_SCHEMA = {
       type: "object",
+      required: ["boundary", "rooms", "doors", "windows", "stairs", "parking"],
       properties: {
-        boundary: { type: "object" },
-        rooms: { type: "array", items: { type: "object", required: ["flatId"] } },
-        flats: { type: "array", items: { type: "object", required: ["id", "unitType", "x", "y", "width", "height"] } },
-        lifts: { type: "array", items: { type: "object", required: ["flatId"] } },
-        stairs: { type: "array", items: { type: "object", required: ["flatId"] } },
-        lobbies: { type: "array", items: { type: "object" } },
-        corridors: { type: "array", items: { type: "object" } },
-        shafts: { type: "array", items: { type: "object" } }
-      },
-      required: ["boundary", "rooms", "flats", "lifts", "stairs", "lobbies", "corridors", "shafts"]
+        footprintShape: {
+          type: "string",
+          description: "Detected building footprint typology (e.g., rectangular, l-shape, u-shape, courtyard, v-shape, h-shape, t-shape, stepped)."
+        },
+        entranceSide: {
+          type: "string",
+          description: "Primary entrance side or compass orientation observed in the plan (north, south, east, west)."
+        },
+        circulationNotes: {
+          type: "string",
+          description: "Concise summary of the spatial arrangement, verandah/foyer entry, living-dining flow, and private room zoning."
+        },
+        boundary: {
+          type: "object",
+          required: ["points"],
+          properties: {
+            points: {
+              type: "array",
+              items: {
+                type: "object",
+                required: ["x", "y"],
+                properties: {
+                  x: { type: "number" },
+                  y: { type: "number" }
+                }
+              }
+            }
+          }
+        },
+        rooms: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "name", "type", "x", "y", "width", "height"],
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              type: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" },
+              orientationHint: { type: "string" },
+              compassZone: {
+                type: "string",
+                description: "Approximate compass zone or quadrant in the plan (e.g., NE, SE, SW, NW, N, S, E, W, CENTER)."
+              },
+              floorLevel: {
+                type: "integer",
+                description: "Floor level index (0 for Ground Floor, 1 for First Floor if multi-floor plan is shown)."
+              },
+              connectedTo: {
+                type: "array",
+                items: { type: "string" },
+                description: "IDs or names of directly connected adjacent rooms."
+              }
+            }
+          }
+        },
+        doors: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "x", "y", "width", "height", "adjacentRoomId"],
+            properties: {
+              id: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" },
+              type: { type: "string" },
+              swingDirection: { type: "string" },
+              connectsRooms: { type: "array", items: { type: "string" } },
+              adjacentRoomId: { type: "string" }
+            }
+          }
+        },
+        windows: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "x", "y", "width", "height", "adjacentRoomId"],
+            properties: {
+              id: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" },
+              adjacentRoomId: { type: "string" }
+            }
+          }
+        },
+        stairs: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "x", "y", "width", "height"],
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" }
+            }
+          }
+        },
+        parking: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "x", "y", "width", "height"],
+            properties: {
+              id: { type: "string" },
+              name: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" }
+            }
+          }
+        }
+      }
     };
-    APARTMENT_IMAGE_INTERPRETATION_SCHEMA = IMAGE_INTERPRETATION_SCHEMA;
+    COMMON_AREA_FLAT_ID = "COMMON";
+    INTERPRETATION_FRAME = { width: 1e3, height: 1e3 };
+    coreBoxItem = {
+      type: "object",
+      required: ["id", "x", "y", "width", "height", "flatId"],
+      properties: {
+        id: { type: "string" },
+        name: { type: "string" },
+        x: { type: "number" },
+        y: { type: "number" },
+        width: { type: "number" },
+        height: { type: "number" },
+        flatId: { type: "string" }
+      }
+    };
+    APARTMENT_IMAGE_INTERPRETATION_SCHEMA = {
+      type: "object",
+      required: ["boundary", "rooms", "doors", "windows", "stairs", "parking", "flats", "lifts", "lobbies", "corridors", "shafts"],
+      properties: {
+        ...IMAGE_INTERPRETATION_SCHEMA.properties,
+        rooms: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "name", "type", "x", "y", "width", "height", "flatId"],
+            properties: {
+              ...IMAGE_INTERPRETATION_SCHEMA.properties.rooms.items.properties,
+              flatId: { type: "string" }
+            }
+          }
+        },
+        doors: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "x", "y", "width", "height", "adjacentRoomId"],
+            properties: {
+              ...IMAGE_INTERPRETATION_SCHEMA.properties.doors.items.properties,
+              isFlatEntrance: { type: "boolean" }
+            }
+          }
+        },
+        stairs: {
+          type: "array",
+          items: coreBoxItem
+        },
+        flats: {
+          type: "array",
+          items: {
+            type: "object",
+            required: ["id", "unitType", "x", "y", "width", "height"],
+            properties: {
+              id: { type: "string" },
+              label: { type: "string" },
+              unitType: { type: "string" },
+              x: { type: "number" },
+              y: { type: "number" },
+              width: { type: "number" },
+              height: { type: "number" },
+              entranceDoorId: { type: "string" }
+            }
+          }
+        },
+        lifts: { type: "array", items: coreBoxItem },
+        lobbies: { type: "array", items: coreBoxItem },
+        corridors: { type: "array", items: coreBoxItem },
+        shafts: { type: "array", items: coreBoxItem }
+      }
+    };
   }
 });
 
-// ../ai-orchestration/dist/orchestration/architectural-evaluation.js
+// packages/ai-orchestration/dist/orchestration/architectural-evaluation.js
 async function evaluatePlanArchitecturally(provider, options) {
   const systemPrompt = [
     "You are a senior residential architect reviewing a validated floor plan.",
@@ -9251,14 +11837,102 @@ async function evaluatePlanArchitecturally(provider, options) {
     latencyMs: apiResponse.latencyMs
   };
 }
-var ARCHITECTURAL_EVALUATION_SCHEMA;
+async function evaluateMasterImageWithGemini(provider, options) {
+  const systemPrompt = [
+    "You are a senior chief residential architect and plan examiner rigorously evaluating an AI-generated floor-plan image.",
+    "You must evaluate the image against the provided brief and return a strict structured JSON assessment according to the schema.",
+    "RUBRIC BREAKDOWN (Total: 100 points):",
+    "1. Compliance (25 points): Plot dimensions, road orientation, required bedrooms/bathrooms count, multi-floor split.",
+    "2. Spatial Layout & Adjacency (20 points): Kitchen near dining, bedrooms private, toilets accessible, realistic room proportions.",
+    "3. Footprint & Orientation (15 points): Footprint shape matches brief (e.g. L-shape, U-shape, Rectangular), orientation & setbacks respected.",
+    "4. Circulation & Openings (15 points): Clear hallways, no trapped rooms, entry foyer, staircase present if multi-floor, external doors and ventilation windows.",
+    "5. Drafting Clarity (10 points): Legible room labels, crisp wall linework, dimensional scale, professional architectural drafting representation.",
+    "6. Vastu & Daylight (10 points): Kitchen in SE/NW, master bedroom in SW, cross-ventilation, daylight access.",
+    "7. Architectural Coherence & Elegance (5 points): Aesthetic balance and usable layout.",
+    "CRITICAL RULES:",
+    "- If the image violates any hard constraint (e.g. wrong plot orientation, missing requested bedrooms, missing upper floor for duplex, missing parking when requested), list it in hardConstraintViolations.",
+    "- If hardConstraintViolations has any items, overallScore CANNOT exceed 65, and passed MUST be false.",
+    "- The passing threshold is score >= 80 and ZERO hardConstraintViolations.",
+    "- Under suggestedCorrections, provide concrete, actionable architectural instructions that can be fed into an AI image prompt to fix identified defects."
+  ].join("\n");
+  const userPrompt = [
+    `EVALUATION BRIEF (Attempt #${options.attemptNumber ?? 1}):`,
+    `Site & Plot: ${options.siteSummary}`,
+    `Requirements: ${options.requirementsSummary}`,
+    options.footprintShape ? `Footprint Typology: ${options.footprintShape}` : "",
+    options.requiredBedrooms !== void 0 ? `Required Bedrooms: ${options.requiredBedrooms}` : "",
+    options.requiredBathrooms !== void 0 ? `Required Bathrooms: ${options.requiredBathrooms}` : "",
+    options.requiredFloors !== void 0 ? `Required Floors: ${options.requiredFloors}` : "",
+    options.parkingRequired !== void 0 ? `Parking Required: ${options.parkingRequired ? "YES" : "NO"}` : "",
+    "",
+    "Examine the attached floor plan drawing image carefully. Assess linework, room labels, room counts, and spatial flow."
+  ].filter(Boolean).join("\n");
+  const apiResponse = await provider.complete({
+    taskType: "design_critique",
+    systemPrompt,
+    userPrompt,
+    images: [{
+      mimeType: options.imageMimeType ?? "image/jpeg",
+      data: options.imageBase64
+    }],
+    responseFormat: "json",
+    responseSchema: MASTER_IMAGE_EVALUATION_SCHEMA,
+    maxTokens: 2500,
+    temperature: 0.1
+  });
+  const parsed = apiResponse.parsed;
+  if (!parsed || typeof parsed !== "object") {
+    throw new AISafetyError("Gemini master image evaluation returned no structured result.");
+  }
+  const rec = parsed;
+  const rawViolations = Array.isArray(rec.hardConstraintViolations) ? rec.hardConstraintViolations.map(String).filter((s) => s.trim().length > 0) : [];
+  const rawCompliance = Math.min(25, Math.max(0, Number(rec.complianceScore ?? 0)));
+  const rawSpatial = Math.min(20, Math.max(0, Number(rec.spatialLayoutScore ?? 0)));
+  const rawFootprint = Math.min(15, Math.max(0, Number(rec.footprintScore ?? 0)));
+  const rawCirculation = Math.min(15, Math.max(0, Number(rec.circulationScore ?? 0)));
+  const rawDrafting = Math.min(10, Math.max(0, Number(rec.draftingClarityScore ?? 0)));
+  const rawVastu = Math.min(10, Math.max(0, Number(rec.vastuDaylightScore ?? 0)));
+  const rawCoherence = Math.min(5, Math.max(0, Number(rec.coherenceScore ?? 0)));
+  const computedSum = rawCompliance + rawSpatial + rawFootprint + rawCirculation + rawDrafting + rawVastu + rawCoherence;
+  let overallScore = Math.min(100, Math.max(0, Number(rec.overallScore ?? computedSum)));
+  if (Math.abs(overallScore - computedSum) > 10) {
+    overallScore = computedSum;
+  }
+  const hasHardViolations = rawViolations.length > 0;
+  if (hasHardViolations) {
+    overallScore = Math.min(overallScore, 65);
+  }
+  const passed = overallScore >= MASTER_QUALITY_GATE_THRESHOLD && !hasHardViolations;
+  return {
+    overallScore,
+    passed,
+    complianceScore: rawCompliance,
+    spatialLayoutScore: rawSpatial,
+    footprintScore: rawFootprint,
+    circulationScore: rawCirculation,
+    draftingClarityScore: rawDrafting,
+    vastuDaylightScore: rawVastu,
+    coherenceScore: rawCoherence,
+    strengths: Array.isArray(rec.strengths) ? rec.strengths.map(String) : [],
+    concerns: Array.isArray(rec.concerns) ? rec.concerns.map(String) : [],
+    identifiedProblems: Array.isArray(rec.identifiedProblems) ? rec.identifiedProblems.map(String) : [],
+    missingRequirements: Array.isArray(rec.missingRequirements) ? rec.missingRequirements.map(String) : [],
+    incorrectPlacements: Array.isArray(rec.incorrectPlacements) ? rec.incorrectPlacements.map(String) : [],
+    incorrectFloorArrangements: Array.isArray(rec.incorrectFloorArrangements) ? rec.incorrectFloorArrangements.map(String) : [],
+    suggestedCorrections: Array.isArray(rec.suggestedCorrections) ? rec.suggestedCorrections.map(String) : [],
+    hardConstraintViolations: rawViolations,
+    rationale: typeof rec.rationale === "string" ? rec.rationale : "",
+    model: apiResponse.model,
+    latencyMs: apiResponse.latencyMs
+  };
+}
+var ARCHITECTURAL_EVALUATION_SCHEMA, MASTER_IMAGE_EVALUATION_SCHEMA, MASTER_QUALITY_GATE_THRESHOLD;
 var init_architectural_evaluation = __esm({
-  "../ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
+  "packages/ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
     "use strict";
     init_base();
     ARCHITECTURAL_EVALUATION_SCHEMA = {
       type: "object",
-      additionalProperties: false,
       required: ["overallScore", "requirementSatisfaction", "spatialQuality", "circulation", "adjacency", "zoning", "privacy", "daylight", "efficiency", "roomProportions", "orientation", "strengths", "concerns"],
       properties: {
         overallScore: { type: "number", minimum: 0, maximum: 100 },
@@ -9277,10 +11951,53 @@ var init_architectural_evaluation = __esm({
         rationale: { type: "string" }
       }
     };
+    MASTER_IMAGE_EVALUATION_SCHEMA = {
+      type: "object",
+      required: [
+        "passed",
+        "complianceScore",
+        "spatialLayoutScore",
+        "footprintScore",
+        "circulationScore",
+        "draftingClarityScore",
+        "vastuDaylightScore",
+        "coherenceScore",
+        "strengths",
+        "concerns",
+        "identifiedProblems",
+        "missingRequirements",
+        "incorrectPlacements",
+        "incorrectFloorArrangements",
+        "suggestedCorrections",
+        "hardConstraintViolations",
+        "rationale"
+      ],
+      properties: {
+        overallScore: { type: "number", minimum: 0, maximum: 100 },
+        passed: { type: "boolean" },
+        complianceScore: { type: "number", minimum: 0, maximum: 25 },
+        spatialLayoutScore: { type: "number", minimum: 0, maximum: 20 },
+        footprintScore: { type: "number", minimum: 0, maximum: 15 },
+        circulationScore: { type: "number", minimum: 0, maximum: 15 },
+        draftingClarityScore: { type: "number", minimum: 0, maximum: 10 },
+        vastuDaylightScore: { type: "number", minimum: 0, maximum: 10 },
+        coherenceScore: { type: "number", minimum: 0, maximum: 5 },
+        strengths: { type: "array", items: { type: "string" } },
+        concerns: { type: "array", items: { type: "string" } },
+        identifiedProblems: { type: "array", items: { type: "string" } },
+        missingRequirements: { type: "array", items: { type: "string" } },
+        incorrectPlacements: { type: "array", items: { type: "string" } },
+        incorrectFloorArrangements: { type: "array", items: { type: "string" } },
+        suggestedCorrections: { type: "array", items: { type: "string" } },
+        hardConstraintViolations: { type: "array", items: { type: "string" } },
+        rationale: { type: "string" }
+      }
+    };
+    MASTER_QUALITY_GATE_THRESHOLD = 80;
   }
 });
 
-// ../ai-orchestration/dist/orchestration/apartment-preflight.js
+// packages/ai-orchestration/dist/orchestration/apartment-preflight.js
 async function runGeminiApartmentPreflight(aiProvider, imageBase64, expected, imageMimeType = "image/png") {
   const unitMixDesc = expected.unitMix && expected.unitMix.length > 0 ? ` (${expected.unitMix.map((u) => `${u.count} x ${u.unitType}`).join(", ")})` : "";
   const userPrompt = `Analyze the attached generated floor-plan image. The brief requires: ${expected.flatsPerFloor} flats per floor${unitMixDesc}, ${expected.liftCount} lift(s), ${expected.stairCount} staircase(s). Return structured JSON according to the schema.`;
@@ -9386,7 +12103,7 @@ function evaluateApartmentPreflight(detected, expected) {
 }
 var APARTMENT_PREFLIGHT_SCHEMA, APARTMENT_PREFLIGHT_PROMPT;
 var init_apartment_preflight = __esm({
-  "../ai-orchestration/dist/orchestration/apartment-preflight.js"() {
+  "packages/ai-orchestration/dist/orchestration/apartment-preflight.js"() {
     "use strict";
     APARTMENT_PREFLIGHT_SCHEMA = {
       type: "object",
@@ -9491,7 +12208,7 @@ Return your exact structured findings following the JSON schema.
   }
 });
 
-// ../ai-orchestration/dist/apartment/schematic-renderer.js
+// packages/ai-orchestration/dist/apartment/schematic-renderer.js
 function crc32(buf) {
   let crc = -1;
   for (let i = 0; i < buf.length; i++) {
@@ -10083,7 +12800,7 @@ function renderSchematicPng512(schematic, options = {}) {
 }
 var import_node_zlib, table, FONT_5X7;
 var init_schematic_renderer = __esm({
-  "../ai-orchestration/dist/apartment/schematic-renderer.js"() {
+  "packages/ai-orchestration/dist/apartment/schematic-renderer.js"() {
     "use strict";
     import_node_zlib = __toESM(require("node:zlib"));
     table = new Int32Array(256);
@@ -10147,7 +12864,7 @@ var init_schematic_renderer = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/reference-library.js
+// packages/ai-orchestration/dist/apartment/reference-library.js
 function resolveApartmentReferenceBucket(projectType, flatsPerFloor) {
   if (projectType === "residential_independent") {
     return "villa";
@@ -10195,12 +12912,12 @@ function finalizeReferenceSelection(bucket, requestedIds, selectedIds, attachedI
   };
 }
 var init_reference_library = __esm({
-  "../ai-orchestration/dist/apartment/reference-library.js"() {
+  "packages/ai-orchestration/dist/apartment/reference-library.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/apartment/adapter.js
+// packages/ai-orchestration/dist/apartment/adapter.js
 function apartmentExpectationFromManifest(manifest) {
   return {
     flats: manifest.units.exactCount,
@@ -10235,17 +12952,99 @@ function apartmentInterpretationContextFromManifest(manifest) {
 function generateWindowsForApartmentSchematic(schematic) {
   const openings = [];
   let winId = 1;
+  const allSpaces = schematic.units.flatMap((u) => [...u.rooms, ...u.balconies].map((r) => ({
+    flatId: u.flatId,
+    roomId: `${u.flatId}__${r.id}`,
+    type: r.type,
+    rect: mm(r.bounds)
+  })));
+  const allCore = [
+    ...schematic.core.lifts.map((l) => ({ rect: mm(l.bounds), isShaft: false })),
+    ...schematic.core.stairs.map((s) => ({ rect: mm(s.bounds), isShaft: false })),
+    ...schematic.core.lobby ? [{ rect: mm(schematic.core.lobby.bounds), isShaft: false }] : [],
+    ...schematic.core.corridors.map((c) => ({ rect: mm(c.bounds), isShaft: false })),
+    ...schematic.core.serviceShafts.map((s) => ({ rect: mm(s.bounds), isShaft: true }))
+  ];
   for (const unit3 of schematic.units) {
     const flatId = unit3.flatId;
     const stepped = unit3.steppedPolygon;
-    const openFacades = new Set(stepped?.openFacades ?? ["N", "S", "E"]);
-    const deadWalls = new Set(stepped?.deadWalls ?? ["W"]);
+    const openFacades = new Set(stepped?.openFacades ?? ["N", "S", "E", "W"]);
+    const deadWalls = new Set(stepped?.deadWalls ?? []);
     const otsShafts = stepped?.otsShafts ?? [];
     const ub = mm(unit3.bodyBounds);
     for (const room2 of [...unit3.rooms, ...unit3.balconies]) {
       const rm = mm(room2.bounds);
+      const currentFullId = `${flatId}__${room2.id}`;
       const isBath = room2.type === "master_toilet" || room2.type === "common_toilet" || room2.type === "powder_room";
       const isHabitable3 = room2.type === "living_dining" || room2.type === "living" || room2.type === "dining" || room2.type === "kitchen" || room2.type === "master_bedroom" || room2.type === "bedroom" || room2.type === "study";
+      const hasNorthNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId)
+            continue;
+          if (s.type === "balcony" || s.type === "utility" || s.type.includes("balcony"))
+            continue;
+          const xOverlap = Math.min(rm.x + rm.width, s.rect.x + s.rect.width) - Math.max(rm.x, s.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y - (s.rect.y + s.rect.height)) <= 150)
+            return true;
+        }
+        for (const c of allCore) {
+          const xOverlap = Math.min(rm.x + rm.width, c.rect.x + c.rect.width) - Math.max(rm.x, c.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y - (c.rect.y + c.rect.height)) <= 150)
+            return true;
+        }
+        return false;
+      };
+      const hasSouthNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId)
+            continue;
+          if (s.type === "balcony" || s.type === "utility" || s.type.includes("balcony"))
+            continue;
+          const xOverlap = Math.min(rm.x + rm.width, s.rect.x + s.rect.width) - Math.max(rm.x, s.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y + rm.height - s.rect.y) <= 150)
+            return true;
+        }
+        for (const c of allCore) {
+          const xOverlap = Math.min(rm.x + rm.width, c.rect.x + c.rect.width) - Math.max(rm.x, c.rect.x);
+          if (xOverlap > 100 && Math.abs(rm.y + rm.height - c.rect.y) <= 150)
+            return true;
+        }
+        return false;
+      };
+      const hasEastNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId)
+            continue;
+          if (s.type === "balcony" || s.type === "utility" || s.type.includes("balcony"))
+            continue;
+          const yOverlap = Math.min(rm.y + rm.height, s.rect.y + s.rect.height) - Math.max(rm.y, s.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x + rm.width - s.rect.x) <= 150)
+            return true;
+        }
+        for (const c of allCore) {
+          const yOverlap = Math.min(rm.y + rm.height, c.rect.y + c.rect.height) - Math.max(rm.y, c.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x + rm.width - c.rect.x) <= 150)
+            return true;
+        }
+        return false;
+      };
+      const hasWestNeighbor = () => {
+        for (const s of allSpaces) {
+          if (s.roomId === currentFullId)
+            continue;
+          if (s.type === "balcony" || s.type === "utility" || s.type.includes("balcony"))
+            continue;
+          const yOverlap = Math.min(rm.y + rm.height, s.rect.y + s.rect.height) - Math.max(rm.y, s.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x - (s.rect.x + s.rect.width)) <= 150)
+            return true;
+        }
+        for (const c of allCore) {
+          const yOverlap = Math.min(rm.y + rm.height, c.rect.y + c.rect.height) - Math.max(rm.y, c.rect.y);
+          if (yOverlap > 100 && Math.abs(rm.x - (c.rect.x + c.rect.width)) <= 150)
+            return true;
+        }
+        return false;
+      };
       if (isBath) {
         let placedOnOts = false;
         for (const ots of otsShafts) {
@@ -10257,7 +13056,7 @@ function generateWindowsForApartmentSchematic(schematic) {
               id: `${flatId}__win_${room2.id}_ots_${winId++}`,
               kind: "window",
               rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
             placedOnOts = true;
             break;
@@ -10266,7 +13065,7 @@ function generateWindowsForApartmentSchematic(schematic) {
               id: `${flatId}__win_${room2.id}_ots_${winId++}`,
               kind: "window",
               rect: { x: Math.max(rm.x, ob.x) + 100, y: rm.y + rm.height - 100, width: Math.min(xOverlap - 200, 600), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
             placedOnOts = true;
             break;
@@ -10275,7 +13074,7 @@ function generateWindowsForApartmentSchematic(schematic) {
               id: `${flatId}__win_${room2.id}_ots_${winId++}`,
               kind: "window",
               rect: { x: rm.x - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
             placedOnOts = true;
             break;
@@ -10284,66 +13083,136 @@ function generateWindowsForApartmentSchematic(schematic) {
               id: `${flatId}__win_${room2.id}_ots_${winId++}`,
               kind: "window",
               rect: { x: rm.x + rm.width - 100, y: Math.max(rm.y, ob.y) + 100, width: 200, height: Math.min(yOverlap - 200, 600) },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
             placedOnOts = true;
             break;
           }
         }
         if (!placedOnOts) {
-          if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
+          if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200 && !hasNorthNeighbor()) {
             openings.push({
               id: `${flatId}__win_${room2.id}_${winId++}`,
               kind: "window",
               rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
-          } else if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
+          } else if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200 && !hasSouthNeighbor()) {
             openings.push({
               id: `${flatId}__win_${room2.id}_${winId++}`,
               kind: "window",
               rect: { x: rm.x + Math.round(rm.width * 0.25), y: rm.y + rm.height - 100, width: Math.max(600, Math.round(rm.width * 0.5)), height: 200 },
-              adjacentRoomId: `${flatId}__${room2.id}`
+              adjacentRoomId: currentFullId
             });
           }
         }
       } else if (isHabitable3) {
-        if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200) {
+        if (openFacades.has("N") && !deadWalls.has("N") && Math.abs(rm.y - ub.y) <= 200 && !hasNorthNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room2.id}_N_${winId++}`,
             kind: "window",
             rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room2.id}`
+            adjacentRoomId: currentFullId
           });
         }
-        if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200) {
+        if (openFacades.has("S") && !deadWalls.has("S") && Math.abs(rm.y + rm.height - (ub.y + ub.height)) <= 200 && !hasSouthNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room2.id}_S_${winId++}`,
             kind: "window",
             rect: { x: rm.x + Math.round(rm.width * 0.2), y: rm.y + rm.height - 100, width: Math.max(1200, Math.round(rm.width * 0.6)), height: 200 },
-            adjacentRoomId: `${flatId}__${room2.id}`
+            adjacentRoomId: currentFullId
           });
         }
-        if (openFacades.has("E") && !deadWalls.has("E") && Math.abs(rm.x + rm.width - (ub.x + ub.width)) <= 200) {
+        if (openFacades.has("E") && !deadWalls.has("E") && Math.abs(rm.x + rm.width - (ub.x + ub.width)) <= 200 && !hasEastNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room2.id}_E_${winId++}`,
             kind: "window",
             rect: { x: rm.x + rm.width - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room2.id}`
+            adjacentRoomId: currentFullId
           });
         }
-        if (openFacades.has("W") && !deadWalls.has("W") && Math.abs(rm.x - ub.x) <= 200) {
+        if (openFacades.has("W") && !deadWalls.has("W") && Math.abs(rm.x - ub.x) <= 200 && !hasWestNeighbor()) {
           openings.push({
             id: `${flatId}__win_${room2.id}_W_${winId++}`,
             kind: "window",
             rect: { x: rm.x - 100, y: rm.y + Math.round(rm.height * 0.2), width: 200, height: Math.max(1200, Math.round(rm.height * 0.6)) },
-            adjacentRoomId: `${flatId}__${room2.id}`
+            adjacentRoomId: currentFullId
           });
         }
       }
     }
   }
   return openings;
+}
+function validateAndConvertSteppedPolygon(unit3, toleranceMm = 50) {
+  if (!unit3.steppedPolygon) {
+    return { status: "RECTANGULAR", pointsMm: null };
+  }
+  const { vertices } = unit3.steppedPolygon;
+  if (!vertices || !Array.isArray(vertices) || vertices.length < 6) {
+    return {
+      status: "INVALID_TOPOLOGY",
+      error: `Unit ${unit3.flatLabel} (${unit3.flatId}): steppedPolygon has ${vertices?.length ?? 0} vertices (minimum 6 required).`,
+      pointsMm: vertices?.map((v) => ({ x: Math.round(v.x * 1e3), y: Math.round(v.y * 1e3) }))
+    };
+  }
+  for (let i = 0; i < vertices.length; i++) {
+    const v = vertices[i];
+    if (!Number.isFinite(v.x) || !Number.isFinite(v.y)) {
+      return {
+        status: "INVALID_TOPOLOGY",
+        error: `Unit ${unit3.flatLabel} (${unit3.flatId}): steppedPolygon vertex ${i} has non-finite coordinates.`
+      };
+    }
+  }
+  const steppedPointsMm = vertices.map((v) => ({
+    x: Math.round(v.x * 1e3),
+    y: Math.round(v.y * 1e3)
+  }));
+  const poly = { points: steppedPointsMm };
+  if (!isValidPolygon(poly)) {
+    return {
+      status: "INVALID_TOPOLOGY",
+      error: `Unit ${unit3.flatLabel} (${unit3.flatId}): steppedPolygon is invalid (self-intersecting, degenerate, or zero area).`,
+      pointsMm: steppedPointsMm
+    };
+  }
+  for (const room2 of unit3.rooms) {
+    const rm = mm(room2.bounds);
+    const roomPolyPoints = [
+      { x: rm.x, y: rm.y },
+      { x: rm.x + rm.width, y: rm.y },
+      { x: rm.x + rm.width, y: rm.y + rm.height },
+      { x: rm.x, y: rm.y + rm.height }
+    ];
+    if (!containsPolygonWithTolerance(steppedPointsMm, roomPolyPoints, toleranceMm)) {
+      return {
+        status: "ROOM_OUTSIDE_STEPPED",
+        error: `Unit ${unit3.flatLabel} (${unit3.flatId}): room "${room2.name}" (${room2.id}) is not fully contained within stepped polygon boundary.`,
+        pointsMm: steppedPointsMm
+      };
+    }
+  }
+  if (unit3.balconies && unit3.balconies.length > 0) {
+    for (const bal of unit3.balconies) {
+      const bm = mm(bal.bounds);
+      const balCorners = [
+        { x: bm.x, y: bm.y },
+        { x: bm.x + bm.width, y: bm.y },
+        { x: bm.x + bm.width, y: bm.y + bm.height },
+        { x: bm.x, y: bm.y + bm.height }
+      ];
+      const touches = balCorners.some((c) => pointInPolygonWithTolerance(c, steppedPointsMm, toleranceMm));
+      if (!touches) {
+        return {
+          status: "ROOM_OUTSIDE_STEPPED",
+          error: `Unit ${unit3.flatLabel} (${unit3.flatId}): balcony "${bal.name}" (${bal.id}) does not attach to stepped polygon boundary.`,
+          pointsMm: steppedPointsMm
+        };
+      }
+    }
+  }
+  return { status: "VALID_STEPPED", pointsMm: steppedPointsMm };
 }
 function schematicToApartmentStructure(schematic) {
   const structureId = /* @__PURE__ */ new Map();
@@ -10380,18 +13249,30 @@ function schematicToApartmentStructure(schematic) {
   return {
     source: "DETERMINISTIC_SCHEMATIC",
     boundary,
-    flats: schematic.units.map((unit3) => ({
-      id: unit3.flatId,
-      label: unit3.flatLabel,
-      unitType: unit3.unitType,
-      rect: mm(unit3.bounds),
-      rooms: [...unit3.rooms, ...unit3.balconies].map((room2) => ({
-        id: `${unit3.flatId}__${room2.id}`,
-        name: room2.name,
-        type: room2.type,
-        rect: mm(room2.bounds)
-      }))
-    })),
+    flats: schematic.units.map((unit3) => {
+      const steppedResult = validateAndConvertSteppedPolygon(unit3, 50);
+      let flatBoundary;
+      if (steppedResult.status === "VALID_STEPPED") {
+        flatBoundary = steppedResult.pointsMm;
+      } else if (steppedResult.status === "INVALID_TOPOLOGY" || steppedResult.status === "ROOM_OUTSIDE_STEPPED") {
+        flatBoundary = steppedResult.pointsMm ?? unit3.steppedPolygon?.vertices?.map((v) => ({ x: Math.round(v.x * 1e3), y: Math.round(v.y * 1e3) }));
+      } else {
+        flatBoundary = void 0;
+      }
+      return {
+        id: unit3.flatId,
+        label: unit3.flatLabel,
+        unitType: unit3.unitType,
+        rect: mm(unit3.bounds),
+        boundary: flatBoundary,
+        rooms: [...unit3.rooms, ...unit3.balconies].map((room2) => ({
+          id: `${unit3.flatId}__${room2.id}`,
+          name: room2.name,
+          type: room2.type,
+          rect: mm(room2.bounds)
+        }))
+      };
+    }),
     commonRooms: [],
     ungroupedRooms: [],
     lifts: schematic.core.lifts.map((l) => common(l.id, l.label, l.bounds)),
@@ -10421,6 +13302,8 @@ function buildExtractionSite(input) {
 function adaptSchematicToBuilding(schematic, options) {
   const projectId = options?.projectId ?? "project-cad";
   const projectName = options?.projectName ?? "Apartment CAD Plan";
+  const requestedFloorCount = options?.plannedFloorCount ?? options?.site?.plannedFloorCount ?? 1;
+  const isMultiFloorRequested = requestedFloorCount > 1;
   const structure = schematicToApartmentStructure(schematic);
   const site = buildExtractionSite({
     plotWidthMm: options?.site?.plotWidth ?? Math.round(schematic.siteFootprint.width * 1e3),
@@ -10436,42 +13319,6 @@ function adaptSchematicToBuilding(schematic, options) {
   });
   const { building } = apartmentStructureToBuilding(structure, site, projectId, projectName);
   const floor = building.floors[0];
-  const walls = [];
-  const edgeMap = /* @__PURE__ */ new Map();
-  for (const room2 of floor.rooms) {
-    const x0 = room2.x;
-    const y0 = room2.y;
-    const x1 = room2.x + room2.width;
-    const y1 = room2.y + room2.height;
-    const segments = [
-      { start: { x: x0, y: y0 }, end: { x: x1, y: y0 } },
-      { start: { x: x1, y: y0 }, end: { x: x1, y: y1 } },
-      { start: { x: x1, y: y1 }, end: { x: x0, y: y1 } },
-      { start: { x: x0, y: y1 }, end: { x: x0, y: y0 } }
-    ];
-    for (const seg of segments) {
-      const k = seg.start.x === seg.end.x ? `v_${seg.start.x}_${Math.min(seg.start.y, seg.end.y)}_${Math.max(seg.start.y, seg.end.y)}` : `h_${seg.start.y}_${Math.min(seg.start.x, seg.end.x)}_${Math.max(seg.start.x, seg.end.x)}`;
-      const entry = edgeMap.get(k);
-      if (entry) {
-        entry.roomIds.push(room2.id);
-      } else {
-        edgeMap.set(k, { start: seg.start, end: seg.end, roomIds: [room2.id] });
-      }
-    }
-  }
-  for (const [, edge] of edgeMap) {
-    const isInternal = edge.roomIds.length >= 2;
-    const wallType = isInternal ? WallType.Internal : WallType.External;
-    const thickness = isInternal ? 100 : 200;
-    walls.push(createWall({
-      floorId: floor.id,
-      startPoint: edge.start,
-      endPoint: edge.end,
-      type: wallType,
-      thickness,
-      roomIds: edge.roomIds
-    }));
-  }
   const stairs = schematic.core.stairs.map((st) => createStair({
     floorId: floor.id,
     type: StairType.UShaped,
@@ -10485,11 +13332,50 @@ function adaptSchematicToBuilding(schematic, options) {
     direction: Direction.North,
     connectsFloors: [0, 1]
   }));
+  const steppedValidationIssues = [];
+  const flatBoundaries = schematic.units.map((u) => {
+    const steppedResult = validateAndConvertSteppedPolygon(u, 50);
+    if (steppedResult.status === "INVALID_TOPOLOGY") {
+      steppedValidationIssues.push({
+        flatId: u.flatId,
+        code: "STEPPED_POLYGON_INVALID",
+        message: steppedResult.error
+      });
+    } else if (steppedResult.status === "ROOM_OUTSIDE_STEPPED") {
+      steppedValidationIssues.push({
+        flatId: u.flatId,
+        code: "STEPPED_POLYGON_ROOM_ENCROACHMENT",
+        message: steppedResult.error
+      });
+    }
+    let points;
+    if (steppedResult.status === "VALID_STEPPED") {
+      points = steppedResult.pointsMm;
+    } else if (steppedResult.status === "INVALID_TOPOLOGY" || steppedResult.status === "ROOM_OUTSIDE_STEPPED") {
+      points = steppedResult.pointsMm ?? u.steppedPolygon?.vertices?.map((v) => ({ x: Math.round(v.x * 1e3), y: Math.round(v.y * 1e3) })) ?? [];
+    } else {
+      points = [
+        { x: Math.round(u.bounds.x * 1e3), y: Math.round(u.bounds.y * 1e3) },
+        { x: Math.round((u.bounds.x + u.bounds.width) * 1e3), y: Math.round(u.bounds.y * 1e3) },
+        { x: Math.round((u.bounds.x + u.bounds.width) * 1e3), y: Math.round((u.bounds.y + u.bounds.height) * 1e3) },
+        { x: Math.round(u.bounds.x * 1e3), y: Math.round((u.bounds.y + u.bounds.height) * 1e3) }
+      ];
+    }
+    return {
+      flatId: u.flatId,
+      label: u.flatLabel,
+      unitType: u.unitType,
+      rect: mm(u.bounds),
+      boundary: { points }
+    };
+  });
   return {
     ...building,
     metadata: {
       ...building.metadata,
       apartmentSchematic: schematic,
+      flatBoundaries,
+      steppedPolygonValidationIssues: steppedValidationIssues,
       steppedPolygons: schematic.units.map((u) => ({
         flatId: u.flatId,
         flatLabel: u.flatLabel,
@@ -10497,12 +13383,20 @@ function adaptSchematicToBuilding(schematic, options) {
       })),
       otsShafts: schematic.units.flatMap((u) => u.steppedPolygon?.otsShafts ?? []),
       balconies: schematic.units.flatMap((u) => u.steppedPolygon?.balconies ?? []),
-      vastuReport: schematic.vastuReport
+      vastuReport: schematic.vastuReport,
+      ...isMultiFloorRequested ? {
+        multiFloor: {
+          requestedFloorCount,
+          generatedFloorCount: 1,
+          status: "SINGLE_FLOOR_PRODUCED",
+          diagnosticCode: "MULTI_FLOOR_NOT_IMPLEMENTED",
+          message: `Multi-floor apartment generation is not yet supported; requested ${requestedFloorCount} floors, but only a single typical floor plate was produced.`
+        }
+      } : {}
     },
     floors: [
       {
         ...floor,
-        walls,
         stairs
       }
     ]
@@ -10510,7 +13404,7 @@ function adaptSchematicToBuilding(schematic, options) {
 }
 var mm, common;
 var init_adapter = __esm({
-  "../ai-orchestration/dist/apartment/adapter.js"() {
+  "packages/ai-orchestration/dist/apartment/adapter.js"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -10529,16 +13423,16 @@ var init_adapter = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/structural-representation.js
+// packages/ai-orchestration/dist/apartment/structural-representation.js
 var init_structural_representation = __esm({
-  "../ai-orchestration/dist/apartment/structural-representation.js"() {
+  "packages/ai-orchestration/dist/apartment/structural-representation.js"() {
     "use strict";
   }
 });
 
-// ../ai-orchestration/dist/apartment/deterministic-planner.js
+// packages/ai-orchestration/dist/apartment/deterministic-planner.js
 var init_deterministic_planner = __esm({
-  "../ai-orchestration/dist/apartment/deterministic-planner.js"() {
+  "packages/ai-orchestration/dist/apartment/deterministic-planner.js"() {
     "use strict";
     init_dist3();
     init_schematic();
@@ -10550,7 +13444,7 @@ var init_deterministic_planner = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/structural-renderer.js
+// packages/ai-orchestration/dist/apartment/structural-renderer.js
 function validateStructuralPlanRepresentation(rep) {
   const errors = [];
   if (!rep) {
@@ -10604,11 +13498,11 @@ function computeStructuralBoundingBox(rep) {
   const height = Math.max(1, maxY - minY);
   return { minX, minY, maxX, maxY, width, height };
 }
-function computeViewTransform(bbox, options = {}) {
+function computeViewTransform(bbox2, options = {}) {
   const targetLongSidePx = options.targetLongSidePx ?? 2048;
   const minShortSidePx = options.minShortSidePx ?? 512;
   const marginFraction = options.marginFraction ?? 0.06;
-  const aspect = bbox.width / bbox.height;
+  const aspect = bbox2.width / bbox2.height;
   let canvasWidth;
   let canvasHeight;
   if (aspect >= 1) {
@@ -10624,11 +13518,11 @@ function computeViewTransform(bbox, options = {}) {
   const marginY = canvasHeight * marginFraction;
   const usableWidth = canvasWidth - 2 * marginX;
   const usableHeight = canvasHeight - 2 * marginY;
-  const scale = Math.min(usableWidth / bbox.width, usableHeight / bbox.height);
-  const renderedWidth = bbox.width * scale;
-  const renderedHeight = bbox.height * scale;
-  const offsetX = (canvasWidth - renderedWidth) / 2 - bbox.minX * scale;
-  const offsetY = (canvasHeight - renderedHeight) / 2 - bbox.minY * scale;
+  const scale = Math.min(usableWidth / bbox2.width, usableHeight / bbox2.height);
+  const renderedWidth = bbox2.width * scale;
+  const renderedHeight = bbox2.height * scale;
+  const offsetX = (canvasWidth - renderedWidth) / 2 - bbox2.minX * scale;
+  const offsetY = (canvasHeight - renderedHeight) / 2 - bbox2.minY * scale;
   return {
     canvasWidth,
     canvasHeight,
@@ -10662,8 +13556,8 @@ function renderStructuralPlan(rep, options = {}) {
   if (!validation.valid) {
     throw new InvalidStructuralPlanError(validation.errors);
   }
-  const bbox = computeStructuralBoundingBox(rep);
-  const vt = computeViewTransform(bbox, options);
+  const bbox2 = computeStructuralBoundingBox(rep);
+  const vt = computeViewTransform(bbox2, options);
   const { canvasWidth, canvasHeight, scale, toScreenX, toScreenY } = vt;
   const baseStroke = Math.max(1, (canvasWidth + canvasHeight) / 1e3);
   const outerWallStroke = Math.max(3, Math.round(baseStroke * 1.6));
@@ -10885,23 +13779,23 @@ function renderStructuralPlan(rep, options = {}) {
     `</svg>`
   ].join("\n");
   const pngBuffer = rasterizer.toPng();
-  const hash = import_node_crypto.default.createHash("sha256").update(pngBuffer).digest("hex");
+  const hash = import_node_crypto2.default.createHash("sha256").update(pngBuffer).digest("hex");
   return {
     png: pngBuffer,
     svg: svgContent,
     width: canvasWidth,
     height: canvasHeight,
-    boundingBox: bbox,
+    boundingBox: bbox2,
     rendererVersion: STRUCTURAL_RENDERER_VERSION,
     hash,
     sourceRepresentationId: `structural_v${rep.version}`
   };
 }
-var import_node_crypto, import_node_zlib2, STRUCTURAL_RENDERER_VERSION, InvalidStructuralPlanError, CRC_TABLE, StructuralRasterizer;
+var import_node_crypto2, import_node_zlib2, STRUCTURAL_RENDERER_VERSION, InvalidStructuralPlanError, CRC_TABLE, StructuralRasterizer;
 var init_structural_renderer = __esm({
-  "../ai-orchestration/dist/apartment/structural-renderer.js"() {
+  "packages/ai-orchestration/dist/apartment/structural-renderer.js"() {
     "use strict";
-    import_node_crypto = __toESM(require("node:crypto"));
+    import_node_crypto2 = __toESM(require("node:crypto"));
     import_node_zlib2 = __toESM(require("node:zlib"));
     STRUCTURAL_RENDERER_VERSION = "1.0.0";
     InvalidStructuralPlanError = class extends Error {
@@ -11050,7 +13944,7 @@ var init_structural_renderer = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/archlang-adapter.js
+// packages/ai-orchestration/dist/apartment/archlang-adapter.js
 function computeSourceHash(text2) {
   try {
     const nodeCrypto = typeof require === "function" ? require("node:crypto") : globalThis.crypto;
@@ -11388,8 +14282,8 @@ function buildingModelToArchLangSource(building, options) {
     # \u2500\u2500 Doors \u2500\u2500`);
     for (const door2 of floor.doors) {
       let hostWallId = wallMap.get(door2.wallId);
-      let posX = Math.round(door2.position.x);
-      let posY = Math.round(door2.position.y);
+      const posX = Math.round(door2.position.x);
+      const posY = Math.round(door2.position.y);
       if (!hostWallId || !wallMap.has(door2.wallId)) {
         const nearest = findHostWall({ x: posX, y: posY }, activeWalls);
         if (nearest) {
@@ -11522,7 +14416,7 @@ function buildingModelToArchLangSource(building, options) {
 }
 var ARCHLANG_ADAPTER_VERSION, ARCHLANG_PACKAGE_VERSION;
 var init_archlang_adapter = __esm({
-  "../ai-orchestration/dist/apartment/archlang-adapter.js"() {
+  "packages/ai-orchestration/dist/apartment/archlang-adapter.js"() {
     "use strict";
     init_dist();
     ARCHLANG_ADAPTER_VERSION = "1.0.0";
@@ -11530,7 +14424,7 @@ var init_archlang_adapter = __esm({
   }
 });
 
-// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
+// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
 function fnv1a(s) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -13335,10 +16229,10 @@ function polygonLabelPoint(pts) {
   if (bestDist === -Infinity) return centroid;
   for (let round = 0; round < LABEL_REFINE_ROUNDS; round++) {
     const step = Math.max(cellW, cellH) / 2 ** round / LABEL_REFINE_STEPS;
-    const centre = best;
+    const centre2 = best;
     for (let i = -LABEL_REFINE_STEPS; i <= LABEL_REFINE_STEPS; i++) {
       for (let j = -LABEL_REFINE_STEPS; j <= LABEL_REFINE_STEPS; j++) {
-        consider(centre.x + i * step, centre.y + j * step);
+        consider(centre2.x + i * step, centre2.y + j * step);
       }
     }
   }
@@ -14457,12 +17351,12 @@ function hatchTileSize(spec, gap) {
   if (!m) return { w: Number.NaN, h: Number.NaN };
   return { w: Number(m[1]), h: Number(m[2]) };
 }
-function groundSwatchFrame(spec, gap, centre) {
+function groundSwatchFrame(spec, gap, centre2) {
   if (!isGroundMaterial(spec.material)) return null;
   const f = GROUND_SWATCH_FRAME[spec.material];
   const t = hatchTileSize(spec, gap);
   return {
-    origin: { x: centre.x - f.zoom * f.focus[0] * t.w, y: centre.y - f.zoom * f.focus[1] * t.h },
+    origin: { x: centre2.x - f.zoom * f.focus[0] * t.w, y: centre2.y - f.zoom * f.focus[1] * t.h },
     zoom: f.zoom
   };
 }
@@ -15065,8 +17959,8 @@ function freeCrossingCuts(walls, bands, intern) {
     }
     const piece = (along2, across3, length2, breadth) => {
       const { x: ux, y: uy } = stood.away;
-      const centre = { x: at2.x + ux * along2 - uy * across3, y: at2.y + uy * along2 + ux * across3 };
-      return openingCut({ ...host, thickness: breadth }, { at: centre, width: length2 }, intern);
+      const centre2 = { x: at2.x + ux * along2 - uy * across3, y: at2.y + uy * along2 + ux * across3 };
+      return openingCut({ ...host, thickness: breadth }, { at: centre2, width: length2 }, intern);
     };
     const own3 = half2(stood);
     const beside = reach - own3;
@@ -20292,7 +23186,7 @@ function resolvePolygon(n2, id, ctx) {
       span: n2.span
     });
   }
-  const bbox = polygonBounds(poly);
+  const bbox2 = polygonBounds(poly);
   const labelAt = n2.labelAt ? ctx.snapPt(ctx.evalPt(n2.labelAt)) : void 0;
   if (labelAt && effective.length >= 3 && !pointInPolygon2(labelAt.x, labelAt.y, effective)) {
     ctx.diag(labelOutsideDiag(id, labelAt, n2.labelAtSpan ?? n2.span));
@@ -20300,8 +23194,8 @@ function resolvePolygon(n2, id, ctx) {
   return {
     kind: "room",
     id,
-    at: { x: bbox.x, y: bbox.y },
-    size: { w: bbox.w, h: bbox.h },
+    at: { x: bbox2.x, y: bbox2.y },
+    size: { w: bbox2.w, h: bbox2.h },
     poly,
     ...ringRefused ? { _ringRefused: true } : {},
     ...labelAt ? { labelAt } : {},
@@ -20476,7 +23370,7 @@ function relationText(r) {
   const lead = r.between ? `between ${r.between[0]} and ${r.between[1]}` : `on ${r.edge}`;
   return r.at !== void 0 ? `${lead} at ${r.at}` : lead;
 }
-function relationalClause(r, rooms, centre) {
+function relationalClause(r, rooms, centre2) {
   const lines = (id) => {
     const room2 = rooms.find((x2) => x2.id === id);
     if (!room2 || room2.poly) return void 0;
@@ -20513,14 +23407,14 @@ function relationalClause(r, rooms, centre) {
     else {
       const [ta, tb] = [tile(r.between[0]), tile(r.between[1])];
       const got = ta && tb ? sharedRuns(ta, tb) : void 0;
-      if (got?.ok) run = got.runs.find((u) => standsOn(centre, u));
+      if (got?.ok) run = got.runs.find((u) => standsOn(centre2, u));
     }
   } else if (r.edge) {
     const e = edgeLine(r.edge);
     if (e) run = { vertical: e.vertical, c: e.c, r0: e.lo, r1: e.hi };
   }
   if (!run) return void 0;
-  const t = run.vertical ? centre.y : centre.x;
+  const t = run.vertical ? centre2.y : centre2.x;
   const from = /\bfrom\s+(\S+)$/.exec(r.at ?? "")?.[1];
   const datum = from !== void 0 && from !== "start" && from !== "end" ? edgeLine(from) : void 0;
   const meets = datum !== void 0 && datum.vertical !== run.vertical;
@@ -20973,7 +23867,7 @@ function placeOnRun(run, pos, span, kind, width, ctx, what, runWord2, relation, 
   const where = relationText({ ...relation, at: void 0 });
   const placed = positionOnRun(pos, span, run, kind, ctx, what, runWord2);
   if (placed === void 0) return null;
-  const centre = placed.c;
+  const centre2 = placed.c;
   const bodies = bodiesOn(run, ctx.walls);
   if (bodies.length === 0) {
     ctx.diag({
@@ -20991,7 +23885,7 @@ function placeOnRun(run, pos, span, kind, width, ctx, what, runWord2, relation, 
     const w = wallOfSeg(ctx.walls, s);
     return w ? wallPhraseOf(w) : `wall "${s.wallId}"`;
   };
-  const at2 = ctx.snapPt(run.vertical ? { x: run.c, y: centre } : { x: centre, y: run.c });
+  const at2 = ctx.snapPt(run.vertical ? { x: run.c, y: centre2 } : { x: centre2, y: run.c });
   const c = run.vertical ? at2.y : at2.x;
   const flushOk = kind === "opening";
   let host = bodies[0];
@@ -23328,10 +26222,10 @@ function measureCurve(n2, ctx) {
     const room2 = ctx.rooms.find((r32) => r32.id === c.ref);
     if (!room2) return err("names no room in this plan");
     if (!room2.circle) return err("names a room that is not circular \u2014 `diameter` measures a `room circle`");
-    const { c: centre, r } = room2.circle;
+    const { c: centre2, r } = room2.circle;
     return {
-      from: { x: centre.x - r, y: centre.y },
-      to: { x: centre.x + r, y: centre.y },
+      from: { x: centre2.x - r, y: centre2.y },
+      to: { x: centre2.x + r, y: centre2.y },
       text: diameterText(r, fmt2)
     };
   }
@@ -24063,8 +26957,8 @@ function climbFlights(id, dir, pieces, rects) {
   }
   return out;
 }
-function bandHeld(c, centre, width) {
-  return c.lo - VERTEX_EPS <= centre - width / 2 && centre + width / 2 <= c.hi + VERTEX_EPS;
+function bandHeld(c, centre2, width) {
+  return c.lo - VERTEX_EPS <= centre2 - width / 2 && centre2 + width / 2 <= c.hi + VERTEX_EPS;
 }
 function resolveBlock(n2, ctx) {
   const id = ctx.id;
@@ -24105,7 +26999,7 @@ function resolveBlock(n2, ctx) {
   for (let i = 0; i < flights.length; i++) {
     const f = flights[i];
     const r = rects[i * 2];
-    const { extent: extent2, centre } = across2(r, f.tail);
+    const { extent: extent2, centre: centre2 } = across2(r, f.tail);
     if (width <= 0 || width > extent2) {
       return stop({
         severity: "error",
@@ -24116,7 +27010,7 @@ function resolveBlock(n2, ctx) {
     }
     for (const j of [i * 2 - 1, i * 2 + 1]) {
       if (j < 0 || j >= rects.length) continue;
-      if (!bandHeld(contact(r, rects[j]), centre, width)) {
+      if (!bandHeld(contact(r, rects[j]), centre2, width)) {
         return stop({
           severity: "error",
           message: `Stair "${id}": flight ${i + 1}, ${fmt3(width)} mm wide and centred in its footprint, does not meet piece ${j + 1} along its whole width`,
@@ -25813,14 +28707,14 @@ function readLine(ix, ctx, ref, text2) {
       cy: y + h / 2
     };
     const v = ctx.snap(raw[word3]);
-    const centre = word3 === "cx" || word3 === "cy";
+    const centre2 = word3 === "cx" || word3 === "cy";
     return {
       vertical: word3 === "left" || word3 === "right" || word3 === "cx",
-      h: centre ? halfOfCentre(v) : halfOf(v),
+      h: centre2 ? halfOfCentre(v) : halfOf(v),
       raw: v,
-      centre,
+      centre: centre2,
       phrase: `the ${datumWordName(word3, ref.word)} of ${roomPhrase(ix, r)}`,
-      that: centre ? "that centre line" : "that edge",
+      that: centre2 ? "that centre line" : "that edge",
       text: written
     };
   }
@@ -29168,11 +32062,11 @@ function connectorFaces(c, roomRects) {
   const dist2 = Math.max(host.thickness, 1);
   const width = c.width ?? 0;
   const half2 = Math.max(0, width / 2 - Math.min(JAMB_PROBE_INSET_MM, width / 4));
-  const centre = wallFaceProbes(host, c.at, dist2);
+  const centre2 = wallFaceProbes(host, c.at, dist2);
   const jambLo = wallFaceProbes(host, alongHost(host, c.at, -half2), dist2);
   const jambHi = wallFaceProbes(host, alongHost(host, c.at, half2), dist2);
   const read = (side) => {
-    const mid = centre[side];
+    const mid = centre2[side];
     const path5 = [jambLo[side], mid, jambHi[side]];
     const x0 = Math.min(path5[0].x, mid.x, path5[2].x) - dist2;
     const x1 = Math.max(path5[0].x, mid.x, path5[2].x) + dist2;
@@ -32709,7 +35603,7 @@ function entranceAim(nav) {
     entranceOf: (s) => sourceEntrance[s]
   };
 }
-function roomRep(g, cells, seed2, poles, dist2, straightSq, entranceOf, centre) {
+function roomRep(g, cells, seed2, poles, dist2, straightSq, entranceOf, centre2) {
   const points = poles.length > 0 ? poles : [seed2];
   const cand = [];
   for (const p of points) {
@@ -32730,7 +35624,7 @@ function roomRep(g, cells, seed2, poles, dist2, straightSq, entranceOf, centre) 
   if (cand.length === 0) return { k: -1, seed: points[0], ties: [] };
   const key3 = (k) => {
     const c = centreOf(g, k);
-    const [lo, hi] = [Math.abs(c.x - centre.x), Math.abs(c.y - centre.y)].sort((a, b) => a - b);
+    const [lo, hi] = [Math.abs(c.x - centre2.x), Math.abs(c.y - centre2.y)].sort((a, b) => a - b);
     return [dist2[k], straightSq(k), lo, hi, entranceOf(k)];
   };
   const cmpKey = (x, y) => {
@@ -37327,8 +40221,8 @@ function summarize(ir, tol, facts = [], arrivals = [], upperStorey = false, stat
     return best;
   };
   const voids = voidEls.map((v) => {
-    const centre = { x: v.at.x + v.size.w / 2, y: v.at.y + v.size.h / 2 };
-    const owner = v.parts ? ownerOfRing(v) : roomEls.find((r) => pointInRoomBox(centre, roomRects.get(r.id)));
+    const centre2 = { x: v.at.x + v.size.w / 2, y: v.at.y + v.size.h / 2 };
+    const owner = v.parts ? ownerOfRing(v) : roomEls.find((r) => pointInRoomBox(centre2, roomRects.get(r.id)));
     return {
       id: v.id,
       at: { ...v.at },
@@ -37390,7 +40284,7 @@ function summarize(ir, tol, facts = [], arrivals = [], upperStorey = false, stat
     ext(rect.x, rect.y);
     ext(rect.x + rect.w, rect.y + rect.h);
   }
-  const bbox = minX === Infinity ? { w: 0, h: 0 } : { w: maxX - minX, h: maxY - minY };
+  const bbox2 = minX === Infinity ? { w: 0, h: 0 } : { w: maxX - minX, h: maxY - minY };
   const ob = outerFaceBounds(ir.walls, [...roomRects.values()]);
   const bbox_outer = Number.isFinite(ob.minX) ? { w: ob.maxX - ob.minX, h: ob.maxY - ob.minY } : { w: 0, h: 0 };
   const floorArea = r25(rooms.reduce((s, r) => s + r.area_m2, 0));
@@ -37453,7 +40347,7 @@ function summarize(ir, tol, facts = [], arrivals = [], upperStorey = false, stat
         ...ir.sheet.drawingFits ? {} : { drawing_fits: false }
       }
     } : {},
-    bbox,
+    bbox: bbox2,
     bbox_outer,
     ...ir.axes && ir.axes.length > 0 ? {
       axes: {
@@ -39722,11 +42616,11 @@ function collisionHint(f, fr, hit, ctx) {
   ];
   const lo = Math.min(...corners2.map(along2));
   const hi = Math.max(...corners2.map(along2));
-  const centre = (lo + hi) / 2;
+  const centre2 = (lo + hi) / 2;
   const half2 = (hi - lo) / 2;
   const written = ag.offset ?? len2 / 2;
-  if (Math.abs(written - centre) > 1) return generic;
-  const run = `\`offset\` is the distance along "${host.wallId}" to the piece's CENTRE, not its edge: at ${mm22(centre)} this ${mm22(hi - lo)} mm piece spans ${mm22(lo)}\u2013${mm22(hi)} along it, through ${wallRef(ctx.ir.walls, hit)}`;
+  if (Math.abs(written - centre2) > 1) return generic;
+  const run = `\`offset\` is the distance along "${host.wallId}" to the piece's CENTRE, not its edge: at ${mm22(centre2)} this ${mm22(hi - lo)} mm piece spans ${mm22(lo)}\u2013${mm22(hi)} along it, through ${wallRef(ctx.ir.walls, hit)}`;
   const hd = hit.arc ? null : unitOf2(hit);
   if (hd !== null && Math.abs(hd.x * d.x + hd.y * d.y) > 1 - 1e-9)
     return `${run}, which runs along it: reduce the piece's depth.`;
@@ -39766,12 +42660,12 @@ function collisionHint(f, fr, hit, ctx) {
   }
   const clear = (o) => {
     if (o - half2 < 0 || o + half2 > len2) return false;
-    const shift = o - centre;
+    const shift = o - centre2;
     const moved2 = { x: fr.x + d.x * shift, y: fr.y + d.y * shift, w: fr.w, h: fr.h };
     if (room2 !== void 0 && !rectInRoomBox(moved2, room2)) return false;
     return placementClear(ctx, moved2, f.category, f.rotate ?? 0, f);
   };
-  const valid = [...new Set(raw)].filter(clear).sort((a, b) => Math.abs(a - centre) - Math.abs(b - centre) || a - b);
+  const valid = [...new Set(raw)].filter(clear).sort((a, b) => Math.abs(a - centre2) - Math.abs(b - centre2) || a - b);
   if (valid.length > 0) return `${run}. \`offset ${mm22(valid[0])}\` clears it.`;
   const where = f.room !== void 0 ? ` inside "${f.room}"` : "";
   return `${run}, and no position along "${host.wallId}"${where} clears every wall: move it to another wall or shorten it.`;
@@ -40208,7 +43102,7 @@ function snappedCentre(ctx, o, shift) {
 }
 function clearMove(ctx, u, ks, dir) {
   const g = ctx.ir.grid > 0 ? ctx.ir.grid : 1;
-  const centre = (l) => (l.lo + l.hi) / 2;
+  const centre2 = (l) => (l.lo + l.hi) / 2;
   let shift = 0;
   for (let step = 0; step <= 2 * ks.length + 4; step++) {
     const lo = u.lo + shift;
@@ -40219,10 +43113,10 @@ function clearMove(ctx, u, ks, dir) {
       const q2 = Math.ceil(Math.abs(shift) / g - EPS3) * g * dir;
       const placed = u.leaves.map((leaf) => ({ leaf, ...snappedCentre(ctx, leaf, q2) }));
       if (placed.some((p) => Number.isNaN(p.s))) return null;
-      const d = placed[0].s - centre(u.leaves[0]);
+      const d = placed[0].s - centre2(u.leaves[0]);
       const nlo = u.lo + d;
       const nhi = u.hi + d;
-      const apart = placed.some((p) => Math.abs(p.s - centre(p.leaf) - d) > EPS3);
+      const apart = placed.some((p) => Math.abs(p.s - centre2(p.leaf) - d) > EPS3);
       if (apart || ks.some((k) => hits(k, nlo, nhi))) {
         shift = q2 + dir * g;
         continue;
@@ -41155,10 +44049,10 @@ function surfaceNames(ctx, surfaces, reach) {
         }
       }
     }
-    const centre = ring ? polygonLabelPoint(ring) : { x: o.at.x + o.size.w / 2, y: o.at.y + o.size.h / 2 };
+    const centre2 = ring ? polygonLabelPoint(ring) : { x: o.at.x + o.size.w / 2, y: o.at.y + o.size.h / 2 };
     base.set(
       o,
-      near !== void 0 ? `the ${o.surface} off ${ctx.nameOf(near)}` : `the ${o.surface} ${ctx.placeAt(centre)}`
+      near !== void 0 ? `the ${o.surface} off ${ctx.nameOf(near)}` : `the ${o.surface} ${ctx.placeAt(centre2)}`
     );
   }
   const alike = /* @__PURE__ */ new Map();
@@ -42297,7 +45191,7 @@ function compile(source, opts = {}) {
 }
 var import_meta, MODEL_RANGE_MM, MAX_ANGLE_DEG, drawnDecimal, plainDecimal, fmt0, fmt2, fmt3, fmt4, IMPERIAL_MESSAGE, isDigit, isIdentStart, isIdentPart, lexCache, LEX_CACHE_MAX, NORTH_DIRS, AUTO_DIMS_MODES, ARC_DIRS, REL_DIRS, AXIS_ALIGNS, REL_DIR_AXIS, REL_ALIGN_CENTERS, REL_ALIGNS, USE_KINDS, FURNITURE_ANCHORS, DIM_REFS, VERTICAL_DIRS, OUTDOOR_KINDS, RAIL_EDGES, RAIL_SIDES, FENCE_STYLES, STRIP_DIRS, LEVEL_SHARED_KINDS, TITLE_FIELD_KEY, SCHEDULE_SUBJECTS, COMPASS_DIRECTIONS, HEMISPHERES, fallbacks, BUDGET_SUBSTITUTE, BIN_PREC, BIN_OP, RANGE_PREC, MAX_NEST_DEPTH, exprDepth, heights, tooDeep, NUM0, MAX_RANGE, MAX_CALL_DEPTH, EVAL_UNITS, EXPAND_UNITS, MAX_STACK_UNITS, EXPAND_RESERVE, stackUse, reported, MAX_EVAL_STEPS, DIAGNOSTIC_STEPS, meter, StepLimitSignal, datumReader, bodyReader, builtinDispatch, XML_ILLEGAL, PLAIN_UNSAFE, REPLACEMENT, DEFAULT_THEME, ALIASES, THEMES, STYLE_KEYS, STYLE_KINDS, STYLE_KEYS_INVERSE, BAD_VALUE, ids, next, STOREY_HEIGHT, DOOR_HEAD, WINDOW_SILL, WINDOW_HEAD, MAX_HEIGHT, ARC_STEP_DEG, ARC_MIN_STEPS, ARC_PIECE_DEG, TAU, deg, ARC_QUANTUM, radiusText, diameterText, MAX_CELLS_PER_BOX, MAX_SAFE_CELL, GridIndex, VERTEX_EPS, MAX_Y_BANDS, LABEL_GRID, LABEL_REFINE_ROUNDS, LABEL_REFINE_STEPS, RING_READS_PER_STEP, sub, add, mul, length, normal, emptyBounds, dimSwapped, DIM_INSIDE_EPS, segBox, WallGrid, RENDER_PASSES, EXTRA_THIN_RATIO, MITER_LIMIT, DIM_TICK, PARALLEL_SIN, cross2, dot2, perp, sub2, TAU2, Y_MONOTONE_MEMO, edgeStart, edgeEnd, reverseLoop, KEY_SCALE, SNAP_MM, PointInterner, tessellateLoops, asWallLike, faceStart, faceEnd, faceToEdge, mapArcFace, along, positive, KNOWN_MATERIALS, DEFAULT_MATERIAL, GROUND_MATERIALS, FLOOR_MATERIALS, GRAVEL_STONES, GRAVEL_GRIT, GRASS_TUFTS, MULCH_CHIPS, DECK_JOINTS, TARMAC_SPECKS, hairline, META, GROUND_SWATCH_FRAME, REACH_FACTOR, MIN_LOOP_AREA, MERGE_SIN, byTag, edgeBBox, inGrownBox, boxesOverlap, byOwnership, edgeLength, edgeDist, outDir, inDir, turn, bandBBox, loopsToPolygons, boxesOverlap2, key, lineOfRun, numbered, rectilinear, runRect, RING_DUST_MM, HINTS, TITLE_FIELDS, KEYWORDS, WALL_STATUSES, DOOR_ENUMS, DOOR_HINGE_NEAR, DOOR_SWING_BUILDING, DOOR_KINDS, DOOR_KIND_CLAUSES, WINDOW_KINDS, WINDOW_KIND_HINGED, enumList, NUM_LITERAL, RULES, STATEMENT_STARTS, KEEP_WORDS, KEEP_GRADES, wall, dashedPattern, MAX_RAIL_POSTS, SYMBOL_INK_MIX, isLoopList, OVAL_MAX_ASPECT, shortSide, centerOf, CABINET_PITCH_MM, MAX_DIVISIONS, PILLOW_TWO_ASPECT, WARDROBE_FRONT, WARDROBE_DOOR_PITCH, WARDROBE_MAX_BAYS, WARDROBE_HANGER_PITCH, WARDROBE_HANGER_BAY, WARDROBE_RAIL_INSET, short, UPHOLSTERY_RADIUS, SEAT_BACK_BAND, DINING_BAND, CHAIR_PITCH, CHAIR_TUCK, SQ5, COS72, COS36, SIN72, SIN36, STAR_SPOKES, MEETING_BAND, CHAIR_PITCH2, CHAIR_TUCK2, POD_BAND, POD_TUCK, pill, HEDGE_MAX_LOBES, GRILL_BARS, PATIO_BAND, PATIO_PITCH, PATIO_TUCK, TRAMPOLINE_SPRINGS, PALM_FRONDS, PALM_LEAFLETS, FIXTURE_FAMILIES, FIXTURE_CATEGORIES, CANONICAL_FIXTURES, FAMILY_OF, M, FIXTURE_FAMILY_MATERIALS, PROBE_RECT, PROBE_SIZES, SHEET_WORDS, SHEET_DECIMAL_KEY, MAX_SHEET_WORD, SHORT_WORDS, MAX_SHORT_WORD, vocabularyKeys, sheetTextKeys, keySet, isSheetTextKey, ENGLISH, PLAIN_SHEET_TEXT, concat, group, indent, line, hardline, DATUM_WORDS, COMPASS_DATUM_ALIASES, EDGE_WORDS, NUM02, SEGMENT_COMPASS_WORDS, SEGMENT_SELECT_RE, fail, listOf, BIN_PREC2, RANGE_PREC2, ptStr, atStr, clamp22, EM_PER_CHAR, ROBOTO_ASCII, ROBOTO_LATIN1, HELVETICA_BOLD_ASCII, HELVETICA_BOLD_LATIN1, UNITS_PER_EM, wider, DIM_TEXT_GAP, LABEL_LINE_PITCH, LABEL_NAME_RISE, LABEL_AREA_DROP, SEPARATOR, REL_DIRS2, REL_ALIGN_SET, USE_SET, axisHint, room, pt, openingLead2, STATEMENT_EXPRS, PARALLEL_SIN2, MEET_TOL_MM, FLUSH_MM, JUNCTION_EPS, JUNCTION_NIB_DEFAULTS, dot, cross, sub3, unitOf, sameSeg, atFreeEnd, datumDiag, rectOf, tileOf, edgesOf, standsOn, lineText, alongText, extent, cornerDiag, CORNER_HINT, ONE_WALL_HINT, DEMOLISHED_HINT, spanText, OFFSET_NOT_AXIS, GLAZING_GAP, SILL_PROJECTION, SILL_HORN, HINGE_MARK_REACH, HINGE_MARK_SPREAD, TILT_MARK_RADIUS, SLIDE_MARK_REACH, SLIDE_MARK_SHARE, SLIDE_HEAD_LENGTH, SLIDE_HEAD_SPREAD, windowEl, PANEL_PROJECTION_DEPTH, PANEL_PROJECTION_MAX_MM, SLIDE_MARK_REACH2, SLIDE_HEAD_LENGTH2, DEFAULT_OPEN, LEAF_SLAB_MM, LEAF_SLAB_MAX_FRACTION, clamp01, door, opening, TIE_NUDGE, keyNum, pt2, CATALOG, CATALOG_CATEGORIES, el, D4_ELEMENTS, at, D4_IDENTITY, D4_HALF_TURN, MATRICES, SIDES_CW, SIDE_NORMAL, OPPOSITE_SIDE, LETTERS_CW, LETTER_SIDE, SIDE_LETTER, BACK_EDGE_DEG, TURNS, OPPOSITE, standoff, TAU3, corners, inBox, DOORWAY_WIDTH_MM, RECT_EDGES, FIXTURE_WALL_TOL_MM, ANCHOR_BACK_EDGES, COUNT_SIZES, ANCHOR_SET, furniture, dim, column, VERTICAL_KINDS, KIND_SET, inkOf, TREAD_GOING_MM, MIN_TREADS, STAIR_LAYER, ELEVATOR_LAYER, MAX_RUN_TREADS, overlapsArea, stair, elevator, escalator, ROOF_LAYER, PARALLEL_SIN3, roof, PLANTING_LAYER, SITE_LAYER, BALCONY_LAYER, OUTDOOR_LAYERS, GROUND, outdoor, RAIL_NEIGHBOURS, VOID_LAYER, VOID_RAIL_LAYER, railCount, voidEl, POST_PITCH, MITRE_MIN, MIN_POSTS, MAX_POSTS, fence, BODY_CLAUSES, wallsFromRooms, BUILTIN_DEFS, BUILTIN_REGISTRY, BUILTIN_RUNTIME, PKG_SPEC, bindingsByDef, SIDE_OF, AXIS_LETTERS, BUBBLE_DIA, BUBBLE_LABEL, AXIS_LEAD, BUBBLE_GAP, NULL_WORLD, num2, BUILTINS, BUILTIN_NAMES, USE_NOUN, PLACE, capFirst, tokensOf, USE_VOCABULARY, FALLBACK_USE_VOCABULARY, PREPARED_USE, PREPARED_DAY_NURSERY, PREPARED_FALLBACK, PREPARED_OPEN_AIR, NON_RESIDENTIAL_VOCABULARY, PREPARED_NON_RESIDENTIAL, MAX_KEEPS, MAX_KEEP_TARGETS, halfOf, keepHalfOf, halfOfCentre, mmText, mmNumber, MESSAGE_TAIL, keepRefsOf, FORM_WORDS, EDGE_ORDER, codeList, axisWord, signWord, wallNoun, isRefusal, NOTHING_MOVED, RunIndex, STACKED_KINDS, KIND_NOUN, MAX_DEPTH, MAX_ITERATIONS, MAX_ELEMENTS, rootZoneFrame, zoneOf, Scope, resolveCache, RESOLVE_CACHE_MAX, levelPlanCache, levelsCache, datumTablesOfIr, instanceBodiesOfIr, stepsSpent, keepStateOfIr, stackedResultsOfIr, stackedStepsOfIr, DERIVED_ELEMENTS_PER_ROOM, DRAWN_LIMIT, gridOverlapHint, MAX_OVERLAP_PAIRS_LISTED, BITS, BITS16, numCompare, BOOLEAN, MIN_PLUS, MAX_MIN, MAX_NET_CURVES, TAU4, boxesMeet, ON_MM, T_EPS, ends, PROBE_MM, MAX_NET_PROBE_WORK, DEFAULT_TOL, roomRing, ROOM_CONTAINMENT_SLACK_MM, isOpenAir, isBedroom, isWetRoom, isKitchen, isGarage, isCirculation, EXTERIOR_NODE, DEFAULT_CLEAR_ALLOWANCE_MM, JAMB_PROBE_INSET_MM, leavesOf, joins, BANDS_MAX, bandsMemo, roomMemo, exact, wallKey, roomKey, CLEARANCE, COLLIDE_MIN, FRACTIONS, W_OUTSIDE, W_OBSTACLE, W_PLACED, W_DISTANCE, BoxSums, DIRECT_TAIL, GRID_SAFE, runLength, centredIn, WRAP_TRIES, tagOf, TAG_PRIMITIVES, tagFont, MAX_CELLS, MAX_PROBE, ObstacleGrid, r2, ROW_H, FONT, COL_NO, COL_NAME, COL_AREA, COL_NET, PAD_AREA_W, AREA_COL, LEGEND_SWATCH, LEGEND_NAME, COL_TAG, COL_ROOMS, COL_WIDTH, COL_TYPE, COL_TYPE_CHARS, COL_HAND, NOTES_NO, NOTES_TEXT, charsIn, wordsColumn, legendKey, NOTE_LINE_CHARS, ROOMS_CELL_CHARS, MAX_NOTE_LINES, isMark, isHigh, isLow, CUT_LOOKBACK, cutAt2, clip, TABLE_GAP, scheduleRowCount, legendRowCount, openingRowCount, noteLines, notesRowCount, tableRowsHeight, BOLD, cellOf, colLeft, GAP_F, SCALEBAR_HGT_F, SCALEBAR_FS_F, SCALEBAR_LABEL_F, SCALEBAR_TARGET_F, TITLE_W_F, TITLE_ROW_F, TITLE_FS_F, NICE_LENGTHS, scaleBarLabel, REACH_LAYERS, PAPER_SIZES, PAPER_ORIENTATIONS, PAPER_MM, SHEET_MM, CHAIN_BASE, CHAIN_STEP, CHAIN_SLOTS, DIM_BAND_FONTS, DIM_BAND_MM, AUTO_SCALE_DENOMINATORS, FIXED_STATEMENT_STARTS, ParseError, parseCache, PARSE_CACHE_MAX, ID_SPANS, Parser, USE_SET2, SIDES, SIDE_AXIS, SIDE_OUT, spanGap, TICK_TOL, FACINGS, SYMBOLIC_FACINGS, PROPERTY_LAYER, ARC_STEPS, HEIGHT_STEPS, MAX_FIT_WORK, fitWork, W_BURIED, BURIED_STEPS, W_TIER, isSymbolElement, boxOf2, centred, shifted, moved, offCentre, LAST_RANK, text, DEFAULT_BODY_RADIUS_MM, MIN_CELL_MM, MAX_CELLS2, MAX_GRID_CELLS, isLivingOrDining, r22, clamp32, LANDING_PROBE_MM, inBox2, FRAME_QUANTUM_MM, snapToFrame, snapPoint, NO_ELEMENTS, D4_MATS, bboxCentre, MAX_FACE_WALL_SEGMENTS, MAX_ENCLOSURE_FACES, MAX_WALL_CONTACTS, MAX_LOOPS_PER_CELL, FACE_BUDGET_CAPS, segmentCount, inBox3, piecesBound, roomCurveCount, roomBoxOf, MAX_GROSS_AREA_TESTS, segmentCount2, TREES, DOUBLE_BED_MIN_WIDTH_MM, DEFAULT_RULESET, LINT_PROFILES, DEFERRED_PROFILE_NUMBERS, ADVISORY_CODE_PROFILES, LINT_PROFILE_NAMES, hasOwn, EPS, WALL_BODY_SLACK_MM, isStraightRun, END_ALONG, END_ACROSS, END_STATIONS, NONE, DIAGONAL_TOL, hinged, ENTRY_USES, PRIVATE_USES, PUBLIC_USES, SERVICE_USES, pk, act, unitMm, mm2, MAX_SYMMETRY_COORD, AXIS_OF_K, gcd, usesLabel, tidy, boxRing, HAND_SIZES, lessYX, r4, MAX_CONTACTS_LISTED, MAX_CONTACT_PROBES, EDGES, cmp, lineKey, key2, BUILTINS2, datumRoom, sorted, MAX_KEEP_PATHS, sorted2, GRADE_RANK, SOURCE_RANK, onLattice, onGrid, EDGE_AXIS, Potentials, namesIn, spanKey, ROOM_TYPES2, USE_TO_ROOM_TYPE, USE_PRIORITY, ROOM_TYPE_TO_USE, USE_SET3, ROOM_TYPE_SET, POINT_SCHEMA, WALL_POINT_SCHEMA, INSTANCE_MARKER, PLAN_JSON_SCHEMA, mm22, WALL_COLLISION_SLACK_MM, shortfall, isWc, isServiceCounter, isCookingSurface, CUT, isShort, isFloorLength, isLowUnit, lowUnitCover, NO_BUILDING, DROP_SKIP, wallPhrase2, openBoundaryPhrase, KIND_WORD, CLI_NAME, swingObstructed, doorwayBlocked, pocketRun, POCKET_RUN_RATIO, doorClearance, doorNearCorner, COLLINEAR_TURN_RAD, angleBetween, leafAcrossDoorway, leafTooWide, exitApproachBlocked, stairUnmatched, SHAFT_MIN_OVERLAP_SHARE, sameBlock, shaftFootprintMismatch, word, pct, FOOT_DOOR_CLEAR_MM, NON_DWELLING_LANDING_MM, MAX_STAIR_WORK, rectOf3, runLength2, inset, STAIR_HEADROOM_MM, landingDepth, FACTS, pieceCount2, ownPieces, swingOverStair, stairNoLanding, stairSideEntry, stairHeadVoid, goingFor, MAX_RISER_TRIES, goingsIn, stairTooSteep, landingCount, landingWords, furnitureOnStair, capitalise, modelCache, nearestCache, gridCache, walkView, fullView, narrowHints, narrowRemedies, MAX_ATTRIBUTION_MEASURES, setKey, widenedClear, edgeLeaves, pairOf, hopsCache, pathTooNarrow, circuitousPath, len, have, want, obstacle, roomKey2, MAX_FACE_CURVES, r24, mm3, byText, MAX_WASTE_PCT, DESCRIBE_FACTS, r25, CAPTION_ROOM_CAP, netField, isUnderlayPiece, mkDim, sidePt, witnessPt, chainOffset, EMPTY_LABELS, DEFAULT_DRAW_COST, MAX_DRAW_UNITS, AXIS_PRIMITIVES, SQRT2, SQRT3, SQRT6, ISO, COS_PSI, SIN_PSI, AXON, lift, ringOf, GLAZING_FRACTION, VIEW_LAYERS, VIEW_LAYER_NAMES, pt3, cap, dashAttr, sheetMm, MAX_IMPORT_LEVELS, E2, W, ERROR_CATALOG, ERROR_CODES, PAD_X, PAD_Y, TITLE_FS, SUB_FS, CODE_FS, MSG_FS, FIX_FS, MSG_LH, FIX_LH, CHIP_LINE_H, ROW_PAD, ROW_GAP, ACCENT_W, ROW_INNER_X, ERROR_ACCENT, WARN_ACCENT, SKIP_WHY, ENCLOSURE_CAP_WHY, dimInside, dimOverlap, openingNotDimensioned, UNIT_UM, dimTextMismatch, pointWords, ONCE_PER_PLACEMENT_CODES, dot3, overlaps, USE_PHRASE, aliasMatch, MAX_ANNOTATION_WORK, annotationOverlap, titleOverflow, symbolWithId, idAuthored, roomRef, doorWithId, pointInRoomFloor, orList, emptyBox, boxesMeet2, MIN_CELL_MM2, MAX_CELLS_ROOM, MAX_GRID_CELLS_ROOM, TIE_MM, roomNoClearPath, EDGE_ANCHORS, wcName, wcSideClearance, ACCESSIBLE_RE, NEGATED_RE, SIDE_WALL_REACH_MM, accessibleWcSideWall, furnitureOverWindow, hobUnderWindow, hobFridgeGap, pieceName, furnClearDeclared, SEATS, TABLES, seatFacingAway, oblong, footprintTransposed, ADULT_BEDS, bedUndersized, ADD_DOOR, NO_WAY_IN, kindWord, landsOnNoRoom, noEntrance, furnitureOverlap, furnClearance, fixtureFloating, fixtureBackToRoom, fixtureWrongRoom, furnitureWallCollision, OPEN_PLAN, BOUNDARY_FIXTURES, RUN_PROBE_MM, MIN_INSIDE_SHARE, DEFAULT_PARTITION_MM, EPS2, SAME_LINE_MM, boxesNear, boundaryNoWall, CAP_OF, FACES, facesOf2, floorUnassigned, roomOutsideShell, levelWords, END_SCAN_STEP_MM, MAX_WALL_GAP_SCAN_MM, SHORT_ENDS, wallEndShort, gapsLength, NO_SHELL, exteriorRingOpen, WHAT, furnitureOnVoid, EPS3, dot4, cross5, sub4, unitOf3, NO_OPEN_BOUNDARIES, cornerReported, junctionsFor, nibNeed, reached, cap2, ratioWords, distinct, hits, towards, idHint, openingAtJunction, openingOverlap, connectorAmbiguous, wet, kitchen, zoned, FURNISH_TABLE, familyOf, servedBy, DEFINING, WASH_WITH, NOUN, useNoun, itemWords, MAX_HINT_VERIFICATIONS, MAX_HINT_WALK_ROOMS, said, BASELINE, SPENT, VERIFYING, WET_FIX, KITCHEN_FIX, areaM2, GROSS_AREA_HINT, CAR_BAY_WIDTH_MM, GARAGE_DOOR_SINGLE_MM, GARAGE_DOOR_DOUBLE_MM, GARAGE_DOOR_SOURCE, PARKED_CATEGORIES, noun, USE_FLOOR_NOUN, USE_WIDTH_NOUN, BED_CATEGORIES, GARAGE_DEPTH_SOURCE, asksWidths, readsBeds, USE_FLOOR_SOURCE, perRoomRules, ENTRY_HINT, DOUBLE_HINT, PUBLIC_USES2, HABITABLE_USES, SUITE_USES, CIRCULATION_USES, NOUN2, NIBS_MM, FRONT_DOOR_MM, CORRIDOR_MM, ENTRY_LOBBY_MM, mm4, hasAny, joins2, KITCHEN_FAMILIES, quoted, saysNoun, hq, quotedStart, roomViaPrivate, wetRoomDoor, entranceIntoPrivate, reachability, HABITABLE, OUTSIDE_PROBE_MM, habitableNoWindow, spoken, roomMissingDefining, outdoorOverlapsRoom, balconyNoDoor, stopsAboveFloor, shutToWalking, windowRef, roomNotEquatorFacing, LINT_RULES, LINT_CODE_LAYERS, LINT_CODE_STAGES, statementKey, APPLY_RANK, RESERVED, CONCEPTS, INF, FACING_VALUES, FACINGS2, INTENT_JSON_SCHEMA, AUTHORING_STAGES, RANK, COMPILE_WARNING_STAGES, INTENT_CODE_STAGES, ELEMENT_KIND_STAGES, TASTE_ADVICE, ONE, clampP, cross7, log2Ceil, MAX_EVIDENCE, HABITABLE_USES2, isHabitable2, EvidenceList, TASTE_SKIP_WHY, irRoomsOf, ringSize, plural2, levelOf2, BED_WORDS, r9Judges, r18Judges, r9Ramp, minRectCriterionCost, R9, R18, R16_CORNER, R17_GAP, IRC_R303_1, TASTE_PROFILES, TASTE_PROFILE_SOURCES, TASTE_PROFILE_NAMES, STAIR_SAFETY_CODES, MAX_PIECE_CHECKS_PER_ROOM, MAX_SET_CHECKS_PER_ROOM, MAX_CHECKS_PER_ROOM, RULESETS, LANDING_MM, EXIT_PUSH, EXIT_MM, SWING_MM, WC_SIDE_MM, NOT_GATED_DRAFTING, FINISH_STAGES, FINISH_STAGES_AVAILABLE, FINISH_STAGE_ORDER, USUAL_SIZES, STRICTER_PROFILES, PNG_PREVIEW_WIDTH, CONTEXT_BUNDLE_KB, STARTER_MAX_UNITS, CONTEXT_LEVELS, EXPORT_FORMATS, JSON_FLAG, QUIET_FLAG, EXPECTED_HASH_FLAG, OUT_FLAG, FMT_FLAG, SCALE_FLAG, COLS_FLAG, CHARSET_FLAG, WIDTH_FLAG, OVERLAY_FLAG, ERROR_SVG_FLAG, ERROR_SVG_FLAG_COMPILE, ACCESSIBLE_FLAG, ACC_ID_PREFIX_FLAG, FROM_JSON_FLAG, GRAPH_FLAG, AT_FLAG, INTENT_FLAG, FEEDBACK_FLAG, BRIEF_FLAG, TASTE_FLAG, LEVEL_FLAG, INSTALL_FLAG, ROOM_FLAG, ZONE_FLAG, FACTS_FLAG, WASTE_FLAG, SELECT_FLAG, CODE_FLAG, SEVERITY_FLAG, SECTION_FLAG, CONTEXT_LEVEL_FLAG, VIEW_FLAG, COMPILE_FLAGS, COMPILE_ONLY_FLAGS, COMMANDS, MANIFEST_COMMAND_NAMES, SETTING_KW, CAP_HEIGHT, intoFrame, DxfBuilder, AIA_LAYERS, VIEW_LAYER_COLORS, LTYPES, PLAIN_WALL_LAYER, WALL_CLASS_LAYERS, wallLayerOf, NEW_WALL_LAYER, DEMO_WALL_LAYER, standingLayerOf, DIM_STYLE, blockName, BlockTable, BUNDLED_FONT_FAMILY, CJK_FONT_PACKAGE, fontPathCache, cjkCache, cjkOverride, coverageCache, NAMED_LIMIT, PT_PER_MM, PDF_EPOCH_MS, ROBOTO_ONLY, cache, CACHE_MAX;
 var init_chunk_5DBZH6KB = __esm({
-  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
+  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
     import_meta = {};
     MODEL_RANGE_MM = 33554432;
     MAX_ANGLE_DEG = MODEL_RANGE_MM;
@@ -45134,9 +48028,9 @@ var init_chunk_5DBZH6KB = __esm({
             paint: { fill: `url(#${hatchId(spec)})`, fillRule: "nonzero" }
           });
         }
-        const centre = roomLabelAnchor(r);
-        const cx = centre.x;
-        const cy = centre.y;
+        const centre2 = roomLabelAnchor(r);
+        const cx = centre2.x;
+        const cy = centre2.y;
         const areaM22 = r.circle ? (Math.PI * r.circle.r * r.circle.r / 1e6).toFixed(1) : r.poly ? (polygonArea3(r.poly) / 1e6).toFixed(1) : (r.size.w / 1e3 * (r.size.h / 1e3)).toFixed(1);
         const net = ctx.netAreaOf?.(r.id);
         const text2 = ctx.text ?? PLAIN_SHEET_TEXT;
@@ -56591,12 +59485,12 @@ let x = k * k * k * k * k * k   # error: 1e360 overflows`
             if (seen.has(g.of) || !rectsOverlap2(foot, g.rect)) continue;
             seen.add(g.of);
             const r = g.rect;
-            const centre = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+            const centre2 = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
             const room2 = ctx.rooms.find((x) => {
               const b = ctx.roomRects.get(x.id);
-              return b !== void 0 && pointInRoomBox(centre, b);
+              return b !== void 0 && pointInRoomBox(centre2, b);
             });
-            const where = `${room2 ? `in ${ctx.nameOf(room2)}` : ctx.placeAt(centre)}${lv}`;
+            const where = `${room2 ? `in ${ctx.nameOf(room2)}` : ctx.placeAt(centre2)}${lv}`;
             const what = WHAT[g.of.kind];
             const { ox, oy } = rectOverlapAmounts(foot, r);
             out.push({
@@ -59890,14 +62784,14 @@ ${body}`;
   }
 });
 
-// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
+// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
 var init_dist4 = __esm({
-  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
+  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
     init_chunk_5DBZH6KB();
   }
 });
 
-// ../ai-orchestration/dist/apartment/archlang-parity-validator.js
+// packages/ai-orchestration/dist/apartment/archlang-parity-validator.js
 function roundCoord(val) {
   return Math.round(val);
 }
@@ -60686,7 +63580,7 @@ function validateGeometryParity(canonical, summary, serialization, compileContex
 }
 var TOLERANCE_MM;
 var init_archlang_parity_validator = __esm({
-  "../ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
+  "packages/ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
     "use strict";
     init_dist();
     init_dist4();
@@ -60694,9 +63588,9 @@ var init_archlang_parity_validator = __esm({
   }
 });
 
-// ../ai-orchestration/dist/apartment/archlang-compiler.js
+// packages/ai-orchestration/dist/apartment/archlang-compiler.js
 function computeSha256(content) {
-  return import_node_crypto2.default.createHash("sha256").update(content).digest("hex");
+  return import_node_crypto3.default.createHash("sha256").update(content).digest("hex");
 }
 async function compileBuildingWithArchLang(building, options) {
   const generatedAt = (/* @__PURE__ */ new Date()).toISOString();
@@ -60959,20 +63853,20 @@ async function compileBuildingWithArchLang(building, options) {
     }
   };
 }
-var import_node_crypto2;
+var import_node_crypto3;
 var init_archlang_compiler = __esm({
-  "../ai-orchestration/dist/apartment/archlang-compiler.js"() {
+  "packages/ai-orchestration/dist/apartment/archlang-compiler.js"() {
     "use strict";
-    import_node_crypto2 = __toESM(require("node:crypto"));
+    import_node_crypto3 = __toESM(require("node:crypto"));
     init_dist4();
     init_archlang_adapter();
     init_archlang_parity_validator();
   }
 });
 
-// ../ai-orchestration/dist/index.js
+// packages/ai-orchestration/dist/index.js
 var init_dist5 = __esm({
-  "../ai-orchestration/dist/index.js"() {
+  "packages/ai-orchestration/dist/index.js"() {
     "use strict";
     init_base();
     init_openai();
@@ -61015,15 +63909,1212 @@ var init_dist5 = __esm({
   }
 });
 
-// src/services/apartment-structure.ts
+// packages/backend/src/services/apartment-structure.ts
 var init_apartment_structure = __esm({
-  "src/services/apartment-structure.ts"() {
+  "packages/backend/src/services/apartment-structure.ts"() {
     "use strict";
     init_dist5();
   }
 });
 
-// src/services/extraction-pipeline.ts
+// packages/backend/src/services/image-to-cad-reconstruction.ts
+function snapGrid(value) {
+  return Math.round(value / GRID_MM) * GRID_MM;
+}
+function resolveRoomType(rawType, rawName) {
+  const token = `${rawType} ${rawName}`.toLowerCase();
+  if (token.includes("ots") || token.includes("open to sky") || token.includes("open-to-sky")) return RoomType.OTS;
+  if (token.includes("shaft") || token.includes("duct")) return RoomType.ServiceShaft;
+  if (token.includes("dress") || token.includes("wardrobe") || token.includes("walk-in")) return RoomType.Dressing;
+  if (token.includes("verandah") || token.includes("veranda") || token.includes("porch")) return RoomType.Porch;
+  if (token.includes("lobby") || token.includes("passage") || token.includes("corridor")) return RoomType.Corridor;
+  if (token.includes("pooja") || token.includes("puja") || token.includes("temple")) return RoomType.Pooja;
+  if (token.includes("terrace")) return RoomType.Terrace;
+  return extractedRoomType(rawType || rawName);
+}
+function overlapArea4(a, b) {
+  const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
+  const h = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
+  return w > 0 && h > 0 ? w * h : 0;
+}
+function pointInPolygon3(point, polygon) {
+  const pts = polygon.points;
+  let inside = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const a = pts[i];
+    const b = pts[j];
+    const intersects = a.y > point.y !== b.y > point.y && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x;
+    if (intersects) inside = !inside;
+  }
+  return inside;
+}
+function rectInsidePolygon2(rect, polygon, tolerance = GRID_MM * 2) {
+  const inset2 = Math.min(tolerance, rect.width / 4, rect.height / 4);
+  const corners2 = [
+    { x: rect.x + inset2, y: rect.y + inset2 },
+    { x: rect.x + rect.width - inset2, y: rect.y + inset2 },
+    { x: rect.x + rect.width - inset2, y: rect.y + rect.height - inset2 },
+    { x: rect.x + inset2, y: rect.y + rect.height - inset2 },
+    { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
+  ];
+  return corners2.every((c) => pointInPolygon3(c, polygon));
+}
+function readEntities(plan, rawPayload, targetFloorCount) {
+  const notes = [];
+  const rawObj = rawPayload && typeof rawPayload === "object" ? rawPayload : {};
+  const rawRooms = Array.isArray(rawObj.rooms) ? rawObj.rooms : [];
+  const rawById = /* @__PURE__ */ new Map();
+  for (const raw of rawRooms) {
+    const id = typeof raw.id === "string" ? raw.id : void 0;
+    if (id) rawById.set(id, raw);
+  }
+  const entities = [];
+  for (const room2 of plan.rooms) {
+    const raw = rawById.get(room2.id);
+    const level = Number(raw?.floorLevel ?? 0);
+    const confidence = plan.confidence?.[room2.id];
+    entities.push({
+      id: room2.id,
+      name: room2.name,
+      type: resolveRoomType(room2.type, room2.name),
+      floorLevel: Number.isFinite(level) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(level))) : 0,
+      frame: { x: room2.imageX, y: room2.imageY, width: room2.imageWidth, height: room2.imageHeight },
+      ...typeof raw?.compassZone === "string" ? { compassZone: raw.compassZone } : {},
+      connectedTo: Array.isArray(raw?.connectedTo) ? raw.connectedTo.map(String) : [],
+      extractionConfidenceHolder: void 0,
+      confidence: confidence === "confirmed" ? 1 : confidence === "ambiguous" ? 0.4 : 0.75,
+      kind: "room"
+    });
+  }
+  for (const stair2 of plan.stairs) {
+    entities.push({
+      id: stair2.id,
+      name: stair2.name || "Staircase",
+      type: RoomType.Staircase,
+      floorLevel: 0,
+      frame: { x: stair2.imageX, y: stair2.imageY, width: stair2.imageWidth, height: stair2.imageHeight },
+      connectedTo: [],
+      confidence: 0.75,
+      kind: "stair"
+    });
+  }
+  for (const park of plan.parking) {
+    entities.push({
+      id: park.id,
+      name: park.name || "Parking",
+      type: RoomType.Parking,
+      floorLevel: 0,
+      frame: { x: park.imageX, y: park.imageY, width: park.imageWidth, height: park.imageHeight },
+      connectedTo: [],
+      confidence: 0.75,
+      kind: "parking"
+    });
+  }
+  const levelsSeen = new Set(entities.map((e) => e.floorLevel));
+  if (targetFloorCount > 1 && levelsSeen.size === 1) {
+    notes.push(
+      `The brief asks for ${targetFloorCount} floors but the image showed spaces for only ${levelsSeen.size} level. Upper-floor spaces were NOT invented; add them in the editor or regenerate the image showing every floor.`
+    );
+  }
+  return { entities, notes };
+}
+function computeFrameTransform(contentBox, envelope) {
+  const scale = Math.min(envelope.width / contentBox.width, envelope.height / contentBox.height);
+  const scaledW = contentBox.width * scale;
+  const scaledH = contentBox.height * scale;
+  return {
+    scale,
+    offsetX: envelope.x + (envelope.width - scaledW) / 2 - contentBox.x * scale,
+    offsetY: envelope.y + (envelope.height - scaledH) / 2 - contentBox.y * scale
+  };
+}
+function applyTransform(frame, t) {
+  return {
+    x: frame.x * t.scale + t.offsetX,
+    y: frame.y * t.scale + t.offsetY,
+    width: frame.width * t.scale,
+    height: frame.height * t.scale
+  };
+}
+function boundingBox(rects) {
+  const minX = Math.min(...rects.map((r) => r.x));
+  const minY = Math.min(...rects.map((r) => r.y));
+  const maxX = Math.max(...rects.map((r) => r.x + r.width));
+  const maxY = Math.max(...rects.map((r) => r.y + r.height));
+  return { x: minX, y: minY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) };
+}
+function resolveOverlaps(placed, adjustments) {
+  const moved2 = /* @__PURE__ */ new Map();
+  const note = (entity, againstName, delta, carved) => {
+    const record3 = moved2.get(entity.id) ?? { name: entity.name, delta: 0, against: /* @__PURE__ */ new Set(), carved: false };
+    record3.delta += delta;
+    record3.against.add(againstName);
+    record3.carved = record3.carved || carved;
+    moved2.set(entity.id, record3);
+  };
+  const MAX_PASSES = 16;
+  let pass = 0;
+  let dirty = true;
+  while (dirty && pass < MAX_PASSES) {
+    dirty = false;
+    pass++;
+    const order = [...placed].sort((a, b) => b.rect.width * b.rect.height - a.rect.width * a.rect.height);
+    for (let i = 0; i < order.length; i++) {
+      for (let j = i + 1; j < order.length; j++) {
+        const bigger = order[i];
+        const smaller = order[j];
+        const area3 = overlapArea4(smaller.rect, bigger.rect);
+        if (area3 <= MIN_SIGNIFICANT_OVERLAP_MM2) continue;
+        const smallerArea = smaller.rect.width * smaller.rect.height;
+        const nested = smallerArea > 0 && area3 / smallerArea >= NESTED_COVERAGE;
+        if (nested) {
+          const cutLeft = smaller.rect.x + smaller.rect.width - bigger.rect.x;
+          const cutRight = bigger.rect.x + bigger.rect.width - smaller.rect.x;
+          const cutTop = smaller.rect.y + smaller.rect.height - bigger.rect.y;
+          const cutBottom = bigger.rect.y + bigger.rect.height - smaller.rect.y;
+          const best = Math.min(cutLeft, cutRight, cutTop, cutBottom);
+          if (!Number.isFinite(best) || best <= 0) continue;
+          const cut3 = Math.ceil(best / GRID_MM) * GRID_MM;
+          const wouldLeaveWidth = best === cutLeft || best === cutRight ? bigger.rect.width - cut3 : bigger.rect.width;
+          const wouldLeaveHeight = best === cutTop || best === cutBottom ? bigger.rect.height - cut3 : bigger.rect.height;
+          if (wouldLeaveWidth < MIN_CARVED_REMAINDER_MM || wouldLeaveHeight < MIN_CARVED_REMAINDER_MM) {
+            smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut3);
+            note(smaller.read, bigger.read.name, cut3, false);
+            dirty = true;
+            continue;
+          }
+          if (best === cutLeft) {
+            bigger.rect.x += cut3;
+            bigger.rect.width -= cut3;
+          } else if (best === cutRight) {
+            bigger.rect.width -= cut3;
+          } else if (best === cutTop) {
+            bigger.rect.y += cut3;
+            bigger.rect.height -= cut3;
+          } else {
+            bigger.rect.height -= cut3;
+          }
+          note(bigger.read, smaller.read.name, cut3, true);
+          dirty = true;
+          continue;
+        }
+        const penLeft = bigger.rect.x + bigger.rect.width - smaller.rect.x;
+        const penRight = smaller.rect.x + smaller.rect.width - bigger.rect.x;
+        const penTop = bigger.rect.y + bigger.rect.height - smaller.rect.y;
+        const penBottom = smaller.rect.y + smaller.rect.height - bigger.rect.y;
+        const smallest = Math.min(penLeft, penRight, penTop, penBottom);
+        if (!Number.isFinite(smallest) || smallest <= 0) continue;
+        const cut2 = Math.ceil(smallest / GRID_MM) * GRID_MM;
+        if (smallest === penLeft) {
+          smaller.rect.x += cut2;
+          smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut2);
+        } else if (smallest === penRight) {
+          smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut2);
+        } else if (smallest === penTop) {
+          smaller.rect.y += cut2;
+          smaller.rect.height = Math.max(GRID_MM, smaller.rect.height - cut2);
+        } else {
+          smaller.rect.height = Math.max(GRID_MM, smaller.rect.height - cut2);
+        }
+        note(smaller.read, bigger.read.name, cut2, false);
+        dirty = true;
+      }
+    }
+  }
+  for (const [entityId, record3] of moved2) {
+    const names = [...record3.against].map((n2) => `"${n2}"`).join(", ");
+    adjustments.push({
+      entityId,
+      entityName: record3.name,
+      kind: "resolve_overlap",
+      description: record3.carved ? `${names} is drawn inside "${record3.name}" in the image, so "${record3.name}" was carved back by ${Math.round(record3.delta)} mm to host it as a separate space.` : `"${record3.name}" overlapped ${names} as read from the image; its boundary was pulled back by ${Math.round(record3.delta)} mm in total.`,
+      material: record3.delta > MATERIAL_SNAP_MM,
+      deltaMm: Math.round(record3.delta)
+    });
+  }
+  let remaining = 0;
+  for (let i = 0; i < placed.length; i++) {
+    for (let j = i + 1; j < placed.length; j++) {
+      if (overlapArea4(placed[i].rect, placed[j].rect) > MIN_SIGNIFICANT_OVERLAP_MM2) remaining++;
+    }
+  }
+  return { resolved: remaining === 0, remaining };
+}
+function isHorizontal(a, b) {
+  return Math.abs(a.y - b.y) < Math.abs(a.x - b.x);
+}
+function sharedEdge2(a, b) {
+  const aH = isHorizontal(a.start, a.end);
+  const bH = isHorizontal(b.start, b.end);
+  if (aH !== bH) return false;
+  if (aH) {
+    if (Math.abs(a.start.y - b.start.y) > WALL_PAIR_TOLERANCE_MM) return false;
+    const [a12, a22] = [Math.min(a.start.x, a.end.x), Math.max(a.start.x, a.end.x)];
+    const [b12, b22] = [Math.min(b.start.x, b.end.x), Math.max(b.start.x, b.end.x)];
+    return Math.min(a22, b22) - Math.max(a12, b12) > GRID_MM;
+  }
+  if (Math.abs(a.start.x - b.start.x) > WALL_PAIR_TOLERANCE_MM) return false;
+  const [a1, a2] = [Math.min(a.start.y, a.end.y), Math.max(a.start.y, a.end.y)];
+  const [b1, b2] = [Math.min(b.start.y, b.end.y), Math.max(b.start.y, b.end.y)];
+  return Math.min(a2, b2) - Math.max(a1, b1) > GRID_MM;
+}
+function distanceToSegment(p, a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return Math.hypot(p.x - a.x, p.y - a.y);
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return Math.hypot(p.x - (a.x + t * dx), p.y - (a.y + t * dy));
+}
+function projectOntoSegment(p, a, b) {
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const lenSq = dx * dx + dy * dy;
+  if (lenSq === 0) return { x: a.x, y: a.y };
+  let t = ((p.x - a.x) * dx + (p.y - a.y) * dy) / lenSq;
+  t = Math.max(0, Math.min(1, t));
+  return { x: a.x + t * dx, y: a.y + t * dy };
+}
+function reconstructBuildingFromImage(options) {
+  const { plan, rawVisionPayload, requirements, site, projectId, projectName, source } = options;
+  const conversionJobId = options.conversionJobId ?? `cadjob_${Date.now().toString(36)}`;
+  const geometryRevisionId = `geomrev_${source.artifactId}_${conversionJobId}`;
+  try {
+    const frameWidth = plan.metadata.frameWidth > 0 ? plan.metadata.frameWidth : plan.metadata.imageWidePixels;
+    const frameHeight = plan.metadata.frameHeight > 0 ? plan.metadata.frameHeight : plan.metadata.imageTallPixels;
+    if (!(frameWidth > 0) || !(frameHeight > 0)) {
+      return {
+        ok: false,
+        errorCode: "IMAGE_CAD_DEGENERATE_FRAME",
+        message: "The interpretation did not declare a usable coordinate frame, so image coordinates cannot be mapped to millimetres. No CAD geometry was produced.",
+        detail: { frameWidth, frameHeight }
+      };
+    }
+    const adjustments = [];
+    const unplacedFeatures = [];
+    const rawObj = rawVisionPayload && typeof rawVisionPayload === "object" ? rawVisionPayload : {};
+    const rawRooms = Array.isArray(rawObj.rooms) ? rawObj.rooms : [];
+    const maxVisionLevel = rawRooms.reduce((max, r) => {
+      const lvl = Number(r.floorLevel);
+      return Number.isFinite(lvl) ? Math.max(max, Math.trunc(lvl)) : max;
+    }, 0);
+    const targetFloorCount = Math.max(
+      1,
+      requirements.hard.floorsCount || 1,
+      site.plannedFloorCount || 1,
+      maxVisionLevel + 1
+    );
+    const { entities, notes } = readEntities(plan, rawVisionPayload, targetFloorCount);
+    unplacedFeatures.push(...notes);
+    if (entities.length === 0) {
+      return {
+        ok: false,
+        errorCode: "IMAGE_CAD_NO_ROOMS_READ",
+        message: "The image interpretation contained no spatial entities, so there is nothing to reconstruct. The accepted image was not replaced and no substitute plan was created.",
+        detail: { visionRooms: plan.rooms.length }
+      };
+    }
+    const envelope = {
+      x: snapGrid(site.leftSetback),
+      y: snapGrid(site.frontSetback),
+      width: snapGrid(site.plotWidth - site.leftSetback - site.rightSetback),
+      height: snapGrid(site.plotDepth - site.frontSetback - site.rearSetback)
+    };
+    if (envelope.width < 2e3 || envelope.height < 2e3) {
+      return {
+        ok: false,
+        errorCode: "IMAGE_CAD_BUILDABLE_ENVELOPE_TOO_SMALL",
+        message: `The buildable envelope after setbacks is ${Math.round(envelope.width)}\xD7${Math.round(envelope.height)} mm, too small to host a reconstructed plan. Check plot dimensions and setbacks.`,
+        detail: { envelope, site }
+      };
+    }
+    const contentRects = entities.map((e) => e.frame);
+    const boundaryPoints = plan.boundary.points;
+    const contentBox = boundingBox([
+      ...contentRects,
+      ...boundaryPoints.length >= 3 ? [boundingBox(boundaryPoints.map((p) => ({ x: p.x, y: p.y, width: 1e-4, height: 1e-4 })))] : []
+    ]);
+    const transform = computeFrameTransform(contentBox, envelope);
+    const placedByLevel = /* @__PURE__ */ new Map();
+    for (let level = 0; level < targetFloorCount; level++) {
+      const levelEntities = entities.filter((e) => e.floorLevel === level);
+      if (levelEntities.length === 0) {
+        placedByLevel.set(level, []);
+        continue;
+      }
+      const placed = levelEntities.map((read) => ({ read, rect: applyTransform(read.frame, transform) }));
+      for (const item of placed) {
+        const before = { ...item.rect };
+        item.rect.width = Math.min(item.rect.width, envelope.width);
+        item.rect.height = Math.min(item.rect.height, envelope.height);
+        item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
+        item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        const moved2 = Math.hypot(item.rect.x - before.x, item.rect.y - before.y);
+        const resized = Math.abs(item.rect.width - before.width) + Math.abs(item.rect.height - before.height);
+        if (moved2 > GRID_MM || resized > GRID_MM) {
+          adjustments.push({
+            entityId: item.read.id,
+            entityName: item.read.name,
+            kind: "clamp_to_envelope",
+            description: `"${item.read.name}" extended past the buildable envelope as read from the image and was pulled inside by ${Math.round(moved2)} mm.`,
+            material: moved2 > MATERIAL_SNAP_MM || resized > MATERIAL_SNAP_MM,
+            deltaMm: Math.round(Math.max(moved2, resized))
+          });
+        }
+      }
+      resolveOverlaps(placed, adjustments);
+      for (const item of placed) {
+        const before = { ...item.rect };
+        item.rect.x = snapGrid(item.rect.x);
+        item.rect.y = snapGrid(item.rect.y);
+        item.rect.width = Math.max(GRID_MM, snapGrid(item.rect.width));
+        item.rect.height = Math.max(GRID_MM, snapGrid(item.rect.height));
+        item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
+        item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        const delta = Math.max(
+          Math.abs(item.rect.x - before.x),
+          Math.abs(item.rect.y - before.y),
+          Math.abs(item.rect.width - before.width),
+          Math.abs(item.rect.height - before.height)
+        );
+        if (delta >= GRID_MM) {
+          adjustments.push({
+            entityId: item.read.id,
+            entityName: item.read.name,
+            kind: "snap_to_grid",
+            description: `"${item.read.name}" was snapped to the ${GRID_MM} mm drafting grid (${Math.round(delta)} mm).`,
+            material: delta > MATERIAL_SNAP_MM,
+            deltaMm: Math.round(delta)
+          });
+        }
+      }
+      const settled = resolveOverlaps(placed, adjustments);
+      if (!settled.resolved) {
+        unplacedFeatures.push(
+          `${settled.remaining} pair(s) of spaces on level ${level} still overlap after conversion; the image's own room boundaries could not be separated cleanly. Compare against the reference image and adjust in the editor.`
+        );
+      }
+      placedByLevel.set(level, placed);
+    }
+    const allPlacedRects = [...placedByLevel.values()].flat().map((p) => p.rect);
+    const statedFootprint = boundaryPoints.length >= 3 ? {
+      points: boundaryPoints.map((p) => ({
+        x: snapGrid(p.x * transform.scale + transform.offsetX),
+        y: snapGrid(p.y * transform.scale + transform.offsetY)
+      }))
+    } : null;
+    const extentFootprint = () => {
+      const box = allPlacedRects.length > 0 ? boundingBox(allPlacedRects) : envelope;
+      const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
+      const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
+      const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
+      const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
+      return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
+    };
+    let footprint2;
+    if (!statedFootprint) {
+      footprint2 = extentFootprint();
+      unplacedFeatures.push(
+        "The image interpretation returned no building outline, so the extent of the drawn spaces was used as the footprint. Non-rectangular footprint steps could not be reconstructed."
+      );
+    } else {
+      const outside = allPlacedRects.filter((r) => !rectInsidePolygon2(r, statedFootprint));
+      if (outside.length === 0) {
+        footprint2 = statedFootprint;
+      } else {
+        footprint2 = extentFootprint();
+        unplacedFeatures.push(
+          `The outline read from the image excludes ${outside.length} space(s) the same image also drew, so it could not be used as the building footprint; the extent of the drawn spaces was used instead. The footprint's steps may differ from the drawing \u2014 compare against the reference image.`
+        );
+        adjustments.push({
+          entityId: "footprint",
+          entityName: "Building footprint",
+          kind: "clamp_to_envelope",
+          description: `The interpreted outline (${statedFootprint.points.length} points) did not contain every drawn space, so the footprint was taken from the spaces' own extent.`,
+          material: true
+        });
+      }
+    }
+    const canonicalBuildingId = `bldg_${projectId}`;
+    const base = createBuilding({
+      projectId,
+      name: projectName,
+      site: {
+        plotWidth: site.plotWidth,
+        plotDepth: site.plotDepth,
+        plotShape: PlotShape.Rectangular,
+        orientation: site.orientation,
+        roadFacing: site.roadFacing,
+        setbacks: {
+          front: site.frontSetback,
+          rear: site.rearSetback,
+          left: site.leftSetback,
+          right: site.rightSetback
+        },
+        plannedFloorCount: targetFloorCount
+      },
+      floors: Array.from({ length: targetFloorCount }).map((_, level) => ({
+        buildingId: canonicalBuildingId,
+        level,
+        name: level === 0 ? "Ground Floor" : level === 1 ? "First Floor" : `Floor ${level}`,
+        // Every level inherits the reconstructed outline so upper floors sit on
+        // the same footprint the image drew.
+        boundary: footprint2
+      }))
+    });
+    const entityProvenance = (read) => ({
+      sourceImageArtifactId: source.artifactId,
+      sourceImageHash: source.imageHash,
+      sourceGenerationRevision: source.generationRevision,
+      sourceProjectFingerprint: source.projectFingerprint,
+      conversionJobId,
+      geometryRevisionId,
+      sourceImageRegion: {
+        x: read.frame.x,
+        y: read.frame.y,
+        width: read.frame.width,
+        height: read.frame.height,
+        frameWidth,
+        frameHeight
+      },
+      extractionConfidence: read.confidence,
+      sourceEntityId: read.id
+    });
+    const floors = [];
+    const placedByFloor = /* @__PURE__ */ new Map();
+    for (let level = 0; level < targetFloorCount; level++) {
+      const baseFloor = base.floors[level];
+      const floorId = baseFloor.id;
+      const placed = placedByLevel.get(level) ?? [];
+      if (placed.length === 0) {
+        floors.push(baseFloor);
+        placedByFloor.set(level, []);
+        continue;
+      }
+      const rooms = [];
+      const placedRooms = [];
+      for (const item of placed) {
+        if (item.rect.width < GRID_MM || item.rect.height < GRID_MM) {
+          unplacedFeatures.push(
+            `"${item.read.name}" collapsed to zero size during conversion and was not placed. It is visible in the reference image but absent from the CAD model.`
+          );
+          continue;
+        }
+        const prov = entityProvenance(item.read);
+        const room2 = createRoom({
+          floorId,
+          name: item.read.name,
+          type: item.read.type,
+          x: item.rect.x,
+          y: item.rect.y,
+          width: item.rect.width,
+          height: item.rect.height,
+          ventilationRequired: !OPEN_SPACE_TYPES.has(item.read.type),
+          isFixed: item.read.kind === "stair",
+          tags: [
+            IMAGE_DERIVED_TAG,
+            `extracted:${item.read.id}`,
+            `artifact:${source.artifactId}`,
+            `geomrev:${geometryRevisionId}`,
+            `confidence:${item.read.confidence.toFixed(2)}`,
+            ...item.read.compassZone ? [`compass:${item.read.compassZone}`] : []
+          ]
+        });
+        const traced = { ...room2, imageProvenance: prov };
+        rooms.push(traced);
+        placedRooms.push({ read: item.read, room: traced });
+      }
+      if (rooms.length === 0) {
+        return {
+          ok: false,
+          errorCode: "IMAGE_CAD_GEOMETRY_COLLAPSED",
+          message: `Every space read from the image collapsed during conversion on level ${level}; no editable geometry could be produced. The accepted image was not replaced.`,
+          detail: { level, readEntities: placed.length, adjustments: adjustments.length }
+        };
+      }
+      placedByFloor.set(level, placedRooms);
+      const candidates = [];
+      for (const room2 of rooms) {
+        const open = OPEN_SPACE_TYPES.has(room2.type);
+        const p1 = { x: room2.x, y: room2.y };
+        const p2 = { x: room2.x + room2.width, y: room2.y };
+        const p3 = { x: room2.x + room2.width, y: room2.y + room2.height };
+        const p4 = { x: room2.x, y: room2.y + room2.height };
+        candidates.push(
+          { start: p1, end: p2, roomIds: [room2.id], isExternal: true, openOnly: open },
+          { start: p2, end: p3, roomIds: [room2.id], isExternal: true, openOnly: open },
+          { start: p4, end: p3, roomIds: [room2.id], isExternal: true, openOnly: open },
+          { start: p1, end: p4, roomIds: [room2.id], isExternal: true, openOnly: open }
+        );
+      }
+      const merged = [];
+      const consumed = /* @__PURE__ */ new Set();
+      for (let i = 0; i < candidates.length; i++) {
+        if (consumed.has(i)) continue;
+        const current = candidates[i];
+        for (let j = i + 1; j < candidates.length; j++) {
+          if (consumed.has(j)) continue;
+          const other = candidates[j];
+          if (other.roomIds[0] === current.roomIds[0]) continue;
+          if (sharedEdge2(current, other)) {
+            consumed.add(j);
+            current.isExternal = false;
+            if (!other.openOnly) current.openOnly = false;
+            for (const id of other.roomIds) if (!current.roomIds.includes(id)) current.roomIds.push(id);
+          }
+        }
+        if (current.openOnly && current.isExternal) continue;
+        merged.push(current);
+      }
+      const walls = merged.map(
+        (candidate) => createWall({
+          floorId,
+          startPoint: candidate.start,
+          endPoint: candidate.end,
+          thickness: candidate.isExternal ? EXTERNAL_WALL_THICKNESS : INTERNAL_WALL_THICKNESS,
+          type: candidate.isExternal ? WallType.External : WallType.Internal,
+          roomIds: candidate.roomIds,
+          loadBearing: candidate.isExternal
+        })
+      );
+      const doors = [];
+      const windows = [];
+      const roomByVisionId = new Map(placedRooms.map((p) => [p.read.id, p.room]));
+      const hostWallFor = (point) => {
+        let best = null;
+        let bestDistance = Number.POSITIVE_INFINITY;
+        for (const wall2 of walls) {
+          const d = distanceToSegment(point, wall2.startPoint, wall2.endPoint);
+          if (d < bestDistance) {
+            bestDistance = d;
+            best = wall2;
+          }
+        }
+        return best && bestDistance <= 1500 ? best : null;
+      };
+      if (level === 0) {
+        for (const door2 of plan.doors) {
+          const centre2 = applyTransform(
+            { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight },
+            transform
+          );
+          const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
+          const wall2 = hostWallFor(point);
+          if (!wall2) {
+            unplacedFeatures.push(
+              `Door "${door2.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`
+            );
+            continue;
+          }
+          const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
+          const adjacentRoom = roomByVisionId.get(door2.adjacentRoomId);
+          const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre2.width, centre2.height)) || 900));
+          doors.push({
+            ...createDoor({
+              floorId,
+              wallId: wall2.id,
+              position: hosted,
+              width,
+              height: 2100,
+              type: door2.type === "double" ? DoorType.Double : door2.type === "sliding" ? DoorType.Sliding : door2.type === "open_passage" ? DoorType.OpenPassage : DoorType.Single,
+              swingDirection: door2.swingDirection === "outward" ? SwingDirection.Outward : door2.swingDirection === "left" ? SwingDirection.Left : door2.swingDirection === "right" ? SwingDirection.Right : SwingDirection.Inward,
+              connectsRooms: [
+                adjacentRoom?.id ?? wall2.roomIds[0] ?? "__outside__",
+                wall2.roomIds.find((id) => id !== adjacentRoom?.id) ?? "__outside__"
+              ]
+            }),
+            imageProvenance: {
+              sourceImageArtifactId: source.artifactId,
+              sourceImageHash: source.imageHash,
+              sourceGenerationRevision: source.generationRevision,
+              sourceProjectFingerprint: source.projectFingerprint,
+              conversionJobId,
+              geometryRevisionId,
+              sourceImageRegion: { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight, frameWidth, frameHeight },
+              extractionConfidence: 0.7,
+              sourceEntityId: door2.id
+            }
+          });
+        }
+        for (const win of plan.windows) {
+          const centre2 = applyTransform(
+            { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight },
+            transform
+          );
+          const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
+          const wall2 = hostWallFor(point);
+          if (!wall2) {
+            unplacedFeatures.push(
+              `Window "${win.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed.`
+            );
+            continue;
+          }
+          const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
+          const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
+          const width = Math.max(500, Math.min(4e3, snapGrid(Math.max(centre2.width, centre2.height)) || 1200));
+          windows.push({
+            ...createWindow({
+              floorId,
+              wallId: wall2.id,
+              position: hosted,
+              width,
+              height: 1200,
+              sillHeight: 900,
+              type: WindowType.Sliding,
+              roomId: adjacentRoom?.id ?? wall2.roomIds[0] ?? ""
+            }),
+            imageProvenance: {
+              sourceImageArtifactId: source.artifactId,
+              sourceImageHash: source.imageHash,
+              sourceGenerationRevision: source.generationRevision,
+              sourceProjectFingerprint: source.projectFingerprint,
+              conversionJobId,
+              geometryRevisionId,
+              sourceImageRegion: { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight, frameWidth, frameHeight },
+              extractionConfidence: 0.7,
+              sourceEntityId: win.id
+            }
+          });
+        }
+      }
+      const stairs = [];
+      const stairRooms = placedRooms.filter((p) => p.read.type === RoomType.Staircase);
+      const upperLevelExists = level + 1 < targetFloorCount;
+      for (const stairRoom of stairRooms) {
+        if (!upperLevelExists) continue;
+        const room2 = stairRoom.room;
+        stairs.push(
+          createStair({
+            floorId,
+            type: StairType.Straight,
+            x: room2.x,
+            y: room2.y,
+            width: Math.min(room2.width, room2.height),
+            length: Math.max(room2.width, room2.height),
+            direction: room2.height >= room2.width ? "north" : "east",
+            connectsFloors: [level, level + 1]
+          })
+        );
+      }
+      floors.push({ ...baseFloor, rooms, walls, doors, windows, stairs });
+    }
+    if (targetFloorCount > 1 && !entities.some((e) => e.type === RoomType.Staircase)) {
+      unplacedFeatures.push(
+        "The design is multi-storey but the image interpretation found no staircase, so none was created. Vertical circulation must be added in the editor or the image regenerated showing the stair."
+      );
+    }
+    const provenance = {
+      sourceImageArtifactId: source.artifactId,
+      sourceImageHash: source.imageHash,
+      sourceGenerationRevision: source.generationRevision,
+      sourceProjectFingerprint: source.projectFingerprint,
+      conversionJobId,
+      geometryRevisionId,
+      convertedAt: (/* @__PURE__ */ new Date()).toISOString(),
+      ...source.visionModel ? { visionModel: source.visionModel } : {},
+      interpretationSource: source.interpretationSource,
+      frameWidth,
+      frameHeight,
+      imageWidePixels: source.imageWidePixels,
+      imageTallPixels: source.imageTallPixels,
+      adjustments,
+      unplacedFeatures
+    };
+    const reconstructed = {
+      ...base,
+      id: canonicalBuildingId,
+      projectId,
+      name: projectName,
+      floors,
+      metadata: {
+        ...base.metadata,
+        customData: {
+          ...base.metadata.customData ?? {},
+          // The single authoritative statement of where this geometry came from.
+          imageProvenance: provenance,
+          geometrySource: "IMAGE_RECONSTRUCTION",
+          detectedFootprintShape: typeof rawObj.footprintShape === "string" ? rawObj.footprintShape : "unknown",
+          detectedEntranceSide: typeof rawObj.entranceSide === "string" ? rawObj.entranceSide : String(site.roadFacing),
+          circulationNotes: typeof rawObj.circulationNotes === "string" ? rawObj.circulationNotes : ""
+        }
+      }
+    };
+    const coordinated = StructuralCoordinationEngine.coordinateBuilding(reconstructed);
+    return {
+      ok: true,
+      building: coordinated.building,
+      provenance,
+      adjustments,
+      unplacedFeatures
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      errorCode: "IMAGE_CAD_INTERNAL_ERROR",
+      message: `Image-to-CAD reconstruction threw: ${error instanceof Error ? error.message : String(error)}. No substitute geometry was produced.`,
+      detail: { stack: error instanceof Error ? error.stack : void 0 }
+    };
+  }
+}
+var GRID_MM, MATERIAL_SNAP_MM, EXTERNAL_WALL_THICKNESS, INTERNAL_WALL_THICKNESS, WALL_PAIR_TOLERANCE_MM, MIN_SIGNIFICANT_OVERLAP_MM2, MIN_CARVED_REMAINDER_MM, OPEN_SPACE_TYPES, NESTED_COVERAGE;
+var init_image_to_cad_reconstruction = __esm({
+  "packages/backend/src/services/image-to-cad-reconstruction.ts"() {
+    "use strict";
+    init_dist();
+    init_dist3();
+    init_dist3();
+    GRID_MM = 50;
+    MATERIAL_SNAP_MM = 300;
+    EXTERNAL_WALL_THICKNESS = 230;
+    INTERNAL_WALL_THICKNESS = 115;
+    WALL_PAIR_TOLERANCE_MM = 260;
+    MIN_SIGNIFICANT_OVERLAP_MM2 = 5e4;
+    MIN_CARVED_REMAINDER_MM = 1500;
+    OPEN_SPACE_TYPES = /* @__PURE__ */ new Set([
+      RoomType.Balcony,
+      RoomType.Terrace,
+      RoomType.Garden,
+      RoomType.OTS,
+      RoomType.Porch,
+      RoomType.Parking,
+      RoomType.ServiceShaft
+    ]);
+    NESTED_COVERAGE = 0.85;
+  }
+});
+
+// packages/backend/src/services/cad-fidelity.ts
+function normalize2(rect, box) {
+  return {
+    x: (rect.x - box.x) / box.width,
+    y: (rect.y - box.y) / box.height,
+    width: rect.width / box.width,
+    height: rect.height / box.height
+  };
+}
+function bbox(rects) {
+  const minX = Math.min(...rects.map((r) => r.x));
+  const minY = Math.min(...rects.map((r) => r.y));
+  const maxX = Math.max(...rects.map((r) => r.x + r.width));
+  const maxY = Math.max(...rects.map((r) => r.y + r.height));
+  return { x: minX, y: minY, width: Math.max(1e-6, maxX - minX), height: Math.max(1e-6, maxY - minY) };
+}
+function centre(r) {
+  return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+}
+function clamp100(value) {
+  return Math.max(0, Math.min(100, value));
+}
+function evaluateCadFidelity(input) {
+  const { building, plan, comparedArtifactId } = input;
+  const dimensions = [];
+  const missingMandatory = [];
+  const lowConfidenceEntities = [];
+  const cadRooms = building.floors.flatMap((f) => f.rooms);
+  const imageRects = plan.rooms.map((r) => ({
+    x: r.imageX,
+    y: r.imageY,
+    width: r.imageWidth,
+    height: r.imageHeight
+  }));
+  if (imageRects.length === 0 || cadRooms.length === 0) {
+    return {
+      overallScore: 0,
+      threshold: CAD_FIDELITY_THRESHOLD,
+      passed: false,
+      dimensions: [],
+      missingMandatory: ["No comparable geometry: the image interpretation or the CAD model contained no rooms."],
+      lowConfidenceEntities: [],
+      materialAdjustments: [...input.materialAdjustments ?? []],
+      comparedArtifactId,
+      evaluatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  const imageBox = bbox(imageRects);
+  const cadBox = bbox(cadRooms.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+  const imageAspect = imageBox.width / imageBox.height;
+  const cadAspect = cadBox.width / cadBox.height;
+  const aspectError = Math.abs(imageAspect - cadAspect) / imageAspect;
+  dimensions.push({
+    id: "footprint",
+    label: "Footprint correspondence",
+    score: clamp100(100 - aspectError * 200),
+    weight: 1.5,
+    detail: `Drawn footprint aspect ${imageAspect.toFixed(3)} vs reconstructed ${cadAspect.toFixed(3)} (${(aspectError * 100).toFixed(1)}% difference).`,
+    missing: []
+  });
+  const imageByType = /* @__PURE__ */ new Map();
+  for (const r of plan.rooms) {
+    const key3 = r.type.toLowerCase();
+    imageByType.set(key3, (imageByType.get(key3) ?? 0) + 1);
+  }
+  const cadByType = /* @__PURE__ */ new Map();
+  for (const r of cadRooms) {
+    cadByType.set(r.type, (cadByType.get(r.type) ?? 0) + 1);
+  }
+  const inventoryMissing = [];
+  for (const type of MANDATORY_WHEN_PRESENT) {
+    const drawnCount = (imageByType.get(type) ?? 0) + (type === RoomType.Staircase ? plan.stairs.length : 0) + (type === RoomType.Parking ? plan.parking.length : 0);
+    if (drawnCount === 0) continue;
+    const builtCount = cadByType.get(type) ?? 0;
+    if (builtCount < drawnCount) {
+      const note = `The image showed ${drawnCount} ${type} space(s); the CAD model has ${builtCount}.`;
+      inventoryMissing.push(note);
+      missingMandatory.push(note);
+    }
+  }
+  const tracedCount = cadRooms.filter((r) => r.tags.some((t) => t.startsWith("extracted:"))).length;
+  const inventoryRatio = Math.min(1, tracedCount / plan.rooms.length);
+  dimensions.push({
+    id: "inventory",
+    label: "Room inventory",
+    score: clamp100(inventoryRatio * 100 - inventoryMissing.length * 10),
+    weight: 2,
+    detail: `${tracedCount} of ${plan.rooms.length} spaces read from the image are present in the CAD model as traceable entities.`,
+    missing: inventoryMissing
+  });
+  const cadBySourceId = /* @__PURE__ */ new Map();
+  for (const room2 of cadRooms) {
+    const tag = room2.tags.find((t) => t.startsWith("extracted:"));
+    if (tag) cadBySourceId.set(tag.slice("extracted:".length), room2);
+  }
+  const placementErrors = [];
+  const proportionErrors = [];
+  const placementMissing = [];
+  for (const imgRoom of plan.rooms) {
+    const cad = cadBySourceId.get(imgRoom.id);
+    if (!cad) {
+      placementMissing.push(`"${imgRoom.name}" from the image has no matching CAD room.`);
+      continue;
+    }
+    const imgNorm = normalize2(
+      { x: imgRoom.imageX, y: imgRoom.imageY, width: imgRoom.imageWidth, height: imgRoom.imageHeight },
+      imageBox
+    );
+    const cadNorm = normalize2({ x: cad.x, y: cad.y, width: cad.width, height: cad.height }, cadBox);
+    const ic = centre(imgNorm);
+    const cc = centre(cadNorm);
+    placementErrors.push(Math.hypot(ic.x - cc.x, ic.y - cc.y));
+    const imgRatio = imgNorm.width / Math.max(1e-6, imgNorm.height);
+    const cadRatio = cadNorm.width / Math.max(1e-6, cadNorm.height);
+    proportionErrors.push(Math.abs(imgRatio - cadRatio) / Math.max(imgRatio, cadRatio));
+    if (cad.imageProvenance && cad.imageProvenance.extractionConfidence < 0.5) {
+      lowConfidenceEntities.push(`${cad.name} (read confidence ${(cad.imageProvenance.extractionConfidence * 100).toFixed(0)}%)`);
+    }
+  }
+  const meanPlacement = placementErrors.length ? placementErrors.reduce((a, b) => a + b, 0) / placementErrors.length : 1;
+  dimensions.push({
+    id: "placement",
+    label: "Room placement",
+    // A normalized centre error of 0.25 (a quarter of the plan) scores zero.
+    score: clamp100(100 - meanPlacement * 400),
+    weight: 2.5,
+    detail: `Mean normalized centre offset ${meanPlacement.toFixed(3)} across ${placementErrors.length} matched room(s).`,
+    missing: placementMissing
+  });
+  const meanProportion = proportionErrors.length ? proportionErrors.reduce((a, b) => a + b, 0) / proportionErrors.length : 1;
+  dimensions.push({
+    id: "proportions",
+    label: "Room proportions",
+    score: clamp100(100 - meanProportion * 150),
+    weight: 1.5,
+    detail: `Mean width:depth ratio deviation ${(meanProportion * 100).toFixed(1)}% across matched rooms.`,
+    missing: []
+  });
+  const imageAdjacency = /* @__PURE__ */ new Set();
+  const pairKey = (a, b) => [a, b].sort().join("::");
+  const touching = (a, b, tol) => a.x < b.x + b.width + tol && b.x < a.x + a.width + tol && a.y < b.y + b.height + tol && b.y < a.y + a.height + tol;
+  for (let i = 0; i < plan.rooms.length; i++) {
+    for (let j = i + 1; j < plan.rooms.length; j++) {
+      const a = plan.rooms[i];
+      const b = plan.rooms[j];
+      const an = normalize2({ x: a.imageX, y: a.imageY, width: a.imageWidth, height: a.imageHeight }, imageBox);
+      const bn = normalize2({ x: b.imageX, y: b.imageY, width: b.imageWidth, height: b.imageHeight }, imageBox);
+      if (touching(an, bn, 0.02)) imageAdjacency.add(pairKey(a.id, b.id));
+    }
+  }
+  let adjacencyPreserved = 0;
+  const adjacencyLost = [];
+  for (const key3 of imageAdjacency) {
+    const [idA, idB] = key3.split("::");
+    const ra = cadBySourceId.get(idA);
+    const rb = cadBySourceId.get(idB);
+    if (!ra || !rb) continue;
+    const an = normalize2({ x: ra.x, y: ra.y, width: ra.width, height: ra.height }, cadBox);
+    const bn = normalize2({ x: rb.x, y: rb.y, width: rb.width, height: rb.height }, cadBox);
+    if (touching(an, bn, 0.02)) adjacencyPreserved++;
+    else adjacencyLost.push(`"${ra.name}" and "${rb.name}" adjoin in the image but not in the CAD model.`);
+  }
+  dimensions.push({
+    id: "adjacency",
+    label: "Adjacency graph",
+    score: imageAdjacency.size === 0 ? 100 : clamp100(adjacencyPreserved / imageAdjacency.size * 100),
+    weight: 2,
+    detail: `${adjacencyPreserved} of ${imageAdjacency.size} adjacency relationships read from the image are preserved.`,
+    missing: adjacencyLost
+  });
+  const walls = building.floors.flatMap((f) => f.walls);
+  const enclosedRooms = cadRooms.filter((r) => r.type !== RoomType.Parking && r.type !== RoomType.OTS);
+  const roomsWithWalls = enclosedRooms.filter((r) => walls.some((w) => w.roomIds.includes(r.id))).length;
+  dimensions.push({
+    id: "walls",
+    label: "Wall alignment",
+    score: enclosedRooms.length === 0 ? 0 : clamp100(roomsWithWalls / enclosedRooms.length * 100),
+    weight: 1.5,
+    detail: `${roomsWithWalls} of ${enclosedRooms.length} enclosed rooms are bounded by reconstructed walls (${walls.length} walls total).`,
+    missing: roomsWithWalls < enclosedRooms.length ? [`${enclosedRooms.length - roomsWithWalls} room(s) have no bounding wall.`] : []
+  });
+  const cadDoors = building.floors.flatMap((f) => f.doors);
+  const cadWindows = building.floors.flatMap((f) => f.windows);
+  const drawnOpenings = plan.doors.length + plan.windows.length;
+  const builtOpenings = cadDoors.length + cadWindows.length;
+  const openingsMissing = [];
+  if (plan.doors.length > cadDoors.length) {
+    openingsMissing.push(`The image showed ${plan.doors.length} door(s); ${cadDoors.length} were placed on walls.`);
+  }
+  if (plan.windows.length > cadWindows.length) {
+    openingsMissing.push(`The image showed ${plan.windows.length} window(s); ${cadWindows.length} were placed on walls.`);
+  }
+  const hostedCorrectly = [...cadDoors, ...cadWindows].filter(
+    (o) => walls.some((w) => w.id === o.wallId)
+  ).length;
+  dimensions.push({
+    id: "openings",
+    label: "Door and window positions",
+    score: drawnOpenings === 0 ? 100 : clamp100(Math.min(builtOpenings, drawnOpenings) / drawnOpenings * 70 + (builtOpenings === 0 ? 0 : hostedCorrectly / builtOpenings * 30)),
+    weight: 1.5,
+    detail: `${builtOpenings} opening(s) in CAD against ${drawnOpenings} read from the image; ${hostedCorrectly} are hosted on a real wall.`,
+    missing: openingsMissing
+  });
+  const drawnStairs = plan.stairs.length + plan.rooms.filter((r) => /stair/i.test(`${r.type} ${r.name}`)).length;
+  const cadStairRooms = cadRooms.filter((r) => r.type === RoomType.Staircase).length;
+  const cadStairFlights = building.floors.flatMap((f) => f.stairs).length;
+  const stairMissing = [];
+  if (drawnStairs > 0 && cadStairRooms === 0) {
+    stairMissing.push("The image showed a staircase but the CAD model has no staircase space.");
+    missingMandatory.push(stairMissing[0]);
+  }
+  dimensions.push({
+    id: "staircase",
+    label: "Staircase position",
+    score: drawnStairs === 0 ? 100 : clamp100(cadStairRooms > 0 ? cadStairFlights > 0 ? 100 : 75 : 0),
+    weight: 1,
+    detail: drawnStairs === 0 ? "The image showed no staircase; none was expected." : `${cadStairRooms} staircase space(s) and ${cadStairFlights} flight(s) reconstructed from ${drawnStairs} read in the image.`,
+    missing: stairMissing
+  });
+  const imageLevels = new Set(
+    plan.rooms.map(() => 0)
+  );
+  const cadLevels = building.floors.filter((f) => f.rooms.length > 0).length;
+  dimensions.push({
+    id: "floors",
+    label: "Floor separation",
+    score: cadLevels === 0 ? 0 : 100,
+    weight: 1,
+    detail: `${cadLevels} of ${building.floors.length} floor(s) carry reconstructed rooms.`,
+    missing: cadLevels < building.floors.length ? [`${building.floors.length - cadLevels} floor(s) have no rooms; the image may not have shown every level.`] : []
+  });
+  const drawnParking = plan.parking.length;
+  const cadParking = cadRooms.filter((r) => r.type === RoomType.Parking).length;
+  const entranceMissing = [];
+  if (drawnParking > 0 && cadParking === 0) {
+    entranceMissing.push(`The image showed ${drawnParking} parking bay(s); none is present in the CAD model.`);
+    missingMandatory.push(entranceMissing[0]);
+  }
+  const hasEntryDoor = cadDoors.some((d) => d.connectsRooms.includes("__outside__")) || cadDoors.length > 0;
+  dimensions.push({
+    id: "entrance_parking",
+    label: "Entrance and parking arrangement",
+    score: clamp100(
+      (drawnParking === 0 ? 50 : cadParking > 0 ? 50 : 0) + (hasEntryDoor ? 50 : 0)
+    ),
+    weight: 1,
+    detail: `${cadParking} parking space(s) against ${drawnParking} drawn; entry door ${hasEntryDoor ? "present" : "absent"}.`,
+    missing: entranceMissing
+  });
+  const totalWeight = dimensions.reduce((sum2, d) => sum2 + d.weight, 0);
+  const weighted = dimensions.reduce((sum2, d) => sum2 + d.score * d.weight, 0) / totalWeight;
+  const overallScore = Math.round(weighted);
+  const passed = overallScore >= CAD_FIDELITY_THRESHOLD && missingMandatory.length === 0;
+  return {
+    overallScore,
+    threshold: CAD_FIDELITY_THRESHOLD,
+    passed,
+    dimensions,
+    missingMandatory,
+    lowConfidenceEntities,
+    materialAdjustments: [...input.materialAdjustments ?? []],
+    comparedArtifactId,
+    evaluatedAt: (/* @__PURE__ */ new Date()).toISOString()
+  };
+}
+var CAD_FIDELITY_THRESHOLD, MANDATORY_WHEN_PRESENT;
+var init_cad_fidelity = __esm({
+  "packages/backend/src/services/cad-fidelity.ts"() {
+    "use strict";
+    init_dist();
+    CAD_FIDELITY_THRESHOLD = 70;
+    MANDATORY_WHEN_PRESENT = [
+      RoomType.Living,
+      RoomType.Kitchen,
+      RoomType.Bedroom,
+      RoomType.Bathroom,
+      RoomType.Staircase,
+      RoomType.Parking
+    ];
+  }
+});
+
+// packages/backend/src/services/reconstruction-acceptance.ts
+function assessReconstruction(building, plan, requirements) {
+  const integrityIssues = [];
+  const programmeIssues = [];
+  const sizeAdvisories = [];
+  const allRooms = building.floors.flatMap((f) => f.rooms);
+  for (const floor of building.floors) {
+    const hasBoundary = floor.boundary && floor.boundary.points.length >= 3;
+    for (const room2 of floor.rooms) {
+      if (!Number.isFinite(room2.x) || !Number.isFinite(room2.y) || !Number.isFinite(room2.width) || !Number.isFinite(room2.height) || room2.width <= 0 || room2.height <= 0 || room2.area <= 0) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_INVALID_DIMENSIONS",
+          severity: "error",
+          message: `Room "${room2.name}" has invalid dimensions after conversion and cannot be edited.`
+        });
+        continue;
+      }
+      if (hasBoundary && !containsPolygon(floor.boundary, room2.boundary)) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_ROOM_OUT_OF_BOUNDS",
+          severity: "error",
+          message: `Room "${room2.name}" falls outside the reconstructed floor outline on ${floor.name}.`
+        });
+      }
+      const significant = detectRoomCollisions(room2, [...floor.rooms]).filter((c) => c.overlapArea > 5e4);
+      if (significant.length > 0) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_ROOM_OVERLAP",
+          severity: "error",
+          message: `Room "${room2.name}" overlaps another room on ${floor.name} after conversion.`
+        });
+      }
+      if (!SIZE_EXEMPT_TYPES.has(room2.type)) {
+        const minArea = MINIMUM_ROOM_AREAS[room2.type];
+        if (minArea !== void 0 && room2.area < minArea) {
+          sizeAdvisories.push({
+            code: "RECONSTRUCTION_ROOM_BELOW_RECOMMENDED_AREA",
+            severity: "warning",
+            message: `Room "${room2.name}" (${room2.type}) is ${(room2.area / 1e6).toFixed(1)} m\xB2, below the project's recommended ${(minArea / 1e6).toFixed(1)} m\xB2 \u2014 this is how the accepted image drew it. Resize it in the editor or regenerate the image. PROFESSIONAL REVIEW REQUIRED.`
+          });
+        }
+        const minDim = MINIMUM_DIMENSIONS[room2.type];
+        if (minDim !== void 0 && Math.min(room2.width, room2.height) < minDim) {
+          sizeAdvisories.push({
+            code: "RECONSTRUCTION_ROOM_BELOW_RECOMMENDED_DIMENSION",
+            severity: "warning",
+            message: `Room "${room2.name}" is ${Math.round(Math.min(room2.width, room2.height))} mm on its short side, below the recommended ${minDim} mm \u2014 as drawn in the accepted image.`
+          });
+        }
+      }
+    }
+    for (const door2 of floor.doors) {
+      if (!floor.walls.some((w) => w.id === door2.wallId)) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_ORPHANED_DOOR",
+          severity: "error",
+          message: `A door on ${floor.name} references wall ${door2.wallId}, which does not exist.`
+        });
+      }
+    }
+    for (const win of floor.windows) {
+      if (!floor.walls.some((w) => w.id === win.wallId)) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_ORPHANED_WINDOW",
+          severity: "error",
+          message: `A window on ${floor.name} references wall ${win.wallId}, which does not exist.`
+        });
+      }
+    }
+  }
+  const habitable = allRooms.filter((r) => !SIZE_EXEMPT_TYPES.has(r.type));
+  const hasLivingSpace = allRooms.some(
+    (r) => r.type === RoomType.Living || r.type === RoomType.Drawing || r.type === RoomType.FamilyLiving || r.type === RoomType.Dining
+  );
+  const hasServiceSpace = allRooms.some((r) => r.type === RoomType.Kitchen || r.type === RoomType.Bathroom);
+  if (habitable.length < 3 || !hasLivingSpace || !hasServiceSpace) {
+    integrityIssues.push({
+      code: "RECONSTRUCTION_NOT_A_FLOOR_PLAN",
+      severity: "error",
+      message: `The image interpretation yielded ${habitable.length} habitable space(s)${hasLivingSpace ? "" : ", no living/dining space"}${hasServiceSpace ? "" : ", no kitchen or bathroom"}. That is not a residential floor plan, so no editable CAD model was produced and nothing was substituted. Regenerate the master image.`
+    });
+  }
+  const builtCounts = /* @__PURE__ */ new Map();
+  for (const room2 of allRooms) builtCounts.set(room2.type, (builtCounts.get(room2.type) ?? 0) + 1);
+  const imageCounts = /* @__PURE__ */ new Map();
+  for (const room2 of plan.rooms) {
+    const type = extractedRoomType(room2.type || room2.name);
+    imageCounts.set(type, (imageCounts.get(type) ?? 0) + 1);
+    if (type === "living" && /dining/i.test(`${room2.type} ${room2.name}`)) {
+      imageCounts.set("dining", (imageCounts.get("dining") ?? 0) + 1);
+    }
+  }
+  if (plan.parking.length > 0) imageCounts.set("parking", (imageCounts.get("parking") ?? 0) + plan.parking.length);
+  if (plan.stairs.length > 0) imageCounts.set("staircase", (imageCounts.get("staircase") ?? 0) + plan.stairs.length);
+  const siteParkingZones = (building.site?.siteZones ?? []).filter(
+    (z) => String(z.kind ?? z.name ?? "").toLowerCase().includes("parking")
+  ).length;
+  const hard = requirements.hard;
+  const required = [
+    ["bedroom", hard.bedroomCount],
+    ["bathroom", hard.bathroomCount],
+    ["living", hard.livingRoomRequired ? 1 : 0],
+    ["kitchen", hard.kitchenRequired ? 1 : 0],
+    ["dining", hard.diningRoomRequired ? 1 : 0],
+    ["parking", hard.parkingSpacesCount]
+  ];
+  for (const [type, count] of required) {
+    if (count <= 0) continue;
+    let present = Math.max(builtCounts.get(type) ?? 0, imageCounts.get(type) ?? 0);
+    if (type === "parking") present = Math.max(present, siteParkingZones);
+    if (present < count) {
+      programmeIssues.push({
+        code: "RECONSTRUCTION_IMAGE_MISSING_REQUESTED_SPACE",
+        severity: "warning",
+        message: `The brief asks for ${count} ${type} space(s) but the accepted image contains ${present}. Nothing was invented to make up the difference: add the missing space in the editor, or regenerate the image showing it.`
+      });
+    }
+  }
+  const accepted = integrityIssues.length === 0;
+  return {
+    accepted,
+    integrityIssues,
+    programmeIssues,
+    sizeAdvisories,
+    geometryHealthy: integrityIssues.length === 0
+  };
+}
+var SIZE_EXEMPT_TYPES;
+var init_reconstruction_acceptance = __esm({
+  "packages/backend/src/services/reconstruction-acceptance.ts"() {
+    "use strict";
+    init_dist();
+    init_dist3();
+    SIZE_EXEMPT_TYPES = /* @__PURE__ */ new Set([
+      RoomType.Balcony,
+      RoomType.Terrace,
+      RoomType.Garden,
+      RoomType.OTS,
+      RoomType.ServiceShaft,
+      RoomType.Porch,
+      RoomType.Parking,
+      RoomType.Corridor,
+      RoomType.Staircase,
+      RoomType.Foyer
+    ]);
+  }
+});
+
+// packages/backend/src/services/extraction-pipeline.ts
 function siteContext(requirements) {
   const hard = requirements.hard;
   return {
@@ -61037,13 +65128,27 @@ function siteContext(requirements) {
     rightSetback: requirements.setbacksMm?.right ?? 0
   };
 }
+function reconstructFromAcceptedImage(plan, rawPayload, requirements, projectId, projectName, source) {
+  return reconstructBuildingFromImage({
+    plan,
+    rawVisionPayload: rawPayload,
+    requirements,
+    site: siteContext(requirements),
+    projectId,
+    projectName,
+    source
+  });
+}
 function runExtractionPipeline(input) {
   const diagnostics = [];
   const planId = `extract_${input.projectId}_${input.imageWidePixels}x${input.imageTallPixels}`;
   const site = siteContext(input.requirements);
+  const frame = input.coordinateFrame ?? { width: input.imageWidePixels, height: input.imageTallPixels };
   const metadata = createExtractionMetadata({
     imageWidePixels: input.imageWidePixels,
     imageTallPixels: input.imageTallPixels,
+    frameWidth: frame.width,
+    frameHeight: frame.height,
     plotWidth: site.plotWidth,
     plotDepth: site.plotDepth,
     orientation: site.orientation,
@@ -61055,7 +65160,6 @@ function runExtractionPipeline(input) {
     const parsed2 = parseExtractionPayload(input.payload, metadata, planId);
     diagnostics.push(...parsed2.diagnostics);
     if (!parsed2.plan) return rejected(planId, null, diagnostics, input);
-    const frame = input.coordinateFrame ?? { width: input.imageWidePixels, height: input.imageTallPixels };
     const mapped = extractedPlanToApartmentStructure(parsed2.plan, { plotWidth: site.plotWidth, plotDepth: site.plotDepth }, frame);
     diagnostics.push(...mapped.diagnostics);
     if (!mapped.structure) return rejected(planId, parsed2.plan, diagnostics, input);
@@ -61100,6 +65204,93 @@ function runExtractionPipeline(input) {
     return rejected(planId, parsed.plan, diagnostics, input);
   }
   const plan = normalized.normalized;
+  if (input.interpretationSource === "provider" && input.imageSource) {
+    const reconstruction = reconstructFromAcceptedImage(
+      plan,
+      input.payload,
+      input.requirements,
+      input.projectId,
+      input.projectName,
+      input.imageSource
+    );
+    if (!reconstruction.ok) {
+      diagnostics.push({
+        code: reconstruction.errorCode,
+        severity: "error",
+        message: reconstruction.message
+      });
+      return {
+        ...rejected(planId, plan, diagnostics, input),
+        conversionError: {
+          code: reconstruction.errorCode,
+          message: reconstruction.message,
+          detail: reconstruction.detail
+        }
+      };
+    }
+    const reconstructed = reconstruction.building;
+    for (const adjustment of reconstruction.adjustments) {
+      diagnostics.push({
+        code: adjustment.material ? "IMAGE_CAD_MATERIAL_ADJUSTMENT" : "IMAGE_CAD_ADJUSTMENT",
+        severity: adjustment.material ? "warning" : "info",
+        message: adjustment.description
+      });
+    }
+    for (const feature of reconstruction.unplacedFeatures) {
+      diagnostics.push({
+        code: "IMAGE_CAD_FEATURE_NOT_PLACED",
+        severity: "warning",
+        message: feature
+      });
+    }
+    const fidelity = evaluateCadFidelity({
+      building: reconstructed,
+      plan,
+      comparedArtifactId: input.imageSource.artifactId,
+      materialAdjustments: reconstruction.adjustments.filter((a) => a.material).map((a) => a.description),
+      unplacedFeatures: reconstruction.unplacedFeatures
+    });
+    diagnostics.push({
+      code: "CAD_FIDELITY_EVALUATED",
+      severity: fidelity.passed ? "success" : "error",
+      message: `CAD fidelity ${fidelity.overallScore}/100 (threshold ${fidelity.threshold}) against image ${fidelity.comparedArtifactId}. ${fidelity.dimensions.map((d) => `${d.label} ${d.score}`).join(" \xB7 ")}`
+    });
+    for (const missing of fidelity.missingMandatory) {
+      diagnostics.push({ code: "CAD_FIDELITY_MISSING_FEATURE", severity: "error", message: missing });
+    }
+    const assessment = assessReconstruction(reconstructed, plan, input.requirements);
+    diagnostics.push(...assessment.integrityIssues, ...assessment.programmeIssues, ...assessment.sizeAdvisories);
+    const reconstructionValidation = {
+      isValid: assessment.accepted,
+      recommendedForEditing: assessment.accepted,
+      geometryHealthy: assessment.geometryHealthy,
+      overallScore: fidelity.overallScore,
+      verificationIssues: [...assessment.integrityIssues, ...assessment.programmeIssues]
+    };
+    const accepted = fidelity.passed && assessment.accepted;
+    const failureReason = !fidelity.passed ? {
+      code: "CAD_FIDELITY_BELOW_THRESHOLD",
+      message: `The reconstruction scored ${fidelity.overallScore}/100 against the accepted image (threshold ${fidelity.threshold})${fidelity.missingMandatory.length ? ` and ${fidelity.missingMandatory.length} mandatory feature(s) are unaccounted for` : ""}. No substitute plan was created.`,
+      detail: { fidelity }
+    } : assessment.integrityIssues.length > 0 ? {
+      code: "IMAGE_CAD_GEOMETRY_INVALID",
+      message: `The geometry reconstructed from the accepted image is not a usable editable plan: ${assessment.integrityIssues.slice(0, 4).map((i) => i.message).join(" ")} No substitute plan was created.`,
+      detail: { issues: assessment.integrityIssues.map((i) => i.message) }
+    } : null;
+    return {
+      status: accepted ? "ACCEPTED" : "REJECTED",
+      planId,
+      extractedPlan: plan,
+      building: accepted ? reconstructed : null,
+      validation: reconstructionValidation,
+      diagnostics,
+      interpretationSource: input.interpretationSource,
+      confidence: input.confidence,
+      geometrySource: "IMAGE_RECONSTRUCTION",
+      cadFidelity: fidelity,
+      ...failureReason ? { conversionError: failureReason } : {}
+    };
+  }
   const conversion = extractPlanToBuilding(plan, site, input.projectId, input.projectName);
   diagnostics.push(...conversion.diagnostics);
   if (!conversion.building) {
@@ -61110,17 +65301,19 @@ function runExtractionPipeline(input) {
     plotDepth: site.plotDepth
   });
   diagnostics.push(...withOpenings.diagnostics);
-  const validation = validateExtractedPlan(withOpenings.building, plan, input.requirements);
+  const candidateBuilding = withOpenings.building;
+  const validation = validateExtractedPlan(candidateBuilding, plan, input.requirements);
   diagnostics.push(...validation.verificationIssues);
   return {
     status: validation.isValid ? "ACCEPTED" : "REJECTED",
     planId,
     extractedPlan: plan,
-    building: validation.isValid ? withOpenings.building : null,
+    building: validation.isValid ? candidateBuilding : null,
     validation,
     diagnostics,
     interpretationSource: input.interpretationSource,
-    confidence: input.confidence
+    confidence: input.confidence,
+    geometrySource: "EXTRACTED_DIRECT"
   };
 }
 function rejected(planId, extractedPlan, diagnostics, input) {
@@ -61136,14 +65329,17 @@ function rejected(planId, extractedPlan, diagnostics, input) {
   };
 }
 var init_extraction_pipeline = __esm({
-  "src/services/extraction-pipeline.ts"() {
+  "packages/backend/src/services/extraction-pipeline.ts"() {
     "use strict";
     init_dist3();
     init_apartment_structure();
+    init_image_to_cad_reconstruction();
+    init_cad_fidelity();
+    init_reconstruction_acceptance();
   }
 });
 
-// src/services/local-stub-plan-interpreter.ts
+// packages/backend/src/services/local-stub-plan-interpreter.ts
 function schedule(requirements, program) {
   const cells = [];
   if (program && program.items.length > 0) {
@@ -61244,7 +65440,7 @@ function synthesizeInterpretation(requirements, program) {
 }
 var IMAGE_WIDE, IMAGE_TALL, MARGIN, GUTTER;
 var init_local_stub_plan_interpreter = __esm({
-  "src/services/local-stub-plan-interpreter.ts"() {
+  "packages/backend/src/services/local-stub-plan-interpreter.ts"() {
     "use strict";
     IMAGE_WIDE = 1024;
     IMAGE_TALL = 1024;
@@ -61253,7 +65449,7 @@ var init_local_stub_plan_interpreter = __esm({
   }
 });
 
-// src/services/deterministic-fallback.ts
+// packages/backend/src/services/deterministic-fallback.ts
 function buildDeterministicFallbackPlan(input) {
   const structure = schematicToApartmentStructure(input.schematic);
   const expectation = apartmentExpectationFromManifest(input.manifest);
@@ -61322,7 +65518,7 @@ function buildDeterministicFallbackImage(input) {
 }
 var FALLBACK_DETERMINISTIC_PROVIDER, FALLBACK_DETERMINISTIC_MODEL, FALLBACK_DETERMINISTIC_PROMPT_VERSION, FALLBACK_USER_MESSAGE;
 var init_deterministic_fallback = __esm({
-  "src/services/deterministic-fallback.ts"() {
+  "packages/backend/src/services/deterministic-fallback.ts"() {
     "use strict";
     init_dist5();
     init_dist3();
@@ -61335,7 +65531,7 @@ var init_deterministic_fallback = __esm({
   }
 });
 
-// src/services/generation-orchestrator.ts
+// packages/backend/src/services/generation-orchestrator.ts
 var generation_orchestrator_exports = {};
 __export(generation_orchestrator_exports, {
   CONCEPT_REFERENCE_DIRS: () => CONCEPT_REFERENCE_DIRS,
@@ -61482,7 +65678,7 @@ async function loadApartmentReferenceImages(optionsOrSchematic, maybeFlatsPerFlo
         const id = import_node_path.default.basename(file, ".png");
         let hash = null;
         try {
-          hash = import_node_crypto4.default.createHash("sha256").update(import_node_fs.default.readFileSync(import_node_path.default.join(foundDir, file))).digest("hex");
+          hash = import_node_crypto5.default.createHash("sha256").update(import_node_fs.default.readFileSync(import_node_path.default.join(foundDir, file))).digest("hex");
         } catch {
           hash = null;
         }
@@ -61564,6 +65760,30 @@ async function evaluateIfHardValid(gemini, hardValid, options) {
     };
   }
 }
+function imageSourceIdentityFor(artifact, spec, interpretationSource, visionModel) {
+  const imageHash = import_node_crypto5.default.createHash("sha256").update(Buffer.from(artifact.imageBase64, "base64")).digest("hex");
+  const projectFingerprint = import_node_crypto5.default.createHash("sha256").update(
+    JSON.stringify({
+      plotWidthMm: spec.hard.plotWidthMm,
+      plotDepthMm: spec.hard.plotDepthMm,
+      roadFacing: spec.hard.roadFacing,
+      floorsCount: spec.hard.floorsCount,
+      bedroomCount: spec.hard.bedroomCount,
+      bathroomCount: spec.hard.bathroomCount,
+      setbacks: spec.setbacksMm ?? null
+    })
+  ).digest("hex").slice(0, 16);
+  return {
+    artifactId: artifact.generationId,
+    imageHash,
+    generationRevision: artifact.promptVersion ?? 1,
+    projectFingerprint,
+    ...visionModel ? { visionModel } : {},
+    interpretationSource,
+    imageWidePixels: artifact.width,
+    imageTallPixels: artifact.height
+  };
+}
 function resolveDirection(dir) {
   const norm = String(dir).toLowerCase();
   if (norm === "south") return Direction.South;
@@ -61571,11 +65791,11 @@ function resolveDirection(dir) {
   if (norm === "west") return Direction.West;
   return Direction.North;
 }
-var import_node_crypto4, import_node_fs, import_node_path, FLUX_SCHEMATIC_RENDER_MODE, FLUX_MAX_INPUT_IMAGES, CONCEPT_REFERENCE_DIRS, DEFAULT_MAX_VISUAL_ATTEMPTS, VISUAL_RETRY_SEED_OFFSET, GenerationOrchestrator;
+var import_node_crypto5, import_node_fs, import_node_path, FLUX_SCHEMATIC_RENDER_MODE, FLUX_MAX_INPUT_IMAGES, CONCEPT_REFERENCE_DIRS, DEFAULT_MAX_VISUAL_ATTEMPTS, VISUAL_RETRY_SEED_OFFSET, GenerationOrchestrator;
 var init_generation_orchestrator = __esm({
-  "src/services/generation-orchestrator.ts"() {
+  "packages/backend/src/services/generation-orchestrator.ts"() {
     "use strict";
-    import_node_crypto4 = __toESM(require("node:crypto"), 1);
+    import_node_crypto5 = __toESM(require("node:crypto"), 1);
     import_node_fs = __toESM(require("node:fs"), 1);
     import_node_path = __toESM(require("node:path"), 1);
     init_dist5();
@@ -61682,7 +65902,7 @@ var init_generation_orchestrator = __esm({
         }
         let apartmentSchematic;
         let apartmentRulesProfile;
-        const candidateTargetCount = isApartment ? Math.min(Math.max(1, input.candidateCount ?? 1), APARTMENT_CONCEPT_STRATEGIES.length) : Math.min(Math.max(1, input.candidateCount ?? 1), 3);
+        const candidateTargetCount = isApartment ? Math.min(Math.max(1, input.candidateCount ?? 1), APARTMENT_CONCEPT_STRATEGIES.length) : 1;
         const conceptMode = isApartment && candidateTargetCount > 1;
         let conceptSchematics = [];
         if (isApartment && input.apartmentConfig) {
@@ -61870,6 +66090,7 @@ var init_generation_orchestrator = __esm({
               strategy: strategy.id,
               northAngleDeg
             });
+            const floorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
             const building = adaptSchematicToBuilding(schematic, {
               projectId,
               projectName,
@@ -61882,7 +66103,8 @@ var init_generation_orchestrator = __esm({
                 rearSetback: spec.setbacksMm?.rear,
                 leftSetback: spec.setbacksMm?.left,
                 rightSetback: spec.setbacksMm?.right
-              }
+              },
+              plannedFloorCount: floorCount
             });
             let archlangResult = null;
             const shouldCompileArchLang = Boolean(input.enableArchLang ?? this.deps.enableArchLang ?? false);
@@ -61942,22 +66164,88 @@ var init_generation_orchestrator = __esm({
               referenceIds: [],
               distinctReferencesAvailable: null
             });
+            const schematicValid = schematic.layoutFits !== false && schematic.spatialChecks.every((c) => c.status !== "FAIL");
+            const manifestCheck = apartmentManifest ? validateSchematicMatchesManifest(schematic, apartmentManifest) : { matches: true, discrepancies: [], feasibilityFail: false };
+            const expectation = apartmentManifest ? {
+              flats: apartmentManifest.units.exactCount,
+              units: apartmentManifest.units.units.map((u) => ({
+                label: u.label,
+                unitType: u.type,
+                bedrooms: u.bedrooms,
+                bathrooms: u.bathrooms,
+                livingRooms: u.livingRooms,
+                diningRooms: u.diningRooms,
+                kitchens: u.kitchens,
+                utilities: u.utilities,
+                balconies: u.balconies
+              })),
+              lifts: apartmentManifest.commonCore.lifts,
+              stairs: apartmentManifest.commonCore.stairs,
+              commonLobby: apartmentManifest.commonCore.commonLobby
+            } : {
+              flats: schematic.units.length,
+              units: schematic.units.map((u) => ({
+                label: u.flatLabel,
+                unitType: u.unitType,
+                bedrooms: u.rooms.filter((r) => r.type === "master_bedroom" || r.type === "bedroom").length,
+                bathrooms: u.rooms.filter((r) => r.type.includes("toilet")).length,
+                livingRooms: 1,
+                diningRooms: 1,
+                kitchens: 1,
+                utilities: 1,
+                balconies: 1
+              })),
+              lifts: schematic.core.lifts.length,
+              stairs: schematic.core.stairs.length,
+              commonLobby: true
+            };
+            const canonicalValidation = validateCanonicalApartmentBuilding(building, expectation);
+            const isCandidateValid = schematicValid && manifestCheck.matches && canonicalValidation.isValid;
             const candidateStages = {
               imageGeneration: "SKIPPED",
               imageArtifact: "AVAILABLE",
               visualPreflight: "SKIPPED",
               imageInterpretation: "SKIPPED",
               imageTo2D: "SUCCESS",
-              validation: "SUCCESS",
+              validation: isCandidateValid ? "SUCCESS" : "FAILED",
               geminiEvaluation: "SKIPPED"
             };
+            const candidateDiagnostics = [
+              {
+                code: "DETERMINISTIC_CAD",
+                severity: "info",
+                message: `Generated instantly using deterministic stepped CAD engine (${strategy.label}). Zero external image API calls.`
+              },
+              ...floorCount > 1 ? [{
+                code: "MULTI_FLOOR_NOT_IMPLEMENTED",
+                severity: "warning",
+                message: `Multi-floor apartment generation is not yet supported; requested ${floorCount} floors, but only a single typical floor plate was produced (level 0). Multi-floor stacking and vertical service riser continuity is scheduled for Phase 3.`
+              }] : [],
+              ...archlangResult?.status === "ACCEPTED" && archlangResult.parityReport?.passed ? [{
+                code: "ARCHLANG_ACCEPTED",
+                severity: "info",
+                message: `ArchLang architectural compilation accepted with full geometry parity (Hash: ${archlangResult.sourceHash?.slice(0, 8)}).`
+              }] : [{
+                code: "ARCHLANG_FALLBACK",
+                severity: "warning",
+                message: `ArchLang compilation status: ${archlangResult?.status ?? "UNAVAILABLE"}. Fallback to deterministic structural schematic active.`
+              }]
+            ];
+            const verificationIssues = [
+              ...manifestCheck.discrepancies.map((d) => ({
+                code: "MANIFEST_MISMATCH",
+                severity: "error",
+                message: d
+              })),
+              ...canonicalValidation.verificationIssues
+            ];
             candidates2.push({
               id: candidateId,
               seed: slotSeed,
-              status: "ACCEPTED",
+              status: isCandidateValid ? "ACCEPTED" : "REJECTED",
               source: "DETERMINISTIC_CAD",
               visualSource: "DETERMINISTIC_SCHEMATIC",
-              rejectionStage: null,
+              rejectionStage: isCandidateValid ? null : "HARD_VALIDATION",
               evaluationStatus: "NOT_CONFIGURED",
               stages: candidateStages,
               building,
@@ -61965,30 +66253,15 @@ var init_generation_orchestrator = __esm({
               artifact,
               vastuReport: building.metadata?.vastuReport ?? schematic.vastuReport,
               validation: {
-                isValid: true,
-                recommendedForEditing: true,
-                geometryHealthy: true,
-                overallScore: 95,
-                verificationIssues: []
+                isValid: isCandidateValid,
+                recommendedForEditing: isCandidateValid,
+                geometryHealthy: canonicalValidation.geometryHealthy,
+                overallScore: isCandidateValid ? canonicalValidation.overallScore : null,
+                verificationIssues
               },
               evaluation: null,
-              diagnostics: [
-                {
-                  code: "DETERMINISTIC_CAD",
-                  severity: "info",
-                  message: `Generated instantly using deterministic stepped CAD engine (${strategy.label}). Zero external image API calls.`
-                },
-                ...archlangResult?.status === "ACCEPTED" && archlangResult.parityReport?.passed ? [{
-                  code: "ARCHLANG_ACCEPTED",
-                  severity: "info",
-                  message: `ArchLang architectural compilation accepted with full geometry parity (Hash: ${archlangResult.sourceHash?.slice(0, 8)}).`
-                }] : [{
-                  code: "ARCHLANG_FALLBACK",
-                  severity: "warning",
-                  message: `ArchLang compilation status: ${archlangResult?.status ?? "UNAVAILABLE"}. Fallback to deterministic structural schematic active.`
-                }]
-              ],
-              rejectedReason: null,
+              diagnostics: candidateDiagnostics,
+              rejectedReason: isCandidateValid ? null : verificationIssues.map((i) => i.message).join("; ") || "Canonical model validation failed.",
               concept: {
                 candidateNumber: strategy.candidateNumber,
                 candidateCount: targetCount2,
@@ -62005,28 +66278,41 @@ var init_generation_orchestrator = __esm({
               apartmentValidation: {
                 source: "DETERMINISTIC_SCHEMATIC",
                 stages: {
-                  completeness: "PASS",
-                  manifestMatch: "PASS",
-                  structural: "PASS",
-                  canonicalGeometry: "PASS",
-                  geometryValidation: "PASS"
+                  completeness: schematic.layoutFits !== false ? "PASS" : "FAIL",
+                  manifestMatch: manifestCheck.matches ? "PASS" : "FAIL",
+                  structural: schematicValid ? "PASS" : "FAIL",
+                  canonicalGeometry: canonicalValidation.geometryHealthy ? "PASS" : "FAIL",
+                  geometryValidation: canonicalValidation.isValid ? "PASS" : "FAIL"
                 }
               }
             });
           }
+          const anyCandidateAccepted = candidates2.some((c) => c.status === "ACCEPTED");
+          const cadFloorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
           return {
-            success: true,
+            success: anyCandidateAccepted,
             projectId,
             requirements: spec,
             feasibility,
             candidates: candidates2,
-            stages,
+            stages: {
+              ...stages,
+              validation: anyCandidateAccepted ? "SUCCESS" : "FAILED"
+            },
             latencyMs: Date.now() - startedAt,
             apartmentSchematic: candidates2[0]?.building?.metadata?.apartmentSchematic ?? apartmentSchematic,
             apartmentRulesProfile,
             apartmentManifest,
-            candidateSource: "DETERMINISTIC_CAD",
+            candidateSource: anyCandidateAccepted ? "DETERMINISTIC_CAD" : null,
             conceptMode: true,
+            ...cadFloorCount > 1 ? {
+              multiFloorStatus: {
+                requestedFloorCount: cadFloorCount,
+                generatedFloorCount: 1,
+                status: "SINGLE_FLOOR_PRODUCED",
+                message: `Multi-floor apartment generation is not yet supported; requested ${cadFloorCount} floors, but only a single typical floor plate was produced.`
+              }
+            } : {},
             conceptSlots: conceptSlots2,
             visualAttempts: {
               maxPerCandidate: 1,
@@ -62038,6 +66324,10 @@ var init_generation_orchestrator = __esm({
         if (!this.deps.provider || !await this.deps.provider.isAvailable()) {
           stages.imageGeneration = "FAILED";
           stages.imageArtifact = "FAILED";
+          const access2 = this.deps.provider && "checkAccess" in this.deps.provider ? await this.deps.provider.checkAccess().catch(() => null) : null;
+          const providerName = this.deps.provider?.name ?? "unknown";
+          const detail = access2?.detail || (this.deps.provider ? `Provider ${providerName} is unreachable` : "Image generation provider is not configured");
+          const errorCode = access2?.status === "AUTH_FAILED" ? providerName === "gemini" ? "GEMINI_AUTH_ERROR" : "IMAGE_PROVIDER_AUTH_ERROR" : providerName === "gemini" ? "GEMINI_GENERATION_ERROR" : "IMAGE_GENERATION_FAILED";
           return {
             success: false,
             projectId,
@@ -62047,9 +66337,9 @@ var init_generation_orchestrator = __esm({
             latencyMs: Date.now() - startedAt,
             stages,
             error: {
-              code: "CLOUDFLARE_GENERATION_ERROR",
+              code: errorCode,
               stage: "image_generation",
-              message: "Image generation is not configured on this server (check IMAGE_GENERATION_PROVIDER and its credentials: CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN or POLLINATIONS_API_KEY). Try deterministic planner instead.",
+              message: `Image generation (${providerName}): ${detail}`,
               fallbackAvailable: true
             }
           };
@@ -62078,10 +66368,12 @@ var init_generation_orchestrator = __esm({
         let preflightUnavailable = false;
         let fluxRetryTransportError;
         const conceptSlots = [];
+        const masterAttemptHistory = [];
+        let previousMasterEval = null;
         slotLoop:
           for (let cIdx = 0; cIdx < candidateTargetCount; cIdx++) {
             const slotSeed = (baseSeed + cIdx * 137) % 1e6;
-            const attemptsForSlot = conceptMode ? 1 : preflightApplies ? maxVisualAttempts : 1;
+            const attemptsForSlot = conceptMode ? 1 : preflightApplies ? maxVisualAttempts : !isApartment ? Math.min(5, this.deps.maxVisualAttempts ?? 5) : 1;
             const slotConcept = conceptMode ? conceptSchematics[cIdx] : void 0;
             const slotSchematic = slotConcept?.schematic ?? apartmentSchematic;
             let slotReferenceIds = [];
@@ -62189,10 +66481,20 @@ var init_generation_orchestrator = __esm({
                 } catch (refErr) {
                   console.warn("[GenerationOrchestrator] Villa reference loading error:", refErr);
                 }
+                const enrichedAdditional = [
+                  input.additionalPrompt,
+                  previousMasterEval ? `
+CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100):
+` + (previousMasterEval.hardConstraintViolations.length > 0 ? `- RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join("; ")}
+` : "") + (previousMasterEval.identifiedProblems.length > 0 ? `- FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join("; ")}
+` : "") + (previousMasterEval.suggestedCorrections.length > 0 ? `- ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join("; ")}
+` : "") + "Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned." : ""
+                ].filter(Boolean).join("\n");
                 promptRequest2 = compileFloorPlanImagePrompt({
                   requirements: spec,
                   site: buildingSite,
                   seed: seed3,
+                  additionalPrompt: enrichedAdditional || void 0,
                   referenceImages: referenceImages.length > 0 ? referenceImages : void 0,
                   referenceDiagnostics: refDiagnostics
                 });
@@ -62220,6 +66522,7 @@ var init_generation_orchestrator = __esm({
                 stages.imageArtifact = "FAILED";
                 if (err instanceof ImageProviderError) {
                   const isRefError = err.code.startsWith("REFERENCE");
+                  const defaultCode = this.deps.provider?.name === "gemini" ? "GEMINI_GENERATION_ERROR" : "IMAGE_GENERATION_ERROR";
                   return {
                     success: false,
                     projectId,
@@ -62229,13 +66532,14 @@ var init_generation_orchestrator = __esm({
                     latencyMs: Date.now() - startedAt,
                     stages,
                     error: {
-                      code: isRefError ? err.code : "CLOUDFLARE_GENERATION_ERROR",
+                      code: isRefError ? err.code : defaultCode,
                       stage: isRefError ? "reference_preparation" : "image_generation",
                       message: isRefError ? `Reference asset error: ${err.message}` : `Image generation (${this.deps.provider?.name ?? "unknown provider"}) failed: ${err.message}`,
                       fallbackAvailable: true
                     }
                   };
                 }
+                const fallbackCode = this.deps.provider?.name === "gemini" ? "GEMINI_GENERATION_ERROR" : "IMAGE_GENERATION_ERROR";
                 return {
                   success: false,
                   projectId,
@@ -62245,7 +66549,7 @@ var init_generation_orchestrator = __esm({
                   latencyMs: Date.now() - startedAt,
                   stages,
                   error: {
-                    code: "CLOUDFLARE_GENERATION_ERROR",
+                    code: fallbackCode,
                     stage: "image_generation",
                     message: err instanceof Error ? err.message : "Unexpected image generation failure.",
                     fallbackAvailable: true
@@ -62363,13 +66667,57 @@ var init_generation_orchestrator = __esm({
                 continue;
               }
               if (preflightApplies) stages.visualPreflight = "PASSED";
+              let currentMasterEval = null;
+              if (!isApartment && this.deps.gemini && this.deps.provider?.name !== "local-stub") {
+                try {
+                  currentMasterEval = await evaluateMasterImageWithGemini(this.deps.gemini, {
+                    requirementsSummary: `${spec.hard.bedroomCount} BHK, ${spec.hard.bathroomCount} Bath, ${spec.hard.floorsCount} Floor(s), road facing ${spec.hard.roadFacing}${spec.rawUserPrompt ? ` (${spec.rawUserPrompt})` : ""}`,
+                    siteSummary: `Plot ${spec.hard.plotWidthMm}x${spec.hard.plotDepthMm}mm, setbacks: front ${spec.setbacksMm?.front ?? 1500}mm, rear ${spec.setbacksMm?.rear ?? 1e3}mm`,
+                    footprintShape: spec.footprintShape,
+                    requiredBedrooms: spec.hard.bedroomCount,
+                    requiredBathrooms: spec.hard.bathroomCount,
+                    requiredFloors: spec.hard.floorsCount,
+                    parkingRequired: spec.hard.parkingRequired,
+                    imageBase64: generatedImage2.imageBase64,
+                    imageMimeType: generatedImage2.mimeType,
+                    attemptNumber
+                  });
+                } catch (mErr) {
+                  console.warn(`[GenerationOrchestrator] Master evaluation attempt ${attemptNumber} error:`, mErr);
+                }
+              }
+              if (currentMasterEval) {
+                masterAttemptHistory.push({
+                  attemptNumber,
+                  seed: seed3,
+                  artifactId: artifact2.generationId,
+                  overallScore: currentMasterEval.overallScore,
+                  passed: currentMasterEval.passed,
+                  hardConstraintViolations: currentMasterEval.hardConstraintViolations,
+                  identifiedProblems: currentMasterEval.identifiedProblems,
+                  suggestedCorrections: currentMasterEval.suggestedCorrections,
+                  complianceScore: currentMasterEval.complianceScore,
+                  spatialLayoutScore: currentMasterEval.spatialLayoutScore,
+                  footprintScore: currentMasterEval.footprintScore,
+                  circulationScore: currentMasterEval.circulationScore,
+                  draftingClarityScore: currentMasterEval.draftingClarityScore,
+                  vastuDaylightScore: currentMasterEval.vastuDaylightScore,
+                  coherenceScore: currentMasterEval.coherenceScore
+                });
+                if (!currentMasterEval.passed && attemptNumber < attemptsForSlot) {
+                  console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(", ")}. Enriching prompt for retry.`);
+                  previousMasterEval = currentMasterEval;
+                  continue;
+                }
+              }
               acceptedAttempt = {
                 seed: seed3,
                 attempt: attemptNumber,
                 promptRequest: promptRequest2,
                 generatedImage: generatedImage2,
                 artifact: artifact2,
-                preflight: apartmentPreflightResult2
+                preflight: apartmentPreflightResult2,
+                masterEvaluation: currentMasterEval
               };
               break;
             }
@@ -62383,6 +66731,7 @@ var init_generation_orchestrator = __esm({
             let interpretationSource = "provider";
             let confidence = "likely";
             let interpretationFrame;
+            let visionModel;
             if (this.deps.interpreterKind === "gemini") {
               if (!this.deps.gemini || !await this.deps.gemini.isAvailable()) {
                 stages.imageInterpretation = "AUTH_ERROR";
@@ -62429,6 +66778,7 @@ var init_generation_orchestrator = __esm({
                 if (vision.coordinateFrame.kind === "normalized") {
                   interpretationFrame = { width: vision.coordinateFrame.width, height: vision.coordinateFrame.height };
                 }
+                visionModel = vision.model;
                 interpretationSource = "provider";
                 stages.imageInterpretation = "SUCCESS";
               } catch (vErr) {
@@ -62479,7 +66829,8 @@ var init_generation_orchestrator = __esm({
               interpretationSource,
               isApartment,
               apartmentManifest,
-              ...interpretationFrame ? { coordinateFrame: interpretationFrame } : {}
+              ...interpretationFrame ? { coordinateFrame: interpretationFrame } : {},
+              ...interpretationSource === "provider" ? { imageSource: imageSourceIdentityFor(artifact, spec, interpretationSource, visionModel) } : {}
             });
             const isValid = extraction.status === "ACCEPTED" && extraction.building !== null;
             const geometryBuilt = extraction.apartmentValidation ? extraction.apartmentValidation.stages.canonicalGeometry === "PASS" : extraction.building !== null || extraction.validation !== null;
@@ -62538,6 +66889,8 @@ var init_generation_orchestrator = __esm({
               rejectedReason: candidateRejectedReason,
               referenceDiagnostics: candRefDiag,
               vastuReport: extraction.building?.metadata?.vastuReport ?? slotSchematic?.vastuReport ?? null,
+              masterEvaluation: acceptedAttempt.masterEvaluation ?? null,
+              masterAttemptHistory: [...masterAttemptHistory],
               ...extraction.apartmentValidation ? { apartmentValidation: { source: extraction.apartmentValidation.source, stages: extraction.apartmentValidation.stages } } : {},
               ...slotConcept ? { concept: conceptInfo() } : {}
             });
@@ -62679,6 +67032,7 @@ var init_generation_orchestrator = __esm({
         const anyAccepted = acceptedCandidate !== null;
         const rejectedAtPreflight = candidates.filter((c) => c.rejectionStage === "VISUAL_PREFLIGHT");
         const onlyPreflightRejections = candidates.length > 0 && rejectedAtPreflight.length === candidates.length;
+        const finalFloorCount = input.apartmentConfig?.floorCount ?? spec.hard.floorsCount ?? 1;
         return {
           success: anyAccepted,
           projectId,
@@ -62691,11 +67045,22 @@ var init_generation_orchestrator = __esm({
           apartmentRulesProfile,
           apartmentManifest,
           candidateSource: acceptedCandidate?.source ?? null,
+          ...isApartment && finalFloorCount > 1 ? {
+            multiFloorStatus: {
+              requestedFloorCount: finalFloorCount,
+              generatedFloorCount: 1,
+              status: "SINGLE_FLOOR_PRODUCED",
+              message: `Multi-floor apartment generation is not yet supported; requested ${finalFloorCount} floors, but only a single typical floor plate was produced.`
+            }
+          } : {},
           visualAttempts: {
             maxPerCandidate: conceptMode ? 1 : preflightApplies ? maxVisualAttempts : 1,
             attempted: attemptSeeds.length,
             seeds: attemptSeeds
           },
+          masterAttemptHistory: [...masterAttemptHistory],
+          masterEvaluation: acceptedCandidate?.masterEvaluation ?? (candidates[0]?.masterEvaluation ?? null),
+          masterQualityScore: acceptedCandidate?.masterEvaluation?.overallScore ?? (candidates[0]?.masterEvaluation?.overallScore ?? void 0),
           ...conceptMode ? { conceptMode: true, conceptSlots } : {},
           ...fallbackInfo ? { fallback: fallbackInfo } : {},
           ...!anyAccepted && candidates.length > 0 ? {
@@ -62775,6 +67140,8 @@ var init_generation_orchestrator = __esm({
         let payload;
         let interpretationSource = "provider";
         let confidence = "likely";
+        let interpretationFrame;
+        let visionModel;
         if (this.deps.interpreterKind === "gemini") {
           if (!this.deps.gemini || !await this.deps.gemini.isAvailable()) {
             stages.imageInterpretation = "AUTH_ERROR";
@@ -62809,6 +67176,10 @@ var init_generation_orchestrator = __esm({
             });
             payload = vision.parsed;
             interpretationSource = "provider";
+            visionModel = vision.model;
+            if (vision.coordinateFrame.kind === "normalized") {
+              interpretationFrame = { width: vision.coordinateFrame.width, height: vision.coordinateFrame.height };
+            }
             stages.imageInterpretation = "SUCCESS";
           } catch (vErr) {
             const status = extractHttpStatus(vErr);
@@ -62855,7 +67226,9 @@ var init_generation_orchestrator = __esm({
           payload,
           extractionSource: interpretationSource === "provider" ? "gemini_vision" : "local_rule_based",
           confidence,
-          interpretationSource
+          interpretationSource,
+          ...interpretationFrame ? { coordinateFrame: interpretationFrame } : {},
+          ...interpretationSource === "provider" ? { imageSource: imageSourceIdentityFor(artifact, spec, interpretationSource, visionModel) } : {}
         });
         const isValid = extraction.status === "ACCEPTED" && extraction.building !== null;
         stages.imageTo2D = isValid ? "SUCCESS" : "FAILED";
@@ -62869,6 +67242,26 @@ var init_generation_orchestrator = __esm({
         });
         const evaluation = gated.evaluation;
         stages.geminiEvaluation = gated.stage;
+        let masterEvaluation = null;
+        if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 100) {
+          try {
+            const evalRes = await evaluateMasterImageWithGemini(this.deps.gemini, {
+              requirementsSummary: `${spec.hard.bedroomCount} bedrooms, ${spec.hard.bathroomCount} bathrooms${spec.rawUserPrompt ? `, prompt: ${spec.rawUserPrompt}` : ""}`,
+              siteSummary: `${spec.hard.plotWidthMm}x${spec.hard.plotDepthMm}mm, road facing ${spec.hard.roadFacing}`,
+              footprintShape: spec.footprintShape,
+              requiredBedrooms: spec.hard.bedroomCount,
+              requiredBathrooms: spec.hard.bathroomCount,
+              requiredFloors: spec.hard.floorsCount,
+              parkingRequired: spec.hard.parkingRequired,
+              imageBase64: artifact.imageBase64,
+              imageMimeType: artifact.mimeType,
+              attemptNumber: 1
+            });
+            masterEvaluation = evalRes;
+          } catch (meErr) {
+            console.warn("Master evaluation in resume encountered an issue:", meErr);
+          }
+        }
         const resumedFromFallback = artifact.provider === FALLBACK_DETERMINISTIC_PROVIDER;
         const candidate = {
           id: `cand_resumed_${artifact.seed}_${Date.now().toString(36)}`,
@@ -62881,6 +67274,7 @@ var init_generation_orchestrator = __esm({
           stages: { ...stages },
           building: extraction.building,
           artifact,
+          masterEvaluation: masterEvaluation ?? null,
           validation: {
             isValid: extraction.validation?.isValid ?? false,
             recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
@@ -62890,7 +67284,10 @@ var init_generation_orchestrator = __esm({
           },
           evaluation,
           diagnostics: extraction.diagnostics,
-          rejectedReason: extraction.status === "REJECTED" ? "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null
+          ...extraction.geometrySource ? { geometrySource: extraction.geometrySource } : {},
+          ...extraction.cadFidelity ? { cadFidelity: extraction.cadFidelity } : {},
+          ...extraction.conversionError ? { conversionError: { code: extraction.conversionError.code, message: extraction.conversionError.message } } : {},
+          rejectedReason: extraction.status === "REJECTED" ? extraction.conversionError ? `${extraction.conversionError.code}: ${extraction.conversionError.message}` : "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null
         };
         return {
           success: isValid,
@@ -62902,10 +67299,12 @@ var init_generation_orchestrator = __esm({
           stages,
           latencyMs: Date.now() - startedAt,
           candidateSource: isValid ? candidate.source : null,
+          masterEvaluation: masterEvaluation ?? null,
+          masterQualityScore: masterEvaluation?.overallScore,
           error: isValid ? void 0 : {
-            code: "GEOMETRY_VALIDATION_ERROR",
-            stage: "geometry_validation",
-            message: "Deterministic geometry validation failed.",
+            code: extraction.conversionError ? "IMAGE_TO_CAD_CONVERSION_ERROR" : "GEOMETRY_VALIDATION_ERROR",
+            stage: extraction.conversionError ? "image_to_cad" : "geometry_validation",
+            message: extraction.conversionError ? extraction.conversionError.message : "Deterministic geometry validation failed.",
             reasons: extraction.diagnostics.map((d) => `[${d.severity}] ${d.message}`),
             fallbackAvailable: false,
             artifactId: artifact.generationId,
@@ -62917,14 +67316,17 @@ var init_generation_orchestrator = __esm({
   }
 });
 
-// src/server.ts
+// packages/backend/src/server.ts
 var server_exports = {};
 __export(server_exports, {
+  DEFAULT_SMOKE_TEST_PROMPT: () => DEFAULT_SMOKE_TEST_PROMPT,
   GENERATION_REQUEST_TIMEOUT_MS: () => GENERATION_REQUEST_TIMEOUT_MS,
   checkProviderHealth: () => checkProviderHealth,
   createBackendServer: () => createBackendServer,
   createGeminiProvider: () => createGeminiProvider,
   createImageProvider: () => createImageProvider,
+  decodeImageDimensions: () => decodeImageDimensions2,
+  handleImageSmokeTest: () => handleImageSmokeTest,
   resolveCorsHeaders: () => resolveCorsHeaders,
   startBackendServer: () => startBackendServer
 });
@@ -62934,7 +67336,7 @@ var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
 init_dist5();
 
-// src/api/image-routes.ts
+// packages/backend/src/api/image-routes.ts
 init_dist5();
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -62964,9 +67366,13 @@ async function handleFloorPlanGeneration(body, deps) {
     return { status: 400, json: { error: { code: "INVALID_REQUEST", message: "A projectId and a compiled FloorPlanImagePromptRequest are required." } } };
   }
   if (!deps.provider || !await deps.provider.isAvailable()) {
+    const access2 = deps.provider && "checkAccess" in deps.provider ? await deps.provider.checkAccess().catch(() => null) : null;
+    const detail = access2?.detail || (deps.provider ? `Provider ${deps.provider.name} is unreachable` : "Floor-plan image generation is not configured on this server.");
+    const code = access2?.status === "AUTH_FAILED" ? "IMAGE_PROVIDER_AUTH_ERROR" : "IMAGE_PROVIDER_NOT_CONFIGURED";
+    const status = access2?.status === "AUTH_FAILED" ? 403 : 503;
     return {
-      status: 503,
-      json: { error: { code: "IMAGE_PROVIDER_NOT_CONFIGURED", message: "Floor-plan image generation is not configured on this server." } }
+      status,
+      json: { error: { code, message: detail } }
     };
   }
   try {
@@ -62992,7 +67398,7 @@ async function handleArtifactGet(generationId, store) {
   return { status: 200, json: { artifact } };
 }
 
-// src/api/interpretation-routes.ts
+// packages/backend/src/api/interpretation-routes.ts
 init_dist();
 init_dist5();
 init_extraction_pipeline();
@@ -63104,6 +67510,21 @@ async function handleArchitecturalEvaluation(body, deps) {
     return { status: 503, json: { error: { code: "ARCHITECTURAL_EVALUATOR_NOT_CONFIGURED", message: "Architectural evaluation is not configured on this server (GEMINI_API_KEY missing). No score was produced." } } };
   }
   try {
+    if (record3.rubric === "master" || record3.masterRubric === true || record3.siteSummary) {
+      const evaluation2 = await evaluateMasterImageWithGemini(deps.gemini, {
+        requirementsSummary,
+        siteSummary: typeof record3.siteSummary === "string" ? record3.siteSummary : buildingSummary,
+        footprintShape: typeof record3.footprintShape === "string" ? record3.footprintShape : void 0,
+        requiredBedrooms: typeof record3.requiredBedrooms === "number" ? record3.requiredBedrooms : void 0,
+        requiredBathrooms: typeof record3.requiredBathrooms === "number" ? record3.requiredBathrooms : void 0,
+        requiredFloors: typeof record3.requiredFloors === "number" ? record3.requiredFloors : void 0,
+        parkingRequired: typeof record3.parkingRequired === "boolean" ? record3.parkingRequired : void 0,
+        imageBase64: typeof record3.imageBase64 === "string" ? record3.imageBase64 : "",
+        imageMimeType: typeof record3.imageMimeType === "string" ? record3.imageMimeType : void 0,
+        attemptNumber: typeof record3.attemptNumber === "number" ? record3.attemptNumber : 1
+      });
+      return { status: 200, json: { evaluation: evaluation2 } };
+    }
     const evaluation = await evaluatePlanArchitecturally(deps.gemini, {
       buildingSummary,
       requirementsSummary,
@@ -63116,7 +67537,7 @@ async function handleArchitecturalEvaluation(body, deps) {
   }
 }
 
-// src/env.ts
+// packages/backend/src/env.ts
 var import_path = __toESM(require("path"), 1);
 init_dist5();
 function cloudflareConfigured(config) {
@@ -63187,8 +67608,8 @@ function resolveImageServiceConfig(env = process.env) {
   };
 }
 
-// src/services/image-artifact-store.ts
-var import_node_crypto3 = require("node:crypto");
+// packages/backend/src/services/image-artifact-store.ts
+var import_node_crypto4 = require("node:crypto");
 var import_promises = require("node:fs/promises");
 var import_path2 = __toESM(require("path"), 1);
 var ImageArtifactImmutabilityError = class _ImageArtifactImmutabilityError extends Error {
@@ -63198,6 +67619,37 @@ var ImageArtifactImmutabilityError = class _ImageArtifactImmutabilityError exten
     Object.setPrototypeOf(this, _ImageArtifactImmutabilityError.prototype);
   }
 };
+function decodeImageDimensions(bytes) {
+  if (bytes.length >= 24 && bytes[0] === 137 && bytes[1] === 80 && bytes[2] === 78 && bytes[3] === 71) {
+    const width = bytes.readUInt32BE(16);
+    const height = bytes.readUInt32BE(20);
+    return width > 0 && height > 0 ? { width, height } : null;
+  }
+  if (bytes.length >= 4 && bytes[0] === 255 && bytes[1] === 216) {
+    let offset = 2;
+    while (offset + 9 < bytes.length) {
+      if (bytes[offset] !== 255) {
+        offset += 1;
+        continue;
+      }
+      const marker = bytes[offset + 1];
+      if (marker === 216 || marker === 217 || marker >= 208 && marker <= 215 || marker === 1) {
+        offset += 2;
+        continue;
+      }
+      const segmentLength3 = bytes.readUInt16BE(offset + 2);
+      const isStartOfFrame = marker >= 192 && marker <= 207 && marker !== 196 && marker !== 200 && marker !== 204;
+      if (isStartOfFrame) {
+        const height = bytes.readUInt16BE(offset + 5);
+        const width = bytes.readUInt16BE(offset + 7);
+        return width > 0 && height > 0 ? { width, height } : null;
+      }
+      if (segmentLength3 < 2) return null;
+      offset += 2 + segmentLength3;
+    }
+  }
+  return null;
+}
 var ImageArtifactStore = class {
   baseDir;
   constructor(baseDir) {
@@ -63205,7 +67657,7 @@ var ImageArtifactStore = class {
   }
   /** New unique generation id per attempt; regeneration never reuses one. */
   newGenerationId(seed2) {
-    return `gen_${seed2}_${Date.now().toString(36)}_${(0, import_node_crypto3.randomUUID)().slice(0, 8)}`;
+    return `gen_${seed2}_${Date.now().toString(36)}_${(0, import_node_crypto4.randomUUID)().slice(0, 8)}`;
   }
   metadataPath(generationId) {
     return import_path2.default.join(this.baseDir, `${generationId}.json`);
@@ -63224,6 +67676,8 @@ var ImageArtifactStore = class {
       if (error instanceof ImageArtifactImmutabilityError) throw error;
     }
     const extension = image.mimeType === "image/jpeg" ? "jpg" : "png";
+    const imageBytes = Buffer.from(image.imageBase64, "base64");
+    const decoded = decodeImageDimensions(imageBytes);
     const artifact = {
       generationId,
       projectId,
@@ -63233,8 +67687,10 @@ var ImageArtifactStore = class {
       promptVersion: request.promptVersion,
       originalPrompt: image.prompt,
       negativePrompt: request.negativePrompt,
-      width: request.width,
-      height: request.height,
+      width: decoded?.width ?? request.width,
+      height: decoded?.height ?? request.height,
+      requestedWidth: request.width,
+      requestedHeight: request.height,
       mimeType: image.mimeType,
       generatedAt: image.generatedAt,
       latencyMs: image.latencyMs,
@@ -63243,7 +67699,7 @@ var ImageArtifactStore = class {
     };
     const { imageBase64, ...metadata } = artifact;
     await (0, import_promises.writeFile)(metadataPath, JSON.stringify(metadata, null, 2), "utf8");
-    await (0, import_promises.writeFile)(this.imagePath(generationId, extension), Buffer.from(imageBase64, "base64"));
+    await (0, import_promises.writeFile)(this.imagePath(generationId, extension), imageBytes);
     return artifact;
   }
   async get(generationId) {
@@ -63256,7 +67712,14 @@ var ImageArtifactStore = class {
     const metadata = JSON.parse(raw);
     const extension = metadata.mimeType === "image/jpeg" ? "jpg" : "png";
     const imageBytes = await (0, import_promises.readFile)(this.imagePath(generationId, extension));
-    return { ...metadata, imageBase64: imageBytes.toString("base64") };
+    const decoded = decodeImageDimensions(imageBytes);
+    return {
+      ...metadata,
+      requestedWidth: metadata.requestedWidth ?? metadata.width,
+      requestedHeight: metadata.requestedHeight ?? metadata.height,
+      ...decoded ? { width: decoded.width, height: decoded.height } : {},
+      imageBase64: imageBytes.toString("base64")
+    };
   }
   async listByProject(projectId) {
     let entries;
@@ -63277,7 +67740,7 @@ var ImageArtifactStore = class {
   }
 };
 
-// src/services/local-stub-image-provider.ts
+// packages/backend/src/services/local-stub-image-provider.ts
 var import_node_zlib3 = require("node:zlib");
 var CRC_TABLE2 = (() => {
   const table2 = new Uint32Array(256);
@@ -63400,7 +67863,7 @@ var LocalStubImageProvider = class {
   }
 };
 
-// src/server.ts
+// packages/backend/src/server.ts
 if (typeof process.loadEnvFile === "function") {
   for (const candidate of [
     ".env",
@@ -63480,20 +67943,40 @@ function createGeminiProvider(config) {
 async function checkProviderHealth(config, deps) {
   const isCloudflare = deps.provider && (deps.provider.name === "cloudflare-workers-ai" || deps.provider.name === "cloudflare");
   const isPollinations = deps.provider ? deps.provider.name === POLLINATIONS_PROVIDER_NAME : config.imageProviderKind === "pollinations";
+  const isGeminiImage = deps.provider ? deps.provider.name === GEMINI_IMAGE_PROVIDER_NAME : config.imageProviderKind === "gemini";
   let cfStatus;
   let imageGeneration = null;
   if (isPollinations) {
     const model = deps.provider instanceof PollinationsImageProvider ? deps.provider.getModel() : config.pollinationsImageModel;
     if (!(deps.provider instanceof PollinationsImageProvider)) {
-      imageGeneration = { provider: POLLINATIONS_PROVIDER_NAME, configured: false, reachable: false, status: "NOT_CONFIGURED", model, detail: "POLLINATIONS_API_KEY is not configured" };
+      imageGeneration = {
+        provider: POLLINATIONS_PROVIDER_NAME,
+        configured: false,
+        reachable: false,
+        imageModelReachable: false,
+        status: "NOT_CONFIGURED",
+        model,
+        detail: "POLLINATIONS_API_KEY is not configured",
+        authenticationStatus: "NOT_CONFIGURED",
+        modelAvailability: "UNKNOWN",
+        rateLimits: "UNKNOWN",
+        quotaState: "UNKNOWN",
+        lastSuccessfulGeneration: null
+      };
     } else {
       const access2 = await deps.provider.checkAccess();
       imageGeneration = {
         provider: POLLINATIONS_PROVIDER_NAME,
         configured: true,
         reachable: access2.reachable,
+        imageModelReachable: access2.reachable,
         status: access2.status,
         model,
+        authenticationStatus: access2.status === "AUTH_FAILED" ? "AUTH_FAILED" : "AUTHENTICATED",
+        modelAvailability: access2.status === "MODEL_UNAVAILABLE" ? "UNAVAILABLE" : access2.reachable ? "AVAILABLE" : "UNKNOWN",
+        rateLimits: access2.status === "RATE_LIMITED" ? "EXCEEDED" : "OK",
+        quotaState: "OK",
+        lastSuccessfulGeneration: null,
         ...access2.detail ? { detail: access2.detail } : {},
         ...access2.capabilities ? { capabilities: { acceptsImageInput: access2.capabilities.acceptsImageInput, maxReferenceImages: access2.capabilities.maxReferenceImages, source: access2.capabilities.source } } : {}
       };
@@ -63505,13 +67988,55 @@ async function checkProviderHealth(config, deps) {
       model: config.fluxModel,
       detail: `Active image provider: ${POLLINATIONS_PROVIDER_NAME} (${model})`
     };
+  } else if (isGeminiImage) {
+    const model = deps.provider instanceof GeminiImageProvider ? deps.provider.getModel() : config.geminiImageModel;
+    if (!(deps.provider instanceof GeminiImageProvider) || !deps.provider.isConfigured()) {
+      imageGeneration = {
+        provider: GEMINI_IMAGE_PROVIDER_NAME,
+        configured: false,
+        reachable: false,
+        imageModelReachable: false,
+        status: "NOT_CONFIGURED",
+        model,
+        detail: "GEMINI_API_KEY is not configured",
+        authenticationStatus: "NOT_CONFIGURED",
+        modelAvailability: "UNKNOWN",
+        rateLimits: "UNKNOWN",
+        quotaState: "UNKNOWN",
+        lastSuccessfulGeneration: null
+      };
+    } else {
+      const access2 = await deps.provider.checkAccess();
+      imageGeneration = {
+        provider: GEMINI_IMAGE_PROVIDER_NAME,
+        configured: true,
+        reachable: access2.reachable,
+        imageModelReachable: access2.imageModelReachable,
+        status: access2.status,
+        model,
+        ...access2.detail ? { detail: access2.detail } : {},
+        authenticationStatus: access2.authenticationStatus,
+        modelAvailability: access2.modelAvailability,
+        rateLimits: access2.rateLimits,
+        quotaState: access2.quotaState,
+        lastSuccessfulGeneration: access2.lastSuccessfulGeneration
+      };
+    }
+    cfStatus = {
+      configured: cloudflareConfigured(config),
+      reachable: false,
+      status: "INACTIVE",
+      model: config.fluxModel,
+      detail: `Active image provider: ${GEMINI_IMAGE_PROVIDER_NAME} (${model})`
+    };
   } else if (config.imageProviderKind === "local-stub" || deps.provider instanceof LocalStubImageProvider || deps.provider && !isCloudflare) {
+    const reachable = await deps.provider?.isAvailable().catch(() => false) ?? true;
     cfStatus = {
       configured: true,
-      reachable: true,
-      status: "REACHABLE",
+      reachable,
+      status: reachable ? "REACHABLE" : "NOT_CONFIGURED",
       model: deps.provider?.name ?? "local-stub",
-      detail: "Local or stub provider active"
+      detail: "Custom, local or stub provider active"
     };
   } else if (!cloudflareConfigured(config) || !deps.provider) {
     cfStatus = {
@@ -63666,22 +68191,32 @@ async function checkProviderHealth(config, deps) {
       }
     }
   }
-  let geminiStatus;
+  let visionStatus;
   if (deps.interpreterKind === "local-stub") {
-    geminiStatus = {
+    visionStatus = {
       configured: true,
       reachable: true,
+      visionModelReachable: true,
       status: "REACHABLE",
       model: "local-stub",
-      detail: "Local development stub interpreter active"
+      detail: "Local development stub interpreter active",
+      authenticationStatus: "AUTHENTICATED",
+      modelAvailability: "AVAILABLE",
+      rateLimits: "OK",
+      quotaState: "OK"
     };
   } else if (!config.geminiApiKey || !deps.gemini) {
-    geminiStatus = {
+    visionStatus = {
       configured: false,
       reachable: false,
+      visionModelReachable: false,
       status: "NOT_CONFIGURED",
       model: config.geminiModel,
-      detail: "GEMINI_API_KEY is not configured"
+      detail: "GEMINI_API_KEY is not configured",
+      authenticationStatus: "NOT_CONFIGURED",
+      modelAvailability: "UNKNOWN",
+      rateLimits: "UNKNOWN",
+      quotaState: "UNKNOWN"
     };
   } else {
     try {
@@ -63690,85 +68225,152 @@ async function checkProviderHealth(config, deps) {
         { signal: AbortSignal.timeout(5e3) }
       );
       if (res.ok) {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: true,
+          visionModelReachable: true,
           status: "REACHABLE",
-          model: config.geminiModel
-        };
-      } else if (res.status === 401 || res.status === 403) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: "AUTH_FAILED",
           model: config.geminiModel,
-          detail: `Gemini API key is invalid or unauthorized (HTTP ${res.status})`
-        };
-      } else if (res.status === 429) {
-        const bodyText = await res.text().catch(() => "");
-        const isQuota = /quota|exhausted/i.test(bodyText);
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: isQuota ? "QUOTA_EXCEEDED" : "RATE_LIMITED",
-          model: config.geminiModel,
-          detail: `Gemini rate limit or quota exceeded (HTTP ${res.status})`
-        };
-      } else if (res.status === 503 || res.status === 504) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: "TEMPORARILY_UNAVAILABLE",
-          model: config.geminiModel,
-          detail: `Gemini service is temporarily unavailable / experiencing high demand (HTTP ${res.status})`
-        };
-      } else if (res.status === 404) {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: "MODEL_UNAVAILABLE",
-          model: config.geminiModel,
-          detail: `Model ${config.geminiModel} not found or retired`
+          authenticationStatus: "AUTHENTICATED",
+          modelAvailability: "AVAILABLE",
+          rateLimits: "OK",
+          quotaState: "OK"
         };
       } else {
-        geminiStatus = {
-          configured: true,
-          reachable: false,
-          status: "REQUEST_ERROR",
-          model: config.geminiModel,
-          detail: `HTTP ${res.status}`
-        };
+        let errDetail;
+        try {
+          const body = await res.json();
+          if (body?.error?.message) errDetail = body.error.message;
+        } catch {
+        }
+        if (res.status === 401 || res.status === 403) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: "AUTH_FAILED",
+            model: config.geminiModel,
+            detail: errDetail ? `Gemini API key is unauthorized: ${errDetail} (HTTP ${res.status})` : `Gemini API key is invalid or unauthorized (HTTP ${res.status})`,
+            authenticationStatus: "AUTH_FAILED",
+            modelAvailability: "UNKNOWN",
+            rateLimits: "UNKNOWN",
+            quotaState: "UNKNOWN"
+          };
+        } else if (res.status === 429) {
+          const isQuota = /quota|exhausted/i.test(errDetail ?? "");
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: isQuota ? "QUOTA_EXCEEDED" : "RATE_LIMITED",
+            model: config.geminiModel,
+            detail: errDetail || `Gemini rate limit or quota exceeded (HTTP ${res.status})`,
+            authenticationStatus: "AUTHENTICATED",
+            modelAvailability: "AVAILABLE",
+            rateLimits: "EXCEEDED",
+            quotaState: isQuota ? "EXCEEDED" : "OK"
+          };
+        } else if (res.status === 503 || res.status === 504) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: "TEMPORARILY_UNAVAILABLE",
+            model: config.geminiModel,
+            detail: errDetail || `Gemini service is temporarily unavailable / experiencing high demand (HTTP ${res.status})`,
+            authenticationStatus: "AUTHENTICATED",
+            modelAvailability: "AVAILABLE",
+            rateLimits: "OK",
+            quotaState: "OK"
+          };
+        } else if (res.status === 404) {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: "MODEL_UNAVAILABLE",
+            model: config.geminiModel,
+            detail: errDetail ? `Model ${config.geminiModel} not found: ${errDetail}` : `Model ${config.geminiModel} not found or retired`,
+            authenticationStatus: "AUTHENTICATED",
+            modelAvailability: "UNAVAILABLE",
+            rateLimits: "OK",
+            quotaState: "OK"
+          };
+        } else {
+          visionStatus = {
+            configured: true,
+            reachable: false,
+            visionModelReachable: false,
+            status: "REQUEST_ERROR",
+            model: config.geminiModel,
+            detail: errDetail ? `HTTP ${res.status}: ${errDetail}` : `HTTP ${res.status}`,
+            authenticationStatus: "UNKNOWN",
+            modelAvailability: "UNKNOWN",
+            rateLimits: "UNKNOWN",
+            quotaState: "UNKNOWN"
+          };
+        }
       }
     } catch (err) {
       if (err instanceof Error && (err.name === "AbortError" || err.name === "TimeoutError")) {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: false,
+          visionModelReachable: false,
           status: "TIMEOUT",
           model: config.geminiModel,
-          detail: "Gemini health check timed out"
+          detail: "Gemini health check timed out",
+          authenticationStatus: "UNKNOWN",
+          modelAvailability: "UNKNOWN",
+          rateLimits: "UNKNOWN",
+          quotaState: "UNKNOWN"
         };
       } else {
-        geminiStatus = {
+        visionStatus = {
           configured: true,
           reachable: false,
+          visionModelReachable: false,
           status: "NETWORK_ERROR",
           model: config.geminiModel,
-          detail: err instanceof Error ? err.message : "Network timeout or unreachable"
+          detail: err instanceof Error ? err.message : "Network timeout or unreachable",
+          authenticationStatus: "UNKNOWN",
+          modelAvailability: "UNKNOWN",
+          rateLimits: "UNKNOWN",
+          quotaState: "UNKNOWN"
         };
       }
     }
   }
   const activeImage = imageGeneration ?? {
     provider: deps.provider?.name ?? "cloudflare-workers-ai",
+    imageModelReachable: cfStatus.reachable,
+    authenticationStatus: cfStatus.status === "AUTH_FAILED" ? "AUTH_FAILED" : cfStatus.configured ? "AUTHENTICATED" : "NOT_CONFIGURED",
+    modelAvailability: cfStatus.status === "MODEL_UNAVAILABLE" ? "UNAVAILABLE" : cfStatus.reachable ? "AVAILABLE" : "UNKNOWN",
+    rateLimits: cfStatus.status === "RATE_LIMITED" ? "EXCEEDED" : "OK",
+    quotaState: "OK",
+    lastSuccessfulGeneration: null,
     ...cfStatus
   };
+  const imageModelReachable = activeImage.imageModelReachable ?? activeImage.reachable;
+  const visionModelReachable = visionStatus.visionModelReachable;
   return {
-    status: activeImage.reachable && geminiStatus.reachable ? "ok" : "degraded",
+    status: imageModelReachable && visionModelReachable ? "ok" : "degraded",
     imageProvider: deps.provider ? "configured" : "not_configured",
+    imageProviderName: activeImage.provider,
+    imageProviderStatus: imageModelReachable ? "REACHABLE" : activeImage.status,
+    configuredImageModel: activeImage.model,
+    imageProviderConfigured: activeImage.configured,
+    imageModelReachable,
+    visionModelReachable,
+    authenticationStatus: activeImage.authenticationStatus === "AUTHENTICATED" && visionStatus.authenticationStatus === "AUTHENTICATED" ? "AUTHENTICATED" : activeImage.authenticationStatus === "AUTH_FAILED" || visionStatus.authenticationStatus === "AUTH_FAILED" ? "AUTH_FAILED" : "NOT_CONFIGURED",
+    modelAvailability: activeImage.modelAvailability === "AVAILABLE" && visionStatus.modelAvailability === "AVAILABLE" ? "AVAILABLE" : activeImage.modelAvailability === "UNAVAILABLE" || visionStatus.modelAvailability === "UNAVAILABLE" ? "UNAVAILABLE" : "UNKNOWN",
+    rateLimits: activeImage.rateLimits === "EXCEEDED" || visionStatus.rateLimits === "EXCEEDED" ? "EXCEEDED" : "OK",
+    quotaState: activeImage.quotaState === "EXCEEDED" || visionStatus.quotaState === "EXCEEDED" ? "EXCEEDED" : "OK",
+    lastSuccessfulGeneration: activeImage.lastSuccessfulGeneration,
     imageGeneration: activeImage,
+    vision: visionStatus,
     cloudflare: cfStatus,
-    gemini: geminiStatus
+    gemini: visionStatus
   };
 }
 var GENERATION_REQUEST_TIMEOUT_MS = 15 * 60 * 1e3;
@@ -63800,6 +68402,201 @@ function readBody(request) {
     request.on("error", reject);
   });
 }
+var DEFAULT_SMOKE_TEST_PROMPT = `Create a premium architectural floor-plan concept illustration for a modern Indian L-shaped 3-bedroom villa.
+
+The villa is designed for a 40 ft \xD7 60 ft east-facing residential plot in Ahmedabad, Gujarat.
+
+Create a clean, sophisticated, top-down orthographic architectural floor-plan visualization with a clearly recognizable L-shaped building footprint.
+
+Include these architectural spaces:
+- Spacious living room.
+- Dining area connected naturally to the living room.
+- Semi-open kitchen.
+- Three appropriately positioned bedrooms.
+- Attached and common bathrooms.
+- Dedicated northeast Pooja room.
+- Utility space toward the southeast.
+- Front verandah or traditional otla.
+- Parking provision.
+- Internal circulation and staircase provision for a possible G+1 design.
+
+Follow the specified east-facing site orientation and strict Vastu preferences. Make the layout feel realistic, spacious, practical, and architecturally intentional.
+
+Use varied but coherent room proportions, thoughtful circulation, realistic door and window placement, and natural daylight considerations.
+
+Visual style:
+- Professional architectural presentation.
+- Fine dark architectural outlines.
+- Subtle neutral floor finishes.
+- Refined material representation.
+- Clear spatial separation.
+- Minimal visual clutter.
+- Balanced composition.
+- High-quality architectural visualization.
+
+The result should look like a professionally prepared architectural concept presentation, not a generic collection of rectangular boxes.
+
+Do not invent dimensions, room labels, technical annotations, structural calculations, or building-code certifications. Do not present this generated image as an engineering-approved construction drawing.
+
+Generate an actual image, not a textual description.`;
+function decodeImageDimensions2(buf) {
+  if (buf.length >= 24 && buf[0] === 137 && buf[1] === 80 && buf[2] === 78 && buf[3] === 71 && buf[4] === 13 && buf[5] === 10 && buf[6] === 26 && buf[7] === 10) {
+    const width = buf.readUInt32BE(16);
+    const height = buf.readUInt32BE(20);
+    if (width > 0 && height > 0) {
+      return { format: "png", width, height };
+    }
+  }
+  if (buf.length >= 4 && buf[0] === 255 && buf[1] === 216 && buf[2] === 255) {
+    let offset = 2;
+    while (offset + 9 < buf.length) {
+      if (buf[offset] !== 255) {
+        offset++;
+        continue;
+      }
+      const marker = buf[offset + 1];
+      if (marker === 255) {
+        offset++;
+        continue;
+      }
+      if (marker >= 192 && marker <= 195 || marker >= 197 && marker <= 199 || marker >= 201 && marker <= 203 || marker >= 205 && marker <= 207) {
+        const height = buf.readUInt16BE(offset + 5);
+        const width = buf.readUInt16BE(offset + 7);
+        if (width > 0 && height > 0) {
+          return { format: "jpeg", width, height };
+        }
+        break;
+      }
+      if (offset + 3 >= buf.length) break;
+      const segLength = buf.readUInt16BE(offset + 2);
+      if (segLength < 2) break;
+      offset += 2 + segLength;
+    }
+  }
+  return null;
+}
+async function handleImageSmokeTest(deps, rawBody) {
+  if (!deps.provider) {
+    return {
+      status: 503,
+      json: {
+        success: false,
+        error: { code: "NOT_CONFIGURED", message: "No image generation provider configured on server." }
+      }
+    };
+  }
+  if ("checkAccess" in deps.provider) {
+    const access2 = await deps.provider.checkAccess().catch(() => null);
+    if (access2 && !access2.reachable) {
+      return {
+        status: 502,
+        json: {
+          success: false,
+          provider: deps.provider.name,
+          model: deps.provider.getModel?.() ?? "unknown",
+          error: {
+            code: access2.status || "IMAGE_PROVIDER_UNREACHABLE",
+            message: access2.detail || "Image generation provider is not reachable.",
+            status: access2.status === "AUTH_FAILED" ? 403 : 502
+          }
+        }
+      };
+    }
+  }
+  let customPrompt;
+  let customWidth;
+  let customHeight;
+  let customSeed;
+  if (rawBody && rawBody.trim().length > 0) {
+    try {
+      const parsed = JSON.parse(rawBody);
+      if (typeof parsed.prompt === "string" && parsed.prompt.trim().length > 0) {
+        customPrompt = parsed.prompt.trim();
+      }
+      if (typeof parsed.width === "number" && parsed.width > 0) customWidth = parsed.width;
+      if (typeof parsed.height === "number" && parsed.height > 0) customHeight = parsed.height;
+      if (typeof parsed.seed === "number" && Number.isFinite(parsed.seed)) customSeed = parsed.seed;
+    } catch {
+    }
+  }
+  const testRequest = {
+    schemaVersion: 1,
+    promptVersion: 1,
+    prompt: customPrompt ?? DEFAULT_SMOKE_TEST_PROMPT,
+    negativePrompt: "perspective, 3d exterior render, realistic photography, dimensions, technical text annotations",
+    seed: customSeed ?? 1234,
+    width: customWidth ?? 1024,
+    height: customHeight ?? 768,
+    metadata: {
+      projectName: "Ahmedabad L-Shaped 3BHK Villa Smoke Test",
+      plotWidthMm: 12192,
+      plotDepthMm: 18288,
+      floorsCount: 2,
+      roadFacing: "east",
+      projectType: "residential_independent"
+    }
+  };
+  const startedAt = Date.now();
+  try {
+    const result = await deps.provider.generateFloorPlan(testRequest);
+    const latencyMs = Date.now() - startedAt;
+    const buf = Buffer.from(result.imageBase64, "base64");
+    const decoded = decodeImageDimensions2(buf);
+    if (!decoded) {
+      return {
+        status: 502,
+        json: {
+          success: false,
+          provider: result.provider,
+          model: result.model,
+          error: { code: "INVALID_IMAGE_BYTES", message: "Generated image could not be decoded as a valid PNG or JPEG with positive dimensions." }
+        }
+      };
+    }
+    const artifact = await deps.store.save("smoke-test", result, testRequest);
+    const persistedArtifact = await deps.store.get(artifact.generationId);
+    if (!persistedArtifact || !persistedArtifact.imageBase64) {
+      return {
+        status: 500,
+        json: {
+          success: false,
+          provider: result.provider,
+          model: result.model,
+          error: { code: "PERSISTENCE_FAILURE", message: "Generated image could not be verified in artifact storage." }
+        }
+      };
+    }
+    return {
+      status: 200,
+      json: {
+        success: true,
+        provider: result.provider,
+        model: result.model,
+        mimeType: result.mimeType,
+        format: decoded.format,
+        dimensions: { width: decoded.width, height: decoded.height },
+        byteLength: buf.length,
+        latencyMs,
+        artifactId: artifact.generationId,
+        persisted: true,
+        provenance: result.providerRequest
+      }
+    };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    const code = err instanceof ImageProviderError ? err.code : "IMAGE_GENERATION_FAILED";
+    const status = err instanceof ImageProviderError && err.status ? err.status : 502;
+    return {
+      status: status >= 400 && status < 600 ? status : 502,
+      json: {
+        success: false,
+        provider: deps.provider.name,
+        model: deps.provider.getModel?.() ?? "unknown",
+        error: { code, message, status }
+      }
+    };
+  }
+}
 async function route(request, response2, deps) {
   const url = new URL(request.url ?? "/", "http://localhost");
   const method = request.method ?? "GET";
@@ -63827,6 +68624,12 @@ async function route(request, response2, deps) {
       const config2 = deps.config ?? resolveImageServiceConfig();
       const health = await checkProviderHealth(config2, deps);
       send(200, health);
+      return;
+    }
+    if (method === "POST" && (url.pathname === "/api/v1/image/smoke-test" || url.pathname === "/api/image/smoke-test")) {
+      const raw = await readBody(request);
+      const smokeResult = await handleImageSmokeTest(deps, raw);
+      send(smokeResult.status, smokeResult.json);
       return;
     }
     if (method === "POST" && (url.pathname === "/api/v1/generation/run" || url.pathname === "/api/generation/run")) {
@@ -63945,8 +68748,8 @@ function startBackendServer(port) {
   server.listen(port ?? config.port, () => {
     console.log(`AI floor-planner backend listening on port ${port ?? config.port}`);
     console.log(`CORS allowed origins: ${config.corsAllowedOrigins.length > 0 ? config.corsAllowedOrigins.join(", ") : process.env.NODE_ENV === "production" ? "NONE (explicit origins required)" : "local dev frontends"}`);
-    const providerModel = config.imageProviderKind === "pollinations" ? config.pollinationsImageModel : config.imageProviderKind === "cloudflare" ? config.fluxModel : "local-stub";
-    const missing = config.imageProviderKind === "pollinations" ? "POLLINATIONS_API_KEY" : "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN";
+    const providerModel = config.imageProviderKind === "pollinations" ? config.pollinationsImageModel : config.imageProviderKind === "gemini" ? config.geminiImageModel : config.imageProviderKind === "cloudflare" ? config.fluxModel : "local-stub";
+    const missing = config.imageProviderKind === "pollinations" ? "POLLINATIONS_API_KEY" : config.imageProviderKind === "gemini" ? "GEMINI_API_KEY" : "CLOUDFLARE_ACCOUNT_ID / CLOUDFLARE_API_TOKEN";
     console.log(`Image provider: ${deps.provider ? `${deps.provider.name} configured (model ${providerModel})` : `${config.imageProviderKind} NOT CONFIGURED (set ${missing})`}`);
     console.log(`Image interpreter: ${deps.interpreterKind === "gemini" ? gemini ? "gemini configured" : "gemini NOT CONFIGURED (set GEMINI_API_KEY)" : "local-stub (dev)"}`);
     console.log(`Image artifact store: ${config.artifactDir}`);
@@ -63962,11 +68765,14 @@ if (isDirectRun()) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  DEFAULT_SMOKE_TEST_PROMPT,
   GENERATION_REQUEST_TIMEOUT_MS,
   checkProviderHealth,
   createBackendServer,
   createGeminiProvider,
   createImageProvider,
+  decodeImageDimensions,
+  handleImageSmokeTest,
   resolveCorsHeaders,
   startBackendServer
 });

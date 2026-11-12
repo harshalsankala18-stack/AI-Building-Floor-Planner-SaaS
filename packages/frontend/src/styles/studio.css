@@ -18,27 +18,30 @@
   --studio-border-hairline: #E6E4DD;
   --studio-border-subtle: #DCD9D0;
   --studio-border-strong: #BCB8AD;
-  --studio-border-focus: #C87D55;
+  --studio-border-focus: #1E3A2F;
 
   /* Graphite Typography */
-  --studio-text-primary: #18181B;
-  --studio-text-secondary: #52525B;
-  --studio-text-muted: #71717A;
-  --studio-text-faint: #A1A1AA;
+  --studio-text-primary: #1C1E1B;
+  --studio-text-secondary: #4D534B;
+  --studio-text-muted: #7E877C;
+  --studio-text-faint: #A3ACA0;
   --studio-text-inverse: #FFFFFF;
 
-  /* Architectural Signature Accents */
-  --studio-terracotta: #C86D48;
-  --studio-terracotta-hover: #B45E3B;
-  --studio-terracotta-soft: rgba(200, 109, 72, 0.12);
-  --studio-slate: #3B5B82;
-  --studio-slate-soft: rgba(59, 91, 130, 0.10);
-  --studio-sage: #388E6B;
-  --studio-sage-soft: rgba(56, 142, 107, 0.12);
-  --studio-amber: #D97706;
-  --studio-amber-soft: rgba(217, 119, 6, 0.12);
-  --studio-indigo: #4F46E5;
-  --studio-indigo-soft: rgba(79, 70, 229, 0.10);
+  /* Architectural Signature Accents — Restrained Deep Forest Green */
+  --studio-forest: #1E3A2F;
+  --studio-forest-hover: #152A22;
+  --studio-forest-soft: rgba(30, 58, 47, 0.08);
+  --studio-terracotta: #1E3A2F;
+  --studio-terracotta-hover: #152A22;
+  --studio-terracotta-soft: rgba(30, 58, 47, 0.08);
+  --studio-slate: #2F4858;
+  --studio-slate-soft: rgba(47, 72, 88, 0.08);
+  --studio-sage: #1E3A2F;
+  --studio-sage-soft: rgba(30, 58, 47, 0.08);
+  --studio-amber: #B46914;
+  --studio-amber-soft: rgba(180, 105, 20, 0.08);
+  --studio-indigo: #1E3A2F;
+  --studio-indigo-soft: rgba(30, 58, 47, 0.08);
 
   /* Elevation Shadows */
   --studio-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);

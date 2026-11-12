@@ -82,6 +82,19 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
   const [doorPreview, setDoorPreview] = useState<{ position: { x: number; y: number }; wallId: string } | null>(null);
   const [transientOpening, setTransientOpening] = useState<{ entityType: 'door' | 'window'; id: string; position: { x: number; y: number }; wallId: string; width: number } | null>(null);
   const [measurement, setMeasurement] = useState<{ start: { x: number; y: number }; end: { x: number; y: number } } | null>(null);
+  /**
+   * Why the last tool click did nothing. Shown on the canvas so a tool with an
+   * unmet precondition explains itself instead of looking broken.
+   */
+  const [toolHint, setToolHint] = useState<string | null>(null);
+
+  // A hint is about one attempt; clear it when the user changes tool or floor.
+  useEffect(() => { setToolHint(null); }, [editor.activeTool, editor.activeFloor.id]);
+  useEffect(() => {
+    if (!toolHint) return;
+    const timer = window.setTimeout(() => setToolHint(null), 6000);
+    return () => window.clearTimeout(timer);
+  }, [toolHint]);
 
   // Measure container viewport on mount and resize
   useEffect(() => {
@@ -264,6 +277,12 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           return;
         }
       }
+      // Precondition unmet: say so rather than appearing broken.
+      setToolHint(
+        editor.activeFloor.walls.length === 0
+          ? 'This floor has no walls yet, so a door has nowhere to go. Add rooms first — walls are derived from room boundaries.'
+          : 'Click on a wall to place the door. A 900 mm door needs to fit within the wall segment you click.',
+      );
       return;
     }
 
@@ -288,6 +307,11 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           return;
         }
       }
+      setToolHint(
+        editor.activeFloor.walls.length === 0
+          ? 'This floor has no walls yet, so a window has nowhere to go. Add rooms first.'
+          : 'Click on a wall to place the window. A 1200 mm window needs to fit within the wall segment you click.',
+      );
       return;
     }
 
@@ -298,6 +322,7 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
         editor.setTool('select');
       } else {
         setMeasurement({ start: point, end: point });
+        setToolHint('Measuring: click a second point to finish. The distance stays on the drawing until you press Escape.');
       }
       return;
     }
@@ -477,10 +502,11 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
   const handlePointerUp = () => {
     if ((dragMode === 'move_room' || dragMode === 'resize_room') && transientRoom && selectedRoom) {
       if (!transientRoomValid) {
+        // Explain the refusal instead of just dropping the drag.
+        setToolHint(
+          `"${selectedRoom.name}" was not moved: that position would overlap another room or leave the ${editor.activeFloor.name} outline.`,
+        );
         setDragMode('none'); setTransientRoom(null); setActiveGuides([]); setResizeHandle(null); return;
-      }
-      if (transientRoom.x !== selectedRoom.x || transientRoom.y !== selectedRoom.y) {
-        // Fall through to one complete geometry command below.
       }
       if (transientRoom.x !== selectedRoom.x || transientRoom.y !== selectedRoom.y || transientRoom.width !== selectedRoom.width || transientRoom.height !== selectedRoom.height) {
         editor.executeCommand(new UpdateRoomGeometryCommand(transientRoom.id, transientRoom, selectedRoom.name));
@@ -510,7 +536,11 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       } else if (e.key === 'Delete' || e.key === 'Backspace') {
         const activeTag = (document.activeElement?.tagName || '').toLowerCase();
         if (activeTag !== 'input' && activeTag !== 'select' && activeTag !== 'textarea') {
-          editor.deleteSelected();
+          if (!editor.selection) {
+            setToolHint('Nothing is selected. Click a room, wall, door or window first, then press Delete.');
+          } else {
+            editor.deleteSelected();
+          }
         }
       } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'z') {
         if (e.shiftKey) {
@@ -526,6 +556,19 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editor]);
+
+  // A command may decline to change the model (e.g. a wall too short for its
+  // openings). Show that reason rather than letting the click look ignored.
+  useEffect(() => {
+    const unsubscribe = editor.engine.subscribe(() => {
+      const rejection = editor.engine.getLastRejection();
+      if (rejection) {
+        setToolHint(rejection.reason);
+        editor.engine.clearLastRejection();
+      }
+    });
+    return () => unsubscribe();
+  }, [editor.engine]);
 
   const displayRoom = transientRoom ?? selectedRoom;
 
@@ -598,6 +641,33 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
           <Focus size={15} />
         </button>
       </div>
+
+      {/* Why the last tool action did nothing — never fail silently. */}
+      {toolHint && (
+        <div
+          className="canvas-tool-hint"
+          role="status"
+          data-testid="canvas-tool-hint"
+          style={{
+            position: 'absolute',
+            bottom: 72,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            maxWidth: 520,
+            padding: '8px 14px',
+            borderRadius: 8,
+            background: 'rgba(146, 64, 14, 0.95)',
+            color: '#FFFBEB',
+            border: '1px solid #FCD34D',
+            fontSize: 12,
+            lineHeight: 1.4,
+            zIndex: 20,
+            boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
+          }}
+        >
+          {toolHint}
+        </div>
+      )}
 
       {/* Base Layer: Authoritative Vector SVG */}
       <div

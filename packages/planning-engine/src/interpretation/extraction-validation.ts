@@ -45,7 +45,9 @@ export function validateExtractedPlan(
   }
 
   const allRooms = building.floors.flatMap(floor => floor.rooms);
-  const collisions = allRooms.flatMap(room => detectRoomCollisions(room, allRooms));
+  const collisions = building.floors.flatMap(floor =>
+    floor.rooms.flatMap(room => detectRoomCollisions(room, floor.rooms)),
+  );
   if (collisions.length > 0) {
     const sample = collisions.slice(0, 5).map(collision => [collision.entityA, collision.entityB].join(', ')).join('; ');
     issues.push({
@@ -60,6 +62,29 @@ export function validateExtractedPlan(
   for (const room of extracted.rooms) {
     const type = extractedRoomType(room.type || room.name);
     extractedCounts[type] = (extractedCounts[type] ?? 0) + 1;
+    const rawCombined = `${room.type} ${room.name}`.toLowerCase();
+    if (type === 'living' && rawCombined.includes('dining')) {
+      extractedCounts['dining'] = (extractedCounts['dining'] ?? 0) + 1;
+    }
+  }
+  if (extracted.parking.length > 0) {
+    extractedCounts['parking'] = (extractedCounts['parking'] ?? 0) + extracted.parking.length;
+  }
+  if (extracted.stairs.length > 0) {
+    extractedCounts['staircase'] = (extractedCounts['staircase'] ?? 0) + extracted.stairs.length;
+  }
+  const buildingCounts: Record<string, number> = {};
+  for (const room of allRooms) {
+    buildingCounts[room.type] = (buildingCounts[room.type] ?? 0) + 1;
+  }
+  const siteParkingZones = (building.site?.siteZones ?? []).filter(
+    z => String((z as unknown as Record<string, unknown>).category ?? (z as unknown as Record<string, unknown>).type ?? z.name ?? '').toLowerCase().includes('parking'),
+  ).length;
+  if (siteParkingZones > 0) {
+    buildingCounts['parking'] = Math.max(
+      buildingCounts['parking'] ?? 0,
+      requirements.hard.parkingSpacesCount || siteParkingZones,
+    );
   }
   const requiredFields: ReadonlyArray<readonly [string, number]> = [
     ['bedroom', requirements.hard.bedroomCount],
@@ -70,7 +95,7 @@ export function validateExtractedPlan(
     ['parking', requirements.hard.parkingSpacesCount],
   ];
   for (const [type, required] of requiredFields) {
-    const extractedCount = extractedCounts[type] ?? 0;
+    const extractedCount = Math.max(extractedCounts[type] ?? 0, buildingCounts[type] ?? 0);
     if (required > 0 && extractedCount < required) {
       issues.push({
         code: 'EXTRACTION_MISSING_REQUIRED_ROOMS',

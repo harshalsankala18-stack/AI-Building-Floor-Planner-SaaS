@@ -22,12 +22,18 @@ interface FootprintWorkspaceProps {
 
 const THUMBNAILS: Record<FootprintShapeType, string> = {
   rectangle: 'M5 7H35V29H5Z',
+  square: 'M7 7H33V33H7Z',
   l_shape: 'M5 6H35V15H17V30H5Z',
   u_shape: 'M5 6H13V23H27V6H35V31H5Z',
   t_shape: 'M4 6H36V15H25V31H15V15H4Z',
   courtyard: 'M4 5H36V31H24V24H29V12H11V24H17V31H4Z',
+  h_shape: 'M5 5H13V17H27V5H35V35H27V23H13V35H5Z',
+  v_shape: 'M5 5H13L20 22L27 5H35L25 35H15Z',
+  z_shape: 'M5 5H25V17H35V35H15V23H5Z',
   linear: 'M3 12H37V24H3Z',
+  stepped: 'M5 6H20V14H28V22H35V32H5Z',
   custom: 'M5 19L12 6L34 10L37 25L23 32L8 28Z',
+  flexible: 'M5 7H35V29H5Z',
 };
 
 function unitDivisor(unit: 'metric' | 'imperial'): number { return unit === 'imperial' ? 304.8 : 1_000; }
