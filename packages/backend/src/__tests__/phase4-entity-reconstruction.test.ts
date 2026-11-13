@@ -9,7 +9,6 @@ import {
   normalizeDesignRequirementSpecification,
   RoomType,
   StairType,
-  SwingDirection,
   WallType,
   WindowType,
 } from '@ai-floor-planner/core';
@@ -79,10 +78,12 @@ describe('Phase 4 — Complete Architectural Entity & Opening Reconstruction', (
       entranceSide: 'north',
       boundary: {
         points: [
-          { x: 100, y: 80 },
+          { x: 180, y: 80 },
           { x: 900, y: 80 },
           { x: 900, y: 460 },
           { x: 100, y: 460 },
+          { x: 100, y: 240 },
+          { x: 180, y: 240 },
         ],
       },
       floors: [
@@ -91,10 +92,12 @@ describe('Phase 4 — Complete Architectural Entity & Opening Reconstruction', (
           name: 'Ground Floor Plan',
           boundary: {
             points: [
-              { x: 100, y: 80 },
+              { x: 180, y: 80 },
               { x: 900, y: 80 },
               { x: 900, y: 460 },
               { x: 100, y: 460 },
+              { x: 100, y: 240 },
+              { x: 180, y: 240 },
             ],
           },
         },
@@ -118,7 +121,26 @@ describe('Phase 4 — Complete Architectural Entity & Opening Reconstruction', (
         { id: 'gf_foyer', name: 'Entrance Foyer', type: 'foyer', floorLevel: 0, x: 440, y: 240, width: 120, height: 220 },
         { id: 'gf_bed1', name: 'Bedroom 1', type: 'bedroom', floorLevel: 0, x: 180, y: 80, width: 250, height: 150 },
         { id: 'gf_bath1', name: 'Common Bath', type: 'bathroom', floorLevel: 0, x: 440, y: 80, width: 110, height: 150 },
-        { id: 'gf_living', name: 'Living Room', type: 'living', floorLevel: 0, x: 560, y: 80, width: 340, height: 180 },
+        {
+          id: 'gf_living',
+          name: 'Living Room',
+          type: 'living',
+          floorLevel: 0,
+          x: 560,
+          y: 80,
+          width: 340,
+          height: 180,
+          boundary: {
+            points: [
+              { x: 560, y: 80 },
+              { x: 900, y: 80 },
+              { x: 900, y: 220 },
+              { x: 840, y: 220 },
+              { x: 840, y: 260 },
+              { x: 560, y: 260 },
+            ],
+          },
+        },
         { id: 'gf_dining', name: 'Dining Room', type: 'dining', floorLevel: 0, x: 570, y: 270, width: 170, height: 190 },
         { id: 'gf_kitchen', name: 'Kitchen', type: 'kitchen', floorLevel: 0, x: 750, y: 270, width: 150, height: 140 },
         { id: 'gf_pantry', name: 'Pantry', type: 'pantry', floorLevel: 0, x: 750, y: 415, width: 70, height: 45 },
@@ -191,10 +213,10 @@ describe('Phase 4 — Complete Architectural Entity & Opening Reconstruction', (
     }
 
     // 2. Semantic room types preserved
-    expect(gf.rooms.some(r => r.type === RoomType.Pantry)).toBe(true);
+    expect(gf.rooms.some(r => r.type === RoomType.Utility)).toBe(true);
     expect(gf.rooms.some(r => r.type === RoomType.Pooja)).toBe(true);
     expect(gf.rooms.some(r => r.type === RoomType.Foyer)).toBe(true);
-    expect(ff.rooms.some(r => r.type === RoomType.Store)).toBe(true);
+    expect(ff.rooms.some(r => r.type === RoomType.Storage)).toBe(true);
     expect(ff.rooms.some(r => r.type === RoomType.Balcony)).toBe(true);
 
     // 3. Shared internal walls (115mm) and external walls (230mm) created

@@ -64,7 +64,6 @@ import {
   isValidPolygon,
   pointInPolygonWithTolerance,
   polygonArea,
-  polygonIntersectionArea,
   polygonIntersectionAreaConcave,
 } from '@ai-floor-planner/planning-engine';
 import type { ExtractedPlan } from '@ai-floor-planner/planning-engine';
@@ -172,8 +171,8 @@ function resolveRoomType(rawType: string, rawName: string): RoomType {
   if (token.includes('verandah') || token.includes('veranda') || token.includes('porch') || token.includes('sit-out') || token.includes('sitout')) return RoomType.Porch;
   if (token.includes('lobby') || token.includes('passage') || token.includes('corridor')) return RoomType.Corridor;
   if (token.includes('pooja') || token.includes('puja') || token.includes('temple') || token.includes('mandir')) return RoomType.Pooja;
-  if (token.includes('pantry')) return RoomType.Pantry;
-  if (token.includes('linen') || token.includes('store') || token.includes('storage')) return RoomType.Store;
+  if (token.includes('pantry')) return RoomType.Utility;
+  if (token.includes('linen') || token.includes('store') || token.includes('storage')) return RoomType.Storage;
   if (token.includes('utility') || token.includes('wash') || token.includes('laundry')) return RoomType.Utility;
   if (token.includes('terrace') || token.includes('deck')) return RoomType.Terrace;
   return extractedRoomType(rawType || rawName);
@@ -1815,9 +1814,8 @@ export function reconstructBuildingFromImage(
         const isBathOrService =
           targetRoom?.type === RoomType.Bathroom ||
           targetRoom?.type === RoomType.Utility ||
-          targetRoom?.type === RoomType.Store ||
-          targetRoom?.type === RoomType.Pooja ||
-          targetRoom?.type === RoomType.Pantry;
+          targetRoom?.type === RoomType.Storage ||
+          targetRoom?.type === RoomType.Pooja;
         const isMainEntry =
           wall.type === WallType.External &&
           (targetRoom?.type === RoomType.Foyer || targetRoom?.type === RoomType.Living || targetRoom?.type === RoomType.Porch);

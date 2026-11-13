@@ -6,20 +6,12 @@ import {
 } from '../services/image-to-cad-reconstruction.js';
 import {
   normalizeDesignRequirementSpecification,
-  RoomType,
-  WallType,
-  DoorType,
-  WindowType,
-  IMAGE_DERIVED_TAG,
-  type Building,
-  type Floor,
 } from '@ai-floor-planner/core';
 import {
   createExtractionMetadata,
   parseExtractionPayload,
-  type ExtractedPlan,
 } from '@ai-floor-planner/planning-engine';
-import { projectBuildingTo3D } from '../../../projection-3d/src/index.js';
+import { projectBuildingTo3D } from '../../../projection-3d/dist/index.js';
 import { evaluateCadFidelity } from '../services/cad-fidelity.js';
 import { detectFloorRegionsFromPayload } from '@ai-floor-planner/ai-orchestration';
 
@@ -142,7 +134,7 @@ describe('Phase 2B — Multi-Floor Image Interpretation, Floor Assignment & 2D/3
       extractionSource: 'gemini_vision',
       confidence: 'high',
     });
-    const { plan, diagnostics } = parseExtractionPayload(verticallyStackedPayload, meta, 'test_plan_multi');
+    const { plan } = parseExtractionPayload(verticallyStackedPayload, meta, 'test_plan_multi');
     expect(plan).not.toBeNull();
     if (!plan) return;
 

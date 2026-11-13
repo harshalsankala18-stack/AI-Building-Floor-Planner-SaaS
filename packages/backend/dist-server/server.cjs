@@ -64656,8 +64656,8 @@ function resolveRoomType(rawType, rawName) {
   if (token.includes("verandah") || token.includes("veranda") || token.includes("porch") || token.includes("sit-out") || token.includes("sitout")) return RoomType.Porch;
   if (token.includes("lobby") || token.includes("passage") || token.includes("corridor")) return RoomType.Corridor;
   if (token.includes("pooja") || token.includes("puja") || token.includes("temple") || token.includes("mandir")) return RoomType.Pooja;
-  if (token.includes("pantry")) return RoomType.Pantry;
-  if (token.includes("linen") || token.includes("store") || token.includes("storage")) return RoomType.Store;
+  if (token.includes("pantry")) return RoomType.Utility;
+  if (token.includes("linen") || token.includes("store") || token.includes("storage")) return RoomType.Storage;
   if (token.includes("utility") || token.includes("wash") || token.includes("laundry")) return RoomType.Utility;
   if (token.includes("terrace") || token.includes("deck")) return RoomType.Terrace;
   return extractedRoomType(rawType || rawName);
@@ -65954,7 +65954,7 @@ function reconstructBuildingFromImage(options) {
         }
         const wallLen = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
         const targetRoom = adjacentRoom ?? rooms.find((r) => r.id === wall2.roomIds[0]);
-        const isBathOrService = targetRoom?.type === RoomType.Bathroom || targetRoom?.type === RoomType.Utility || targetRoom?.type === RoomType.Store || targetRoom?.type === RoomType.Pooja || targetRoom?.type === RoomType.Pantry;
+        const isBathOrService = targetRoom?.type === RoomType.Bathroom || targetRoom?.type === RoomType.Utility || targetRoom?.type === RoomType.Storage || targetRoom?.type === RoomType.Pooja;
         const isMainEntry = wall2.type === WallType.External && (targetRoom?.type === RoomType.Foyer || targetRoom?.type === RoomType.Living || targetRoom?.type === RoomType.Porch);
         const defaultDoorWidth = door2.type === "double" ? 1500 : isMainEntry ? 1050 : isBathOrService ? 750 : 900;
         const rawSpan = snapGrid(Math.max(centre2.width, centre2.height)) || defaultDoorWidth;

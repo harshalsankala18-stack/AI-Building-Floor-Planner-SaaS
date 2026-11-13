@@ -259,8 +259,24 @@ export function generateArchitecturalDxf(building: Building, options: DxfExportO
       );
     }
 
+    // Floor boundary polygon
+    if (floor.boundary?.points && floor.boundary.points.length >= 3) {
+      lines.push('0', 'POLYLINE', '8', 'SITE_BOUNDARY', '66', '1', '70', '1');
+      for (const pt of floor.boundary.points) {
+        lines.push('0', 'VERTEX', '8', 'SITE_BOUNDARY', '10', (floorOffsetX + pt.x).toFixed(2), '20', (-pt.y).toFixed(2), '30', '0.0');
+      }
+      lines.push('0', 'SEQEND');
+    }
+
     // Rooms (polylines + text labels)
     for (const room of floor.rooms) {
+      if (room.boundary?.points && room.boundary.points.length >= 3) {
+        lines.push('0', 'POLYLINE', '8', 'ROOMS', '66', '1', '70', '1');
+        for (const pt of room.boundary.points) {
+          lines.push('0', 'VERTEX', '8', 'ROOMS', '10', (floorOffsetX + pt.x).toFixed(2), '20', (-pt.y).toFixed(2), '30', '0.0');
+        }
+        lines.push('0', 'SEQEND');
+      }
       // Room bounding polyline
       const rx1 = floorOffsetX + room.x;
       const ry1 = -room.y;
@@ -590,7 +606,14 @@ export function generateBuildingGlb(building: Building): Uint8Array {
   const gltfJson = {
     asset: { version: '2.0', generator: 'AI Building Floor Planner SaaS' },
     scenes: [{ nodes: [0] }],
-    nodes: [{ name: building.name, mesh: 0 }],
+    nodes: [{
+      name: building.name,
+      mesh: 0,
+      extras: {
+        floorCount: building.floors.length,
+        floors: building.floors.map(f => ({ id: f.id, level: f.level, name: f.name, floorHeight: f.floorHeight ?? 3000, roomCount: f.rooms.length, wallCount: f.walls.length })),
+      },
+    }],
     meshes: [{
       primitives: [{
         attributes: { POSITION: 0 },
@@ -610,7 +633,7 @@ export function generateBuildingGlb(building: Building): Uint8Array {
         componentType: 5126, // FLOAT
         count: 4,
         type: 'VEC3',
-        max: [building.site.plotWidth / 1000, 3.0, building.site.plotDepth / 1000],
+        max: [building.site.plotWidth / 1000, Math.max(3.0, building.floors.length * 3.0), building.site.plotDepth / 1000],
         min: [0, 0, 0],
       },
       {
@@ -686,6 +709,61 @@ export function generateBuildingGlb(building: Building): Uint8Array {
   return glb;
 }
 
+export function generateBuildingGltf(building: Building): string {
+  const gltf = {
+    asset: { version: '2.0', generator: 'AI Building Floor Planner SaaS' },
+    scene: 0,
+    scenes: [{ name: building.name, nodes: building.floors.map((_, idx) => idx) }],
+    nodes: building.floors.map((floor, idx) => ({
+      name: `${floor.name} (Level ${floor.level})`,
+      translation: [0, idx * ((floor.floorHeight ?? 3000) / 1000), 0],
+      extras: {
+        floorId: floor.id,
+        level: floor.level,
+        floorHeightMm: floor.floorHeight ?? 3000,
+        boundaryVertices: floor.boundary.points,
+        roomCount: floor.rooms.length,
+        wallCount: floor.walls.length,
+        doorCount: floor.doors.length,
+        windowCount: floor.windows.length,
+        stairCount: floor.stairs.length,
+      },
+    })),
+  };
+  return JSON.stringify(gltf, null, 2);
+}
+
+export function exportProjectPackageJson(envelope: ProjectEnvelope): string {
+  return JSON.stringify(
+    {
+      packageFormat: 'ai-floor-planner-project-package',
+      packageVersion: 1,
+      exportedAt: new Date().toISOString(),
+      floorCount: envelope.building.floors.length,
+      acceptedState: envelope.floorPlanImage?.evaluation
+        ? Boolean(envelope.floorPlanImage.evaluation.passed && envelope.floorPlanImage.evaluation.overallScore >= 80)
+        : null,
+      qualityScore: envelope.floorPlanImage?.evaluation?.overallScore ?? null,
+      generationSession: envelope.generationSession ?? null,
+      imageArtifactId: envelope.floorPlanImage?.generationId ?? null,
+      envelope,
+    },
+    null,
+    2,
+  );
+}
+
+export function importProjectPackageJson(rawJson: string): ProjectEnvelope {
+  const parsed = JSON.parse(rawJson);
+  const env: ProjectEnvelope = parsed?.envelope && parsed?.packageFormat === 'ai-floor-planner-project-package'
+    ? parsed.envelope
+    : parsed;
+  if (!env || !env.building || !Array.isArray(env.building.floors)) {
+    throw new Error('Invalid project package JSON: missing canonical building or floors.');
+  }
+  return env;
+}
+
 // ─── COMPLETE PROJECT BACKUP ZIP PACKAGE ──────────────────────────────────────
 
 export function generateProjectBackupZip(envelope: ProjectEnvelope): Uint8Array {
@@ -705,6 +783,12 @@ export function generateProjectBackupZip(envelope: ProjectEnvelope): Uint8Array 
     spaceProgram: envelope.spaceProgram,
     wizardBrief: envelope.wizardBrief,
     qualityScore: envelope.floorPlanImage?.evaluation?.overallScore ?? null,
+    acceptedState: envelope.floorPlanImage?.evaluation
+      ? Boolean(envelope.floorPlanImage.evaluation.passed && envelope.floorPlanImage.evaluation.overallScore >= 80)
+      : null,
+    floorCount: building.floors.length,
+    generationSession: envelope.generationSession ?? null,
+    imageArtifactId: envelope.floorPlanImage?.generationId ?? null,
   };
   entries.push({
     path: 'project-manifest.json',
@@ -753,6 +837,8 @@ export function generateProjectBackupZip(envelope: ProjectEnvelope): Uint8Array 
     { path: 'models/building-model.mtl', data: mtl },
     { path: 'models/building-model.stl', data: stl },
     { path: 'models/building-model.glb', data: glb },
+    { path: 'models/building-model.gltf', data: generateBuildingGltf(building) },
+    { path: 'project-package.json', data: exportProjectPackageJson(envelope) },
   );
 
   // 7. README Documentation & Disclaimer

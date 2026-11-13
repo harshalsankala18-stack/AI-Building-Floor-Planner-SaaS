@@ -157,7 +157,17 @@ function makePdf(building: Building, settings: AdvancedExportSettings): string {
     const y = py(room.y + room.height);
     const width = room.width * fitScale;
     const height = room.height * fitScale;
-    commands.push(`${r} ${g} ${b} rg`, `${x.toFixed(2)} ${y.toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)} re f`);
+    if (room.boundary?.points && room.boundary.points.length >= 3) {
+      const pts = room.boundary.points;
+      const polyCmd = [
+        `${px(pts[0]!.x).toFixed(2)} ${py(pts[0]!.y).toFixed(2)} m`,
+        ...pts.slice(1).map(pt => `${px(pt.x).toFixed(2)} ${py(pt.y).toFixed(2)} l`),
+        'h f',
+      ].join(' ');
+      commands.push(`${r} ${g} ${b} rg`, polyCmd);
+    } else {
+      commands.push(`${r} ${g} ${b} rg`, `${x.toFixed(2)} ${y.toFixed(2)} ${width.toFixed(2)} ${height.toFixed(2)} re f`);
+    }
     if (settings.includeRoomLabels) {
       const centerX = x + width / 2;
       const centerY = y + height / 2;
@@ -240,6 +250,7 @@ function makeJson(building: Building, settings: AdvancedExportSettings): string 
       projectNumber: settings.projectNumber,
       revision: settings.revision,
       scale: settings.scale,
+      floorCount: building.floors.length,
     },
     building: JSON.parse(serializeBuilding(building)),
   }, null, 2);

@@ -59,6 +59,20 @@ function validatePoint(value: unknown, path: string, errors: ValidationError[]):
 
 // ─── Polygon Validation ─────────────────────────────────────────────────────
 
+function computePolygonPointsArea(points: unknown[]): number | null {
+  if (points.length < 3) return null;
+  let sum = 0;
+  for (let i = 0; i < points.length; i++) {
+    const p1 = points[i];
+    const p2 = points[(i + 1) % points.length];
+    if (!isObject(p1) || !isObject(p2) || !isFiniteNumber(p1['x']) || !isFiniteNumber(p1['y']) || !isFiniteNumber(p2['x']) || !isFiniteNumber(p2['y'])) {
+      return null;
+    }
+    sum += (p1['x'] as number) * (p2['y'] as number) - (p2['x'] as number) * (p1['y'] as number);
+  }
+  return Math.abs(sum) / 2;
+}
+
 function validatePolygon(value: unknown, path: string, errors: ValidationError[]): void {
   if (!isObject(value)) {
     errors.push({ path, message: 'Must be an object with points array', value });
@@ -113,13 +127,18 @@ export function validateRoomSchema(room: unknown): ValidationError[] {
     errors.push({ path: `${path}.height`, message: 'Must be a positive number', value: room['height'] });
   }
 
-  // Area must match width × height (tolerance: 1 sq mm)
+  // Area must match width × height or polygon boundary area (tolerance: 1 sq mm)
   if (isPositiveNumber(room['width']) && isPositiveNumber(room['height']) && isFiniteNumber(room['area'])) {
-    const expectedArea = (room['width'] as number) * (room['height'] as number);
-    if (Math.abs((room['area'] as number) - expectedArea) > 1) {
+    const expectedRectArea = (room['width'] as number) * (room['height'] as number);
+    const polyPts = isObject(room['boundary']) && isArray(room['boundary']['points']) ? room['boundary']['points'] : null;
+    const expectedPolyArea = polyPts ? computePolygonPointsArea(polyPts) : null;
+    const actualArea = room['area'] as number;
+    const matchesRect = Math.abs(actualArea - expectedRectArea) <= 1;
+    const matchesPoly = expectedPolyArea !== null && expectedPolyArea > 0 && Math.abs(actualArea - expectedPolyArea) <= 1;
+    if (!matchesRect && !matchesPoly) {
       errors.push({
         path: `${path}.area`,
-        message: `Area mismatch: expected ${expectedArea}, got ${room['area'] as number}`,
+        message: `Area mismatch: expected ${expectedPolyArea ?? expectedRectArea}, got ${actualArea}`,
         value: room['area'],
       });
     }
@@ -258,13 +277,18 @@ export function validateBuildingSchema(building: unknown): ValidationError[] {
             errors.push({ path: `${rp}.y`, message: 'Must be a finite number', value: room['y'] });
           }
 
-          // Area validation
+          // Area validation (supports both rectangular width × height and polygon boundary area)
           if (isPositiveNumber(room['width']) && isPositiveNumber(room['height']) && isFiniteNumber(room['area'])) {
-            const expected = (room['width'] as number) * (room['height'] as number);
-            if (Math.abs((room['area'] as number) - expected) > 1) {
+            const expectedRect = (room['width'] as number) * (room['height'] as number);
+            const polyPts = isObject(room['boundary']) && isArray(room['boundary']['points']) ? room['boundary']['points'] : null;
+            const expectedPoly = polyPts ? computePolygonPointsArea(polyPts) : null;
+            const actualArea = room['area'] as number;
+            const matchesRect = Math.abs(actualArea - expectedRect) <= 1;
+            const matchesPoly = expectedPoly !== null && expectedPoly > 0 && Math.abs(actualArea - expectedPoly) <= 1;
+            if (!matchesRect && !matchesPoly) {
               errors.push({
                 path: `${rp}.area`,
-                message: `Area mismatch: expected ${expected}, got ${room['area'] as number}`,
+                message: `Area mismatch: expected ${expectedPoly ?? expectedRect}, got ${actualArea}`,
                 value: room['area'],
               });
             }
