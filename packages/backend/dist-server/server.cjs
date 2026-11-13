@@ -1149,6 +1149,7 @@ var init_wall_commands = __esm({
   "../core/dist/editor/commands/wall-commands.js"() {
     "use strict";
     init_id();
+    init_factory();
     init_updaters();
   }
 });

@@ -6,9 +6,10 @@
  * orphan a hosted door, and must not silently move the rooms it separates.
  */
 
-import type { Building, Wall } from '../../types';
+import type { Building, Wall, Door, Window } from '../../types';
 import { WallType } from '../../types';
 import { generateId } from '../../models/id';
+import { createWall } from '../../models/factory';
 import { updateWall } from '../../models/updaters';
 import type { IEditorCommand, EditorState, CommandExecutionResult } from '../types';
 
@@ -204,4 +205,168 @@ function projectOnto(
   let t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / lenSq;
   t = Math.max(0, Math.min(1, t));
   return { x: Math.round(a.x + t * dx), y: Math.round(a.y + t * dy) };
+}
+
+/**
+ * Split a wall into two collinear segments at `splitPoint` (or its midpoint if omitted),
+ * re-hosting any doors and windows onto the segment where they sit.
+ */
+export class SplitWallCommand implements IEditorCommand {
+  readonly id: string;
+  readonly description: string;
+  readonly affectedEntityId: string;
+  private originalWall?: Wall;
+  private createdWallIds?: [string, string];
+  private originalDoors?: Door[];
+  private originalWindows?: Window[];
+  private floorId?: string;
+
+  constructor(
+    readonly wallId: string,
+    readonly splitPoint?: { x: number; y: number },
+  ) {
+    this.id = generateId();
+    this.affectedEntityId = wallId;
+    this.description = 'Split wall into two segments';
+  }
+
+  execute(building: Building, _state: EditorState): CommandExecutionResult {
+    const wall = findWall(building, this.wallId);
+    if (!wall) return { building, rejectedReason: `Wall ${this.wallId} not found.` };
+
+    const split = this.splitPoint
+      ? projectOnto(this.splitPoint, wall.startPoint, wall.endPoint)
+      : {
+          x: Math.round((wall.startPoint.x + wall.endPoint.x) / 2),
+          y: Math.round((wall.startPoint.y + wall.endPoint.y) / 2),
+        };
+
+    const lenA = Math.hypot(split.x - wall.startPoint.x, split.y - wall.startPoint.y);
+    const lenB = Math.hypot(wall.endPoint.x - split.x, wall.endPoint.y - split.y);
+    if (lenA < 300 || lenB < 300) {
+      return {
+        building,
+        rejectedReason: `Wall is too short (${Math.round(lenA + lenB)} mm) to split into two usable segments (minimum 300 mm each).`,
+      };
+    }
+
+    this.originalWall = { ...wall, startPoint: { ...wall.startPoint }, endPoint: { ...wall.endPoint }, roomIds: [...wall.roomIds] };
+    this.floorId = wall.floorId;
+
+    const wallA = createWall({
+      floorId: wall.floorId,
+      startPoint: { ...wall.startPoint },
+      endPoint: { ...split },
+      thickness: wall.thickness,
+      type: wall.type,
+      loadBearing: wall.loadBearing,
+      material: wall.material,
+      roomIds: [...wall.roomIds],
+    });
+    const wallB = createWall({
+      floorId: wall.floorId,
+      startPoint: { ...split },
+      endPoint: { ...wall.endPoint },
+      thickness: wall.thickness,
+      type: wall.type,
+      loadBearing: wall.loadBearing,
+      material: wall.material,
+      roomIds: [...wall.roomIds],
+    });
+    this.createdWallIds = [wallA.id, wallB.id];
+
+    const pickHost = (pos: { x: number; y: number }): Wall => {
+      const pA = projectOnto(pos, wallA.startPoint, wallA.endPoint);
+      const pB = projectOnto(pos, wallB.startPoint, wallB.endPoint);
+      const dA = Math.hypot(pos.x - pA.x, pos.y - pA.y);
+      const dB = Math.hypot(pos.x - pB.x, pos.y - pB.y);
+      return dA <= dB ? wallA : wallB;
+    };
+
+    const next: Building = {
+      ...building,
+      floors: building.floors.map(floor => {
+        if (floor.id !== wall.floorId) return floor;
+        this.originalDoors = floor.doors.filter(d => d.wallId === this.wallId).map(d => ({ ...d, position: { ...d.position } }));
+        this.originalWindows = floor.windows.filter(w => w.wallId === this.wallId).map(w => ({ ...w, position: { ...w.position } }));
+
+        const doors = floor.doors.map(d => {
+          if (d.wallId !== this.wallId) return d;
+          const host = pickHost(d.position);
+          return { ...d, wallId: host.id, position: projectOnto(d.position, host.startPoint, host.endPoint) };
+        });
+        const windows = floor.windows.map(w => {
+          if (w.wallId !== this.wallId) return w;
+          const host = pickHost(w.position);
+          return { ...w, wallId: host.id, position: projectOnto(w.position, host.startPoint, host.endPoint) };
+        });
+        const hasOpenA = doors.some(d => d.wallId === wallA.id) || windows.some(w => w.wallId === wallA.id);
+        const hasOpenB = doors.some(d => d.wallId === wallB.id) || windows.some(w => w.wallId === wallB.id);
+
+        return {
+          ...floor,
+          walls: floor.walls.flatMap(w =>
+            w.id === this.wallId
+              ? [
+                  { ...wallA, hasOpening: hasOpenA },
+                  { ...wallB, hasOpening: hasOpenB },
+                ]
+              : [w],
+          ),
+          doors,
+          windows,
+        };
+      }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return {
+      building: next,
+      stateUpdates: {
+        selection: { entityType: 'wall', entityId: wallA.id, floorId: wall.floorId },
+      },
+    };
+  }
+
+  undo(building: Building, _state: EditorState): CommandExecutionResult {
+    if (!this.originalWall || !this.createdWallIds || !this.floorId) return { building };
+    const [idA, idB] = this.createdWallIds;
+    const origDoorMap = new Map((this.originalDoors ?? []).map(d => [d.id, d]));
+    const origWinMap = new Map((this.originalWindows ?? []).map(w => [w.id, w]));
+
+    const restored: Building = {
+      ...building,
+      floors: building.floors.map(floor => {
+        if (floor.id !== this.floorId) return floor;
+        let inserted = false;
+        const walls: Wall[] = [];
+        for (const w of floor.walls) {
+          if (w.id === idA || w.id === idB) {
+            if (!inserted) {
+              walls.push(this.originalWall!);
+              inserted = true;
+            }
+          } else {
+            walls.push(w);
+          }
+        }
+        if (!inserted) walls.push(this.originalWall!);
+
+        return {
+          ...floor,
+          walls,
+          doors: floor.doors.map(d => origDoorMap.get(d.id) ?? d),
+          windows: floor.windows.map(w => origWinMap.get(w.id) ?? w),
+        };
+      }),
+      updatedAt: new Date().toISOString(),
+    };
+
+    return {
+      building: restored,
+      stateUpdates: {
+        selection: { entityType: 'wall', entityId: this.originalWall.id, floorId: this.floorId },
+      },
+    };
+  }
 }

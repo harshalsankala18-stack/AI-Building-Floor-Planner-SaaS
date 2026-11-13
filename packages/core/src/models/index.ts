@@ -44,6 +44,7 @@ export type {
 export {
   moveRoom,
   resizeRoom,
+  updateRoomBoundary,
   addRoom,
   removeRoom,
   moveDoor,

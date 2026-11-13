@@ -77,6 +77,16 @@ function updateRoomInBuilding(
 
 // ─── Public Updaters ────────────────────────────────────────────────────────
 
+function computePolygonArea(points: readonly Point[]): number {
+  let area = 0;
+  for (let i = 0; i < points.length; i++) {
+    const p1 = points[i]!;
+    const p2 = points[(i + 1) % points.length]!;
+    area += p1.x * p2.y - p2.x * p1.y;
+  }
+  return Math.abs(area) / 2;
+}
+
 /** Update a room's position. Returns new Building with updated room. */
 export function moveRoom(
   building: Building,
@@ -87,12 +97,19 @@ export function moveRoom(
   if (!Number.isFinite(newX)) throw new InvalidCoordinateError('x', newX);
   if (!Number.isFinite(newY)) throw new InvalidCoordinateError('y', newY);
 
-  return updateRoomInBuilding(building, roomId, room => ({
-    ...room,
-    x: newX,
-    y: newY,
-    boundary: rectToPolygon(newX, newY, room.width, room.height),
-  }));
+  return updateRoomInBuilding(building, roomId, room => {
+    const dx = newX - room.x;
+    const dy = newY - room.y;
+    const hasCustomPolygon = room.boundary && room.boundary.points.length > 4;
+    return {
+      ...room,
+      x: newX,
+      y: newY,
+      boundary: hasCustomPolygon
+        ? { points: room.boundary.points.map(p => ({ x: Math.round(p.x + dx), y: Math.round(p.y + dy) })) }
+        : rectToPolygon(newX, newY, room.width, room.height),
+    };
+  });
 }
 
 /** Update a room's dimensions. Returns new Building. Area recomputed. */
@@ -109,12 +126,64 @@ export function resizeRoom(
     throw new InvalidDimensionError('height', newHeight);
   }
 
+  return updateRoomInBuilding(building, roomId, room => {
+    const hasCustomPolygon = room.boundary && room.boundary.points.length > 4 && room.width > 0 && room.height > 0;
+    if (hasCustomPolygon) {
+      const sx = newWidth / room.width;
+      const sy = newHeight / room.height;
+      const scaledPoints = room.boundary.points.map(p => ({
+        x: Math.round(room.x + (p.x - room.x) * sx),
+        y: Math.round(room.y + (p.y - room.y) * sy),
+      }));
+      const polyArea = computePolygonArea(scaledPoints);
+      return {
+        ...room,
+        width: newWidth,
+        height: newHeight,
+        area: polyArea > 0 ? Math.round(polyArea) : newWidth * newHeight,
+        boundary: { points: scaledPoints },
+      };
+    }
+    return {
+      ...room,
+      width: newWidth,
+      height: newHeight,
+      area: newWidth * newHeight,
+      boundary: rectToPolygon(room.x, room.y, newWidth, newHeight),
+    };
+  });
+}
+
+/** Update a room's polygon boundary vertices directly. Recomputes bounding box and area. */
+export function updateRoomBoundary(
+  building: Building,
+  roomId: string,
+  newBoundary: Polygon,
+): Building {
+  if (!newBoundary || newBoundary.points.length < 3) {
+    throw new InvalidDimensionError('boundary.points', newBoundary?.points?.length ?? 0);
+  }
+  const xs = newBoundary.points.map(p => p.x);
+  const ys = newBoundary.points.map(p => p.y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+  const maxX = Math.max(...xs);
+  const maxY = Math.max(...ys);
+  const width = maxX - minX;
+  const height = maxY - minY;
+  if (width <= 0) throw new InvalidDimensionError('width', width);
+  if (height <= 0) throw new InvalidDimensionError('height', height);
+  const polyArea = computePolygonArea(newBoundary.points);
+  if (polyArea <= 0) throw new InvalidDimensionError('area', polyArea);
+
   return updateRoomInBuilding(building, roomId, room => ({
     ...room,
-    width: newWidth,
-    height: newHeight,
-    area: newWidth * newHeight,
-    boundary: rectToPolygon(room.x, room.y, newWidth, newHeight),
+    x: minX,
+    y: minY,
+    width,
+    height,
+    area: Math.round(polyArea),
+    boundary: { points: newBoundary.points.map(p => ({ x: Math.round(p.x), y: Math.round(p.y) })) },
   }));
 }
 

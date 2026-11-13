@@ -1,12 +1,18 @@
 import React, { useEffect, useState } from 'react';
-import { RotateCcw, RotateCw, Trash2 } from 'lucide-react';
+import { RotateCcw, RotateCw, Trash2, Scissors, Plus } from 'lucide-react';
 import type { EditorContextValue } from '../../stores/editor-store';
 import {
   UpdateRoomPropertiesCommand,
   UpdateRoomGeometryCommand,
+  UpdateRoomBoundaryCommand,
   UpdateDoorPropertiesCommand,
   UpdateWindowPropertiesCommand,
   UpdateWallPropertiesCommand,
+  UpdateWallGeometryCommand,
+  SplitWallCommand,
+  UpdateFloorPropertiesCommand,
+  AddDoorCommand,
+  AddWindowCommand,
   DeleteEntityCommand,
   RoomType,
   DoorType,
@@ -15,7 +21,7 @@ import {
   WallType,
   Direction,
 } from '@ai-floor-planner/core';
-import { containsPolygon, mmToFeet, polygonIntersectionArea, sqMmToSqFt } from '@ai-floor-planner/geometry-engine';
+import { clampOpeningPositionOnWall, containsPolygon, mmToFeet, polygonIntersectionArea, sqMmToSqFt } from '@ai-floor-planner/geometry-engine';
 import { RefinementPanel } from '../refinement/RefinementPanel';
 
 interface PropertyInspectorProps {
@@ -239,6 +245,100 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
               {geometryMessage && <p className="inspector-truth-note" role="status" data-testid="room-geometry-message">{geometryMessage}</p>}
             </div>
 
+            <div className="inspector-section" data-testid="room-polygon-vertices">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <span className="inspector-section-title" style={{ margin: 0 }}>
+                  Polygon Vertices ({selectedRoom.boundary.points.length} pts)
+                </span>
+                <div style={{ display: 'flex', gap: 4 }}>
+                  <button
+                    type="button"
+                    className="drafted-preset-btn"
+                    data-testid="room-vertex-add"
+                    title="Subdivide longest polygon edge to create an L-step or angled corner"
+                    onClick={() => {
+                      const pts = selectedRoom.boundary.points;
+                      if (pts.length < 3) return;
+                      let longestIdx = 0;
+                      let longestLen = -1;
+                      for (let i = 0; i < pts.length; i++) {
+                        const p1 = pts[i]!;
+                        const p2 = pts[(i + 1) % pts.length]!;
+                        const len = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+                        if (len > longestLen) {
+                          longestLen = len;
+                          longestIdx = i;
+                        }
+                      }
+                      const a = pts[longestIdx]!;
+                      const b = pts[(longestIdx + 1) % pts.length]!;
+                      const mid = { x: Math.round((a.x + b.x) / 2), y: Math.round((a.y + b.y) / 2) };
+                      const nextPts = [
+                        ...pts.slice(0, longestIdx + 1),
+                        mid,
+                        ...pts.slice(longestIdx + 1),
+                      ];
+                      executeCommand(new UpdateRoomBoundaryCommand(selectedRoom.id, { points: nextPts }, selectedRoom.name));
+                    }}
+                  >
+                    + Vertex
+                  </button>
+                  {selectedRoom.boundary.points.length > 4 && (
+                    <button
+                      type="button"
+                      className="drafted-preset-btn"
+                      data-testid="room-vertex-reset"
+                      title="Reset polygon boundary to 4-point rectangle"
+                      onClick={() => {
+                        const rectPts = [
+                          { x: selectedRoom.x, y: selectedRoom.y },
+                          { x: selectedRoom.x + selectedRoom.width, y: selectedRoom.y },
+                          { x: selectedRoom.x + selectedRoom.width, y: selectedRoom.y + selectedRoom.height },
+                          { x: selectedRoom.x, y: selectedRoom.y + selectedRoom.height },
+                        ];
+                        executeCommand(new UpdateRoomBoundaryCommand(selectedRoom.id, { points: rectPts }, selectedRoom.name));
+                      }}
+                    >
+                      Reset Rect
+                    </button>
+                  )}
+                </div>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 150, overflowY: 'auto' }}>
+                {selectedRoom.boundary.points.map((pt, idx) => (
+                  <div key={idx} style={{ display: 'grid', gridTemplateColumns: '28px 1fr 1fr', gap: 6, alignItems: 'center', fontSize: 11 }}>
+                    <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>V{idx + 1}</span>
+                    <input
+                      type="number"
+                      step="50"
+                      data-testid={`room-vertex-x-${idx}`}
+                      aria-label={`Vertex ${idx + 1} X`}
+                      value={Math.round(pt.x)}
+                      onChange={e => {
+                        const nextX = Number(e.target.value);
+                        if (!Number.isFinite(nextX)) return;
+                        const nextPts = selectedRoom.boundary.points.map((p, i) => (i === idx ? { x: nextX, y: p.y } : p));
+                        executeCommand(new UpdateRoomBoundaryCommand(selectedRoom.id, { points: nextPts }, selectedRoom.name));
+                      }}
+                    />
+                    <input
+                      type="number"
+                      step="50"
+                      data-testid={`room-vertex-y-${idx}`}
+                      aria-label={`Vertex ${idx + 1} Y`}
+                      value={Math.round(pt.y)}
+                      onChange={e => {
+                        const nextY = Number(e.target.value);
+                        if (!Number.isFinite(nextY)) return;
+                        const nextPts = selectedRoom.boundary.points.map((p, i) => (i === idx ? { x: p.x, y: nextY } : p));
+                        executeCommand(new UpdateRoomBoundaryCommand(selectedRoom.id, { points: nextPts }, selectedRoom.name));
+                      }}
+                    />
+                  </div>
+                ))}
+              </div>
+            </div>
+
             <div className="inspector-section">
               <span className="inspector-section-title">Program traceability</span>
               <dl className="property-definition-list"><div><dt>Floor</dt><dd>{activeFloor.name}</dd></div><div><dt>Priority</dt><dd>{selectedRoom.priority >= 8 ? 'Required' : 'Preferred'}</dd></div><div><dt>Preferred area</dt><dd>{selectedRoom.minArea ? `${(selectedRoom.minArea / 1_000_000).toFixed(1)} m² minimum` : 'Not configured'}</dd></div><div><dt>Current area</dt><dd data-testid="room-area">{(selectedRoom.area / 1_000_000).toFixed(1)} m²</dd></div><div><dt>Generation lock</dt><dd>{editor.generationControl.lockedEntityIds.includes(selectedRoom.id) ? 'Locked' : 'Variable'}</dd></div></dl>
@@ -378,6 +478,139 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                   <dd>{hostedDoors.length} Door(s) · {hostedWindows.length} Window(s)</dd>
                 </div>
               </dl>
+
+              <div className="form-group" style={{ marginTop: 10 }}>
+                <label className="form-label">Wall Endpoints (mm)</label>
+                <div className="form-group-row">
+                  <input
+                    type="number"
+                    step="50"
+                    data-testid="wall-start-x"
+                    aria-label="Wall Start X (mm)"
+                    value={Math.round(selectedWall.startPoint.x)}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (Number.isFinite(val)) {
+                        executeCommand(new UpdateWallGeometryCommand(selectedWall.id, { x: val, y: selectedWall.startPoint.y }, selectedWall.endPoint));
+                      }
+                    }}
+                  />
+                  <input
+                    type="number"
+                    step="50"
+                    data-testid="wall-start-y"
+                    aria-label="Wall Start Y (mm)"
+                    value={Math.round(selectedWall.startPoint.y)}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (Number.isFinite(val)) {
+                        executeCommand(new UpdateWallGeometryCommand(selectedWall.id, { x: selectedWall.startPoint.x, y: val }, selectedWall.endPoint));
+                      }
+                    }}
+                  />
+                </div>
+                <div className="form-group-row" style={{ marginTop: 4 }}>
+                  <input
+                    type="number"
+                    step="50"
+                    data-testid="wall-end-x"
+                    aria-label="Wall End X (mm)"
+                    value={Math.round(selectedWall.endPoint.x)}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (Number.isFinite(val)) {
+                        executeCommand(new UpdateWallGeometryCommand(selectedWall.id, selectedWall.startPoint, { x: val, y: selectedWall.endPoint.y }));
+                      }
+                    }}
+                  />
+                  <input
+                    type="number"
+                    step="50"
+                    data-testid="wall-end-y"
+                    aria-label="Wall End Y (mm)"
+                    value={Math.round(selectedWall.endPoint.y)}
+                    onChange={e => {
+                      const val = Number(e.target.value);
+                      if (Number.isFinite(val)) {
+                        executeCommand(new UpdateWallGeometryCommand(selectedWall.id, selectedWall.startPoint, { x: selectedWall.endPoint.x, y: val }));
+                      }
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div className="drafted-quick-actions-row" style={{ marginTop: 8, marginBottom: 8 }}>
+                <button
+                  type="button"
+                  className="drafted-flip-btn"
+                  data-testid="wall-split"
+                  title="Split this wall into two collinear wall segments at its midpoint"
+                  onClick={() => executeCommand(new SplitWallCommand(selectedWall.id))}
+                >
+                  <Scissors size={13} />
+                  <span>Split Wall</span>
+                </button>
+                <button
+                  type="button"
+                  className="drafted-flip-btn"
+                  data-testid="wall-add-door"
+                  title="Place a 900 mm door at the midpoint of this wall"
+                  onClick={() => {
+                    const mid = {
+                      x: Math.round((selectedWall.startPoint.x + selectedWall.endPoint.x) / 2),
+                      y: Math.round((selectedWall.startPoint.y + selectedWall.endPoint.y) / 2),
+                    };
+                    const clamped = clampOpeningPositionOnWall(mid, selectedWall, 900);
+                    if (clamped.valid) {
+                      executeCommand(
+                        new AddDoorCommand(activeFloor.id, {
+                          floorId: activeFloor.id,
+                          wallId: selectedWall.id,
+                          position: clamped.position,
+                          width: 900,
+                          height: 2100,
+                          type: DoorType.Single,
+                          connectsRooms: [selectedWall.roomIds[0] ?? '__outside__', selectedWall.roomIds[1] ?? '__outside__'],
+                        }),
+                      );
+                    }
+                  }}
+                >
+                  <Plus size={13} />
+                  <span>+ Door</span>
+                </button>
+                <button
+                  type="button"
+                  className="drafted-flip-btn"
+                  data-testid="wall-add-window"
+                  title="Place a 1200 mm window at the midpoint of this wall"
+                  onClick={() => {
+                    const mid = {
+                      x: Math.round((selectedWall.startPoint.x + selectedWall.endPoint.x) / 2),
+                      y: Math.round((selectedWall.startPoint.y + selectedWall.endPoint.y) / 2),
+                    };
+                    const clamped = clampOpeningPositionOnWall(mid, selectedWall, 1200);
+                    if (clamped.valid) {
+                      executeCommand(
+                        new AddWindowCommand(activeFloor.id, {
+                          floorId: activeFloor.id,
+                          wallId: selectedWall.id,
+                          position: clamped.position,
+                          width: 1200,
+                          height: 1200,
+                          sillHeight: 900,
+                          type: WindowType.Sliding,
+                          roomId: selectedWall.roomIds.find(id => id !== '__outside__') ?? '',
+                        }),
+                      );
+                    }
+                  }}
+                >
+                  <Plus size={13} />
+                  <span>+ Window</span>
+                </button>
+              </div>
+
               <p className="inspector-truth-note">Walls are derived from canonical room boundaries. Reshaping room corners automatically articulates wall angles in 2D and 3D.</p>
               <button
                 type="button"
@@ -419,6 +652,7 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                 <button
                   type="button"
                   className="drafted-flip-btn"
+                  data-testid="door-flip-swing"
                   onClick={() => {
                     const nextSwing = selectedDoor.swingDirection === SwingDirection.Inward
                       ? SwingDirection.Outward
@@ -434,16 +668,25 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
                 <button
                   type="button"
                   className="drafted-flip-btn"
+                  data-testid="door-flip-hinge"
                   onClick={() => {
-                    const nextHinge = selectedDoor.swingDirection === SwingDirection.Left
+                    const nextHingeSide = selectedDoor.hingeSide === 'right' ? 'left' : 'right';
+                    const nextSwing = selectedDoor.swingDirection === SwingDirection.Left
                       ? SwingDirection.Right
-                      : SwingDirection.Left;
-                    executeCommand(new UpdateDoorPropertiesCommand(selectedDoor.id, { swingDirection: nextHinge }));
+                      : selectedDoor.swingDirection === SwingDirection.Right
+                      ? SwingDirection.Left
+                      : selectedDoor.swingDirection;
+                    executeCommand(
+                      new UpdateDoorPropertiesCommand(selectedDoor.id, {
+                        hingeSide: nextHingeSide,
+                        swingDirection: nextSwing,
+                      }),
+                    );
                   }}
                   title="Flip door hinge side left / right"
                 >
                   <RotateCw size={13} />
-                  <span>Flip Hinge</span>
+                  <span>Flip Hinge ({selectedDoor.hingeSide ?? 'left'})</span>
                 </button>
               </div>
 
@@ -710,11 +953,31 @@ export const PropertyInspector: React.FC<PropertyInspectorProps> = ({ editor, em
               <span className="inspector-section-title">Active Floor Info</span>
               <div className="form-group">
                 <label className="form-label">Level Name</label>
-                <input type="text" disabled value={activeFloor.name} />
+                <input
+                  type="text"
+                  data-testid="floor-name-input"
+                  aria-label="Level Name"
+                  value={activeFloor.name}
+                  onChange={e => executeCommand(new UpdateFloorPropertiesCommand(activeFloor.id, { name: e.target.value }))}
+                />
               </div>
               <div className="form-group">
-                <label className="form-label">Clear Floor Height</label>
-                <input type="text" disabled value={`${activeFloor.floorHeight} mm`} />
+                <label className="form-label">Clear Floor Height (mm)</label>
+                <input
+                  type="number"
+                  step="100"
+                  min="2100"
+                  max="6000"
+                  data-testid="floor-height-input"
+                  aria-label="Clear Floor Height (mm)"
+                  value={activeFloor.floorHeight}
+                  onChange={e => {
+                    const next = Number(e.target.value);
+                    if (Number.isFinite(next) && next >= 2100 && next <= 6000) {
+                      executeCommand(new UpdateFloorPropertiesCommand(activeFloor.id, { floorHeight: next }));
+                    }
+                  }}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Total Rooms</label>

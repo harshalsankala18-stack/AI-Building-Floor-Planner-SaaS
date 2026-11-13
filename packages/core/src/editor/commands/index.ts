@@ -16,6 +16,7 @@ export {
   ResizeRoomCommand,
   UpdateRoomGeometryCommand,
   UpdateRoomPropertiesCommand,
+  UpdateRoomBoundaryCommand,
 } from './room-commands';
 
 export {
@@ -35,6 +36,7 @@ export {
 export {
   UpdateWallPropertiesCommand,
   UpdateWallGeometryCommand,
+  SplitWallCommand,
   type WallPropertyUpdates,
 } from './wall-commands';
 
@@ -48,5 +50,5 @@ export {
 
 export { ReplaceBuildingCommand } from './replace-building-command';
 export { UpdateSiteCommand, type UpdateSiteParams } from './update-site-command';
-export { AddFloorCommand, RemoveFloorCommand, type AddFloorParams } from './floor-commands';
+export { AddFloorCommand, RemoveFloorCommand, UpdateFloorPropertiesCommand, type AddFloorParams } from './floor-commands';
 

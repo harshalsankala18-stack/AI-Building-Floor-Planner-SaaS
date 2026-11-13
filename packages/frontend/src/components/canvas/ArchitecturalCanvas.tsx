@@ -9,6 +9,8 @@ import {
 } from '@ai-floor-planner/renderer';
 import {
   UpdateRoomGeometryCommand,
+  UpdateRoomBoundaryCommand,
+  UpdateWallGeometryCommand,
   AddRoomCommand,
   AddDoorCommand,
   AddWindowCommand,
@@ -42,7 +44,15 @@ interface ArchitecturalCanvasProps {
   fitRequest: number;
 }
 
-type DragMode = 'none' | 'pan' | 'move_room' | 'resize_room' | 'move_door' | 'move_window';
+type DragMode =
+  | 'none'
+  | 'pan'
+  | 'move_room'
+  | 'resize_room'
+  | 'move_room_vertex'
+  | 'move_wall_endpoint'
+  | 'move_door'
+  | 'move_window';
 
 export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
   editor,
@@ -81,6 +91,8 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
   const [activeGuides, setActiveGuides] = useState<AlignmentGuide[]>([]);
   const [doorPreview, setDoorPreview] = useState<{ position: { x: number; y: number }; wallId: string } | null>(null);
   const [transientOpening, setTransientOpening] = useState<{ entityType: 'door' | 'window'; id: string; position: { x: number; y: number }; wallId: string; width: number } | null>(null);
+  const [transientPolygon, setTransientPolygon] = useState<{ roomId: string; vertexIdx: number; points: { x: number; y: number }[] } | null>(null);
+  const [transientWallEnds, setTransientWallEnds] = useState<{ wallId: string; endpoint: 'start' | 'end'; startPoint: { x: number; y: number }; endPoint: { x: number; y: number } } | null>(null);
   const [measurement, setMeasurement] = useState<{ start: { x: number; y: number }; end: { x: number; y: number } } | null>(null);
   /**
    * Why the last tool click did nothing. Shown on the canvas so a tool with an
@@ -442,6 +454,27 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       return;
     }
 
+    if (dragMode === 'move_room_vertex' && transientPolygon) {
+      const snapped = snapEnabled ? snapToGrid(worldPos, 50) : { x: Math.round(worldPos.x), y: Math.round(worldPos.y) };
+      setTransientPolygon(prev => {
+        if (!prev) return null;
+        const nextPts = prev.points.map((p, i) => (i === prev.vertexIdx ? snapped : p));
+        return { ...prev, points: nextPts };
+      });
+      return;
+    }
+
+    if (dragMode === 'move_wall_endpoint' && transientWallEnds) {
+      const snapped = snapEnabled ? snapToGrid(worldPos, 50) : { x: Math.round(worldPos.x), y: Math.round(worldPos.y) };
+      setTransientWallEnds(prev => {
+        if (!prev) return null;
+        return prev.endpoint === 'start'
+          ? { ...prev, startPoint: snapped }
+          : { ...prev, endPoint: snapped };
+      });
+      return;
+    }
+
     if (editor.activeTool === 'measure' && measurement) {
       setMeasurement({ ...measurement, end: snapEnabled ? snapToGrid(worldPos, 100) : worldPos });
       return;
@@ -517,6 +550,10 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     } else if (dragMode === 'move_window' && transientOpening) {
       const original = editor.activeFloor.windows.find(window => window.id === transientOpening.id);
       if (original && hasOpeningPositionChanged(original.position, transientOpening.position)) editor.executeCommand(new MoveWindowCommand(transientOpening.id, transientOpening.position));
+    } else if (dragMode === 'move_room_vertex' && transientPolygon && selectedRoom) {
+      editor.executeCommand(new UpdateRoomBoundaryCommand(transientPolygon.roomId, { points: transientPolygon.points }, selectedRoom.name));
+    } else if (dragMode === 'move_wall_endpoint' && transientWallEnds) {
+      editor.executeCommand(new UpdateWallGeometryCommand(transientWallEnds.wallId, transientWallEnds.startPoint, transientWallEnds.endPoint));
     }
 
     setDragMode('none');
@@ -524,6 +561,8 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
     setActiveGuides([]);
     setResizeHandle(null);
     setTransientOpening(null);
+    setTransientPolygon(null);
+    setTransientWallEnds(null);
   };
 
   // Keyboard Shortcuts (Delete, Escape)
@@ -600,6 +639,13 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
       ? editor.activeFloor.windows.find(w => w.id === editor.selection?.entityId)
       : null,
     [editor.selections, editor.selection, editor.activeFloor.windows],
+  );
+
+  const selectedWall = useMemo(() =>
+    !editor.selections.length && editor.selection?.entityType === 'wall'
+      ? editor.activeFloor.walls.find(w => w.id === editor.selection?.entityId)
+      : null,
+    [editor.selections, editor.selection, editor.activeFloor.walls],
   );
 
   // Compute Screen Coordinates for Overlay Elements
@@ -825,8 +871,111 @@ export const ArchitecturalCanvas: React.FC<ArchitecturalCanvasProps> = ({
                 {Math.round(displayRoom.width)} × {Math.round(displayRoom.height)} mm · {(displayRoom.width * displayRoom.height / 1_000_000).toFixed(1)} m² · {transientRoomValid ? 'VALID' : 'INVALID'}
               </text>
             )}
+
+            {/* Draggable Polygon Vertex Handles for Non-Rectangular Rooms */}
+            {selectedRoom && selectedRoom.boundary.points.length > 4 && (() => {
+              const pts = transientPolygon?.roomId === selectedRoom.id ? transientPolygon.points : selectedRoom.boundary.points;
+              const screenPts = pts.map(p => worldToScreen(p, transform));
+              const polyAttr = screenPts.map(p => `${p.x},${p.y}`).join(' ');
+              return (
+                <g className="room-polygon-vertex-handles">
+                  <polygon
+                    points={polyAttr}
+                    fill="rgba(56, 189, 248, 0.08)"
+                    stroke="#38BDF8"
+                    strokeWidth={2}
+                    strokeDasharray="4 3"
+                    pointerEvents="none"
+                  />
+                  {screenPts.map((sp, idx) => (
+                    <circle
+                      key={`v-${idx}`}
+                      data-testid={`room-vertex-grip-${idx}`}
+                      cx={sp.x}
+                      cy={sp.y}
+                      r={6}
+                      fill="#0284C7"
+                      stroke="#FFFFFF"
+                      strokeWidth={2}
+                      style={{ pointerEvents: 'all', cursor: 'move' }}
+                      onPointerDown={e => {
+                        e.stopPropagation();
+                        setDragMode('move_room_vertex');
+                        setTransientPolygon({
+                          roomId: selectedRoom.id,
+                          vertexIdx: idx,
+                          points: selectedRoom.boundary.points.map(p => ({ ...p })),
+                        });
+                      }}
+                    />
+                  ))}
+                </g>
+              );
+            })()}
           </g>
         )}
+
+        {/* Selected Wall Endpoint Drag Grips */}
+        {selectedWall && (() => {
+          const startPt = transientWallEnds?.wallId === selectedWall.id ? transientWallEnds.startPoint : selectedWall.startPoint;
+          const endPt = transientWallEnds?.wallId === selectedWall.id ? transientWallEnds.endPoint : selectedWall.endPoint;
+          const sStart = worldToScreen(startPt, transform);
+          const sEnd = worldToScreen(endPt, transform);
+          return (
+            <g className="selected-wall-endpoint-handles">
+              <line
+                x1={sStart.x}
+                y1={sStart.y}
+                x2={sEnd.x}
+                y2={sEnd.y}
+                stroke="#38BDF8"
+                strokeWidth={2.5}
+                strokeDasharray="5 3"
+                pointerEvents="none"
+              />
+              <circle
+                data-testid="wall-endpoint-start"
+                cx={sStart.x}
+                cy={sStart.y}
+                r={7}
+                fill="#0284C7"
+                stroke="#FFFFFF"
+                strokeWidth={2}
+                style={{ pointerEvents: 'all', cursor: 'move' }}
+                onPointerDown={e => {
+                  e.stopPropagation();
+                  setDragMode('move_wall_endpoint');
+                  setTransientWallEnds({
+                    wallId: selectedWall.id,
+                    endpoint: 'start',
+                    startPoint: { ...selectedWall.startPoint },
+                    endPoint: { ...selectedWall.endPoint },
+                  });
+                }}
+              />
+              <circle
+                data-testid="wall-endpoint-end"
+                cx={sEnd.x}
+                cy={sEnd.y}
+                r={7}
+                fill="#0284C7"
+                stroke="#FFFFFF"
+                strokeWidth={2}
+                style={{ pointerEvents: 'all', cursor: 'move' }}
+                onPointerDown={e => {
+                  e.stopPropagation();
+                  setDragMode('move_wall_endpoint');
+                  setTransientWallEnds({
+                    wallId: selectedWall.id,
+                    endpoint: 'end',
+                    startPoint: { ...selectedWall.startPoint },
+                    endPoint: { ...selectedWall.endPoint },
+                  });
+                }}
+              />
+            </g>
+          );
+        })()}
 
         {/* Drafted.ai Opening Distance Callouts & Quick Flip Action on Canvas */}
         {selectedDoor && (() => {

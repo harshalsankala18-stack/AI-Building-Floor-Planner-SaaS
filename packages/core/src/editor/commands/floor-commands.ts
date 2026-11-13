@@ -3,9 +3,9 @@
  * Handles adding and removing building levels with vertical circulation awareness.
  */
 
-import type { Building } from '../../types';
+import type { Building, Floor } from '../../types';
 import { generateId } from '../../models/id';
-import { addFloorToBuilding, removeFloorFromBuilding } from '../../models/updaters';
+import { addFloorToBuilding, removeFloorFromBuilding, updateEntity } from '../../models/updaters';
 import type { IEditorCommand, EditorState, CommandExecutionResult } from '../types';
 
 export interface AddFloorParams {
@@ -103,6 +103,51 @@ export class RemoveFloorCommand implements IEditorCommand {
         selection: null,
         selections: [],
       },
+    };
+  }
+}
+
+/** Command to update a floor's name or clear floor height (mm). */
+export class UpdateFloorPropertiesCommand implements IEditorCommand {
+  readonly id: string;
+  readonly description: string;
+  readonly affectedEntityId: string;
+  private previous?: Partial<Pick<Floor, 'name' | 'floorHeight'>>;
+
+  constructor(
+    readonly floorId: string,
+    readonly updates: Partial<Pick<Floor, 'name' | 'floorHeight'>>,
+  ) {
+    this.id = generateId();
+    this.affectedEntityId = floorId;
+    this.description = `Update floor ${updates.name ?? ''} properties`.trim();
+  }
+
+  execute(building: Building, _state: EditorState): CommandExecutionResult {
+    const floor = building.floors.find(f => f.id === this.floorId);
+    if (!floor) return { building };
+
+    this.previous = {
+      ...(this.updates.name !== undefined ? { name: floor.name } : {}),
+      ...(this.updates.floorHeight !== undefined ? { floorHeight: floor.floorHeight } : {}),
+    };
+
+    const sanitized: Partial<Pick<Floor, 'name' | 'floorHeight'>> = {
+      ...this.updates,
+      ...(this.updates.floorHeight !== undefined
+        ? { floorHeight: Math.max(2100, Math.min(6000, Math.round(this.updates.floorHeight))) }
+        : {}),
+    };
+
+    return {
+      building: updateEntity(building, 'floor', this.floorId, sanitized),
+    };
+  }
+
+  undo(building: Building, _state: EditorState): CommandExecutionResult {
+    if (!this.previous) return { building };
+    return {
+      building: updateEntity(building, 'floor', this.floorId, this.previous),
     };
   }
 }

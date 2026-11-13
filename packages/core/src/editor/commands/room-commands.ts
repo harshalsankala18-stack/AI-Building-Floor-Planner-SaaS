@@ -3,9 +3,9 @@
  * Reversibly mutate Room position, dimensions, and semantic properties in the Building Model.
  */
 
-import type { Building, Room } from '../../types';
+import type { Building, Room, Polygon } from '../../types';
 import { generateId } from '../../models/id';
-import { moveRoom, resizeRoom, addRoom, removeRoom, updateEntity } from '../../models/updaters';
+import { moveRoom, resizeRoom, addRoom, removeRoom, updateEntity, updateRoomBoundary } from '../../models/updaters';
 import type { CreateRoomParams } from '../../models/factory';
 import type { IEditorCommand, EditorState, CommandExecutionResult } from '../types';
 
@@ -249,5 +249,51 @@ export class AddRoomCommand implements IEditorCommand {
       building: removeRoom(building, this.createdRoomId),
       stateUpdates: { selection: null },
     };
+  }
+}
+
+/** Update a room's polygon boundary vertices (supports L-shaped, stepped, and angled rooms). */
+export class UpdateRoomBoundaryCommand implements IEditorCommand {
+  readonly id: string;
+  readonly description: string;
+  readonly affectedEntityId: string;
+  private prevState?: Pick<Room, 'x' | 'y' | 'width' | 'height' | 'area' | 'boundary'>;
+
+  constructor(
+    readonly roomId: string,
+    readonly boundary: Polygon,
+    roomName?: string,
+  ) {
+    this.id = generateId();
+    this.affectedEntityId = roomId;
+    this.description = `Edit ${roomName ?? 'Room'} polygon vertices (${boundary.points.length} pts)`;
+  }
+
+  execute(building: Building, _state: EditorState): CommandExecutionResult {
+    const room = this.findRoom(building, this.roomId);
+    this.prevState = {
+      x: room.x,
+      y: room.y,
+      width: room.width,
+      height: room.height,
+      area: room.area,
+      boundary: { points: room.boundary.points.map(p => ({ ...p })) },
+    };
+    const updatedBuilding = updateRoomBoundary(building, this.roomId, this.boundary);
+    return { building: updatedBuilding };
+  }
+
+  undo(building: Building, _state: EditorState): CommandExecutionResult {
+    if (!this.prevState) return { building };
+    const restored = updateEntity(building, 'room', this.roomId, this.prevState);
+    return { building: restored };
+  }
+
+  private findRoom(building: Building, roomId: string): Room {
+    for (const floor of building.floors) {
+      const r = floor.rooms.find(candidate => candidate.id === roomId);
+      if (r) return r;
+    }
+    throw new Error(`Room not found: ${roomId}`);
   }
 }

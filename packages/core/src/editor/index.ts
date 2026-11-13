@@ -49,6 +49,7 @@ export {
   ResizeRoomCommand,
   UpdateRoomGeometryCommand,
   UpdateRoomPropertiesCommand,
+  UpdateRoomBoundaryCommand,
   AddDoorCommand,
   MoveDoorCommand,
   UpdateDoorPropertiesCommand,
@@ -59,6 +60,7 @@ export {
   RemoveWindowCommand,
   UpdateWallPropertiesCommand,
   UpdateWallGeometryCommand,
+  SplitWallCommand,
   type WallPropertyUpdates,
   DeleteEntityCommand,
   BatchCommand,
@@ -67,6 +69,7 @@ export {
   type UpdateSiteParams,
   AddFloorCommand,
   RemoveFloorCommand,
+  UpdateFloorPropertiesCommand,
   type AddFloorParams,
 } from './commands/index';
 
