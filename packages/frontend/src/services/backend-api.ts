@@ -1,6 +1,12 @@
 import { resolveApiBaseUrl, type ApiConfigEnv, type ApiUrlResolution } from './api-config';
 import type { Building, DesignRequirementSpecification, SpaceProgram } from '@ai-floor-planner/core';
-import type { RequirementParseResult, AIEditParseResult, FloorPlanImagePromptRequest, ApartmentBriefConfig } from '@ai-floor-planner/ai-orchestration';
+import type {
+  RequirementParseResult,
+  AIEditParseResult,
+  FloorPlanImagePromptRequest,
+  ApartmentBriefConfig,
+  MasterImageEvaluationResult,
+} from '@ai-floor-planner/ai-orchestration';
 import {
   runGenerationWorkflow,
   type ReviewedWorkflowInput,
@@ -564,10 +570,27 @@ export interface TwoAIGenerationInput {
   readonly candidateCount?: number;
 }
 
-/** FLUX = visual came from FLUX; FALLBACK_DETERMINISTIC = deterministic base plan (never FLUX). */
-export type CandidateSource = 'FLUX' | 'FALLBACK_DETERMINISTIC' | 'DETERMINISTIC_CAD';
-export type CandidateVisualSource = 'FLUX_IMAGE' | 'DETERMINISTIC_SCHEMATIC';
-export type CandidateRejectionStage = 'VISUAL_PREFLIGHT' | 'HARD_VALIDATION';
+/** Where the candidate came from. */
+export type CandidateSource = 'FLUX' | 'GEMINI' | 'POLLINATIONS' | 'FALLBACK_DETERMINISTIC' | 'DETERMINISTIC_CAD';
+export type CandidateVisualSource = 'FLUX_IMAGE' | 'GEMINI_IMAGE' | 'POLLINATIONS_IMAGE' | 'DETERMINISTIC_SCHEMATIC';
+export type CandidateRejectionStage =
+  | 'VISUAL_PREFLIGHT'
+  | 'QUALITY_GATE'
+  | 'IMAGE_INTERPRETATION'
+  | 'CAD_RECONSTRUCTION'
+  | 'HARD_VALIDATION';
+
+/** Explicit generation and acceptance states (Phase 1B). */
+export type CandidateAcceptanceState =
+  | 'GENERATING'
+  | 'IMAGE_GENERATED'
+  | 'EVALUATING'
+  | 'QUALITY_REJECTED'
+  | 'QUALITY_ACCEPTED'
+  | 'INTERPRETATION_FAILED'
+  | 'CAD_RECONSTRUCTION_FAILED'
+  | 'CAD_VALIDATED'
+  | 'READY_FOR_EDITING';
 
 /** Why a candidate does or does not carry an advisory score (Phase 5). */
 export type EvaluationStatus = 'SCORED' | 'NOT_SCORED_REJECTED' | 'NOT_CONFIGURED' | 'UNAVAILABLE';
@@ -587,6 +610,7 @@ export interface OrchestratedCandidateResult {
   readonly id: string;
   readonly seed: number;
   readonly status: 'ACCEPTED' | 'REJECTED';
+  readonly acceptanceState?: CandidateAcceptanceState;
   readonly evaluationStatus?: EvaluationStatus;
   readonly stages?: PipelineStagesState;
   /** Optional for responses produced before Phase 3; absent is treated as FLUX. */
@@ -624,6 +648,29 @@ export interface OrchestratedCandidateResult {
   readonly cadFidelity?: CadFidelityReportResult;
   /** The real image-to-CAD conversion error when reconstruction failed. */
   readonly conversionError?: { readonly code: string; readonly message: string };
+  /** Phase 2.6 / Phase 1B: Master floor plan evaluation result from Gemini */
+  readonly masterEvaluation?: MasterImageEvaluationResult | null;
+  readonly masterAttemptHistory?: readonly MasterAttemptRecord[];
+}
+
+export type { MasterImageEvaluationResult };
+
+export interface MasterAttemptRecord {
+  readonly attemptNumber: number;
+  readonly seed: number;
+  readonly artifactId: string;
+  readonly overallScore: number;
+  readonly passed: boolean;
+  readonly hardConstraintViolations: readonly string[];
+  readonly identifiedProblems: readonly string[];
+  readonly suggestedCorrections: readonly string[];
+  readonly complianceScore: number;
+  readonly spatialLayoutScore: number;
+  readonly footprintScore: number;
+  readonly circulationScore: number;
+  readonly draftingClarityScore: number;
+  readonly vastuDaylightScore: number;
+  readonly coherenceScore: number;
 }
 
 /** Image-to-CAD fidelity report as returned by the backend. */
@@ -716,6 +763,9 @@ export interface TwoAIGenerationResult {
   /** Apartment concept mode (up to four controlled strategies). */
   readonly conceptMode?: boolean;
   readonly conceptSlots?: readonly ConceptSlotRecord[];
+  readonly masterEvaluation?: MasterImageEvaluationResult | null;
+  readonly masterQualityScore?: number;
+  readonly masterAttemptHistory?: readonly MasterAttemptRecord[];
   readonly error?: {
     readonly code: string;
     readonly stage: string;

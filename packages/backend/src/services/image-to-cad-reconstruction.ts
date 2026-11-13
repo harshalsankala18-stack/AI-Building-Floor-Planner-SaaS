@@ -252,13 +252,14 @@ function readEntities(
 
   for (const room of plan.rooms) {
     const raw = rawById.get(room.id);
-    const level = Number(raw?.floorLevel ?? 0);
+    const parsedLevel = room.floorLevel ?? Number(raw?.floorLevel ?? 0);
+    const level = Number.isFinite(parsedLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(parsedLevel))) : 0;
     const confidence = plan.confidence?.[room.id];
     entities.push({
       id: room.id,
       name: room.name,
       type: resolveRoomType(room.type, room.name),
-      floorLevel: Number.isFinite(level) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(level))) : 0,
+      floorLevel: level,
       frame: { x: room.imageX, y: room.imageY, width: room.imageWidth, height: room.imageHeight },
       ...(typeof raw?.compassZone === 'string' ? { compassZone: raw.compassZone } : {}),
       connectedTo: Array.isArray(raw?.connectedTo) ? (raw!.connectedTo as unknown[]).map(String) : [],
@@ -269,11 +270,14 @@ function readEntities(
   }
 
   for (const stair of plan.stairs) {
+    const stairLevel = Number.isFinite(stair.floorLevel)
+      ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(stair.floorLevel!)))
+      : 0;
     entities.push({
       id: stair.id,
       name: stair.name || 'Staircase',
       type: RoomType.Staircase,
-      floorLevel: 0,
+      floorLevel: stairLevel,
       frame: { x: stair.imageX, y: stair.imageY, width: stair.imageWidth, height: stair.imageHeight },
       connectedTo: [],
       confidence: 0.75,
@@ -601,11 +605,15 @@ export function reconstructBuildingFromImage(
     }
 
     // ── Buildable envelope (setbacks are authoritative).
+    const minEnvX = Math.ceil(site.leftSetback / GRID_MM) * GRID_MM;
+    const minEnvY = Math.ceil(site.frontSetback / GRID_MM) * GRID_MM;
+    const maxEnvX = Math.floor((site.plotWidth - site.rightSetback) / GRID_MM) * GRID_MM;
+    const maxEnvY = Math.floor((site.plotDepth - site.rearSetback) / GRID_MM) * GRID_MM;
     const envelope: Rect = {
-      x: snapGrid(site.leftSetback),
-      y: snapGrid(site.frontSetback),
-      width: snapGrid(site.plotWidth - site.leftSetback - site.rightSetback),
-      height: snapGrid(site.plotDepth - site.frontSetback - site.rearSetback),
+      x: minEnvX,
+      y: minEnvY,
+      width: Math.max(0, maxEnvX - minEnvX),
+      height: Math.max(0, maxEnvY - minEnvY),
     };
     if (envelope.width < 2000 || envelope.height < 2000) {
       return {
@@ -616,8 +624,9 @@ export function reconstructBuildingFromImage(
       };
     }
 
-    // ── One uniform transform for the whole drawing, derived from the content
-    //    the image actually shows (its own bounding box, not the raster edge).
+    // ── Global fallback transform and per-floor independent transforms (`transformByLevel`)
+    //    so multi-floor sheets (stacked vertically or side-by-side) map each floor
+    //    into the same (X, Y) buildable envelope rather than displacing Floor 1 to the rear of the plot.
     const contentRects = entities.map(e => e.frame);
     const boundaryPoints = plan.boundary.points;
     const contentBox = boundingBox([
@@ -627,6 +636,9 @@ export function reconstructBuildingFromImage(
         : []),
     ]);
     const transform = computeFrameTransform(contentBox, envelope);
+    const transformByLevel = new Map<number, FrameTransform>();
+    const populatedLevels = new Set(entities.map(e => e.floorLevel));
+    const isMultiFloorDrawing = populatedLevels.size > 1;
 
     // ── Place every entity where the image drew it, then clamp, de-overlap and
     //    snap. This happens BEFORE the footprint is fixed, so the outline can
@@ -635,10 +647,25 @@ export function reconstructBuildingFromImage(
     for (let level = 0; level < targetFloorCount; level++) {
       const levelEntities = entities.filter(e => e.floorLevel === level);
       if (levelEntities.length === 0) {
+        transformByLevel.set(level, transform);
         placedByLevel.set(level, []);
         continue;
       }
-      const placed = levelEntities.map(read => ({ read, rect: applyTransform(read.frame, transform) }));
+
+      const levelEntityBox = boundingBox(levelEntities.map(e => e.frame));
+      let levelContentBox = levelEntityBox;
+      if (!isMultiFloorDrawing) {
+        levelContentBox = contentBox;
+      } else if (level === 0 && boundaryPoints.length >= 3) {
+        const bBox = boundingBox(boundaryPoints.map(p => ({ x: p.x, y: p.y, width: 0.0001, height: 0.0001 })));
+        if (bBox.height <= levelEntityBox.height * 1.4 && bBox.width <= levelEntityBox.width * 1.4) {
+          levelContentBox = boundingBox([levelEntityBox, bBox]);
+        }
+      }
+      const levelTransform = computeFrameTransform(levelContentBox, envelope);
+      transformByLevel.set(level, levelTransform);
+
+      const placed = levelEntities.map(read => ({ read, rect: applyTransform(read.frame, levelTransform) }));
 
       // Clamp into the envelope, recording any movement.
       for (const item of placed) {
@@ -706,42 +733,44 @@ export function reconstructBuildingFromImage(
 
     // ── Footprint: the image's own outline when it genuinely encloses the
     //    reconstructed spaces, so an L-shape, U-shape or stepped plan keeps its
-    //    shape. Vision sometimes returns an outline that excludes a room it
-    //    also drew (a notch over the living room, say); adopting that outline
-    //    would push real geometry out of bounds, so in that case the plan's own
-    //    extent is used and the discrepancy is reported, not hidden.
+    //    shape. Evaluated per floor (`footprintByLevel`) so multi-floor plans
+    //    validate each floor's footprint against that floor's rooms.
+    const groundTransform = transformByLevel.get(0) ?? transform;
     const allPlacedRects = [...placedByLevel.values()].flat().map(p => p.rect);
+    const groundPlacedRects = (placedByLevel.get(0) ?? []).map(p => p.rect);
     const statedFootprint: Polygon | null =
       boundaryPoints.length >= 3
         ? {
             points: boundaryPoints.map(p => ({
-              x: snapGrid(p.x * transform.scale + transform.offsetX),
-              y: snapGrid(p.y * transform.scale + transform.offsetY),
+              x: snapGrid(p.x * groundTransform.scale + groundTransform.offsetX),
+              y: snapGrid(p.y * groundTransform.scale + groundTransform.offsetY),
             })),
           }
         : null;
 
-    const extentFootprint = (): Polygon => {
-      const box = allPlacedRects.length > 0 ? boundingBox(allPlacedRects) : envelope;
+    const extentFootprintForRects = (rects: readonly Rect[]): Polygon => {
+      const box = rects.length > 0 ? boundingBox(rects) : envelope;
       const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
       const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
       const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
       const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
       return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
     };
+    const extentFootprint = (): Polygon => extentFootprintForRects(allPlacedRects);
 
     let footprint: Polygon;
+    const referenceRectsForStatedFootprint = groundPlacedRects.length > 0 ? groundPlacedRects : allPlacedRects;
     if (!statedFootprint) {
-      footprint = extentFootprint();
+      footprint = extentFootprintForRects(referenceRectsForStatedFootprint);
       unplacedFeatures.push(
         'The image interpretation returned no building outline, so the extent of the drawn spaces was used as the footprint. Non-rectangular footprint steps could not be reconstructed.',
       );
     } else {
-      const outside = allPlacedRects.filter(r => !rectInsidePolygon(r, statedFootprint));
+      const outside = referenceRectsForStatedFootprint.filter(r => !rectInsidePolygon(r, statedFootprint));
       if (outside.length === 0) {
         footprint = statedFootprint;
       } else {
-        footprint = extentFootprint();
+        footprint = extentFootprintForRects(referenceRectsForStatedFootprint);
         unplacedFeatures.push(
           `The outline read from the image excludes ${outside.length} space(s) the same image also drew, so it could not be used as the building footprint; the extent of the drawn spaces was used instead. The footprint's steps may differ from the drawing — compare against the reference image.`,
         );
@@ -752,6 +781,20 @@ export function reconstructBuildingFromImage(
           description: `The interpreted outline (${statedFootprint.points.length} points) did not contain every drawn space, so the footprint was taken from the spaces' own extent.`,
           material: true,
         });
+      }
+    }
+
+    const footprintByLevel = new Map<number, Polygon>();
+    for (let level = 0; level < targetFloorCount; level++) {
+      const levelRects = (placedByLevel.get(level) ?? []).map(p => p.rect);
+      if (level === 0 || levelRects.length === 0) {
+        footprintByLevel.set(level, footprint);
+      } else {
+        const outsideGround = levelRects.filter(r => !rectInsidePolygon(r, footprint));
+        footprintByLevel.set(
+          level,
+          outsideGround.length === 0 ? footprint : extentFootprintForRects(levelRects),
+        );
       }
     }
 
@@ -777,9 +820,7 @@ export function reconstructBuildingFromImage(
         buildingId: canonicalBuildingId,
         level,
         name: level === 0 ? 'Ground Floor' : level === 1 ? 'First Floor' : `Floor ${level}`,
-        // Every level inherits the reconstructed outline so upper floors sit on
-        // the same footprint the image drew.
-        boundary: footprint,
+        boundary: footprintByLevel.get(level) ?? footprint,
       })),
     });
 
@@ -938,114 +979,117 @@ export function reconstructBuildingFromImage(
         return best && bestDistance <= 1500 ? best : null;
       };
 
-      if (level === 0) {
-        for (const door of plan.doors) {
-          const centre = applyTransform(
-            { x: door.imageX, y: door.imageY, width: door.imageWidth, height: door.imageHeight },
-            transform,
+      const levelTransform = transformByLevel.get(level) ?? transform;
+      const levelDoors = plan.doors.filter(d => (d.floorLevel ?? 0) === level);
+      for (const door of levelDoors) {
+        const centre = applyTransform(
+          { x: door.imageX, y: door.imageY, width: door.imageWidth, height: door.imageHeight },
+          levelTransform,
+        );
+        const point = { x: snapGrid(centre.x + centre.width / 2), y: snapGrid(centre.y + centre.height / 2) };
+        const wall = hostWallFor(point);
+        if (!wall) {
+          unplacedFeatures.push(
+            `Door "${door.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`,
           );
-          const point = { x: snapGrid(centre.x + centre.width / 2), y: snapGrid(centre.y + centre.height / 2) };
-          const wall = hostWallFor(point);
-          if (!wall) {
-            unplacedFeatures.push(
-              `Door "${door.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`,
-            );
-            continue;
-          }
-          const hosted = projectOntoSegment(point, wall.startPoint, wall.endPoint);
-          const adjacentRoom = roomByVisionId.get(door.adjacentRoomId);
-          const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre.width, centre.height)) || 900));
-          doors.push({
-            ...createDoor({
-              floorId,
-              wallId: wall.id,
-              position: hosted,
-              width,
-              height: 2100,
-              type:
-                door.type === 'double'
-                  ? DoorType.Double
-                  : door.type === 'sliding'
-                    ? DoorType.Sliding
-                    : door.type === 'open_passage'
-                      ? DoorType.OpenPassage
-                      : DoorType.Single,
-              swingDirection:
-                door.swingDirection === 'outward'
-                  ? SwingDirection.Outward
-                  : door.swingDirection === 'left'
-                    ? SwingDirection.Left
-                    : door.swingDirection === 'right'
-                      ? SwingDirection.Right
-                      : SwingDirection.Inward,
-              connectsRooms: [
-                adjacentRoom?.id ?? wall.roomIds[0] ?? '__outside__',
-                wall.roomIds.find(id => id !== adjacentRoom?.id) ?? '__outside__',
-              ],
-            }),
-            imageProvenance: {
-              sourceImageArtifactId: source.artifactId,
-              sourceImageHash: source.imageHash,
-              sourceGenerationRevision: source.generationRevision,
-              sourceProjectFingerprint: source.projectFingerprint,
-              conversionJobId,
-              geometryRevisionId,
-              sourceImageRegion: { x: door.imageX, y: door.imageY, width: door.imageWidth, height: door.imageHeight, frameWidth, frameHeight },
-              extractionConfidence: 0.7,
-              sourceEntityId: door.id,
-            },
-          } as Door);
+          continue;
         }
+        const hosted = projectOntoSegment(point, wall.startPoint, wall.endPoint);
+        const adjacentRoom = roomByVisionId.get(door.adjacentRoomId);
+        const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre.width, centre.height)) || 900));
+        doors.push({
+          ...createDoor({
+            floorId,
+            wallId: wall.id,
+            position: hosted,
+            width,
+            height: 2100,
+            type:
+              door.type === 'double'
+                ? DoorType.Double
+                : door.type === 'sliding'
+                  ? DoorType.Sliding
+                  : door.type === 'open_passage'
+                    ? DoorType.OpenPassage
+                    : DoorType.Single,
+            swingDirection:
+              door.swingDirection === 'outward'
+                ? SwingDirection.Outward
+                : door.swingDirection === 'left'
+                  ? SwingDirection.Left
+                  : door.swingDirection === 'right'
+                    ? SwingDirection.Right
+                    : SwingDirection.Inward,
+            connectsRooms: [
+              adjacentRoom?.id ?? wall.roomIds[0] ?? '__outside__',
+              wall.roomIds.find(id => id !== adjacentRoom?.id) ?? '__outside__',
+            ],
+          }),
+          imageProvenance: {
+            sourceImageArtifactId: source.artifactId,
+            sourceImageHash: source.imageHash,
+            sourceGenerationRevision: source.generationRevision,
+            sourceProjectFingerprint: source.projectFingerprint,
+            conversionJobId,
+            geometryRevisionId,
+            sourceImageRegion: { x: door.imageX, y: door.imageY, width: door.imageWidth, height: door.imageHeight, frameWidth, frameHeight },
+            extractionConfidence: 0.7,
+            sourceEntityId: door.id,
+          },
+        } as Door);
+      }
 
-        for (const win of plan.windows) {
-          const centre = applyTransform(
-            { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight },
-            transform,
+      const levelWindows = plan.windows.filter(w => (w.floorLevel ?? 0) === level);
+      for (const win of levelWindows) {
+        const centre = applyTransform(
+          { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight },
+          levelTransform,
+        );
+        const point = { x: snapGrid(centre.x + centre.width / 2), y: snapGrid(centre.y + centre.height / 2) };
+        const wall = hostWallFor(point);
+        if (!wall) {
+          unplacedFeatures.push(
+            `Window "${win.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed.`,
           );
-          const point = { x: snapGrid(centre.x + centre.width / 2), y: snapGrid(centre.y + centre.height / 2) };
-          const wall = hostWallFor(point);
-          if (!wall) {
-            unplacedFeatures.push(
-              `Window "${win.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed.`,
-            );
-            continue;
-          }
-          const hosted = projectOntoSegment(point, wall.startPoint, wall.endPoint);
-          const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
-          const width = Math.max(500, Math.min(4000, snapGrid(Math.max(centre.width, centre.height)) || 1200));
-          windows.push({
-            ...createWindow({
-              floorId,
-              wallId: wall.id,
-              position: hosted,
-              width,
-              height: 1200,
-              sillHeight: 900,
-              type: WindowType.Sliding,
-              roomId: adjacentRoom?.id ?? wall.roomIds[0] ?? '',
-            }),
-            imageProvenance: {
-              sourceImageArtifactId: source.artifactId,
-              sourceImageHash: source.imageHash,
-              sourceGenerationRevision: source.generationRevision,
-              sourceProjectFingerprint: source.projectFingerprint,
-              conversionJobId,
-              geometryRevisionId,
-              sourceImageRegion: { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight, frameWidth, frameHeight },
-              extractionConfidence: 0.7,
-              sourceEntityId: win.id,
-            },
-          } as Window);
+          continue;
         }
+        const hosted = projectOntoSegment(point, wall.startPoint, wall.endPoint);
+        const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
+        const width = Math.max(500, Math.min(4000, snapGrid(Math.max(centre.width, centre.height)) || 1200));
+        windows.push({
+          ...createWindow({
+            floorId,
+            wallId: wall.id,
+            position: hosted,
+            width,
+            height: 1200,
+            sillHeight: 900,
+            type: WindowType.Sliding,
+            roomId: adjacentRoom?.id ?? wall.roomIds[0] ?? '',
+          }),
+          imageProvenance: {
+            sourceImageArtifactId: source.artifactId,
+            sourceImageHash: source.imageHash,
+            sourceGenerationRevision: source.generationRevision,
+            sourceProjectFingerprint: source.projectFingerprint,
+            conversionJobId,
+            geometryRevisionId,
+            sourceImageRegion: { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight, frameWidth, frameHeight },
+            extractionConfidence: 0.7,
+            sourceEntityId: win.id,
+          },
+        } as Window);
       }
 
       // ── Stair flights where the image placed the staircase.
       const stairs: Stair[] = [];
       const stairRooms = placedRooms.filter(p => p.read.type === RoomType.Staircase);
       const upperLevelExists = level + 1 < targetFloorCount;
+      const lowerLevelExists = level > 0;
       for (const stairRoom of stairRooms) {
-        if (!upperLevelExists) continue;
+        if (!upperLevelExists && !lowerLevelExists) continue;
         const room = stairRoom.room;
+        const connectsFloors: [number, number] = upperLevelExists ? [level, level + 1] : [level - 1, level];
         stairs.push(
           createStair({
             floorId,
@@ -1055,7 +1099,7 @@ export function reconstructBuildingFromImage(
             width: Math.min(room.width, room.height),
             length: Math.max(room.width, room.height),
             direction: room.height >= room.width ? ('north' as Direction) : ('east' as Direction),
-            connectsFloors: [level, level + 1],
+            connectsFloors,
           }),
         );
       }

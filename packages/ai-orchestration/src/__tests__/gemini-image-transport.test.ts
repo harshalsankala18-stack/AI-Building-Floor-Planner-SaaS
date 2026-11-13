@@ -70,7 +70,26 @@ describe('Phase 4 — Gemini image parts (no regex)', () => {
   });
 
   it('preflight, interpretation and evaluation all pass the image via the typed field', async () => {
-    const provider = new RecordingProvider({ overallScore: 50 });
+    const validInterpretation = {
+      overallScore: 50,
+      boundary: {
+        points: [
+          { x: 0, y: 0 },
+          { x: 35000, y: 0 },
+          { x: 35000, y: 40000 },
+          { x: 0, y: 40000 },
+        ],
+      },
+      rooms: [
+        { id: 'r1', name: 'Living Room', type: 'living', x: 0, y: 0, width: 5000, height: 5000 },
+      ],
+      flats: [],
+      lifts: [],
+      lobbies: [],
+      corridors: [],
+      shafts: [],
+    };
+    const provider = new RecordingProvider(validInterpretation);
     await runGeminiApartmentPreflight(provider, JPEG_B64, { flatsPerFloor: 2, unitMix: [], liftCount: 2, stairCount: 2, commonCoreRequired: true }, 'image/jpeg');
     await interpretPlanImageWithGemini(provider, {
       plotWidthMm: 35000, plotDepthMm: 40000, orientationDegrees: 0, roadFacing: 'north',

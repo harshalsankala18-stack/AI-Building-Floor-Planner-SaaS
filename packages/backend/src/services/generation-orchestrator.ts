@@ -56,6 +56,7 @@ import {
   evaluateMasterImageWithGemini,
   type MasterImageEvaluationResult,
   interpretPlanImageWithGemini,
+  validateVisionInterpretationPayload,
   AIOrchestrationService,
   ImageProviderError,
   type ImageGenerationProvider,
@@ -76,6 +77,7 @@ import {
   extractHttpStatus,
   isTransientHttpError,
   isAuthHttpError,
+  isNetworkTransientError,
   renderStructuralPlan,
   type StructuralPlanRepresentation,
   adaptSchematicToBuilding,
@@ -426,8 +428,25 @@ export interface ResumeInterpretationInput {
 
 export type { CandidateSource, CandidateVisualSource };
 
-/** Stage at which a candidate was rejected. VISUAL_PREFLIGHT rejections are NOT scored. */
-export type CandidateRejectionStage = 'VISUAL_PREFLIGHT' | 'HARD_VALIDATION';
+/** Explicit generation and acceptance states (Phase 1B). */
+export type CandidateAcceptanceState =
+  | 'GENERATING'
+  | 'IMAGE_GENERATED'
+  | 'EVALUATING'
+  | 'QUALITY_REJECTED'
+  | 'QUALITY_ACCEPTED'
+  | 'INTERPRETATION_FAILED'
+  | 'CAD_RECONSTRUCTION_FAILED'
+  | 'CAD_VALIDATED'
+  | 'READY_FOR_EDITING';
+
+/** Stage at which a candidate was rejected. */
+export type CandidateRejectionStage =
+  | 'VISUAL_PREFLIGHT'
+  | 'QUALITY_GATE'
+  | 'IMAGE_INTERPRETATION'
+  | 'CAD_RECONSTRUCTION'
+  | 'HARD_VALIDATION';
 
 /**
  * Phase 3 recovery (report P4): bounded, deterministic visual retry.
@@ -451,6 +470,7 @@ export interface OrchestratedCandidate {
   readonly id: string;
   readonly seed: number;
   readonly status: 'ACCEPTED' | 'REJECTED';
+  readonly acceptanceState?: CandidateAcceptanceState;
   /** FLUX = accepted/attempted visual came from FLUX; FALLBACK_DETERMINISTIC = deterministic base plan. */
   readonly source: CandidateSource;
   readonly visualSource: CandidateVisualSource;
@@ -593,6 +613,7 @@ export interface GenerationOrchestratorError {
     | 'EXTRACTION_ERROR'
     | 'GEOMETRY_VALIDATION_ERROR'
     | 'GEMINI_EVALUATION_ERROR'
+    | 'QUALITY_GATE_FAILED'
     | 'VISUAL_PREFLIGHT_REJECTED'
     | 'PROVIDER_UNAVAILABLE';
   readonly stage: string;
@@ -1469,6 +1490,9 @@ export class GenerationOrchestrator {
         readonly preflight: ApartmentVisualPreflightResult | undefined;
         readonly masterEvaluation?: MasterImageEvaluationResult | null;
       } | null = null;
+      let lastAttemptSeed: number = slotSeed;
+      let lastAttemptArtifact: StoredImageArtifact | null = null;
+      let lastAttemptMasterEval: MasterImageEvaluationResult | null = null;
 
       for (let attemptIdx = 0; attemptIdx < attemptsForSlot; attemptIdx++) {
       const seed = deriveVisualAttemptSeed(slotSeed, attemptIdx);
@@ -1697,6 +1721,8 @@ export class GenerationOrchestrator {
       // Every FLUX attempt (accepted or rejected) is persisted and never overwritten.
       const artifact = await this.deps.store.save(projectId, generatedImage, promptRequest);
       stages.imageArtifact = 'AVAILABLE';
+      lastAttemptArtifact = artifact;
+      lastAttemptSeed = seed;
 
       // ─── PIPELINE STEP 5.5: VISUAL ACCEPTANCE GATE (§20, §28 & §30) ──────────
       // A visually rejected candidate is NOT SCORED: no interpretation, no hard
@@ -1797,6 +1823,7 @@ export class GenerationOrchestrator {
       }
 
       if (currentMasterEval) {
+        lastAttemptMasterEval = currentMasterEval;
         masterAttemptHistory.push({
           attemptNumber,
           seed,
@@ -1815,10 +1842,21 @@ export class GenerationOrchestrator {
           coherenceScore: currentMasterEval.coherenceScore,
         });
 
-        if (!currentMasterEval.passed && attemptNumber < attemptsForSlot) {
-          console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(', ')}. Enriching prompt for retry.`);
-          previousMasterEval = currentMasterEval;
-          continue; // Automatic improvement retry with enriched feedback!
+        const isMasterAcceptable =
+          currentMasterEval.passed &&
+          currentMasterEval.overallScore >= 80 &&
+          (currentMasterEval.hardConstraintViolations?.length ?? 0) === 0;
+
+        if (!isMasterAcceptable) {
+          console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(', ')}.`);
+          if (attemptNumber < attemptsForSlot) {
+            console.log(`Enriching prompt for retry.`);
+            previousMasterEval = currentMasterEval;
+            continue; // Automatic improvement retry with enriched feedback!
+          } else {
+            // All bounded attempts exhausted and rejected at quality gate
+            break;
+          }
         }
       }
 
@@ -1835,7 +1873,88 @@ export class GenerationOrchestrator {
       } // end bounded FLUX attempt loop
 
       if (!acceptedAttempt) {
-        // Every bounded attempt for this slot was rejected at the visual gate.
+        // Every bounded attempt for this slot was rejected at the visual gate or quality gate.
+        if (!isApartment && masterAttemptHistory.length > 0) {
+          const bestAttempt = [...masterAttemptHistory].sort((a, b) => b.overallScore - a.overallScore)[0]!;
+          const latestArtifact = (this as any)._latestGeneratedArtifact ?? lastAttemptArtifact;
+          if (latestArtifact) {
+            const resolvedSource: CandidateSource =
+              latestArtifact.provider === 'gemini' ? 'GEMINI'
+              : latestArtifact.provider === 'pollinations' ? 'POLLINATIONS'
+              : 'FLUX';
+            const resolvedVisualSource: CandidateVisualSource =
+              latestArtifact.provider === 'gemini' ? 'GEMINI_IMAGE'
+              : latestArtifact.provider === 'pollinations' ? 'POLLINATIONS_IMAGE'
+              : 'FLUX_IMAGE';
+
+            const synthesizedEval: MasterImageEvaluationResult = lastAttemptMasterEval ?? {
+              overallScore: bestAttempt.overallScore,
+              passed: bestAttempt.passed,
+              complianceScore: bestAttempt.complianceScore,
+              spatialLayoutScore: bestAttempt.spatialLayoutScore,
+              footprintScore: bestAttempt.footprintScore,
+              circulationScore: bestAttempt.circulationScore,
+              draftingClarityScore: bestAttempt.draftingClarityScore,
+              vastuDaylightScore: bestAttempt.vastuDaylightScore,
+              coherenceScore: bestAttempt.coherenceScore,
+              strengths: [],
+              concerns: bestAttempt.identifiedProblems,
+              identifiedProblems: bestAttempt.identifiedProblems,
+              missingRequirements: [],
+              incorrectPlacements: [],
+              incorrectFloorArrangements: [],
+              suggestedCorrections: bestAttempt.suggestedCorrections,
+              hardConstraintViolations: bestAttempt.hardConstraintViolations,
+              rationale: bestAttempt.hardConstraintViolations.join('; '),
+              model: 'gemini',
+              latencyMs: 0,
+            };
+
+            candidates.push({
+              id: `cand_two_ai_${lastAttemptSeed}_${cIdx}`,
+              seed: lastAttemptSeed,
+              status: 'REJECTED',
+              acceptanceState: 'QUALITY_REJECTED',
+              source: resolvedSource,
+              visualSource: resolvedVisualSource,
+              attempt: masterAttemptHistory.length,
+              rejectionStage: 'QUALITY_GATE',
+              evaluationStatus: 'SCORED',
+              stages: {
+                ...stages,
+                imageGeneration: 'SUCCESS',
+                imageArtifact: 'AVAILABLE',
+                geminiEvaluation: 'FAILED',
+                imageInterpretation: 'SKIPPED',
+                imageTo2D: 'SKIPPED',
+                validation: 'SKIPPED',
+              },
+              building: null,
+              artifact: latestArtifact,
+              validation: {
+                isValid: false,
+                recommendedForEditing: false,
+                geometryHealthy: false,
+                overallScore: null,
+                verificationIssues: [],
+              },
+              evaluation: null,
+              preflight: undefined,
+              diagnostics: (bestAttempt.hardConstraintViolations ?? []).map(v => ({
+                code: 'QUALITY_GATE_VIOLATION',
+                severity: 'error' as const,
+                message: v,
+              })),
+              rejectedReason: `Candidate rejected by architectural quality gate (${bestAttempt.overallScore}/100 < 80). Image preserved immutable.`,
+              referenceDiagnostics: undefined,
+              vastuReport: null,
+              masterEvaluation: synthesizedEval,
+              masterAttemptHistory: [...masterAttemptHistory],
+              ...(slotConcept ? { concept: conceptInfo()! } : {}),
+            });
+            recordSlot('GENERATED', `cand_two_ai_${lastAttemptSeed}_${cIdx}`);
+          }
+        }
         continue;
       }
 
@@ -1906,7 +2025,7 @@ export class GenerationOrchestrator {
           stages.imageInterpretation = 'SUCCESS';
         } catch (vErr) {
           const status = extractHttpStatus(vErr);
-          const isTransient = isTransientHttpError(status);
+          const isTransient = isTransientHttpError(status) || isNetworkTransientError(vErr);
           const isAuth = isAuthHttpError(status);
           stages.imageInterpretation = isTransient ? 'TEMPORARILY_UNAVAILABLE' : (isAuth ? 'AUTH_ERROR' : 'FAILED');
           return {
@@ -1983,17 +2102,60 @@ export class GenerationOrchestrator {
       const evaluation: ArchitecturalEvaluationResult | null = gated.evaluation;
       stages.geminiEvaluation = gated.stage;
 
-      // Visual preflight has already passed (or does not apply) at this point.
-      const candidateStatus = extraction.status;
-      const candidateAccepted = candidateStatus === 'ACCEPTED';
+      // Visual preflight and master quality gate check.
+      const qualityPass = isApartment
+        ? true
+        : acceptedAttempt.masterEvaluation
+        ? Boolean(
+            acceptedAttempt.masterEvaluation.passed &&
+            acceptedAttempt.masterEvaluation.overallScore >= 80 &&
+            (acceptedAttempt.masterEvaluation.hardConstraintViolations?.length ?? 0) === 0,
+          )
+        : true;
+      const cadValid = extraction.status === 'ACCEPTED' && extraction.building !== null && (extraction.validation?.isValid ?? false);
+
+      const candidateAccepted = qualityPass && cadValid;
+      const candidateStatus = candidateAccepted ? 'ACCEPTED' : 'REJECTED';
+      const acceptanceState: CandidateAcceptanceState =
+        !qualityPass ? 'QUALITY_REJECTED'
+        : !extraction.building ? 'CAD_RECONSTRUCTION_FAILED'
+        : !cadValid ? 'CAD_RECONSTRUCTION_FAILED'
+        : 'READY_FOR_EDITING';
+
+      const rejectionStage: CandidateRejectionStage | null =
+        candidateAccepted ? null
+        : !qualityPass ? 'QUALITY_GATE'
+        : extraction.validation && !extraction.validation.isValid ? 'HARD_VALIDATION'
+        : !extraction.building ? 'CAD_RECONSTRUCTION'
+        : 'HARD_VALIDATION';
+
+      const resolvedSource: CandidateSource =
+        artifact.provider === 'gemini' ? 'GEMINI'
+        : artifact.provider === 'pollinations' ? 'POLLINATIONS'
+        : 'FLUX';
+      const resolvedVisualSource: CandidateVisualSource =
+        artifact.provider === 'gemini' ? 'GEMINI_IMAGE'
+        : artifact.provider === 'pollinations' ? 'POLLINATIONS_IMAGE'
+        : 'FLUX_IMAGE';
 
       const candidateRejectedReason =
-        extraction.status === 'REJECTED'
-          ? 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.'
+        !candidateAccepted
+          ? (!qualityPass
+              ? `Candidate rejected by architectural quality gate (${acceptedAttempt.masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.`
+              : 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.')
           : null;
 
       const candRefDiag = generatedImage.referenceDiagnostics ?? promptRequest.referenceDiagnostics;
       const candidateDiagnostics = [...extraction.diagnostics];
+      if (!qualityPass && acceptedAttempt.masterEvaluation?.hardConstraintViolations) {
+        for (const v of acceptedAttempt.masterEvaluation.hardConstraintViolations) {
+          candidateDiagnostics.push({
+            code: 'QUALITY_GATE_VIOLATION',
+            severity: 'error',
+            message: v,
+          });
+        }
+      }
       if (candRefDiag && candRefDiag.drops.length > 0) {
         candidateDiagnostics.push({
           code: 'REFERENCE_IMAGES_DROPPED',
@@ -2013,17 +2175,18 @@ export class GenerationOrchestrator {
         id: `cand_two_ai_${seed}_${cIdx}`,
         seed,
         status: candidateStatus,
-        source: 'FLUX',
-        visualSource: 'FLUX_IMAGE',
+        acceptanceState,
+        source: resolvedSource,
+        visualSource: resolvedVisualSource,
         attempt: acceptedAttempt.attempt,
-        rejectionStage: candidateAccepted ? null : 'HARD_VALIDATION',
+        rejectionStage,
         evaluationStatus: gated.status,
         stages: { ...stages },
-        building: extraction.building,
+        building: candidateAccepted ? extraction.building : null,
         artifact,
         validation: {
           isValid: extraction.validation?.isValid ?? false,
-          recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
+          recommendedForEditing: candidateAccepted && (extraction.validation?.recommendedForEditing ?? false),
           geometryHealthy: extraction.validation?.geometryHealthy ?? false,
           overallScore: candidateAccepted ? (extraction.validation?.overallScore ?? null) : null,
           verificationIssues: [...(extraction.validation?.verificationIssues ?? [])],
@@ -2257,6 +2420,14 @@ export class GenerationOrchestrator {
               reasons: [...new Set(rejectedAtPreflight.flatMap(c => c.validation.verificationIssues.map(i => i.message)))],
               fallbackAvailable: true,
             }
+          : candidates.some(c => c.rejectionStage === 'QUALITY_GATE')
+          ? {
+              code: 'QUALITY_GATE_FAILED' as const,
+              stage: 'gemini_evaluation',
+              message: `Architectural quality gate rejected master image (${candidates[0]?.masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.`,
+              reasons: candidates[0]?.masterEvaluation?.hardConstraintViolations ?? ['Score below 80/100 threshold.'],
+              fallbackAvailable: false,
+            }
           : {
               code: 'GEOMETRY_VALIDATION_ERROR' as const,
               stage: 'hard_validation',
@@ -2376,7 +2547,7 @@ export class GenerationOrchestrator {
         stages.imageInterpretation = 'SUCCESS';
       } catch (vErr) {
         const status = extractHttpStatus(vErr);
-        const isTransient = isTransientHttpError(status);
+        const isTransient = isTransientHttpError(status) || isNetworkTransientError(vErr);
         const isAuth = isAuthHttpError(status);
         stages.imageInterpretation = isTransient ? 'TEMPORARILY_UNAVAILABLE' : (isAuth ? 'AUTH_ERROR' : 'FAILED');
         return {
@@ -2445,7 +2616,7 @@ export class GenerationOrchestrator {
     stages.geminiEvaluation = gated.stage;
 
     let masterEvaluation: MasterImageEvaluationResult | null = null;
-    if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 100) {
+    if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 20) {
       try {
         const evalRes = await evaluateMasterImageWithGemini(this.deps.gemini, {
           requirementsSummary: `${spec.hard.bedroomCount} bedrooms, ${spec.hard.bathroomCount} bathrooms${spec.rawUserPrompt ? `, prompt: ${spec.rawUserPrompt}` : ''}`,
@@ -2465,43 +2636,91 @@ export class GenerationOrchestrator {
       }
     }
 
+    const cadValid = extraction.status === 'ACCEPTED' && extraction.building !== null && (extraction.validation?.isValid ?? false);
+    const qualityPass = masterEvaluation
+      ? Boolean(
+          masterEvaluation.passed &&
+          masterEvaluation.overallScore >= 80 &&
+          (masterEvaluation.hardConstraintViolations?.length ?? 0) === 0,
+        )
+      : true;
+
+    const isFullyAccepted = cadValid && qualityPass;
+    const candidateStatus = isFullyAccepted ? 'ACCEPTED' : 'REJECTED';
+    const acceptanceState: CandidateAcceptanceState =
+      !qualityPass ? 'QUALITY_REJECTED'
+      : !extraction.building ? 'CAD_RECONSTRUCTION_FAILED'
+      : !cadValid ? 'CAD_RECONSTRUCTION_FAILED'
+      : 'READY_FOR_EDITING';
+
+    const rejectionStage: CandidateRejectionStage | null =
+      isFullyAccepted ? null
+      : !qualityPass ? 'QUALITY_GATE'
+      : extraction.validation && !extraction.validation.isValid ? 'HARD_VALIDATION'
+      : !extraction.building ? 'CAD_RECONSTRUCTION'
+      : 'HARD_VALIDATION';
+
     const resumedFromFallback = artifact.provider === FALLBACK_DETERMINISTIC_PROVIDER;
+    const resolvedSource: CandidateSource =
+      resumedFromFallback ? 'FALLBACK_DETERMINISTIC'
+      : artifact.provider === 'gemini' ? 'GEMINI'
+      : artifact.provider === 'pollinations' ? 'POLLINATIONS'
+      : 'FLUX';
+    const resolvedVisualSource: CandidateVisualSource =
+      resumedFromFallback ? 'DETERMINISTIC_SCHEMATIC'
+      : artifact.provider === 'gemini' ? 'GEMINI_IMAGE'
+      : artifact.provider === 'pollinations' ? 'POLLINATIONS_IMAGE'
+      : 'FLUX_IMAGE';
+
+    const resumeDiagnostics = [...extraction.diagnostics];
+    if (!qualityPass && masterEvaluation?.hardConstraintViolations) {
+      for (const v of masterEvaluation.hardConstraintViolations) {
+        resumeDiagnostics.push({
+          code: 'QUALITY_GATE_VIOLATION',
+          severity: 'error',
+          message: v,
+        });
+      }
+    }
+
     const candidate: OrchestratedCandidate = {
       id: `cand_resumed_${artifact.seed}_${Date.now().toString(36)}`,
       seed: artifact.seed,
-      status: extraction.status,
-      source: resumedFromFallback ? 'FALLBACK_DETERMINISTIC' : 'FLUX',
-      visualSource: resumedFromFallback ? 'DETERMINISTIC_SCHEMATIC' : 'FLUX_IMAGE',
-      rejectionStage: extraction.status === 'ACCEPTED' ? null : 'HARD_VALIDATION',
+      status: candidateStatus,
+      acceptanceState,
+      source: resolvedSource,
+      visualSource: resolvedVisualSource,
+      rejectionStage,
       evaluationStatus: gated.status,
       stages: { ...stages },
-      building: extraction.building,
+      building: isFullyAccepted ? extraction.building : null,
       artifact,
       masterEvaluation: masterEvaluation ?? null,
       validation: {
         isValid: extraction.validation?.isValid ?? false,
-        recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
+        recommendedForEditing: isFullyAccepted && (extraction.validation?.recommendedForEditing ?? false),
         geometryHealthy: extraction.validation?.geometryHealthy ?? false,
-        overallScore: extraction.status === 'ACCEPTED' ? (extraction.validation?.overallScore ?? null) : null,
+        overallScore: isFullyAccepted ? (extraction.validation?.overallScore ?? null) : null,
         verificationIssues: extraction.validation?.verificationIssues ?? [],
       },
       evaluation,
-      diagnostics: extraction.diagnostics,
+      diagnostics: resumeDiagnostics,
       ...(extraction.geometrySource ? { geometrySource: extraction.geometrySource } : {}),
       ...(extraction.cadFidelity ? { cadFidelity: extraction.cadFidelity } : {}),
       ...(extraction.conversionError
         ? { conversionError: { code: extraction.conversionError.code, message: extraction.conversionError.message } }
         : {}),
-      rejectedReason: extraction.status === 'REJECTED'
-        ? extraction.conversionError
-          // The ACTUAL conversion error, not a generic validation message.
-          ? `${extraction.conversionError.code}: ${extraction.conversionError.message}`
-          : 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.'
+      rejectedReason: !isFullyAccepted
+        ? (!qualityPass
+            ? `Candidate rejected by architectural quality gate (${masterEvaluation?.overallScore ?? 0}/100 < 80).`
+            : extraction.conversionError
+            ? `${extraction.conversionError.code}: ${extraction.conversionError.message}`
+            : 'Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable.')
         : null,
     };
 
     return {
-      success: isValid,
+      success: isFullyAccepted,
       projectId,
       requirements: spec,
       feasibility,
@@ -2509,22 +2728,170 @@ export class GenerationOrchestrator {
       savedArtifact: artifact,
       stages,
       latencyMs: Date.now() - startedAt,
-      candidateSource: isValid ? candidate.source : null,
+      candidateSource: isFullyAccepted ? candidate.source : null,
       masterEvaluation: masterEvaluation ?? null,
       masterQualityScore: masterEvaluation?.overallScore,
-      error: isValid
+      error: isFullyAccepted
         ? undefined
         : {
-            code: extraction.conversionError ? 'IMAGE_TO_CAD_CONVERSION_ERROR' : 'GEOMETRY_VALIDATION_ERROR',
-            stage: extraction.conversionError ? 'image_to_cad' : 'geometry_validation',
-            message: extraction.conversionError
+            code: !qualityPass
+              ? 'QUALITY_GATE_FAILED'
+              : (extraction.conversionError ? 'IMAGE_TO_CAD_CONVERSION_ERROR' : 'GEOMETRY_VALIDATION_ERROR'),
+            stage: !qualityPass ? 'gemini_evaluation' : (extraction.conversionError ? 'image_to_cad' : 'geometry_validation'),
+            message: !qualityPass
+              ? `Architectural quality gate rejected master image (${masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.`
+              : extraction.conversionError
               ? extraction.conversionError.message
               : 'Deterministic geometry validation failed.',
-            reasons: extraction.diagnostics.map(d => `[${d.severity}] ${d.message}`),
+            reasons: !qualityPass
+              ? (masterEvaluation?.hardConstraintViolations ?? ['Score below 80/100 threshold.'])
+              : extraction.diagnostics.map(d => `[${d.severity}] ${d.message}`),
             fallbackAvailable: false,
             artifactId: artifact.generationId,
             artifact,
           },
     };
+  }
+
+  /**
+   * Phase 2A — Reinterpret a previously generated and persisted image artifact
+   * without calling image generation, altering quality score, or modifying acceptance status.
+   */
+  async reinterpretArtifact(input: {
+    readonly artifactId: string;
+    readonly projectId: string;
+    readonly requirements?: DesignRequirementSpecification;
+    readonly userPrompt?: string;
+  }): Promise<{
+    readonly success: boolean;
+    readonly artifactId: string;
+    readonly projectId: string;
+    readonly model: string;
+    readonly latencyMs: number;
+    readonly usage: { promptTokens: number; completionTokens: number; totalTokens: number };
+    readonly payload: unknown;
+    readonly validated: boolean;
+    readonly validationErrors: readonly string[];
+    readonly originalStatus: 'REJECTED' | 'ACCEPTED';
+    readonly isAccepted: false;
+    readonly error?: {
+      readonly code: string;
+      readonly message: string;
+      readonly isTransient: boolean;
+    };
+  }> {
+    const startedAt = Date.now();
+    const artifact = await this.deps.store.get(input.artifactId);
+    if (!artifact) {
+      return {
+        success: false,
+        artifactId: input.artifactId,
+        projectId: input.projectId,
+        model: 'unknown',
+        latencyMs: Date.now() - startedAt,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        payload: null,
+        validated: false,
+        validationErrors: [`Artifact "${input.artifactId}" not found in image artifact store.`],
+        originalStatus: 'REJECTED',
+        isAccepted: false,
+        error: {
+          code: 'ARTIFACT_NOT_FOUND',
+          message: `Artifact "${input.artifactId}" not found.`,
+          isTransient: false,
+        },
+      };
+    }
+
+    if (input.projectId && artifact.projectId !== input.projectId) {
+      return {
+        success: false,
+        artifactId: input.artifactId,
+        projectId: input.projectId,
+        model: 'unknown',
+        latencyMs: Date.now() - startedAt,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        payload: null,
+        validated: false,
+        validationErrors: [`Artifact project ID "${artifact.projectId}" does not match requested project ID "${input.projectId}".`],
+        originalStatus: 'REJECTED',
+        isAccepted: false,
+        error: {
+          code: 'PROJECT_MISMATCH',
+          message: `Artifact project ID "${artifact.projectId}" does not match requested project ID "${input.projectId}".`,
+          isTransient: false,
+        },
+      };
+    }
+
+    if (!this.deps.gemini || !(await this.deps.gemini.isAvailable())) {
+      return {
+        success: false,
+        artifactId: input.artifactId,
+        projectId: input.projectId,
+        model: 'unknown',
+        latencyMs: Date.now() - startedAt,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        payload: null,
+        validated: false,
+        validationErrors: ['Gemini vision is not configured on this server (GEMINI_API_KEY missing).'],
+        originalStatus: 'REJECTED',
+        isAccepted: false,
+        error: {
+          code: 'IMAGE_INTERPRETER_NOT_CONFIGURED',
+          message: 'Gemini vision is not configured on this server (GEMINI_API_KEY missing).',
+          isTransient: false,
+        },
+      };
+    }
+
+    try {
+      const vision = await interpretPlanImageWithGemini(this.deps.gemini, {
+        plotWidthMm: input.requirements?.hard.plotWidthMm ?? 12190,
+        plotDepthMm: input.requirements?.hard.plotDepthMm ?? 18290,
+        orientationDegrees: input.requirements?.orientationDegrees ?? 0,
+        roadFacing: input.requirements?.hard.roadFacing ?? 'north',
+        userPrompt: input.userPrompt ?? input.requirements?.rawUserPrompt ?? artifact.originalPrompt,
+        imageBase64: artifact.imageBase64,
+        imageMimeType: artifact.mimeType,
+      });
+
+      const validation = validateVisionInterpretationPayload(vision.parsed, false);
+
+      return {
+        success: validation.isValid,
+        artifactId: artifact.generationId,
+        projectId: artifact.projectId,
+        model: vision.model,
+        latencyMs: Date.now() - startedAt,
+        usage: vision.usage,
+        payload: vision.parsed,
+        validated: validation.isValid,
+        validationErrors: validation.errors,
+        originalStatus: 'REJECTED',
+        isAccepted: false,
+      };
+    } catch (err) {
+      const status = extractHttpStatus(err);
+      const isTransient = isTransientHttpError(status) || isNetworkTransientError(err);
+      return {
+        success: false,
+        artifactId: artifact.generationId,
+        projectId: artifact.projectId,
+        model: 'unknown',
+        latencyMs: Date.now() - startedAt,
+        usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+        payload: null,
+        validated: false,
+        validationErrors: [err instanceof Error ? err.message : String(err)],
+        originalStatus: 'REJECTED',
+        isAccepted: false,
+        error: {
+          code: isTransient ? 'PROVIDER_UNAVAILABLE' : 'IMAGE_INTERPRETATION_ERROR',
+          message: err instanceof Error ? err.message : 'Gemini vision interpretation failed.',
+          isTransient,
+        },
+      };
+    }
   }
 }

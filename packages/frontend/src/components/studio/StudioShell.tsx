@@ -26,6 +26,7 @@ import {
   Clock,
   StopCircle,
   AlertTriangle,
+  ShieldAlert,
   RefreshCw,
   Info,
   FileCheck2,
@@ -59,6 +60,7 @@ import { createQuickDesignRequirements } from '../../services/design-site-contex
 import type { WorkspaceCommand } from '../../services/workspace-commands';
 import {
   BackendAPI,
+  type CandidateAcceptanceState,
   type CandidateSource,
   type OrchestratedCandidateResult,
   type StoredPlanImageArtifact,
@@ -72,6 +74,7 @@ import {
   inFlightStageRows,
   summarizeGenerationOutcome,
   describeConceptCards,
+  isCandidateAppliable,
   type AdvisoryCategory,
   type CandidateScoreView,
   type ConceptCardView,
@@ -121,7 +124,7 @@ export interface StudioCandidate {
   readonly name: string;
   readonly strategy: string;
   readonly description?: string;
-  readonly building: Building;
+  readonly building: Building | null;
   readonly metrics: {
     readonly totalCarpetAreaMm2: number;
     /** null = not scored (Two-AI candidates without a real Gemini evaluation). */
@@ -165,6 +168,8 @@ export interface StudioCandidate {
     defects?: readonly string[];
     [key: string]: any;
   } | null;
+  readonly status?: 'ACCEPTED' | 'REJECTED';
+  readonly acceptanceState?: CandidateAcceptanceState;
   readonly masterEvaluation?: MasterImageEvaluationResult | null;
 }
 
@@ -248,9 +253,9 @@ function mapTwoAICandidate(
   defaultSeed: number | undefined,
   defaultDescription: string,
 ): StudioCandidate {
-  const building = cand.building!;
-  const firstFloor = building.floors[0]!;
-  const totalArea = firstFloor.rooms.reduce((s, r) => s + r.area, 0);
+  const building = cand.building;
+  const firstFloor = building?.floors[0];
+  const totalArea = firstFloor ? firstFloor.rooms.reduce((s, r) => s + r.area, 0) : 0;
   const source = candidateSourceOf(cand);
   const sourceView = describeCandidateSource(cand);
   const isFallback = source === 'FALLBACK_DETERMINISTIC';
@@ -263,12 +268,15 @@ function mapTwoAICandidate(
     name: isFallback
       ? 'Deterministic Base Plan (Fallback)'
       : cand.concept
-      ? `Candidate ${String(cand.concept.candidateNumber).padStart(2, '0')} — ${cand.concept.label} (FLUX)`
-      : `Design Concept #${idx + 1} (FLUX)`,
-    strategy: isFallback ? 'deterministic_fallback' : 'flux_concept',
+      ? `Candidate ${String(cand.concept.candidateNumber).padStart(2, '0')} — ${cand.concept.label} (${sourceView.label})`
+      : `Residential Master Design (${sourceView.label})`,
+    strategy: isFallback ? 'deterministic_fallback' : (cand.artifact?.provider === 'gemini' ? 'gemini_concept' : 'ai_concept'),
     rank: idx + 1,
     building,
     source,
+    status: cand.status,
+    acceptanceState: cand.acceptanceState,
+    masterEvaluation: cand.masterEvaluation ?? null,
     scoreView: describeCandidateScore(cand),
     advisoryCategories: advisoryCategories(cand.evaluation),
     metrics: {
@@ -309,7 +317,6 @@ function mapTwoAICandidate(
       summary: cand.evaluation.rationale,
     } : null,
     vastuReport,
-    masterEvaluation: (cand as any).masterEvaluation ?? null,
   };
 }
 
@@ -485,13 +492,29 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
   const [generatedCandidates, setGeneratedCandidates] = useState<StudioCandidate[]>(() => {
     try {
       const envelope = projectStorage.load(editor.projectId);
+      if (envelope?.pendingAiGeneration) {
+        return [];
+      }
       if (envelope?.generationSession?.candidates?.length) {
-        return envelope.generationSession.candidates.map((r, idx) => ({
+        // For single-family residential, only show real AI-generated candidates (with artifacts)
+        const validCandidates = envelope.category === 'residential'
+          ? envelope.generationSession.candidates.filter(c => Boolean((c as any).artifact || (c as any).imageArtifact || (c as any).source === 'GEMINI'))
+          : envelope.generationSession.candidates;
+
+        return validCandidates.map((r, idx) => ({
           id: r.id || `cand-${idx + 1}`,
           name: r.name,
           strategy: r.strategy,
           description: r.description || 'Deterministic algorithmic layout matching dimensional constraints.',
           building: r.building,
+          status: (r as any).status,
+          acceptanceState: (r as any).acceptanceState,
+          rejectionStage: (r as any).rejectionStage,
+          masterEvaluation: (r as any).masterEvaluation,
+          scoreView: (r as any).scoreView,
+          imageArtifact: (r as any).imageArtifact,
+          source: (r as any).source,
+          visualSource: (r as any).visualSource,
           metrics: {
             totalCarpetAreaMm2: r.metrics.totalCarpetAreaMm2,
             overallQualityScore: r.metrics.overallQualityScore,
@@ -504,7 +527,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           rank: r.rank ?? (idx + 1),
           requiredRoomCounts: r.requiredRoomCounts,
           generationSeed: envelope.generationSession?.requestSeed ?? 101,
-          validationStatus: 'passed',
+          validationStatus: (r as any).validationStatus || (r.building ? 'passed' : 'failed'),
+          vastuReport: (r as any).vastuReport,
         }));
       }
     } catch (e) {
@@ -518,6 +542,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
   const [selectedCandidateId, setSelectedCandidateId] = useState<string | null>(() => {
     try {
       const envelope = projectStorage.load(editor.projectId);
+      if (envelope?.pendingAiGeneration) return null;
       if (envelope?.generationSession?.selectedCandidateId) {
         return envelope.generationSession.selectedCandidateId;
       }
@@ -852,6 +877,8 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
 
     const jobId = `job_${Date.now().toString(36)}`;
     const jobStartedAt = new Date().toISOString();
+    setGeneratedCandidates([]);
+    setSelectedCandidateId(null);
 
     try {
       const env = projectStorage.load(editor.projectId);
@@ -1036,10 +1063,11 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
       setGeneratedCandidates(mappedCandidates);
       if (mappedCandidates.length > 0) {
         const primaryCandidate = mappedCandidates[0]!;
-        const syncedBuilding: Building = {
+        const isApproved = isCandidateAppliable(primaryCandidate);
+        const syncedBuilding: Building | null = (isApproved && primaryCandidate.building) ? {
           ...primaryCandidate.building,
           version: (primaryCandidate.building.version || 1) + 1,
-        };
+        } : null;
         setSelectedCandidateId(primaryCandidate.id);
 
         // Persist the generated image session, revision history, building, and completed job state FIRST
@@ -1047,6 +1075,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
         try {
           const env = projectStorage.load(editor.projectId);
           if (env) {
+            const masterEval = (result as any).masterEvaluation || (accepted[0] as any)?.masterEvaluation || primaryCandidate.masterEvaluation || null;
             const newImageSession = primaryArtifact
               ? {
                   schemaVersion: 1 as const,
@@ -1069,15 +1098,15 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                     height: primaryArtifact.height || 1024,
                     metadata: {
                       projectName: editor.projectName || env.name,
-                      plotWidthMm: syncedBuilding.site.plotWidth,
-                      plotDepthMm: syncedBuilding.site.plotDepth,
-                      floorsCount: syncedBuilding.floors.length,
-                      roadFacing: String(syncedBuilding.site.roadFacing || 'north'),
+                      plotWidthMm: env.building.site.plotWidth,
+                      plotDepthMm: env.building.site.plotDepth,
+                      floorsCount: env.building.floors.length,
+                      roadFacing: String(env.building.site.roadFacing || 'north'),
                     },
                   },
-                  contextSignature: `${syncedBuilding.id}:${syncedBuilding.version}:${syncedBuilding.site.plotWidth}x${syncedBuilding.site.plotDepth}`,
+                  contextSignature: `${env.building.id}:${env.building.version}:${env.building.site.plotWidth}x${env.building.site.plotDepth}`,
                   requirementsFingerprint: computeRequirementsFingerprint(env),
-                  evaluation: (result as any).masterEvaluation || (accepted[0] as any)?.masterEvaluation || null,
+                  evaluation: masterEval,
                 }
               : env.floorPlanImage;
 
@@ -1088,20 +1117,22 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   {
                     ...newImageSession,
                     revisionNumber: existingRevs.length + 1,
-                    buildingSnapshot: syncedBuilding,
+                    buildingSnapshot: syncedBuilding ?? env.building,
                   },
                 ]
               : existingRevs;
 
             projectStorage.save({
               ...env,
-              building: syncedBuilding,
+              building: syncedBuilding ?? env.building,
               floorPlanImage: newImageSession,
               imageRevisions: nextRevs,
               pendingAiGeneration: false,
               generationJob: {
                 jobId,
-                status: 'completed',
+                status: isApproved ? 'completed' : 'failed',
+                errorMessage: isApproved ? undefined : 'Architectural quality gate rejected candidate (< 80/100).',
+                errorStage: isApproved ? undefined : 'QUALITY_GATE',
                 startedAt: jobStartedAt,
                 completedAt: new Date().toISOString(),
                 projectType: effectiveProjectType === 'apartment' ? 'apartment' : 'single_family',
@@ -1115,13 +1146,26 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
           console.warn('Failed to persist AI generation session to projectStorage:', persistErr);
         }
 
-        editor.setBuilding(
-          syncedBuilding,
-          editor.projectName || primaryCandidate.name,
-          primaryCandidate.requiredRoomCounts,
-          editor.projectCategory,
-        );
-        setFitRequest(v => v + 1);
+        if (isApproved && syncedBuilding) {
+          editor.setBuilding(
+            syncedBuilding,
+            editor.projectName || primaryCandidate.name,
+            primaryCandidate.requiredRoomCounts,
+            editor.projectCategory,
+          );
+          setFitRequest(v => v + 1);
+        } else {
+          const score = primaryCandidate.masterEvaluation?.overallScore ?? 0;
+          const violations = primaryCandidate.masterEvaluation?.hardConstraintViolations ?? [];
+          setStageSpecificError({
+            stage: 'Architectural Quality Gate',
+            message: `Master concept image scored ${score}/100 (below the 80/100 acceptance threshold) and was rejected.`,
+            diagnostics: violations.length > 0
+              ? `Hard violations: ${violations.join(' · ')}`
+              : 'Score must be at least 80/100 with zero hard violations before entering CAD/3D.',
+          });
+          setGenerationError(`Architectural quality gate rejected design (${score}/100 < 80). Image and diagnostic breakdown preserved.`);
+        }
       }
     } catch (err) {
       console.error('Two-AI Generation error:', err);
@@ -1366,8 +1410,19 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
     }
   };
 
-  // Apply candidate to canonical building
+  // Apply candidate to canonical building (Strict fail-closed quality gate)
   const handleApplyCandidate = (cand: StudioCandidate | CandidatePlan) => {
+    if (!isCandidateAppliable(cand) || !cand.building) {
+      console.warn('Blocked attempt to apply rejected candidate to canonical building:', cand);
+      const score = (cand as any).masterEvaluation?.overallScore ?? (cand as any).metrics?.overallQualityScore;
+      const violations = (cand as any).masterEvaluation?.hardConstraintViolations ?? [];
+      setStageSpecificError({
+        stage: 'Architectural Quality Gate',
+        message: 'This design cannot be applied to the project because it did not pass the architectural quality gate (score must be ≥ 80/100 with zero hard violations).',
+        diagnostics: violations.length > 0 ? `Hard violations: ${violations.join(' · ')}` : `Score: ${score ?? 0}/100 (< 80)`,
+      });
+      return;
+    }
     editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
     setActiveStage('floorplans');
   };
@@ -3329,6 +3384,11 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                     }
                   }
                   onCadSynchronized={(syncedBuilding, art) => {
+                    const mEval = (art as any).masterEvaluation;
+                    if (mEval && (!mEval.passed || mEval.overallScore < 80 || (mEval.hardConstraintViolations?.length ?? 0) > 0)) {
+                      console.warn('Blocked onCadSynchronized for quality-gate rejected artifact');
+                      return;
+                    }
                     editor.setBuilding(syncedBuilding, editor.projectName, editor.requiredRoomCounts, editor.projectCategory);
                     setFitRequest(v => v + 1);
                     const totalArea = syncedBuilding.floors[0]?.rooms.reduce((s, r) => s + r.area, 0) ?? 0;
@@ -3691,9 +3751,9 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
 
                   <div className="candidates-gallery-grid">
                     {generatedCandidates.map(cand => {
-                      const firstFloor = cand.building.floors[0]!;
-                      const transform = fitFloorToViewport(firstFloor, 340, 220);
-                      const svgHtml = renderFloor(firstFloor, cand.building, transform, 340, 220);
+                      const firstFloor = cand.building?.floors[0];
+                      const transform = firstFloor ? fitFloorToViewport(firstFloor, 340, 220) : null;
+                      const svgHtml = (firstFloor && cand.building && transform) ? renderFloor(firstFloor, cand.building, transform, 340, 220) : '';
                       const isSelected = cand.id === selectedCandidateId;
                       const currentMode = candidateViewModes[cand.id] ?? (cand.imageArtifact?.base64Data ? 'image' : 'cad');
 
@@ -3708,10 +3768,17 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                               {cand.strategy.replace(/_/g, ' ')}
                             </span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                              <span className="badge-validated">
-                                <Check size={11} />
-                                <span>Validated ✓</span>
-                              </span>
+                              {cand.status === 'REJECTED' || cand.acceptanceState === 'QUALITY_REJECTED' || (cand.masterEvaluation && (cand.masterEvaluation.overallScore < 80 || !cand.masterEvaluation.passed)) ? (
+                                <span className="badge-rejected" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, backgroundColor: '#FEF2F2', color: '#991B1B', border: '1px solid #FECACA' }}>
+                                  <X size={11} />
+                                  <span>Rejected (&lt;80)</span>
+                                </span>
+                              ) : (
+                                <span className="badge-validated">
+                                  <Check size={11} />
+                                  <span>Validated ✓</span>
+                                </span>
+                              )}
                               {cand.vastuReport && typeof cand.vastuReport.overallScore === 'number' && (
                                 <span
                                   className="badge-vastu-score"
@@ -3755,7 +3822,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                                   className={`candidate-view-btn ${currentMode === 'image' ? 'active' : ''}`}
                                   onClick={() => setCandidateViewModes(prev => ({ ...prev, [cand.id]: 'image' }))}
                                 >
-                                  {cand.source === 'FALLBACK_DETERMINISTIC' ? 'Deterministic Base Plan' : 'Concept Image (FLUX)'}
+                                  {cand.source === 'FALLBACK_DETERMINISTIC' ? 'Deterministic Base Plan' : cand.source === 'GEMINI' ? 'Concept Image (Gemini)' : 'Concept Image (FLUX)'}
                                 </button>
                                 <button
                                   type="button"
@@ -3776,6 +3843,12 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                                 alt={cand.source === 'FALLBACK_DETERMINISTIC' ? 'Deterministic apartment base plan (not AI generated)' : 'Generated floor plan concept'}
                                 style={{ width: '100%', height: '100%', objectFit: 'contain' }}
                               />
+                            </div>
+                          ) : !cand.building ? (
+                            <div style={{ height: 220, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', color: '#64748B', padding: 16, textAlign: 'center' }}>
+                              <ShieldAlert size={28} color="#DC2626" style={{ marginBottom: 8 }} />
+                              <span style={{ fontSize: 12, fontWeight: 600, color: '#991B1B' }}>CAD Conversion Blocked</span>
+                              <span style={{ fontSize: 11, color: '#64748B', marginTop: 4 }}>Quality score &lt; 80/100 threshold</span>
                             </div>
                           ) : (
                             <div
@@ -3824,7 +3897,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
 
                             <div className="candidate-metrics-row">
                               <span>Carpet Area: {Math.round(sqMmToSqFt(cand.metrics.totalCarpetAreaMm2))} sq ft</span>
-                              <span>{firstFloor.rooms.length} Rooms</span>
+                              <span>{firstFloor ? firstFloor.rooms.length : 0} Rooms</span>
                             </div>
 
                             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
@@ -3864,13 +3937,21 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                                 ? (currentMode === 'image' ? 'View 2D CAD' : 'View Concept')
                                 : (isSelected ? 'Viewing' : 'Select')}
                             </button>
-                            <button
-                              className="studio-btn-action primary"
-                              onClick={() => handleApplyCandidate(cand)}
-                            >
-                              <span>Apply to Project</span>
-                              <ArrowRight size={13} />
-                            </button>
+                            {(() => {
+                              const isAppliable = isCandidateAppliable(cand);
+                              return (
+                                <button
+                                  className="studio-btn-action primary"
+                                  onClick={() => handleApplyCandidate(cand)}
+                                  disabled={!isAppliable}
+                                  title={!isAppliable ? 'Candidate rejected by architectural quality gate (score must be ≥ 80/100 with zero hard violations).' : 'Apply to Project'}
+                                  style={!isAppliable ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                                >
+                                  <span>Apply to Project</span>
+                                  <ArrowRight size={13} />
+                                </button>
+                              );
+                            })()}
                           </div>
                         </div>
                       );
@@ -3893,14 +3974,21 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   <span>AI Plan Synthesis ({generatedCandidates.length} Options)</span>
                 </div>
                 {selectedCandidate ? (
-                  <button
-                    className="studio-btn-action primary"
-                    onClick={() => handleApplyCandidate(selectedCandidate)}
-                    disabled={isGenerating}
-                  >
-                    <span>Apply Selected & Open 2D Floor Plan</span>
-                    <ArrowRight size={14} />
-                  </button>
+                  (() => {
+                    const isSelAppliable = isCandidateAppliable(selectedCandidate);
+                    return (
+                      <button
+                        className="studio-btn-action primary"
+                        onClick={() => handleApplyCandidate(selectedCandidate)}
+                        disabled={isGenerating || !isSelAppliable}
+                        title={!isSelAppliable ? 'Selected design rejected by architectural quality gate (<80/100 or hard violations).' : 'Apply Selected & Open 2D Floor Plan'}
+                        style={!isSelAppliable ? { opacity: 0.5, cursor: 'not-allowed' } : undefined}
+                      >
+                        <span>Apply Selected & Open 2D Floor Plan</span>
+                        <ArrowRight size={14} />
+                      </button>
+                    );
+                  })()
                 ) : (
                   <button
                     className="studio-btn-action primary"
@@ -3948,8 +4036,10 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                               className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
                               onClick={() => {
                                 setSelectedCandidateId(cand.id);
-                                editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
-                                setFitRequest(v => v + 1);
+                                if (isCandidateAppliable(cand) && cand.building) {
+                                  editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
+                                  setFitRequest(v => v + 1);
+                                }
                               }}
                             >
                               <span className="cad-tab-title">{cand.name}</span>
@@ -3962,50 +4052,115 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                     </>
                   ) : (
                     <>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38BDF8', fontWeight: 700, fontSize: 12 }}>
-                          <Sparkles size={14} />
-                          <span>MASTER AI FLOOR PLAN</span>
-                        </div>
-                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
-                        <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
-                          {generatedCandidates[0]?.name || 'Residential Master Design'}
-                        </span>
-                        {generatedCandidates[0]?.masterEvaluation && (
-                          <span
-                            style={{
-                              fontSize: 11,
-                              fontWeight: 700,
-                              padding: '2px 8px',
-                              borderRadius: 999,
-                              background: generatedCandidates[0].masterEvaluation.passed ? '#065F46' : '#991B1B',
-                              color: '#FFFFFF',
-                              border: `1px solid ${generatedCandidates[0].masterEvaluation.passed ? '#34D399' : '#F87171'}`,
-                            }}
-                          >
-                            Score: {generatedCandidates[0].masterEvaluation.overallScore}/100 · {generatedCandidates[0].masterEvaluation.passed ? 'PASSED (≥80)' : 'REVISION NEEDED'}
-                          </span>
-                        )}
-                      </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                        <span style={{ fontSize: 11, color: '#94A3B8' }}>
-                          Carpet: {Math.round(sqMmToSqFt(generatedCandidates[0]?.metrics.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
-                        </span>
-                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
-                        <span style={{ fontSize: 11, color: '#34D399', fontWeight: 600 }}>
-                          Vastu: {Math.round(generatedCandidates[0]?.vastuReport?.overallScore ?? 85)}/100
-                        </span>
-                        <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
-                        <span style={{ fontSize: 11, color: '#A5B4FC', fontWeight: 600 }}>
-                          Editable Vector CAD
-                        </span>
-                      </div>
+                      {(() => {
+                        const primary = generatedCandidates[0];
+                        const isApproved = isCandidateAppliable(primary);
+                        const mEval = primary?.masterEvaluation;
+                        const score = mEval?.overallScore ?? primary?.metrics?.overallQualityScore;
+                        return (
+                          <>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <div style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: 6,
+                                color: isApproved ? '#38BDF8' : '#F87171',
+                                fontWeight: 700,
+                                fontSize: 12
+                              }}>
+                                {isApproved ? <Sparkles size={14} /> : <AlertTriangle size={14} />}
+                                <span>{isApproved ? 'MASTER AI FLOOR PLAN' : 'REJECTED CONCEPT (<80)'}</span>
+                              </div>
+                              <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                              <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
+                                {primary?.name || 'Residential Master Design'}
+                              </span>
+                              {mEval && (
+                                <span
+                                  style={{
+                                    fontSize: 11,
+                                    fontWeight: 700,
+                                    padding: '2px 8px',
+                                    borderRadius: 999,
+                                    background: isApproved ? '#065F46' : '#991B1B',
+                                    color: '#FFFFFF',
+                                    border: `1px solid ${isApproved ? '#34D399' : '#F87171'}`,
+                                  }}
+                                >
+                                  Score: {score}/100 · {isApproved ? 'PASSED (≥80)' : 'REVISION NEEDED (<80)'}
+                                </span>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                              <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                                Carpet: {Math.round(sqMmToSqFt(primary?.metrics?.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
+                              </span>
+                              <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                              <span style={{ fontSize: 11, color: '#34D399', fontWeight: 600 }}>
+                                Vastu: {Math.round(primary?.vastuReport?.overallScore ?? 85)}/100
+                              </span>
+                              <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                              <span style={{ fontSize: 11, color: isApproved ? '#A5B4FC' : '#FCA5A5', fontWeight: 600 }}>
+                                {isApproved ? 'Editable Vector CAD' : 'Unapproved — Read Only'}
+                              </span>
+                            </div>
+                          </>
+                        );
+                      })()}
                     </>
                   )}
                 </div>
               )}
 
               <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+              {editor.building.floors.every(f => (f.rooms?.length ?? 0) === 0) && (
+                <div style={{
+                  position: 'absolute',
+                  inset: 0,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: 'rgba(15, 23, 42, 0.90)',
+                  backdropFilter: 'blur(6px)',
+                  zIndex: 25,
+                  padding: 24,
+                  textAlign: 'center',
+                }}>
+                  <div style={{
+                    background: '#7F1D1D',
+                    color: '#FCA5A5',
+                    padding: '8px 16px',
+                    borderRadius: 999,
+                    fontSize: 13,
+                    fontWeight: 700,
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 8,
+                    marginBottom: 16,
+                    border: '1px solid #EF4444',
+                  }}>
+                    <AlertTriangle size={16} />
+                    <span>No Approved Floor Plan — Latest Concept Scored {generatedCandidates[0]?.masterEvaluation?.overallScore ?? 58}/100</span>
+                  </div>
+                  <h3 style={{ fontSize: 18, margin: '0 0 8px', color: '#FFFFFF', fontWeight: 700 }}>
+                    Architectural Quality Gate Enforced
+                  </h3>
+                  <p style={{ maxWidth: 520, fontSize: 13, color: '#94A3B8', lineHeight: 1.5, margin: '0 0 20px' }}>
+                    The current concept image scored below 80/100 or had hard architectural violations.
+                    Invalid or rejected designs are blocked from becoming the canonical CAD floor plan.
+                  </p>
+                  <button
+                    type="button"
+                    className="studio-btn-action primary"
+                    onClick={() => setActiveStage('generate')}
+                    style={{ padding: '8px 20px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                  >
+                    <Sparkles size={14} />
+                    <span>View AI Design Diagnostics & Retry</span>
+                  </button>
+                </div>
+              )}
               <ArchitecturalCanvas
                 editor={editor}
                 onCursorMove={() => {}}
@@ -4383,6 +4538,7 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                             key={cand.id}
                             className={`cad-candidate-tab ${isSelected ? 'active' : ''}`}
                             onClick={() => {
+                              if (!isCandidateAppliable(cand) || !cand.building) return;
                               setSelectedCandidateId(cand.id);
                               editor.setBuilding(cand.building, cand.name, cand.requiredRoomCounts, editor.projectCategory);
                               setFitRequest(v => v + 1);
@@ -4398,45 +4554,110 @@ export const StudioShell: React.FC<StudioShellProps> = ({ onBackToProjects }) =>
                   </>
                 ) : (
                   <>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: '#38BDF8', fontWeight: 700, fontSize: 12 }}>
-                        <Sparkles size={14} />
-                        <span>MASTER AI 3D MODEL</span>
-                      </div>
-                      <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
-                      <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
-                        {generatedCandidates[0]?.name || 'Residential Master Design'}
-                      </span>
-                      {generatedCandidates[0]?.masterEvaluation && (
-                        <span
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 700,
-                            padding: '2px 8px',
-                            borderRadius: 999,
-                            background: generatedCandidates[0].masterEvaluation.passed ? '#065F46' : '#991B1B',
-                            color: '#FFFFFF',
-                            border: `1px solid ${generatedCandidates[0].masterEvaluation.passed ? '#34D399' : '#F87171'}`,
-                          }}
-                        >
-                          Score: {generatedCandidates[0].masterEvaluation.overallScore}/100 · {generatedCandidates[0].masterEvaluation.passed ? 'PASSED (≥80)' : 'REVISION NEEDED'}
-                        </span>
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                      <span style={{ fontSize: 11, color: '#94A3B8' }}>
-                        Carpet: {Math.round(sqMmToSqFt(generatedCandidates[0]?.metrics.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
-                      </span>
-                      <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
-                      <span style={{ fontSize: 11, color: '#38BDF8', fontWeight: 600 }}>
-                        Synchronized 3D Geometry
-                      </span>
-                    </div>
+                    {(() => {
+                      const primary = generatedCandidates[0];
+                      const isApproved = isCandidateAppliable(primary);
+                      const mEval = primary?.masterEvaluation;
+                      const score = mEval?.overallScore ?? primary?.metrics?.overallQualityScore;
+                      return (
+                        <>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: 6,
+                              color: isApproved ? '#38BDF8' : '#F87171',
+                              fontWeight: 700,
+                              fontSize: 12
+                            }}>
+                              {isApproved ? <Sparkles size={14} /> : <AlertTriangle size={14} />}
+                              <span>{isApproved ? 'MASTER AI 3D MODEL' : 'REJECTED 3D MODEL (<80)'}</span>
+                            </div>
+                            <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                            <span style={{ fontSize: 12, color: '#F8FAFC', fontWeight: 600 }}>
+                              {primary?.name || 'Residential Master Design'}
+                            </span>
+                            {mEval && (
+                              <span
+                                style={{
+                                  fontSize: 11,
+                                  fontWeight: 700,
+                                  padding: '2px 8px',
+                                  borderRadius: 999,
+                                  background: isApproved ? '#065F46' : '#991B1B',
+                                  color: '#FFFFFF',
+                                  border: `1px solid ${isApproved ? '#34D399' : '#F87171'}`,
+                                }}
+                              >
+                                Score: {score}/100 · {isApproved ? 'PASSED (≥80)' : 'REVISION NEEDED (<80)'}
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                              Carpet: {Math.round(sqMmToSqFt(primary?.metrics?.totalCarpetAreaMm2 ?? 0)).toLocaleString()} sq.ft
+                            </span>
+                            <span style={{ fontSize: 11, color: '#64748B' }}>·</span>
+                            <span style={{ fontSize: 11, color: isApproved ? '#38BDF8' : '#FCA5A5', fontWeight: 600 }}>
+                              {isApproved ? 'Synchronized 3D Geometry' : 'Unapproved — Read Only'}
+                            </span>
+                          </div>
+                        </>
+                      );
+                    })()}
                   </>
                 )}
               </div>
             )}
             <div style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+            {editor.building.floors.every(f => (f.rooms?.length ?? 0) === 0) && (
+              <div style={{
+                position: 'absolute',
+                inset: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(15, 23, 42, 0.90)',
+                backdropFilter: 'blur(6px)',
+                zIndex: 25,
+                padding: 24,
+                textAlign: 'center',
+              }}>
+                <div style={{
+                  background: '#7F1D1D',
+                  color: '#FCA5A5',
+                  padding: '8px 16px',
+                  borderRadius: 999,
+                  fontSize: 13,
+                  fontWeight: 700,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  marginBottom: 16,
+                  border: '1px solid #EF4444',
+                }}>
+                  <AlertTriangle size={16} />
+                  <span>No Approved 3D Model — Latest Concept Scored {generatedCandidates[0]?.masterEvaluation?.overallScore ?? 58}/100</span>
+                </div>
+                <h3 style={{ fontSize: 18, margin: '0 0 8px', color: '#FFFFFF', fontWeight: 700 }}>
+                  Architectural Quality Gate Enforced
+                </h3>
+                <p style={{ maxWidth: 520, fontSize: 13, color: '#94A3B8', lineHeight: 1.5, margin: '0 0 20px' }}>
+                  The current concept image scored below 80/100 or had hard architectural violations.
+                  Invalid or rejected designs are blocked from becoming the canonical 3D model.
+                </p>
+                <button
+                  type="button"
+                  className="studio-btn-action primary"
+                  onClick={() => setActiveStage('generate')}
+                  style={{ padding: '8px 20px', fontSize: 13, display: 'inline-flex', alignItems: 'center', gap: 6 }}
+                >
+                  <Sparkles size={14} />
+                  <span>View AI Design Diagnostics & Retry</span>
+                </button>
+              </div>
+            )}
             <div style={{ position: 'absolute', top: 16, left: 16, zIndex: 10, display: 'flex', gap: 8 }}>
               <button
                 type="button"

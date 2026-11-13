@@ -342,7 +342,9 @@ export class LocalStorageProjectStorage {
           ...savedGeneration,
           candidates: savedGeneration.candidates.map(candidate => ({
             ...candidate,
-            building: deserializeBuilding(JSON.stringify(normalizeBuildingFloorIds(candidate.building as unknown as Record<string, unknown>))),
+            building: candidate.building
+              ? deserializeBuilding(JSON.stringify(normalizeBuildingFloorIds(candidate.building as unknown as Record<string, unknown>)))
+              : null,
           })),
         } : undefined,
         floorPlanImage: normalizeFloorPlanImageSession(parsed.floorPlanImage),

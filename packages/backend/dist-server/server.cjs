@@ -31,7 +31,7 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
 // packages/ai-orchestration/dist/providers/base.js
-var BaseAIProvider, AISafetyError;
+var BaseAIProvider, AISafetyError, AIRequestValidationError;
 var init_base = __esm({
   "packages/ai-orchestration/dist/providers/base.js"() {
     "use strict";
@@ -43,6 +43,12 @@ var init_base = __esm({
         super(`[AISafetyError] ${message}`);
         this.rawOutput = rawOutput;
         this.name = "AISafetyError";
+      }
+    };
+    AIRequestValidationError = class extends Error {
+      constructor(message) {
+        super(`[AIRequestValidationError] ${message}`);
+        this.name = "AIRequestValidationError";
       }
     };
   }
@@ -1567,6 +1573,57 @@ function isAuthHttpError(status) {
     return false;
   return status === 401 || status === 403;
 }
+function isNetworkTransientError(error) {
+  if (!error)
+    return false;
+  if (error instanceof Error) {
+    const name = error.name;
+    const msg = error.message.toLowerCase();
+    const cause = error.cause;
+    const causeCode = cause?.code?.toUpperCase();
+    const errCode = error.code?.toUpperCase();
+    if (name === "AbortError" || msg.includes("timed out") || msg.includes("timeout")) {
+      return true;
+    }
+    const networkCodes = /* @__PURE__ */ new Set([
+      "ECONNRESET",
+      "ETIMEDOUT",
+      "ECONNREFUSED",
+      "ENOTFOUND",
+      "EAI_AGAIN",
+      "EPIPE",
+      "UND_ERR_CONNECT_TIMEOUT",
+      "UND_ERR_SOCKET",
+      "UND_ERR_HEADERS_TIMEOUT",
+      "UND_ERR_BODY_TIMEOUT"
+    ]);
+    if (causeCode && networkCodes.has(causeCode))
+      return true;
+    if (errCode && networkCodes.has(errCode))
+      return true;
+    if (msg.includes("econnreset") || msg.includes("etimedout") || msg.includes("connection reset") || msg.includes("socket hang up") || msg.includes("fetch failed") || msg.includes("network error")) {
+      return true;
+    }
+  }
+  return false;
+}
+function isModelNotFoundError(error, status) {
+  if (status === 404)
+    return true;
+  if (error instanceof HttpProviderError) {
+    if (error.status === 404)
+      return true;
+    if (error.detail && /not_found|models\/.*is not found|does not exist/i.test(error.detail))
+      return true;
+  }
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (msg.includes("not found") || msg.includes("not_found") || msg.includes("is not supported for generatecontent") || msg.includes("no longer available") || msg.includes("does not exist")) {
+      return true;
+    }
+  }
+  return false;
+}
 function calculateDelayWithJitter(attempt, policy, retryAfterMs) {
   if (typeof retryAfterMs === "number" && retryAfterMs > 0) {
     return Math.min(policy.maxDelayMs, Math.max(50, Math.round(retryAfterMs)));
@@ -1613,14 +1670,14 @@ function buildGeminiParts(request) {
   for (const [index, image] of (request.images ?? []).entries()) {
     const mimeType = image.mimeType.trim().toLowerCase();
     if (!GEMINI_SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)) {
-      throw new AISafetyError(`Image part ${index} has unsupported media type "${image.mimeType}" for Gemini.`);
+      throw new AIRequestValidationError(`Image part ${index} has unsupported media type "${image.mimeType}" for Gemini.`);
     }
     if (image.data.startsWith("data:")) {
-      throw new AISafetyError(`Image part ${index} must be raw base64, not a data URL.`);
+      throw new AIRequestValidationError(`Image part ${index} must be raw base64, not a data URL.`);
     }
     const data = image.data.replace(/\s+/g, "");
     if (data.length === 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
-      throw new AISafetyError(`Image part ${index} is not valid base64 image data.`);
+      throw new AIRequestValidationError(`Image part ${index} is not valid base64 image data.`);
     }
     parts.push({ inlineData: { mimeType, data } });
   }
@@ -1718,22 +1775,27 @@ var init_gemini = __esm({
               return response(content, parsed, usage(rawUsage.promptTokenCount, rawUsage.candidatesTokenCount, rawUsage.totalTokenCount), currentModel, result.latencyMs);
             } catch (err) {
               lastError = err;
+              if (err instanceof AIRequestValidationError) {
+                throw err;
+              }
               const status = extractHttpStatus(err);
               if (isAuthHttpError(status)) {
                 throw err;
               }
-              const isModelRetired404 = status === 404 && err instanceof Error && err.message.includes("no longer available");
-              if (status === 400 || status === 404 && (!isModelRetired404 || !fallbackModel)) {
+              if (isModelNotFoundError(err, status)) {
+                if (fallbackModel && !isFallback) {
+                  console.warn(`[GeminiProvider] Model "${currentModel}" not found or unsupported (status ${status ?? 404}). Falling forward to "${fallbackModel}"...`);
+                  break;
+                }
                 throw err;
               }
-              if (isModelRetired404 && fallbackModel) {
-                console.warn(`[GeminiProvider] Model "${currentModel}" returned 404 (no longer available). Falling forward to "${fallbackModel}"...`);
-                break;
+              if (status === 400) {
+                throw err;
               }
-              const isTimeout = err instanceof Error && (err.message.includes("timed out") || err.name === "AbortError");
-              const isTransient = isTransientHttpError(status);
-              const isSafetyOrParseError = err instanceof AISafetyError;
-              if (!isTransient && !isTimeout && !isSafetyOrParseError) {
+              const isTransientHttp = isTransientHttpError(status);
+              const isNetworkTransient = isNetworkTransientError(err);
+              const isSafetyOrParse = err instanceof AISafetyError;
+              if (!isTransientHttp && !isNetworkTransient && !isSafetyOrParse) {
                 throw err;
               }
               const retryAfterMs = err instanceof HttpProviderError ? err.retryAfterMs : void 0;
@@ -1741,12 +1803,12 @@ var init_gemini = __esm({
               if (attempt < this.retryPolicy.maxRetries) {
                 continue;
               }
-              console.warn(`[GeminiProvider] Retries exhausted for model "${currentModel}" on transient error (status ${status ?? "parse/safety"}).`);
+              console.warn(`[GeminiProvider] Retries exhausted for model "${currentModel}" on transient error (status ${status ?? "network/timeout"}).`);
               break;
             }
           }
           if (fallbackModel && !isFallback) {
-            console.warn(`[GeminiProvider] Primary model "${primaryModel}" temporarily unavailable (503/transient). Falling back to "${fallbackModel}"...`);
+            console.warn(`[GeminiProvider] Primary model "${primaryModel}" failed after retries. Falling back to "${fallbackModel}"...`);
           }
         }
         throw lastError ?? new Error("Gemini completion failed across all models.");
@@ -5057,8 +5119,10 @@ function parseExtractionPayload(payload, metadata, planId) {
   if (!boundary) {
     return { plan: null, diagnostics: [{ code: "EXTRACTION_PAYLOAD_BOUNDARY_INVALID", severity: "error", message: "The vision response did not contain a valid building boundary polygon." }] };
   }
+  const rawRoomsArray = Array.isArray(source.rooms) ? source.rooms : [];
+  const floorRegions = parseFloorRegions(source, rawRoomsArray, diagnostics);
   const rooms = [];
-  for (const entry of Array.isArray(source.rooms) ? source.rooms : []) {
+  for (const entry of rawRoomsArray) {
     const record3 = asRecord3(entry);
     if (!record3)
       continue;
@@ -5077,6 +5141,35 @@ function parseExtractionPayload(payload, metadata, planId) {
       diagnostics.push({ code: "EXTRACTION_ROOM_SKIPPED", severity: "warning", message: `Room "${name}" was skipped because its extracted size was not positive.` });
       continue;
     }
+    let floorLevel = num(record3.floorLevel);
+    let floorRegionId;
+    let floorAssignmentReason;
+    if (floorLevel !== null) {
+      floorAssignmentReason = "explicit_payload";
+      const matched = floorRegions.find((fr) => fr.level === Math.max(0, Math.trunc(floorLevel)));
+      if (matched)
+        floorRegionId = matched.id;
+    } else if (floorRegions.length > 0) {
+      const cx = x + width / 2;
+      const cy = y + height / 2;
+      const matched = floorRegions.find((fr) => cx >= fr.region.x && cx <= fr.region.x + fr.region.width && cy >= fr.region.y && cy <= fr.region.y + fr.region.height);
+      if (matched) {
+        floorLevel = matched.level;
+        floorRegionId = matched.id;
+        floorAssignmentReason = `region_containment_${matched.name}`;
+      }
+    }
+    if (floorLevel === null) {
+      const lowerName = name.toLowerCase();
+      const lowerId = id.toLowerCase();
+      if (lowerName.includes("first floor") || lowerName.startsWith("ff_") || lowerId.startsWith("ff_") || lowerName.includes("upper")) {
+        floorLevel = 1;
+        floorAssignmentReason = "name_heuristic_upper";
+      } else {
+        floorLevel = 0;
+        floorAssignmentReason = "default_ground";
+      }
+    }
     const flatId = str(record3.flatId);
     rooms.push({
       id,
@@ -5089,6 +5182,9 @@ function parseExtractionPayload(payload, metadata, planId) {
       imageArea: width * height,
       imageMinWidth: width,
       imageMinHeight: height,
+      floorLevel: Math.max(0, Math.trunc(floorLevel)),
+      floorRegionId,
+      floorAssignmentReason,
       ...flatId ? { flatId } : {}
     });
   }
@@ -5110,6 +5206,9 @@ function parseExtractionPayload(payload, metadata, planId) {
       continue;
     const rawType = str(record3.type) ?? "unknown";
     const rawSwing = str(record3.swingDirection) ?? "unknown";
+    const doorLvl = num(record3.floorLevel);
+    const adjacentRoom = rooms.find((r) => r.id === adjacentRoomId);
+    const resolvedDoorLevel = doorLvl !== null ? Math.max(0, Math.trunc(doorLvl)) : adjacentRoom?.floorLevel ?? 0;
     doors.push({
       id,
       imageX: x,
@@ -5119,7 +5218,8 @@ function parseExtractionPayload(payload, metadata, planId) {
       type: DOOR_TYPES.has(rawType) ? rawType : "unknown",
       swingDirection: SWINGS.has(rawSwing) ? rawSwing : "unknown",
       connectsRooms: [adjacentRoomId],
-      adjacentRoomId
+      adjacentRoomId,
+      floorLevel: resolvedDoorLevel
     });
   }
   const windows = [];
@@ -5135,7 +5235,10 @@ function parseExtractionPayload(payload, metadata, planId) {
     const adjacentRoomId = str(record3.adjacentRoomId);
     if (!id || x === null || y === null || width === null || height === null || !adjacentRoomId)
       continue;
-    windows.push({ id, imageX: x, imageY: y, imageWidth: width, imageHeight: height, adjacentRoomId });
+    const winLvl = num(record3.floorLevel);
+    const adjacentRoom = rooms.find((r) => r.id === adjacentRoomId);
+    const resolvedWinLevel = winLvl !== null ? Math.max(0, Math.trunc(winLvl)) : adjacentRoom?.floorLevel ?? 0;
+    windows.push({ id, imageX: x, imageY: y, imageWidth: width, imageHeight: height, adjacentRoomId, floorLevel: resolvedWinLevel });
   }
   const stairs = [];
   for (const entry of Array.isArray(source.stairs) ? source.stairs : []) {
@@ -5151,7 +5254,18 @@ function parseExtractionPayload(payload, metadata, planId) {
     if (!id || x === null || y === null || width === null || height === null)
       continue;
     const flatId = str(record3.flatId);
-    stairs.push({ id, name, imageX: x, imageY: y, imageWidth: width, imageHeight: height, ...flatId ? { flatId } : {} });
+    const stairLvl = num(record3.floorLevel) ?? 0;
+    stairs.push({
+      id,
+      name,
+      imageX: x,
+      imageY: y,
+      imageWidth: width,
+      imageHeight: height,
+      floorLevel: Math.max(0, Math.trunc(stairLvl)),
+      connectsToLevel: Math.max(0, Math.trunc(stairLvl)) + 1,
+      ...flatId ? { flatId } : {}
+    });
   }
   const parking = [];
   for (const entry of Array.isArray(source.parking) ? source.parking : []) {
@@ -5176,7 +5290,18 @@ function parseExtractionPayload(payload, metadata, planId) {
     shafts: parseCoreElements(source.shafts, "Shaft", diagnostics)
   } : {};
   return {
-    plan: { id: planId, boundary, rooms, doors, windows, stairs, parking, ...apartment, metadata },
+    plan: {
+      id: planId,
+      boundary,
+      rooms,
+      doors,
+      windows,
+      stairs,
+      parking,
+      floors: floorRegions.length > 0 ? floorRegions : void 0,
+      ...apartment,
+      metadata
+    },
     diagnostics
   };
 }
@@ -5221,6 +5346,113 @@ function parseCoreElements(value, fallbackName, diagnostics) {
     elements.push({ id, name, imageX: x, imageY: y, imageWidth: width, imageHeight: height, ...flatId ? { flatId } : {} });
   }
   return elements;
+}
+function parseFloorRegions(source, rawRooms, _diagnostics) {
+  const regions = [];
+  if (Array.isArray(source.floors)) {
+    for (const f of source.floors) {
+      const rec = asRecord3(f);
+      if (!rec)
+        continue;
+      const level = num(rec.level);
+      const name = str(rec.name);
+      const reg = asRecord3(rec.region);
+      const rx = num(reg?.x);
+      const ry = num(reg?.y);
+      const rw = num(reg?.width);
+      const rh = num(reg?.height);
+      if (level !== null && name && rx !== null && ry !== null && rw !== null && rh !== null && rw > 0 && rh > 0) {
+        const b = pointList(asRecord3(rec.boundary)?.points);
+        regions.push({
+          id: str(rec.id) ?? `floor_${level}`,
+          level: Math.max(0, Math.trunc(level)),
+          name,
+          region: { x: rx, y: ry, width: rw, height: rh },
+          ...b ? { boundary: b } : {}
+        });
+      }
+    }
+  }
+  if (regions.length > 0) {
+    return regions.sort((a, b) => a.level - b.level);
+  }
+  const roomsByLevel = /* @__PURE__ */ new Map();
+  for (const entry of rawRooms) {
+    const rec = asRecord3(entry);
+    if (!rec)
+      continue;
+    const name = (str(rec.name) ?? "").toLowerCase();
+    const id = (str(rec.id) ?? "").toLowerCase();
+    let lvl = num(rec.floorLevel);
+    if (lvl === null) {
+      if (name.includes("first floor") || name.startsWith("ff_") || id.startsWith("ff_") || name.includes("upper")) {
+        lvl = 1;
+      } else if (name.includes("ground floor") || name.startsWith("gf_") || id.startsWith("gf_")) {
+        lvl = 0;
+      }
+    }
+    const finalLvl = lvl !== null ? Math.max(0, Math.trunc(lvl)) : null;
+    const x = num(rec.x);
+    const y = num(rec.y);
+    const w = num(rec.width);
+    const h = num(rec.height);
+    if (finalLvl !== null && x !== null && y !== null && w !== null && h !== null) {
+      const list = roomsByLevel.get(finalLvl) ?? [];
+      list.push({ x, y, width: w, height: h });
+      roomsByLevel.set(finalLvl, list);
+    }
+  }
+  if (roomsByLevel.size > 1) {
+    for (const [lvl, rooms] of roomsByLevel.entries()) {
+      const minX = Math.min(...rooms.map((r) => r.x));
+      const minY = Math.min(...rooms.map((r) => r.y));
+      const maxX = Math.max(...rooms.map((r) => r.x + r.width));
+      const maxY = Math.max(...rooms.map((r) => r.y + r.height));
+      const padX = Math.min(minX, 20);
+      const padY = Math.min(minY, 20);
+      regions.push({
+        id: `floor_${lvl}`,
+        level: lvl,
+        name: lvl === 0 ? "Ground Floor" : lvl === 1 ? "First Floor" : `Floor ${lvl}`,
+        region: {
+          x: Math.max(0, minX - padX),
+          y: Math.max(0, minY - padY),
+          width: Math.min(1e3, maxX - minX + padX * 2),
+          height: Math.min(1e3, maxY - minY + padY * 2)
+        }
+      });
+    }
+    return regions.sort((a, b) => a.level - b.level);
+  }
+  if (rawRooms.length >= 6) {
+    const parsedCoords = rawRooms.map(asRecord3).filter((r) => r !== null).map((r) => ({ y: num(r.y) ?? 0, h: num(r.height) ?? 0 })).map((r) => r.y + r.h / 2).sort((a, b) => a - b);
+    let maxGap = 0;
+    let splitY = 0;
+    for (let i = 0; i < parsedCoords.length - 1; i++) {
+      const gap = parsedCoords[i + 1] - parsedCoords[i];
+      if (gap > maxGap && gap > 60) {
+        maxGap = gap;
+        splitY = (parsedCoords[i] + parsedCoords[i + 1]) / 2;
+      }
+    }
+    if (maxGap > 60 && splitY > 200 && splitY < 800) {
+      return [
+        {
+          id: "floor_0",
+          level: 0,
+          name: "Ground Floor",
+          region: { x: 0, y: 0, width: 1e3, height: splitY }
+        },
+        {
+          id: "floor_1",
+          level: 1,
+          name: "First Floor",
+          region: { x: 0, y: splitY, width: 1e3, height: 1e3 - splitY }
+        }
+      ];
+    }
+  }
+  return [];
 }
 var DOOR_TYPES, SWINGS;
 var init_extraction_parser = __esm({
@@ -11521,7 +11753,113 @@ var init_apartment = __esm({
 });
 
 // packages/ai-orchestration/dist/orchestration/vision-interpretation.js
+function validateVisionInterpretationPayload(payload, isApartment) {
+  const errors = [];
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    return { isValid: false, errors: ["Interpretation payload is not a valid JSON object."] };
+  }
+  const rec = payload;
+  if (!rec.boundary || typeof rec.boundary !== "object" || Array.isArray(rec.boundary)) {
+    errors.push("Missing or invalid boundary object.");
+  } else {
+    const pts = rec.boundary.points;
+    if (!Array.isArray(pts) || pts.length < 3) {
+      errors.push("Boundary points must be an array of at least 3 points.");
+    } else {
+      const invalidPts = pts.some((p) => !p || typeof p !== "object" || typeof p.x !== "number" || typeof p.y !== "number");
+      if (invalidPts) {
+        errors.push("Boundary points contains entries missing numeric x or y coordinates.");
+      }
+    }
+  }
+  if (!Array.isArray(rec.rooms)) {
+    errors.push("Missing or invalid rooms array.");
+  } else if (rec.rooms.length === 0) {
+    errors.push("Rooms array is empty; at least 1 room required.");
+  } else {
+    for (let i = 0; i < rec.rooms.length; i++) {
+      const r = rec.rooms[i];
+      if (!r || typeof r !== "object") {
+        errors.push(`Room at index ${i} is not a valid object.`);
+        continue;
+      }
+      const roomRec = r;
+      if (!roomRec.id || typeof roomRec.id !== "string")
+        errors.push(`Room at index ${i} is missing string id.`);
+      if (!roomRec.name || typeof roomRec.name !== "string")
+        errors.push(`Room at index ${i} is missing string name.`);
+      if (!roomRec.type || typeof roomRec.type !== "string")
+        errors.push(`Room at index ${i} is missing string type.`);
+      if (typeof roomRec.x !== "number" || typeof roomRec.y !== "number")
+        errors.push(`Room at index ${i} is missing numeric coordinates x, y.`);
+      if (typeof roomRec.width !== "number" || roomRec.width <= 0)
+        errors.push(`Room at index ${i} has invalid width (must be > 0).`);
+      if (typeof roomRec.height !== "number" || roomRec.height <= 0)
+        errors.push(`Room at index ${i} has invalid height (must be > 0).`);
+    }
+  }
+  if (rec.doors !== void 0 && !Array.isArray(rec.doors))
+    errors.push("doors must be an array.");
+  if (rec.windows !== void 0 && !Array.isArray(rec.windows))
+    errors.push("windows must be an array.");
+  if (rec.stairs !== void 0 && !Array.isArray(rec.stairs))
+    errors.push("stairs must be an array.");
+  if (rec.parking !== void 0 && !Array.isArray(rec.parking))
+    errors.push("parking must be an array.");
+  if (rec.floors !== void 0) {
+    if (!Array.isArray(rec.floors)) {
+      errors.push("floors must be an array.");
+    } else {
+      for (let i = 0; i < rec.floors.length; i++) {
+        const f = rec.floors[i];
+        if (!f || typeof f !== "object") {
+          errors.push(`Floor at index ${i} is not a valid object.`);
+          continue;
+        }
+        const floorRec2 = f;
+        if (typeof floorRec2.level !== "number" || floorRec2.level < 0) {
+          errors.push(`Floor at index ${i} must have non-negative numeric level.`);
+        }
+        if (!floorRec2.name || typeof floorRec2.name !== "string") {
+          errors.push(`Floor at index ${i} must have a non-empty string name.`);
+        }
+        const reg = floorRec2.region;
+        if (!reg || typeof reg !== "object" || typeof reg.x !== "number" || typeof reg.y !== "number" || typeof reg.width !== "number" || typeof reg.height !== "number" || reg.width <= 0 || reg.height <= 0) {
+          errors.push(`Floor at index ${i} has invalid region (must have numeric x, y, width > 0, height > 0).`);
+        }
+      }
+    }
+  }
+  if (isApartment) {
+    if (!Array.isArray(rec.flats))
+      errors.push("Apartment interpretation requires flats array.");
+    if (!Array.isArray(rec.lifts))
+      errors.push("Apartment interpretation requires lifts array.");
+    if (!Array.isArray(rec.lobbies))
+      errors.push("Apartment interpretation requires lobbies array.");
+    if (!Array.isArray(rec.corridors))
+      errors.push("Apartment interpretation requires corridors array.");
+    if (!Array.isArray(rec.shafts))
+      errors.push("Apartment interpretation requires shafts array.");
+  }
+  return { isValid: errors.length === 0, errors };
+}
 async function interpretPlanImageWithGemini(provider, options) {
+  if (!options.imageBase64 || typeof options.imageBase64 !== "string" || options.imageBase64.trim().length === 0) {
+    throw new AIRequestValidationError("Image data is empty or missing.");
+  }
+  const cleanBase64 = options.imageBase64.replace(/\s+/g, "");
+  if (cleanBase64.startsWith("data:")) {
+    throw new AIRequestValidationError("Image data must be raw base64, not a data URL.");
+  }
+  if (!/^[A-Za-z0-9+/]+={0,2}$/.test(cleanBase64)) {
+    throw new AIRequestValidationError("Image data is not valid base64 encoding.");
+  }
+  const rawMime = (options.imageMimeType ?? "image/png").trim().toLowerCase();
+  const validMimes = /* @__PURE__ */ new Set(["image/png", "image/jpeg", "image/webp", "image/heic", "image/heif"]);
+  if (!validMimes.has(rawMime)) {
+    throw new AIRequestValidationError(`Image MIME type "${options.imageMimeType}" is unsupported by Gemini.`);
+  }
   const apartment = options.apartmentContext;
   const frame = INTERPRETATION_FRAME;
   const systemPrompt = apartment ? [
@@ -11574,6 +11912,10 @@ async function interpretPlanImageWithGemini(provider, options) {
   if (parsed === void 0 || parsed === null || typeof parsed === "object" && Object.keys(parsed).length === 0) {
     throw new AISafetyError("Gemini vision interpretation returned no structured payload (no parsed interpretation).");
   }
+  const validation = validateVisionInterpretationPayload(parsed, Boolean(apartment));
+  if (!validation.isValid) {
+    throw new AISafetyError(`Gemini vision interpretation failed schema validation: ${validation.errors.join("; ")}`);
+  }
   return {
     parsed,
     model: apiResponse.model,
@@ -11617,6 +11959,45 @@ var init_vision_interpretation = __esm({
                 properties: {
                   x: { type: "number" },
                   y: { type: "number" }
+                }
+              }
+            }
+          }
+        },
+        floors: {
+          type: "array",
+          description: "Detected distinct architectural floor plan drawings shown in this image (e.g. Ground Floor, First Floor).",
+          items: {
+            type: "object",
+            required: ["level", "name", "region"],
+            properties: {
+              id: { type: "string" },
+              level: { type: "integer", description: "Floor level index (0 for Ground Floor, 1 for First Floor, etc.)" },
+              name: { type: "string", description: 'Drawing title as written (e.g. "GROUND FLOOR PLAN", "FIRST FLOOR PLAN")' },
+              region: {
+                type: "object",
+                required: ["x", "y", "width", "height"],
+                properties: {
+                  x: { type: "number" },
+                  y: { type: "number" },
+                  width: { type: "number" },
+                  height: { type: "number" }
+                }
+              },
+              boundary: {
+                type: "object",
+                properties: {
+                  points: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      required: ["x", "y"],
+                      properties: {
+                        x: { type: "number" },
+                        y: { type: "number" }
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -11666,7 +12047,8 @@ var init_vision_interpretation = __esm({
               type: { type: "string" },
               swingDirection: { type: "string" },
               connectsRooms: { type: "array", items: { type: "string" } },
-              adjacentRoomId: { type: "string" }
+              adjacentRoomId: { type: "string" },
+              floorLevel: { type: "integer", description: "Floor level (0 for Ground Floor, 1 for First Floor, etc.)" }
             }
           }
         },
@@ -11681,7 +12063,8 @@ var init_vision_interpretation = __esm({
               y: { type: "number" },
               width: { type: "number" },
               height: { type: "number" },
-              adjacentRoomId: { type: "string" }
+              adjacentRoomId: { type: "string" },
+              floorLevel: { type: "integer", description: "Floor level (0 for Ground Floor, 1 for First Floor, etc.)" }
             }
           }
         },
@@ -11696,7 +12079,8 @@ var init_vision_interpretation = __esm({
               x: { type: "number" },
               y: { type: "number" },
               width: { type: "number" },
-              height: { type: "number" }
+              height: { type: "number" },
+              floorLevel: { type: "integer", description: "Floor level where this stair flight starts" }
             }
           }
         },
@@ -11895,7 +12279,7 @@ async function evaluateMasterImageWithGemini(provider, options) {
   const rawCoherence = Math.min(5, Math.max(0, Number(rec.coherenceScore ?? 0)));
   const computedSum = rawCompliance + rawSpatial + rawFootprint + rawCirculation + rawDrafting + rawVastu + rawCoherence;
   let overallScore = Math.min(100, Math.max(0, Number(rec.overallScore ?? computedSum)));
-  if (Math.abs(overallScore - computedSum) > 10) {
+  if (computedSum > 0 && Math.abs(overallScore - computedSum) > 10) {
     overallScore = computedSum;
   }
   const hasHardViolations = rawViolations.length > 0;
@@ -63971,13 +64355,14 @@ function readEntities(plan, rawPayload, targetFloorCount) {
   const entities = [];
   for (const room2 of plan.rooms) {
     const raw = rawById.get(room2.id);
-    const level = Number(raw?.floorLevel ?? 0);
+    const parsedLevel = room2.floorLevel ?? Number(raw?.floorLevel ?? 0);
+    const level = Number.isFinite(parsedLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(parsedLevel))) : 0;
     const confidence = plan.confidence?.[room2.id];
     entities.push({
       id: room2.id,
       name: room2.name,
       type: resolveRoomType(room2.type, room2.name),
-      floorLevel: Number.isFinite(level) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(level))) : 0,
+      floorLevel: level,
       frame: { x: room2.imageX, y: room2.imageY, width: room2.imageWidth, height: room2.imageHeight },
       ...typeof raw?.compassZone === "string" ? { compassZone: raw.compassZone } : {},
       connectedTo: Array.isArray(raw?.connectedTo) ? raw.connectedTo.map(String) : [],
@@ -63987,11 +64372,12 @@ function readEntities(plan, rawPayload, targetFloorCount) {
     });
   }
   for (const stair2 of plan.stairs) {
+    const stairLevel = Number.isFinite(stair2.floorLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(stair2.floorLevel))) : 0;
     entities.push({
       id: stair2.id,
       name: stair2.name || "Staircase",
       type: RoomType.Staircase,
-      floorLevel: 0,
+      floorLevel: stairLevel,
       frame: { x: stair2.imageX, y: stair2.imageY, width: stair2.imageWidth, height: stair2.imageHeight },
       connectedTo: [],
       confidence: 0.75,
@@ -64215,11 +64601,15 @@ function reconstructBuildingFromImage(options) {
         detail: { visionRooms: plan.rooms.length }
       };
     }
+    const minEnvX = Math.ceil(site.leftSetback / GRID_MM) * GRID_MM;
+    const minEnvY = Math.ceil(site.frontSetback / GRID_MM) * GRID_MM;
+    const maxEnvX = Math.floor((site.plotWidth - site.rightSetback) / GRID_MM) * GRID_MM;
+    const maxEnvY = Math.floor((site.plotDepth - site.rearSetback) / GRID_MM) * GRID_MM;
     const envelope = {
-      x: snapGrid(site.leftSetback),
-      y: snapGrid(site.frontSetback),
-      width: snapGrid(site.plotWidth - site.leftSetback - site.rightSetback),
-      height: snapGrid(site.plotDepth - site.frontSetback - site.rearSetback)
+      x: minEnvX,
+      y: minEnvY,
+      width: Math.max(0, maxEnvX - minEnvX),
+      height: Math.max(0, maxEnvY - minEnvY)
     };
     if (envelope.width < 2e3 || envelope.height < 2e3) {
       return {
@@ -64236,14 +64626,30 @@ function reconstructBuildingFromImage(options) {
       ...boundaryPoints.length >= 3 ? [boundingBox(boundaryPoints.map((p) => ({ x: p.x, y: p.y, width: 1e-4, height: 1e-4 })))] : []
     ]);
     const transform = computeFrameTransform(contentBox, envelope);
+    const transformByLevel = /* @__PURE__ */ new Map();
+    const populatedLevels = new Set(entities.map((e) => e.floorLevel));
+    const isMultiFloorDrawing = populatedLevels.size > 1;
     const placedByLevel = /* @__PURE__ */ new Map();
     for (let level = 0; level < targetFloorCount; level++) {
       const levelEntities = entities.filter((e) => e.floorLevel === level);
       if (levelEntities.length === 0) {
+        transformByLevel.set(level, transform);
         placedByLevel.set(level, []);
         continue;
       }
-      const placed = levelEntities.map((read) => ({ read, rect: applyTransform(read.frame, transform) }));
+      const levelEntityBox = boundingBox(levelEntities.map((e) => e.frame));
+      let levelContentBox = levelEntityBox;
+      if (!isMultiFloorDrawing) {
+        levelContentBox = contentBox;
+      } else if (level === 0 && boundaryPoints.length >= 3) {
+        const bBox = boundingBox(boundaryPoints.map((p) => ({ x: p.x, y: p.y, width: 1e-4, height: 1e-4 })));
+        if (bBox.height <= levelEntityBox.height * 1.4 && bBox.width <= levelEntityBox.width * 1.4) {
+          levelContentBox = boundingBox([levelEntityBox, bBox]);
+        }
+      }
+      const levelTransform = computeFrameTransform(levelContentBox, envelope);
+      transformByLevel.set(level, levelTransform);
+      const placed = levelEntities.map((read) => ({ read, rect: applyTransform(read.frame, levelTransform) }));
       for (const item of placed) {
         const before = { ...item.rect };
         item.rect.width = Math.min(item.rect.width, envelope.width);
@@ -64297,33 +64703,37 @@ function reconstructBuildingFromImage(options) {
       }
       placedByLevel.set(level, placed);
     }
+    const groundTransform = transformByLevel.get(0) ?? transform;
     const allPlacedRects = [...placedByLevel.values()].flat().map((p) => p.rect);
+    const groundPlacedRects = (placedByLevel.get(0) ?? []).map((p) => p.rect);
     const statedFootprint = boundaryPoints.length >= 3 ? {
       points: boundaryPoints.map((p) => ({
-        x: snapGrid(p.x * transform.scale + transform.offsetX),
-        y: snapGrid(p.y * transform.scale + transform.offsetY)
+        x: snapGrid(p.x * groundTransform.scale + groundTransform.offsetX),
+        y: snapGrid(p.y * groundTransform.scale + groundTransform.offsetY)
       }))
     } : null;
-    const extentFootprint = () => {
-      const box = allPlacedRects.length > 0 ? boundingBox(allPlacedRects) : envelope;
+    const extentFootprintForRects = (rects) => {
+      const box = rects.length > 0 ? boundingBox(rects) : envelope;
       const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
       const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
       const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
       const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
       return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
     };
+    const extentFootprint = () => extentFootprintForRects(allPlacedRects);
     let footprint2;
+    const referenceRectsForStatedFootprint = groundPlacedRects.length > 0 ? groundPlacedRects : allPlacedRects;
     if (!statedFootprint) {
-      footprint2 = extentFootprint();
+      footprint2 = extentFootprintForRects(referenceRectsForStatedFootprint);
       unplacedFeatures.push(
         "The image interpretation returned no building outline, so the extent of the drawn spaces was used as the footprint. Non-rectangular footprint steps could not be reconstructed."
       );
     } else {
-      const outside = allPlacedRects.filter((r) => !rectInsidePolygon2(r, statedFootprint));
+      const outside = referenceRectsForStatedFootprint.filter((r) => !rectInsidePolygon2(r, statedFootprint));
       if (outside.length === 0) {
         footprint2 = statedFootprint;
       } else {
-        footprint2 = extentFootprint();
+        footprint2 = extentFootprintForRects(referenceRectsForStatedFootprint);
         unplacedFeatures.push(
           `The outline read from the image excludes ${outside.length} space(s) the same image also drew, so it could not be used as the building footprint; the extent of the drawn spaces was used instead. The footprint's steps may differ from the drawing \u2014 compare against the reference image.`
         );
@@ -64334,6 +64744,19 @@ function reconstructBuildingFromImage(options) {
           description: `The interpreted outline (${statedFootprint.points.length} points) did not contain every drawn space, so the footprint was taken from the spaces' own extent.`,
           material: true
         });
+      }
+    }
+    const footprintByLevel = /* @__PURE__ */ new Map();
+    for (let level = 0; level < targetFloorCount; level++) {
+      const levelRects = (placedByLevel.get(level) ?? []).map((p) => p.rect);
+      if (level === 0 || levelRects.length === 0) {
+        footprintByLevel.set(level, footprint2);
+      } else {
+        const outsideGround = levelRects.filter((r) => !rectInsidePolygon2(r, footprint2));
+        footprintByLevel.set(
+          level,
+          outsideGround.length === 0 ? footprint2 : extentFootprintForRects(levelRects)
+        );
       }
     }
     const canonicalBuildingId = `bldg_${projectId}`;
@@ -64358,9 +64781,7 @@ function reconstructBuildingFromImage(options) {
         buildingId: canonicalBuildingId,
         level,
         name: level === 0 ? "Ground Floor" : level === 1 ? "First Floor" : `Floor ${level}`,
-        // Every level inherits the reconstructed outline so upper floors sit on
-        // the same footprint the image drew.
-        boundary: footprint2
+        boundary: footprintByLevel.get(level) ?? footprint2
       }))
     });
     const entityProvenance = (read) => ({
@@ -64493,97 +64914,100 @@ function reconstructBuildingFromImage(options) {
         }
         return best && bestDistance <= 1500 ? best : null;
       };
-      if (level === 0) {
-        for (const door2 of plan.doors) {
-          const centre2 = applyTransform(
-            { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight },
-            transform
+      const levelTransform = transformByLevel.get(level) ?? transform;
+      const levelDoors = plan.doors.filter((d) => (d.floorLevel ?? 0) === level);
+      for (const door2 of levelDoors) {
+        const centre2 = applyTransform(
+          { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight },
+          levelTransform
+        );
+        const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
+        const wall2 = hostWallFor(point);
+        if (!wall2) {
+          unplacedFeatures.push(
+            `Door "${door2.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`
           );
-          const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
-          const wall2 = hostWallFor(point);
-          if (!wall2) {
-            unplacedFeatures.push(
-              `Door "${door2.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`
-            );
-            continue;
-          }
-          const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
-          const adjacentRoom = roomByVisionId.get(door2.adjacentRoomId);
-          const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre2.width, centre2.height)) || 900));
-          doors.push({
-            ...createDoor({
-              floorId,
-              wallId: wall2.id,
-              position: hosted,
-              width,
-              height: 2100,
-              type: door2.type === "double" ? DoorType.Double : door2.type === "sliding" ? DoorType.Sliding : door2.type === "open_passage" ? DoorType.OpenPassage : DoorType.Single,
-              swingDirection: door2.swingDirection === "outward" ? SwingDirection.Outward : door2.swingDirection === "left" ? SwingDirection.Left : door2.swingDirection === "right" ? SwingDirection.Right : SwingDirection.Inward,
-              connectsRooms: [
-                adjacentRoom?.id ?? wall2.roomIds[0] ?? "__outside__",
-                wall2.roomIds.find((id) => id !== adjacentRoom?.id) ?? "__outside__"
-              ]
-            }),
-            imageProvenance: {
-              sourceImageArtifactId: source.artifactId,
-              sourceImageHash: source.imageHash,
-              sourceGenerationRevision: source.generationRevision,
-              sourceProjectFingerprint: source.projectFingerprint,
-              conversionJobId,
-              geometryRevisionId,
-              sourceImageRegion: { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight, frameWidth, frameHeight },
-              extractionConfidence: 0.7,
-              sourceEntityId: door2.id
-            }
-          });
+          continue;
         }
-        for (const win of plan.windows) {
-          const centre2 = applyTransform(
-            { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight },
-            transform
+        const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
+        const adjacentRoom = roomByVisionId.get(door2.adjacentRoomId);
+        const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre2.width, centre2.height)) || 900));
+        doors.push({
+          ...createDoor({
+            floorId,
+            wallId: wall2.id,
+            position: hosted,
+            width,
+            height: 2100,
+            type: door2.type === "double" ? DoorType.Double : door2.type === "sliding" ? DoorType.Sliding : door2.type === "open_passage" ? DoorType.OpenPassage : DoorType.Single,
+            swingDirection: door2.swingDirection === "outward" ? SwingDirection.Outward : door2.swingDirection === "left" ? SwingDirection.Left : door2.swingDirection === "right" ? SwingDirection.Right : SwingDirection.Inward,
+            connectsRooms: [
+              adjacentRoom?.id ?? wall2.roomIds[0] ?? "__outside__",
+              wall2.roomIds.find((id) => id !== adjacentRoom?.id) ?? "__outside__"
+            ]
+          }),
+          imageProvenance: {
+            sourceImageArtifactId: source.artifactId,
+            sourceImageHash: source.imageHash,
+            sourceGenerationRevision: source.generationRevision,
+            sourceProjectFingerprint: source.projectFingerprint,
+            conversionJobId,
+            geometryRevisionId,
+            sourceImageRegion: { x: door2.imageX, y: door2.imageY, width: door2.imageWidth, height: door2.imageHeight, frameWidth, frameHeight },
+            extractionConfidence: 0.7,
+            sourceEntityId: door2.id
+          }
+        });
+      }
+      const levelWindows = plan.windows.filter((w) => (w.floorLevel ?? 0) === level);
+      for (const win of levelWindows) {
+        const centre2 = applyTransform(
+          { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight },
+          levelTransform
+        );
+        const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
+        const wall2 = hostWallFor(point);
+        if (!wall2) {
+          unplacedFeatures.push(
+            `Window "${win.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed.`
           );
-          const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
-          const wall2 = hostWallFor(point);
-          if (!wall2) {
-            unplacedFeatures.push(
-              `Window "${win.id}" was read from the image but no reconstructed wall lies near its position, so it was not placed.`
-            );
-            continue;
-          }
-          const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
-          const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
-          const width = Math.max(500, Math.min(4e3, snapGrid(Math.max(centre2.width, centre2.height)) || 1200));
-          windows.push({
-            ...createWindow({
-              floorId,
-              wallId: wall2.id,
-              position: hosted,
-              width,
-              height: 1200,
-              sillHeight: 900,
-              type: WindowType.Sliding,
-              roomId: adjacentRoom?.id ?? wall2.roomIds[0] ?? ""
-            }),
-            imageProvenance: {
-              sourceImageArtifactId: source.artifactId,
-              sourceImageHash: source.imageHash,
-              sourceGenerationRevision: source.generationRevision,
-              sourceProjectFingerprint: source.projectFingerprint,
-              conversionJobId,
-              geometryRevisionId,
-              sourceImageRegion: { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight, frameWidth, frameHeight },
-              extractionConfidence: 0.7,
-              sourceEntityId: win.id
-            }
-          });
+          continue;
         }
+        const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
+        const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
+        const width = Math.max(500, Math.min(4e3, snapGrid(Math.max(centre2.width, centre2.height)) || 1200));
+        windows.push({
+          ...createWindow({
+            floorId,
+            wallId: wall2.id,
+            position: hosted,
+            width,
+            height: 1200,
+            sillHeight: 900,
+            type: WindowType.Sliding,
+            roomId: adjacentRoom?.id ?? wall2.roomIds[0] ?? ""
+          }),
+          imageProvenance: {
+            sourceImageArtifactId: source.artifactId,
+            sourceImageHash: source.imageHash,
+            sourceGenerationRevision: source.generationRevision,
+            sourceProjectFingerprint: source.projectFingerprint,
+            conversionJobId,
+            geometryRevisionId,
+            sourceImageRegion: { x: win.imageX, y: win.imageY, width: win.imageWidth, height: win.imageHeight, frameWidth, frameHeight },
+            extractionConfidence: 0.7,
+            sourceEntityId: win.id
+          }
+        });
       }
       const stairs = [];
       const stairRooms = placedRooms.filter((p) => p.read.type === RoomType.Staircase);
       const upperLevelExists = level + 1 < targetFloorCount;
+      const lowerLevelExists = level > 0;
       for (const stairRoom of stairRooms) {
-        if (!upperLevelExists) continue;
+        if (!upperLevelExists && !lowerLevelExists) continue;
         const room2 = stairRoom.room;
+        const connectsFloors = upperLevelExists ? [level, level + 1] : [level - 1, level];
         stairs.push(
           createStair({
             floorId,
@@ -64593,7 +65017,7 @@ function reconstructBuildingFromImage(options) {
             width: Math.min(room2.width, room2.height),
             length: Math.max(room2.width, room2.height),
             direction: room2.height >= room2.width ? "north" : "east",
-            connectsFloors: [level, level + 1]
+            connectsFloors
           })
         );
       }
@@ -64731,17 +65155,42 @@ function evaluateCadFidelity(input) {
       evaluatedAt: (/* @__PURE__ */ new Date()).toISOString()
     };
   }
-  const imageBox = bbox(imageRects);
-  const cadBox = bbox(cadRooms.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
-  const imageAspect = imageBox.width / imageBox.height;
-  const cadAspect = cadBox.width / cadBox.height;
-  const aspectError = Math.abs(imageAspect - cadAspect) / imageAspect;
+  const isMultiFloor = building.floors.length > 1;
+  let aspectError;
+  let imageAspectStr;
+  let cadAspectStr;
+  if (isMultiFloor) {
+    const floorAspectErrors = [];
+    const aspectDetails = [];
+    for (const floor of building.floors) {
+      const floorCadRooms = floor.rooms;
+      const floorImgRooms = plan.rooms.filter((r) => (r.floorLevel ?? 0) === floor.level);
+      if (floorCadRooms.length === 0 || floorImgRooms.length === 0) continue;
+      const fImgBox = bbox(floorImgRooms.map((r) => ({ x: r.imageX, y: r.imageY, width: r.imageWidth, height: r.imageHeight })));
+      const fCadBox = bbox(floorCadRooms.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+      const fImgAspect = fImgBox.width / fImgBox.height;
+      const fCadAspect = fCadBox.width / fCadBox.height;
+      floorAspectErrors.push(Math.abs(fImgAspect - fCadAspect) / fImgAspect);
+      aspectDetails.push(`L${floor.level}: ${fImgAspect.toFixed(2)} vs ${fCadAspect.toFixed(2)}`);
+    }
+    aspectError = floorAspectErrors.length ? floorAspectErrors.reduce((a, b) => a + b, 0) / floorAspectErrors.length : 0;
+    imageAspectStr = aspectDetails.join(", ") || "multi-floor";
+    cadAspectStr = "per-floor match";
+  } else {
+    const imageBox = bbox(imageRects);
+    const cadBox = bbox(cadRooms.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+    const imageAspect = imageBox.width / imageBox.height;
+    const cadAspect = cadBox.width / cadBox.height;
+    aspectError = Math.abs(imageAspect - cadAspect) / imageAspect;
+    imageAspectStr = imageAspect.toFixed(3);
+    cadAspectStr = cadAspect.toFixed(3);
+  }
   dimensions.push({
     id: "footprint",
     label: "Footprint correspondence",
     score: clamp100(100 - aspectError * 200),
     weight: 1.5,
-    detail: `Drawn footprint aspect ${imageAspect.toFixed(3)} vs reconstructed ${cadAspect.toFixed(3)} (${(aspectError * 100).toFixed(1)}% difference).`,
+    detail: isMultiFloor ? `Per-floor footprint aspect correspondence: ${imageAspectStr} (${(aspectError * 100).toFixed(1)}% mean diff).` : `Drawn footprint aspect ${imageAspectStr} vs reconstructed ${cadAspectStr} (${(aspectError * 100).toFixed(1)}% difference).`,
     missing: []
   });
   const imageByType = /* @__PURE__ */ new Map();
@@ -64779,6 +65228,18 @@ function evaluateCadFidelity(input) {
     const tag = room2.tags.find((t) => t.startsWith("extracted:"));
     if (tag) cadBySourceId.set(tag.slice("extracted:".length), room2);
   }
+  const imageBoxByFloor = /* @__PURE__ */ new Map();
+  const cadBoxByFloor = /* @__PURE__ */ new Map();
+  if (isMultiFloor) {
+    for (const floor of building.floors) {
+      const fCad = floor.rooms;
+      const fImg = plan.rooms.filter((r) => (r.floorLevel ?? 0) === floor.level);
+      if (fCad.length > 0) cadBoxByFloor.set(floor.level, bbox(fCad.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height }))));
+      if (fImg.length > 0) imageBoxByFloor.set(floor.level, bbox(fImg.map((r) => ({ x: r.imageX, y: r.imageY, width: r.imageWidth, height: r.imageHeight }))));
+    }
+  }
+  const globalImageBox = bbox(imageRects);
+  const globalCadBox = bbox(cadRooms.map((r) => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
   const placementErrors = [];
   const proportionErrors = [];
   const placementMissing = [];
@@ -64788,11 +65249,14 @@ function evaluateCadFidelity(input) {
       placementMissing.push(`"${imgRoom.name}" from the image has no matching CAD room.`);
       continue;
     }
+    const rLvl = imgRoom.floorLevel ?? 0;
+    const refImgBox = isMultiFloor && imageBoxByFloor.get(rLvl) ? imageBoxByFloor.get(rLvl) : globalImageBox;
+    const refCadBox = isMultiFloor && cadBoxByFloor.get(rLvl) ? cadBoxByFloor.get(rLvl) : globalCadBox;
     const imgNorm = normalize2(
       { x: imgRoom.imageX, y: imgRoom.imageY, width: imgRoom.imageWidth, height: imgRoom.imageHeight },
-      imageBox
+      refImgBox
     );
-    const cadNorm = normalize2({ x: cad.x, y: cad.y, width: cad.width, height: cad.height }, cadBox);
+    const cadNorm = normalize2({ x: cad.x, y: cad.y, width: cad.width, height: cad.height }, refCadBox);
     const ic = centre(imgNorm);
     const cc = centre(cadNorm);
     placementErrors.push(Math.hypot(ic.x - cc.x, ic.y - cc.y));
@@ -64829,8 +65293,12 @@ function evaluateCadFidelity(input) {
     for (let j = i + 1; j < plan.rooms.length; j++) {
       const a = plan.rooms[i];
       const b = plan.rooms[j];
-      const an = normalize2({ x: a.imageX, y: a.imageY, width: a.imageWidth, height: a.imageHeight }, imageBox);
-      const bn = normalize2({ x: b.imageX, y: b.imageY, width: b.imageWidth, height: b.imageHeight }, imageBox);
+      const lvlA = a.floorLevel ?? 0;
+      const lvlB = b.floorLevel ?? 0;
+      if (lvlA !== lvlB) continue;
+      const refBox = isMultiFloor && imageBoxByFloor.get(lvlA) ? imageBoxByFloor.get(lvlA) : globalImageBox;
+      const an = normalize2({ x: a.imageX, y: a.imageY, width: a.imageWidth, height: a.imageHeight }, refBox);
+      const bn = normalize2({ x: b.imageX, y: b.imageY, width: b.imageWidth, height: b.imageHeight }, refBox);
       if (touching(an, bn, 0.02)) imageAdjacency.add(pairKey(a.id, b.id));
     }
   }
@@ -64841,8 +65309,11 @@ function evaluateCadFidelity(input) {
     const ra = cadBySourceId.get(idA);
     const rb = cadBySourceId.get(idB);
     if (!ra || !rb) continue;
-    const an = normalize2({ x: ra.x, y: ra.y, width: ra.width, height: ra.height }, cadBox);
-    const bn = normalize2({ x: rb.x, y: rb.y, width: rb.width, height: rb.height }, cadBox);
+    const aImg = plan.rooms.find((r) => r.id === idA);
+    const lvl = aImg?.floorLevel ?? 0;
+    const refCadBox = isMultiFloor && cadBoxByFloor.get(lvl) ? cadBoxByFloor.get(lvl) : globalCadBox;
+    const an = normalize2({ x: ra.x, y: ra.y, width: ra.width, height: ra.height }, refCadBox);
+    const bn = normalize2({ x: rb.x, y: rb.y, width: rb.width, height: rb.height }, refCadBox);
     if (touching(an, bn, 0.02)) adjacencyPreserved++;
     else adjacencyLost.push(`"${ra.name}" and "${rb.name}" adjoin in the image but not in the CAD model.`);
   }
@@ -66407,6 +66878,9 @@ var init_generation_orchestrator = __esm({
               });
             };
             let acceptedAttempt = null;
+            let lastAttemptSeed = slotSeed;
+            let lastAttemptArtifact = null;
+            let lastAttemptMasterEval = null;
             for (let attemptIdx = 0; attemptIdx < attemptsForSlot; attemptIdx++) {
               const seed3 = deriveVisualAttemptSeed(slotSeed, attemptIdx);
               const attemptNumber = attemptIdx + 1;
@@ -66603,6 +67077,8 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
               }
               const artifact2 = await this.deps.store.save(projectId, generatedImage2, promptRequest2);
               stages.imageArtifact = "AVAILABLE";
+              lastAttemptArtifact = artifact2;
+              lastAttemptSeed = seed3;
               const preflightRejected = Boolean(apartmentPreflightResult2 && !apartmentPreflightResult2.pass);
               if (preflightRejected || preflightError !== void 0) {
                 const reasons = preflightRejected ? [...apartmentPreflightResult2.failureReasons] : [`Visual preflight could not be completed: ${preflightError}`];
@@ -66687,6 +67163,7 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
                 }
               }
               if (currentMasterEval) {
+                lastAttemptMasterEval = currentMasterEval;
                 masterAttemptHistory.push({
                   attemptNumber,
                   seed: seed3,
@@ -66704,10 +67181,16 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
                   vastuDaylightScore: currentMasterEval.vastuDaylightScore,
                   coherenceScore: currentMasterEval.coherenceScore
                 });
-                if (!currentMasterEval.passed && attemptNumber < attemptsForSlot) {
-                  console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(", ")}. Enriching prompt for retry.`);
-                  previousMasterEval = currentMasterEval;
-                  continue;
+                const isMasterAcceptable = currentMasterEval.passed && currentMasterEval.overallScore >= 80 && (currentMasterEval.hardConstraintViolations?.length ?? 0) === 0;
+                if (!isMasterAcceptable) {
+                  console.log(`[GenerationOrchestrator] Attempt ${attemptNumber} scored ${currentMasterEval.overallScore}/100 (< 80) or had violations: ${currentMasterEval.hardConstraintViolations.join(", ")}.`);
+                  if (attemptNumber < attemptsForSlot) {
+                    console.log(`Enriching prompt for retry.`);
+                    previousMasterEval = currentMasterEval;
+                    continue;
+                  } else {
+                    break;
+                  }
                 }
               }
               acceptedAttempt = {
@@ -66722,6 +67205,79 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
               break;
             }
             if (!acceptedAttempt) {
+              if (!isApartment && masterAttemptHistory.length > 0) {
+                const bestAttempt = [...masterAttemptHistory].sort((a, b) => b.overallScore - a.overallScore)[0];
+                const latestArtifact = this._latestGeneratedArtifact ?? lastAttemptArtifact;
+                if (latestArtifact) {
+                  const resolvedSource2 = latestArtifact.provider === "gemini" ? "GEMINI" : latestArtifact.provider === "pollinations" ? "POLLINATIONS" : "FLUX";
+                  const resolvedVisualSource2 = latestArtifact.provider === "gemini" ? "GEMINI_IMAGE" : latestArtifact.provider === "pollinations" ? "POLLINATIONS_IMAGE" : "FLUX_IMAGE";
+                  const synthesizedEval = lastAttemptMasterEval ?? {
+                    overallScore: bestAttempt.overallScore,
+                    passed: bestAttempt.passed,
+                    complianceScore: bestAttempt.complianceScore,
+                    spatialLayoutScore: bestAttempt.spatialLayoutScore,
+                    footprintScore: bestAttempt.footprintScore,
+                    circulationScore: bestAttempt.circulationScore,
+                    draftingClarityScore: bestAttempt.draftingClarityScore,
+                    vastuDaylightScore: bestAttempt.vastuDaylightScore,
+                    coherenceScore: bestAttempt.coherenceScore,
+                    strengths: [],
+                    concerns: bestAttempt.identifiedProblems,
+                    identifiedProblems: bestAttempt.identifiedProblems,
+                    missingRequirements: [],
+                    incorrectPlacements: [],
+                    incorrectFloorArrangements: [],
+                    suggestedCorrections: bestAttempt.suggestedCorrections,
+                    hardConstraintViolations: bestAttempt.hardConstraintViolations,
+                    rationale: bestAttempt.hardConstraintViolations.join("; "),
+                    model: "gemini",
+                    latencyMs: 0
+                  };
+                  candidates.push({
+                    id: `cand_two_ai_${lastAttemptSeed}_${cIdx}`,
+                    seed: lastAttemptSeed,
+                    status: "REJECTED",
+                    acceptanceState: "QUALITY_REJECTED",
+                    source: resolvedSource2,
+                    visualSource: resolvedVisualSource2,
+                    attempt: masterAttemptHistory.length,
+                    rejectionStage: "QUALITY_GATE",
+                    evaluationStatus: "SCORED",
+                    stages: {
+                      ...stages,
+                      imageGeneration: "SUCCESS",
+                      imageArtifact: "AVAILABLE",
+                      geminiEvaluation: "FAILED",
+                      imageInterpretation: "SKIPPED",
+                      imageTo2D: "SKIPPED",
+                      validation: "SKIPPED"
+                    },
+                    building: null,
+                    artifact: latestArtifact,
+                    validation: {
+                      isValid: false,
+                      recommendedForEditing: false,
+                      geometryHealthy: false,
+                      overallScore: null,
+                      verificationIssues: []
+                    },
+                    evaluation: null,
+                    preflight: void 0,
+                    diagnostics: (bestAttempt.hardConstraintViolations ?? []).map((v) => ({
+                      code: "QUALITY_GATE_VIOLATION",
+                      severity: "error",
+                      message: v
+                    })),
+                    rejectedReason: `Candidate rejected by architectural quality gate (${bestAttempt.overallScore}/100 < 80). Image preserved immutable.`,
+                    referenceDiagnostics: void 0,
+                    vastuReport: null,
+                    masterEvaluation: synthesizedEval,
+                    masterAttemptHistory: [...masterAttemptHistory],
+                    ...slotConcept ? { concept: conceptInfo() } : {}
+                  });
+                  recordSlot("GENERATED", `cand_two_ai_${lastAttemptSeed}_${cIdx}`);
+                }
+              }
               continue;
             }
             const { seed: seed2, promptRequest, generatedImage, artifact } = acceptedAttempt;
@@ -66783,7 +67339,7 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
                 stages.imageInterpretation = "SUCCESS";
               } catch (vErr) {
                 const status = extractHttpStatus(vErr);
-                const isTransient = isTransientHttpError(status);
+                const isTransient = isTransientHttpError(status) || isNetworkTransientError(vErr);
                 const isAuth = isAuthHttpError(status);
                 stages.imageInterpretation = isTransient ? "TEMPORARILY_UNAVAILABLE" : isAuth ? "AUTH_ERROR" : "FAILED";
                 return {
@@ -66845,11 +67401,28 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
             });
             const evaluation = gated.evaluation;
             stages.geminiEvaluation = gated.stage;
-            const candidateStatus = extraction.status;
-            const candidateAccepted = candidateStatus === "ACCEPTED";
-            const candidateRejectedReason = extraction.status === "REJECTED" ? "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null;
+            const qualityPass = isApartment ? true : acceptedAttempt.masterEvaluation ? Boolean(
+              acceptedAttempt.masterEvaluation.passed && acceptedAttempt.masterEvaluation.overallScore >= 80 && (acceptedAttempt.masterEvaluation.hardConstraintViolations?.length ?? 0) === 0
+            ) : true;
+            const cadValid = extraction.status === "ACCEPTED" && extraction.building !== null && (extraction.validation?.isValid ?? false);
+            const candidateAccepted = qualityPass && cadValid;
+            const candidateStatus = candidateAccepted ? "ACCEPTED" : "REJECTED";
+            const acceptanceState = !qualityPass ? "QUALITY_REJECTED" : !extraction.building ? "CAD_RECONSTRUCTION_FAILED" : !cadValid ? "CAD_RECONSTRUCTION_FAILED" : "READY_FOR_EDITING";
+            const rejectionStage = candidateAccepted ? null : !qualityPass ? "QUALITY_GATE" : extraction.validation && !extraction.validation.isValid ? "HARD_VALIDATION" : !extraction.building ? "CAD_RECONSTRUCTION" : "HARD_VALIDATION";
+            const resolvedSource = artifact.provider === "gemini" ? "GEMINI" : artifact.provider === "pollinations" ? "POLLINATIONS" : "FLUX";
+            const resolvedVisualSource = artifact.provider === "gemini" ? "GEMINI_IMAGE" : artifact.provider === "pollinations" ? "POLLINATIONS_IMAGE" : "FLUX_IMAGE";
+            const candidateRejectedReason = !candidateAccepted ? !qualityPass ? `Candidate rejected by architectural quality gate (${acceptedAttempt.masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.` : "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null;
             const candRefDiag = generatedImage.referenceDiagnostics ?? promptRequest.referenceDiagnostics;
             const candidateDiagnostics = [...extraction.diagnostics];
+            if (!qualityPass && acceptedAttempt.masterEvaluation?.hardConstraintViolations) {
+              for (const v of acceptedAttempt.masterEvaluation.hardConstraintViolations) {
+                candidateDiagnostics.push({
+                  code: "QUALITY_GATE_VIOLATION",
+                  severity: "error",
+                  message: v
+                });
+              }
+            }
             if (candRefDiag && candRefDiag.drops.length > 0) {
               candidateDiagnostics.push({
                 code: "REFERENCE_IMAGES_DROPPED",
@@ -66868,17 +67441,18 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
               id: `cand_two_ai_${seed2}_${cIdx}`,
               seed: seed2,
               status: candidateStatus,
-              source: "FLUX",
-              visualSource: "FLUX_IMAGE",
+              acceptanceState,
+              source: resolvedSource,
+              visualSource: resolvedVisualSource,
               attempt: acceptedAttempt.attempt,
-              rejectionStage: candidateAccepted ? null : "HARD_VALIDATION",
+              rejectionStage,
               evaluationStatus: gated.status,
               stages: { ...stages },
-              building: extraction.building,
+              building: candidateAccepted ? extraction.building : null,
               artifact,
               validation: {
                 isValid: extraction.validation?.isValid ?? false,
-                recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
+                recommendedForEditing: candidateAccepted && (extraction.validation?.recommendedForEditing ?? false),
                 geometryHealthy: extraction.validation?.geometryHealthy ?? false,
                 overallScore: candidateAccepted ? extraction.validation?.overallScore ?? null : null,
                 verificationIssues: [...extraction.validation?.verificationIssues ?? []]
@@ -67070,6 +67644,12 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
               message: `Rejected at visual preflight after ${attemptSeeds.length} attempt(s). Not scored.`,
               reasons: [...new Set(rejectedAtPreflight.flatMap((c) => c.validation.verificationIssues.map((i) => i.message)))],
               fallbackAvailable: true
+            } : candidates.some((c) => c.rejectionStage === "QUALITY_GATE") ? {
+              code: "QUALITY_GATE_FAILED",
+              stage: "gemini_evaluation",
+              message: `Architectural quality gate rejected master image (${candidates[0]?.masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.`,
+              reasons: candidates[0]?.masterEvaluation?.hardConstraintViolations ?? ["Score below 80/100 threshold."],
+              fallbackAvailable: false
             } : {
               code: "GEOMETRY_VALIDATION_ERROR",
               stage: "hard_validation",
@@ -67183,7 +67763,7 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
             stages.imageInterpretation = "SUCCESS";
           } catch (vErr) {
             const status = extractHttpStatus(vErr);
-            const isTransient = isTransientHttpError(status);
+            const isTransient = isTransientHttpError(status) || isNetworkTransientError(vErr);
             const isAuth = isAuthHttpError(status);
             stages.imageInterpretation = isTransient ? "TEMPORARILY_UNAVAILABLE" : isAuth ? "AUTH_ERROR" : "FAILED";
             return {
@@ -67243,7 +67823,7 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
         const evaluation = gated.evaluation;
         stages.geminiEvaluation = gated.stage;
         let masterEvaluation = null;
-        if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 100) {
+        if (this.deps.gemini && isValid && artifact.imageBase64 && artifact.imageBase64.length > 20) {
           try {
             const evalRes = await evaluateMasterImageWithGemini(this.deps.gemini, {
               requirementsSummary: `${spec.hard.bedroomCount} bedrooms, ${spec.hard.bathroomCount} bathrooms${spec.rawUserPrompt ? `, prompt: ${spec.rawUserPrompt}` : ""}`,
@@ -67262,35 +67842,56 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
             console.warn("Master evaluation in resume encountered an issue:", meErr);
           }
         }
+        const cadValid = extraction.status === "ACCEPTED" && extraction.building !== null && (extraction.validation?.isValid ?? false);
+        const qualityPass = masterEvaluation ? Boolean(
+          masterEvaluation.passed && masterEvaluation.overallScore >= 80 && (masterEvaluation.hardConstraintViolations?.length ?? 0) === 0
+        ) : true;
+        const isFullyAccepted = cadValid && qualityPass;
+        const candidateStatus = isFullyAccepted ? "ACCEPTED" : "REJECTED";
+        const acceptanceState = !qualityPass ? "QUALITY_REJECTED" : !extraction.building ? "CAD_RECONSTRUCTION_FAILED" : !cadValid ? "CAD_RECONSTRUCTION_FAILED" : "READY_FOR_EDITING";
+        const rejectionStage = isFullyAccepted ? null : !qualityPass ? "QUALITY_GATE" : extraction.validation && !extraction.validation.isValid ? "HARD_VALIDATION" : !extraction.building ? "CAD_RECONSTRUCTION" : "HARD_VALIDATION";
         const resumedFromFallback = artifact.provider === FALLBACK_DETERMINISTIC_PROVIDER;
+        const resolvedSource = resumedFromFallback ? "FALLBACK_DETERMINISTIC" : artifact.provider === "gemini" ? "GEMINI" : artifact.provider === "pollinations" ? "POLLINATIONS" : "FLUX";
+        const resolvedVisualSource = resumedFromFallback ? "DETERMINISTIC_SCHEMATIC" : artifact.provider === "gemini" ? "GEMINI_IMAGE" : artifact.provider === "pollinations" ? "POLLINATIONS_IMAGE" : "FLUX_IMAGE";
+        const resumeDiagnostics = [...extraction.diagnostics];
+        if (!qualityPass && masterEvaluation?.hardConstraintViolations) {
+          for (const v of masterEvaluation.hardConstraintViolations) {
+            resumeDiagnostics.push({
+              code: "QUALITY_GATE_VIOLATION",
+              severity: "error",
+              message: v
+            });
+          }
+        }
         const candidate = {
           id: `cand_resumed_${artifact.seed}_${Date.now().toString(36)}`,
           seed: artifact.seed,
-          status: extraction.status,
-          source: resumedFromFallback ? "FALLBACK_DETERMINISTIC" : "FLUX",
-          visualSource: resumedFromFallback ? "DETERMINISTIC_SCHEMATIC" : "FLUX_IMAGE",
-          rejectionStage: extraction.status === "ACCEPTED" ? null : "HARD_VALIDATION",
+          status: candidateStatus,
+          acceptanceState,
+          source: resolvedSource,
+          visualSource: resolvedVisualSource,
+          rejectionStage,
           evaluationStatus: gated.status,
           stages: { ...stages },
-          building: extraction.building,
+          building: isFullyAccepted ? extraction.building : null,
           artifact,
           masterEvaluation: masterEvaluation ?? null,
           validation: {
             isValid: extraction.validation?.isValid ?? false,
-            recommendedForEditing: extraction.validation?.recommendedForEditing ?? false,
+            recommendedForEditing: isFullyAccepted && (extraction.validation?.recommendedForEditing ?? false),
             geometryHealthy: extraction.validation?.geometryHealthy ?? false,
-            overallScore: extraction.status === "ACCEPTED" ? extraction.validation?.overallScore ?? null : null,
+            overallScore: isFullyAccepted ? extraction.validation?.overallScore ?? null : null,
             verificationIssues: extraction.validation?.verificationIssues ?? []
           },
           evaluation,
-          diagnostics: extraction.diagnostics,
+          diagnostics: resumeDiagnostics,
           ...extraction.geometrySource ? { geometrySource: extraction.geometrySource } : {},
           ...extraction.cadFidelity ? { cadFidelity: extraction.cadFidelity } : {},
           ...extraction.conversionError ? { conversionError: { code: extraction.conversionError.code, message: extraction.conversionError.message } } : {},
-          rejectedReason: extraction.status === "REJECTED" ? extraction.conversionError ? `${extraction.conversionError.code}: ${extraction.conversionError.message}` : "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null
+          rejectedReason: !isFullyAccepted ? !qualityPass ? `Candidate rejected by architectural quality gate (${masterEvaluation?.overallScore ?? 0}/100 < 80).` : extraction.conversionError ? `${extraction.conversionError.code}: ${extraction.conversionError.message}` : "Candidate rejected by deterministic validation: geometric overlap, boundary violation, or room criteria unmet. Image preserved immutable." : null
         };
         return {
-          success: isValid,
+          success: isFullyAccepted,
           projectId,
           requirements: spec,
           feasibility,
@@ -67298,19 +67899,133 @@ CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${p
           savedArtifact: artifact,
           stages,
           latencyMs: Date.now() - startedAt,
-          candidateSource: isValid ? candidate.source : null,
+          candidateSource: isFullyAccepted ? candidate.source : null,
           masterEvaluation: masterEvaluation ?? null,
           masterQualityScore: masterEvaluation?.overallScore,
-          error: isValid ? void 0 : {
-            code: extraction.conversionError ? "IMAGE_TO_CAD_CONVERSION_ERROR" : "GEOMETRY_VALIDATION_ERROR",
-            stage: extraction.conversionError ? "image_to_cad" : "geometry_validation",
-            message: extraction.conversionError ? extraction.conversionError.message : "Deterministic geometry validation failed.",
-            reasons: extraction.diagnostics.map((d) => `[${d.severity}] ${d.message}`),
+          error: isFullyAccepted ? void 0 : {
+            code: !qualityPass ? "QUALITY_GATE_FAILED" : extraction.conversionError ? "IMAGE_TO_CAD_CONVERSION_ERROR" : "GEOMETRY_VALIDATION_ERROR",
+            stage: !qualityPass ? "gemini_evaluation" : extraction.conversionError ? "image_to_cad" : "geometry_validation",
+            message: !qualityPass ? `Architectural quality gate rejected master image (${masterEvaluation?.overallScore ?? 0}/100 < 80). Image preserved immutable.` : extraction.conversionError ? extraction.conversionError.message : "Deterministic geometry validation failed.",
+            reasons: !qualityPass ? masterEvaluation?.hardConstraintViolations ?? ["Score below 80/100 threshold."] : extraction.diagnostics.map((d) => `[${d.severity}] ${d.message}`),
             fallbackAvailable: false,
             artifactId: artifact.generationId,
             artifact
           }
         };
+      }
+      /**
+       * Phase 2A — Reinterpret a previously generated and persisted image artifact
+       * without calling image generation, altering quality score, or modifying acceptance status.
+       */
+      async reinterpretArtifact(input) {
+        const startedAt = Date.now();
+        const artifact = await this.deps.store.get(input.artifactId);
+        if (!artifact) {
+          return {
+            success: false,
+            artifactId: input.artifactId,
+            projectId: input.projectId,
+            model: "unknown",
+            latencyMs: Date.now() - startedAt,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            payload: null,
+            validated: false,
+            validationErrors: [`Artifact "${input.artifactId}" not found in image artifact store.`],
+            originalStatus: "REJECTED",
+            isAccepted: false,
+            error: {
+              code: "ARTIFACT_NOT_FOUND",
+              message: `Artifact "${input.artifactId}" not found.`,
+              isTransient: false
+            }
+          };
+        }
+        if (input.projectId && artifact.projectId !== input.projectId) {
+          return {
+            success: false,
+            artifactId: input.artifactId,
+            projectId: input.projectId,
+            model: "unknown",
+            latencyMs: Date.now() - startedAt,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            payload: null,
+            validated: false,
+            validationErrors: [`Artifact project ID "${artifact.projectId}" does not match requested project ID "${input.projectId}".`],
+            originalStatus: "REJECTED",
+            isAccepted: false,
+            error: {
+              code: "PROJECT_MISMATCH",
+              message: `Artifact project ID "${artifact.projectId}" does not match requested project ID "${input.projectId}".`,
+              isTransient: false
+            }
+          };
+        }
+        if (!this.deps.gemini || !await this.deps.gemini.isAvailable()) {
+          return {
+            success: false,
+            artifactId: input.artifactId,
+            projectId: input.projectId,
+            model: "unknown",
+            latencyMs: Date.now() - startedAt,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            payload: null,
+            validated: false,
+            validationErrors: ["Gemini vision is not configured on this server (GEMINI_API_KEY missing)."],
+            originalStatus: "REJECTED",
+            isAccepted: false,
+            error: {
+              code: "IMAGE_INTERPRETER_NOT_CONFIGURED",
+              message: "Gemini vision is not configured on this server (GEMINI_API_KEY missing).",
+              isTransient: false
+            }
+          };
+        }
+        try {
+          const vision = await interpretPlanImageWithGemini(this.deps.gemini, {
+            plotWidthMm: input.requirements?.hard.plotWidthMm ?? 12190,
+            plotDepthMm: input.requirements?.hard.plotDepthMm ?? 18290,
+            orientationDegrees: input.requirements?.orientationDegrees ?? 0,
+            roadFacing: input.requirements?.hard.roadFacing ?? "north",
+            userPrompt: input.userPrompt ?? input.requirements?.rawUserPrompt ?? artifact.originalPrompt,
+            imageBase64: artifact.imageBase64,
+            imageMimeType: artifact.mimeType
+          });
+          const validation = validateVisionInterpretationPayload(vision.parsed, false);
+          return {
+            success: validation.isValid,
+            artifactId: artifact.generationId,
+            projectId: artifact.projectId,
+            model: vision.model,
+            latencyMs: Date.now() - startedAt,
+            usage: vision.usage,
+            payload: vision.parsed,
+            validated: validation.isValid,
+            validationErrors: validation.errors,
+            originalStatus: "REJECTED",
+            isAccepted: false
+          };
+        } catch (err) {
+          const status = extractHttpStatus(err);
+          const isTransient = isTransientHttpError(status) || isNetworkTransientError(err);
+          return {
+            success: false,
+            artifactId: artifact.generationId,
+            projectId: artifact.projectId,
+            model: "unknown",
+            latencyMs: Date.now() - startedAt,
+            usage: { promptTokens: 0, completionTokens: 0, totalTokens: 0 },
+            payload: null,
+            validated: false,
+            validationErrors: [err instanceof Error ? err.message : String(err)],
+            originalStatus: "REJECTED",
+            isAccepted: false,
+            error: {
+              code: isTransient ? "PROVIDER_UNAVAILABLE" : "IMAGE_INTERPRETATION_ERROR",
+              message: err instanceof Error ? err.message : "Gemini vision interpretation failed.",
+              isTransient
+            }
+          };
+        }
       }
     };
   }
@@ -67580,8 +68295,8 @@ function positiveInt(value, fallback) {
 }
 function resolveImageServiceConfig(env = process.env) {
   const interpreterKind = (env.IMAGE_INTERPRETER ?? "gemini").trim().toLowerCase();
-  const primaryModel = (env.GEMINI_MODEL ?? "").trim() || "gemini-2.5-flash";
-  const defaultFallback = primaryModel === "gemini-2.0-flash" ? "gemini-2.5-flash" : "gemini-2.0-flash";
+  const primaryModel = (env.GEMINI_MODEL ?? "").trim() || "gemini-3.1-flash-lite";
+  const defaultFallback = primaryModel === "gemini-3.8-flash" ? "gemini-2.5-flash" : "gemini-3.8-flash";
   const fallbackModel = (env.GEMINI_FALLBACK_MODEL ?? "").trim() || defaultFallback;
   return {
     cloudflareAccountId: (env.CLOUDFLARE_ACCOUNT_ID ?? "").trim(),
@@ -68672,6 +69387,27 @@ async function route(request, response2, deps) {
       });
       const result = await orchestrator.resumeFromArtifact(body);
       send(200, result);
+      return;
+    }
+    if (method === "POST" && (url.pathname === "/api/v1/generation/reinterpret-artifact" || url.pathname === "/api/generation/reinterpret-artifact")) {
+      const raw = await readBody(request);
+      let body = null;
+      try {
+        body = raw.length > 0 ? JSON.parse(raw) : null;
+      } catch {
+        send(400, { error: { code: "INVALID_JSON", message: "Request body must be valid JSON." } });
+        return;
+      }
+      const { GenerationOrchestrator: GenerationOrchestrator2 } = await Promise.resolve().then(() => (init_generation_orchestrator(), generation_orchestrator_exports));
+      const orchestrator = new GenerationOrchestrator2({
+        provider: deps.provider,
+        store: deps.store,
+        gemini: deps.gemini,
+        interpreterKind: deps.interpreterKind,
+        deterministicCadFirst: deps.config?.deterministicCadFirst ?? true
+      });
+      const result = await orchestrator.reinterpretArtifact(body);
+      send(result.success ? 200 : 422, result);
       return;
     }
     if (method === "POST" && url.pathname === "/api/v1/image/floor-plan") {

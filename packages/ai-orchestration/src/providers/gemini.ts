@@ -1,6 +1,6 @@
 import type { AIChunk, AIRequest, AIResponse, ModelInfo } from '@ai-floor-planner/core';
 import { AITaskType } from '@ai-floor-planner/core';
-import { BaseAIProvider, AISafetyError } from './base';
+import { BaseAIProvider, AISafetyError, AIRequestValidationError } from './base';
 import { REQUIREMENT_RESPONSE_SCHEMA } from '../requirements/schema';
 import {
   asRecord,
@@ -59,6 +59,67 @@ export function isTransientHttpError(status: number | null): boolean {
 export function isAuthHttpError(status: number | null): boolean {
   if (status === null) return false;
   return status === 401 || status === 403;
+}
+
+export function isNetworkTransientError(error: unknown): boolean {
+  if (!error) return false;
+  if (error instanceof Error) {
+    const name = error.name;
+    const msg = error.message.toLowerCase();
+    const cause = (error as { cause?: { code?: string; message?: string } }).cause;
+    const causeCode = cause?.code?.toUpperCase();
+    const errCode = (error as { code?: string }).code?.toUpperCase();
+
+    if (name === 'AbortError' || msg.includes('timed out') || msg.includes('timeout')) {
+      return true;
+    }
+    const networkCodes = new Set([
+      'ECONNRESET',
+      'ETIMEDOUT',
+      'ECONNREFUSED',
+      'ENOTFOUND',
+      'EAI_AGAIN',
+      'EPIPE',
+      'UND_ERR_CONNECT_TIMEOUT',
+      'UND_ERR_SOCKET',
+      'UND_ERR_HEADERS_TIMEOUT',
+      'UND_ERR_BODY_TIMEOUT',
+    ]);
+    if (causeCode && networkCodes.has(causeCode)) return true;
+    if (errCode && networkCodes.has(errCode)) return true;
+    if (
+      msg.includes('econnreset') ||
+      msg.includes('etimedout') ||
+      msg.includes('connection reset') ||
+      msg.includes('socket hang up') ||
+      msg.includes('fetch failed') ||
+      msg.includes('network error')
+    ) {
+      return true;
+    }
+  }
+  return false;
+}
+
+export function isModelNotFoundError(error: unknown, status: number | null): boolean {
+  if (status === 404) return true;
+  if (error instanceof HttpProviderError) {
+    if (error.status === 404) return true;
+    if (error.detail && /not_found|models\/.*is not found|does not exist/i.test(error.detail)) return true;
+  }
+  if (error instanceof Error) {
+    const msg = error.message.toLowerCase();
+    if (
+      msg.includes('not found') ||
+      msg.includes('not_found') ||
+      msg.includes('is not supported for generatecontent') ||
+      msg.includes('no longer available') ||
+      msg.includes('does not exist')
+    ) {
+      return true;
+    }
+  }
+  return false;
 }
 
 export function calculateDelayWithJitter(attempt: number, policy: GeminiRetryPolicy, retryAfterMs?: number): number {
@@ -175,56 +236,65 @@ export class GeminiProvider extends BaseAIProvider {
           );
         } catch (err) {
           lastError = err;
+
+          // 1. Client-side request validation errors (empty image, invalid base64, unsupported MIME):
+          // Fail immediately - never retry identical payload, never fallback
+          if (err instanceof AIRequestValidationError) {
+            throw err;
+          }
+
           const status = extractHttpStatus(err);
 
-          // 1. If auth error (401, 403), throw immediately - no retry, no fallback
+          // 2. Authentication error (401, 403):
+          // Fail immediately - never retry identical credentials, never fallback
           if (isAuthHttpError(status)) {
             throw err;
           }
 
-          // 2. If client error (400, 404), throw immediately — unless 404 is a retired model and fallbackModel exists
-          const isModelRetired404 =
-            status === 404 &&
-            err instanceof Error &&
-            err.message.includes('no longer available');
-          if (status === 400 || (status === 404 && (!isModelRetired404 || !fallbackModel))) {
-            throw err;
-          }
-          if (isModelRetired404 && fallbackModel) {
-            console.warn(
-              `[GeminiProvider] Model "${currentModel}" returned 404 (no longer available). Falling forward to "${fallbackModel}"...`,
-            );
-            break;
+          // 3. Model not found (404 / NOT_FOUND / unsupported model):
+          if (isModelNotFoundError(err, status)) {
+            if (fallbackModel && !isFallback) {
+              console.warn(
+                `[GeminiProvider] Model "${currentModel}" not found or unsupported (status ${status ?? 404}). Falling forward to "${fallbackModel}"...`,
+              );
+              break; // Break inner retry loop to try fallback model
+            }
+            throw err; // No fallback available or fallback itself failed
           }
 
-          const isTimeout = err instanceof Error && (err.message.includes('timed out') || err.name === 'AbortError');
-          const isTransient = isTransientHttpError(status);
-          const isSafetyOrParseError = err instanceof AISafetyError;
-
-          // 3. If NOT transient, NOT timeout, and NOT recoverable safety/parse error, throw immediately
-          if (!isTransient && !isTimeout && !isSafetyOrParseError) {
+          // 4. Client error 400 (invalid schema / bad request):
+          if (status === 400) {
             throw err;
+          }
+
+          // 5. Check if transient: HTTP transient (503, 429, 5xx) OR Network transient (ECONNRESET, ETIMEDOUT, timeout, etc.) OR unparseable output
+          const isTransientHttp = isTransientHttpError(status);
+          const isNetworkTransient = isNetworkTransientError(err);
+          const isSafetyOrParse = err instanceof AISafetyError;
+
+          if (!isTransientHttp && !isNetworkTransient && !isSafetyOrParse) {
+            throw err; // Non-transient unrecoverable error
           }
 
           // Compute delay for next attempt respecting Retry-After where available
           const retryAfterMs = err instanceof HttpProviderError ? err.retryAfterMs : undefined;
           nextDelayMs = calculateDelayWithJitter(attempt + 1, this.retryPolicy, retryAfterMs);
 
-          // 4. Transient error (503, 429, 5xx, or parse glitch):
+          // If attempts remaining on current model, continue to next attempt
           if (attempt < this.retryPolicy.maxRetries) {
             continue;
           }
 
           console.warn(
-            `[GeminiProvider] Retries exhausted for model "${currentModel}" on transient error (status ${status ?? 'parse/safety'}).`,
+            `[GeminiProvider] Retries exhausted for model "${currentModel}" on transient error (status ${status ?? 'network/timeout'}).`,
           );
-          break; // move to fallback model if available
+          break; // Move to fallback model if available
         }
       }
 
       if (fallbackModel && !isFallback) {
         console.warn(
-          `[GeminiProvider] Primary model "${primaryModel}" temporarily unavailable (503/transient). Falling back to "${fallbackModel}"...`,
+          `[GeminiProvider] Primary model "${primaryModel}" failed after retries. Falling back to "${fallbackModel}"...`,
         );
       }
     }
@@ -317,14 +387,14 @@ export function buildGeminiParts(request: Pick<AIRequest, 'userPrompt' | 'images
   for (const [index, image] of (request.images ?? []).entries()) {
     const mimeType = image.mimeType.trim().toLowerCase();
     if (!GEMINI_SUPPORTED_IMAGE_MIME_TYPES.has(mimeType)) {
-      throw new AISafetyError(`Image part ${index} has unsupported media type "${image.mimeType}" for Gemini.`);
+      throw new AIRequestValidationError(`Image part ${index} has unsupported media type "${image.mimeType}" for Gemini.`);
     }
     if (image.data.startsWith('data:')) {
-      throw new AISafetyError(`Image part ${index} must be raw base64, not a data URL.`);
+      throw new AIRequestValidationError(`Image part ${index} must be raw base64, not a data URL.`);
     }
     const data = image.data.replace(/\s+/g, '');
     if (data.length === 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
-      throw new AISafetyError(`Image part ${index} is not valid base64 image data.`);
+      throw new AIRequestValidationError(`Image part ${index} is not valid base64 image data.`);
     }
     parts.push({ inlineData: { mimeType, data } });
   }

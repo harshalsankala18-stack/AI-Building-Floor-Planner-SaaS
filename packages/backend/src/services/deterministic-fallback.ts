@@ -32,10 +32,10 @@ import { siteContext } from './extraction-pipeline.js';
 import { apartmentExpectationFromManifest, schematicToApartmentStructure } from './apartment-structure.js';
 
 /** Where the authoritative candidate came from. */
-export type CandidateSource = 'FLUX' | 'FALLBACK_DETERMINISTIC' | 'DETERMINISTIC_CAD';
+export type CandidateSource = 'FLUX' | 'GEMINI' | 'POLLINATIONS' | 'FALLBACK_DETERMINISTIC' | 'DETERMINISTIC_CAD';
 
 /** What the candidate's image actually depicts. */
-export type CandidateVisualSource = 'FLUX_IMAGE' | 'DETERMINISTIC_SCHEMATIC';
+export type CandidateVisualSource = 'FLUX_IMAGE' | 'GEMINI_IMAGE' | 'POLLINATIONS_IMAGE' | 'DETERMINISTIC_SCHEMATIC';
 
 export const FALLBACK_DETERMINISTIC_PROVIDER = 'deterministic-planner';
 export const FALLBACK_DETERMINISTIC_MODEL = 'deterministic-apartment-schematic-v1';

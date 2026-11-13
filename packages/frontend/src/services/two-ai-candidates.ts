@@ -10,6 +10,8 @@
  */
 
 import type {
+  CandidateAcceptanceState,
+  CandidateRejectionStage,
   CandidateSource,
   MultiFloorGenerationStatus,
   OrchestratedCandidateResult,
@@ -36,7 +38,7 @@ export interface RejectedAttemptView {
   readonly attempt: number | null;
   readonly seed: number;
   readonly artifactId: string;
-  readonly stage: 'VISUAL_PREFLIGHT' | 'HARD_VALIDATION';
+  readonly stage: CandidateRejectionStage;
   readonly headline: string;
   readonly reasons: readonly string[];
 }
@@ -60,19 +62,51 @@ export const FALLBACK_NOTICE =
   'AI visual generation did not produce an acceptable candidate after the allowed attempts. ' +
   'A deterministic apartment plan has been generated instead.';
 
-export function candidateSourceOf(candidate: Pick<OrchestratedCandidateResult, 'source'>): CandidateSource {
-  return candidate.source ?? 'FLUX';
+export function candidateSourceOf(
+  candidate: Pick<OrchestratedCandidateResult, 'source'> & {
+    readonly artifact?: { readonly provider?: string; readonly model?: string } | null;
+    readonly savedArtifact?: { readonly provider?: string; readonly model?: string } | null;
+  },
+): CandidateSource {
+  if (candidate.source) return candidate.source;
+  const prov = (candidate.artifact?.provider ?? (candidate as any).savedArtifact?.provider ?? '').toUpperCase();
+  if (prov === 'GEMINI') return 'GEMINI';
+  if (prov === 'POLLINATIONS') return 'POLLINATIONS';
+  if (prov === 'DETERMINISTIC_FALLBACK') return 'FALLBACK_DETERMINISTIC';
+  return 'FLUX';
 }
 
 /** Score badge: numeric only for a real Gemini evaluation of a hard-valid plan. */
 export function describeCandidateScore(
   candidate: Pick<OrchestratedCandidateResult, 'evaluation' | 'rejectionStage' | 'status'> &
-    Partial<Pick<OrchestratedCandidateResult, 'evaluationStatus'>>,
+    Partial<Pick<OrchestratedCandidateResult, 'evaluationStatus'>> & {
+      readonly masterEvaluation?: { readonly passed?: boolean; readonly overallScore?: number; readonly hardConstraintViolations?: readonly string[] } | null;
+    },
 ): CandidateScoreView {
+  if (candidate.masterEvaluation && typeof candidate.masterEvaluation.overallScore === 'number') {
+    const mScore = Math.round(candidate.masterEvaluation.overallScore);
+    const mPass = Boolean(candidate.masterEvaluation.passed && mScore >= 80 && (candidate.masterEvaluation.hardConstraintViolations?.length ?? 0) === 0);
+    if (mPass && candidate.status !== 'REJECTED') {
+      return { kind: 'SCORED', score: mScore, label: `Accepted: ${mScore}/100 (≥80)` };
+    }
+    const violations = candidate.masterEvaluation.hardConstraintViolations ?? [];
+    return {
+      kind: 'REJECTED',
+      label: `Rejected: ${mScore}/100 (<80)`,
+      reason: violations.length > 0 ? violations.join(' · ') : `Quality gate requires ≥ 80/100 (scored ${mScore}/100).`,
+    };
+  }
   const score = candidate.evaluation?.overallScore;
   if (candidate.status !== 'REJECTED' && candidate.evaluation && typeof score === 'number' && Number.isFinite(score)) {
     const rounded = Math.round(score);
     return { kind: 'SCORED', score: rounded, label: `Gemini (advisory): ${rounded}/100` };
+  }
+  if (candidate.rejectionStage === 'QUALITY_GATE') {
+    return {
+      kind: 'REJECTED',
+      label: 'Rejected by architectural quality gate (<80/100)',
+      reason: 'The master image did not meet the 80/100 architectural quality threshold.',
+    };
   }
   if (candidate.rejectionStage === 'VISUAL_PREFLIGHT') {
     return {
@@ -245,15 +279,17 @@ export function describePipelineStages(input: {
  */
 export function imageProviderLabel(artifact?: { readonly provider?: string; readonly model?: string } | null): string {
   const provider = (artifact?.provider ?? '').toLowerCase();
+  if (provider === 'gemini') return `Gemini${artifact?.model ? ` (${artifact.model})` : ''}`;
   if (provider === 'pollinations') return `Pollinations${artifact?.model ? ` (${artifact.model})` : ''}`;
-  if (provider === 'cloudflare' || provider === 'cloudflare-workers-ai' || provider === '') return 'Cloudflare FLUX';
+  if (provider === 'cloudflare' || provider === 'cloudflare-workers-ai' || provider === 'flux' || provider === '') return 'Cloudflare FLUX';
   return artifact?.model ? `${artifact.provider} (${artifact.model})` : String(artifact?.provider);
 }
 
 export function describeCandidateSource(
   candidate: Pick<OrchestratedCandidateResult, 'source'> & { readonly artifact?: { readonly provider?: string; readonly model?: string } | null },
 ): CandidateSourceView {
-  if (candidateSourceOf(candidate) === 'DETERMINISTIC_CAD') {
+  const src = candidateSourceOf(candidate);
+  if (src === 'DETERMINISTIC_CAD') {
     return {
       source: 'DETERMINISTIC_CAD',
       label: 'Deterministic Stepped CAD',
@@ -262,7 +298,7 @@ export function describeCandidateSource(
       description: 'Deterministic Stepped-Polygon CAD Engine. Zero external image latency.',
     };
   }
-  if (candidateSourceOf(candidate) === 'FALLBACK_DETERMINISTIC') {
+  if (src === 'FALLBACK_DETERMINISTIC') {
     return {
       source: 'FALLBACK_DETERMINISTIC',
       label: 'Deterministic planner (fallback)',
@@ -272,29 +308,67 @@ export function describeCandidateSource(
     };
   }
   const label = imageProviderLabel(candidate.artifact);
-  const isFlux = label === 'Cloudflare FLUX';
+  const isFlux = src === 'FLUX' || label === 'Cloudflare FLUX';
+  const isGemini = src === 'GEMINI' || label.startsWith('Gemini');
   return {
-    source: 'FLUX',
+    source: src,
     label,
-    visualLabel: isFlux ? 'Concept Image (FLUX)' : 'Concept Image (AI)',
+    visualLabel: isGemini ? 'Concept Image (Gemini)' : isFlux ? 'Concept Image (FLUX)' : 'Concept Image (AI)',
     isAiGenerated: true,
-    description: `Two-AI Floor Plan (${label} + Gemini Vision). Validated canonical geometry.`,
+    description: `AI Floor Plan (${label} + Gemini Vision). Validated canonical geometry.`,
   };
+}
+
+/**
+ * Strict fail-closed gate: A candidate may ONLY be applied to the project if:
+ * 1. Building exists and is not null.
+ * 2. Status is not REJECTED.
+ * 3. AcceptanceState is not QUALITY_REJECTED (if set, must be READY_FOR_EDITING).
+ * 4. Master evaluation passed (overallScore >= 80, passed === true, 0 hard violations).
+ * 5. Deterministic validation passed.
+ */
+export function isCandidateAppliable(cand?: {
+  readonly status?: string;
+  readonly acceptanceState?: CandidateAcceptanceState;
+  readonly masterEvaluation?: { readonly passed?: boolean; readonly overallScore?: number; readonly hardConstraintViolations?: readonly string[] } | null;
+  readonly validation?: { readonly isValid?: boolean } | null;
+  readonly building?: any | null;
+} | null): boolean {
+  if (!cand || !cand.building) return false;
+  if (cand.status === 'REJECTED') return false;
+  if (cand.acceptanceState && cand.acceptanceState !== 'READY_FOR_EDITING') return false;
+  if (cand.masterEvaluation) {
+    if (!cand.masterEvaluation.passed) return false;
+    if (typeof cand.masterEvaluation.overallScore === 'number' && cand.masterEvaluation.overallScore < 80) return false;
+    if (cand.masterEvaluation.hardConstraintViolations && cand.masterEvaluation.hardConstraintViolations.length > 0) return false;
+  }
+  if (cand.validation && cand.validation.isValid === false) return false;
+  return true;
 }
 
 export function summarizeRejectedAttempts(result: Pick<TwoAIGenerationResult, 'candidates'>): RejectedAttemptView[] {
   return (result.candidates ?? [])
     .filter(c => c.status === 'REJECTED')
     .map(c => {
-      const stage = c.rejectionStage === 'VISUAL_PREFLIGHT' ? 'VISUAL_PREFLIGHT' : 'HARD_VALIDATION';
+      const stage: CandidateRejectionStage = c.rejectionStage ?? 'HARD_VALIDATION';
       const reasons = c.validation?.verificationIssues?.filter(i => i.severity === 'error').map(i => i.message) ?? [];
+      const headline =
+        stage === 'QUALITY_GATE'
+          ? 'Rejected at architectural quality gate (<80/100)'
+          : stage === 'VISUAL_PREFLIGHT'
+          ? 'Rejected at visual preflight'
+          : stage === 'CAD_RECONSTRUCTION'
+          ? 'Rejected at CAD reconstruction'
+          : stage === 'IMAGE_INTERPRETATION'
+          ? 'Rejected at image interpretation'
+          : 'Rejected at hard validation';
       return {
         id: c.id,
         attempt: c.attempt ?? null,
         seed: c.seed,
         artifactId: c.artifact?.generationId ?? '',
         stage,
-        headline: stage === 'VISUAL_PREFLIGHT' ? 'Rejected at visual preflight' : 'Rejected at hard validation',
+        headline,
         reasons: reasons.length > 0 ? reasons : (c.rejectedReason ? [c.rejectedReason] : []),
       };
     });

@@ -130,19 +130,48 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
     };
   }
 
-  const imageBox = bbox(imageRects);
-  const cadBox = bbox(cadRooms.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+  const isMultiFloor = building.floors.length > 1;
 
   // ── 1. Footprint correspondence: does the built shell match the drawn aspect?
-  const imageAspect = imageBox.width / imageBox.height;
-  const cadAspect = cadBox.width / cadBox.height;
-  const aspectError = Math.abs(imageAspect - cadAspect) / imageAspect;
+  let aspectError: number;
+  let imageAspectStr: string;
+  let cadAspectStr: string;
+
+  if (isMultiFloor) {
+    const floorAspectErrors: number[] = [];
+    const aspectDetails: string[] = [];
+    for (const floor of building.floors) {
+      const floorCadRooms = floor.rooms;
+      const floorImgRooms = plan.rooms.filter(r => (r.floorLevel ?? 0) === floor.level);
+      if (floorCadRooms.length === 0 || floorImgRooms.length === 0) continue;
+      const fImgBox = bbox(floorImgRooms.map(r => ({ x: r.imageX, y: r.imageY, width: r.imageWidth, height: r.imageHeight })));
+      const fCadBox = bbox(floorCadRooms.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+      const fImgAspect = fImgBox.width / fImgBox.height;
+      const fCadAspect = fCadBox.width / fCadBox.height;
+      floorAspectErrors.push(Math.abs(fImgAspect - fCadAspect) / fImgAspect);
+      aspectDetails.push(`L${floor.level}: ${fImgAspect.toFixed(2)} vs ${fCadAspect.toFixed(2)}`);
+    }
+    aspectError = floorAspectErrors.length ? floorAspectErrors.reduce((a, b) => a + b, 0) / floorAspectErrors.length : 0;
+    imageAspectStr = aspectDetails.join(', ') || 'multi-floor';
+    cadAspectStr = 'per-floor match';
+  } else {
+    const imageBox = bbox(imageRects);
+    const cadBox = bbox(cadRooms.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+    const imageAspect = imageBox.width / imageBox.height;
+    const cadAspect = cadBox.width / cadBox.height;
+    aspectError = Math.abs(imageAspect - cadAspect) / imageAspect;
+    imageAspectStr = imageAspect.toFixed(3);
+    cadAspectStr = cadAspect.toFixed(3);
+  }
+
   dimensions.push({
     id: 'footprint',
     label: 'Footprint correspondence',
     score: clamp100(100 - aspectError * 200),
     weight: 1.5,
-    detail: `Drawn footprint aspect ${imageAspect.toFixed(3)} vs reconstructed ${cadAspect.toFixed(3)} (${(aspectError * 100).toFixed(1)}% difference).`,
+    detail: isMultiFloor
+      ? `Per-floor footprint aspect correspondence: ${imageAspectStr} (${(aspectError * 100).toFixed(1)}% mean diff).`
+      : `Drawn footprint aspect ${imageAspectStr} vs reconstructed ${cadAspectStr} (${(aspectError * 100).toFixed(1)}% difference).`,
     missing: [],
   });
 
@@ -189,6 +218,20 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
     if (tag) cadBySourceId.set(tag.slice('extracted:'.length), room);
   }
 
+  // Pre-calculate per-floor bounding boxes for accurate spatial normalization
+  const imageBoxByFloor = new Map<number, NormRect>();
+  const cadBoxByFloor = new Map<number, NormRect>();
+  if (isMultiFloor) {
+    for (const floor of building.floors) {
+      const fCad = floor.rooms;
+      const fImg = plan.rooms.filter(r => (r.floorLevel ?? 0) === floor.level);
+      if (fCad.length > 0) cadBoxByFloor.set(floor.level, bbox(fCad.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height }))));
+      if (fImg.length > 0) imageBoxByFloor.set(floor.level, bbox(fImg.map(r => ({ x: r.imageX, y: r.imageY, width: r.imageWidth, height: r.imageHeight }))));
+    }
+  }
+  const globalImageBox = bbox(imageRects);
+  const globalCadBox = bbox(cadRooms.map(r => ({ x: r.x, y: r.y, width: r.width, height: r.height })));
+
   const placementErrors: number[] = [];
   const proportionErrors: number[] = [];
   const placementMissing: string[] = [];
@@ -198,11 +241,15 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
       placementMissing.push(`"${imgRoom.name}" from the image has no matching CAD room.`);
       continue;
     }
+    const rLvl = imgRoom.floorLevel ?? 0;
+    const refImgBox = (isMultiFloor && imageBoxByFloor.get(rLvl)) ? imageBoxByFloor.get(rLvl)! : globalImageBox;
+    const refCadBox = (isMultiFloor && cadBoxByFloor.get(rLvl)) ? cadBoxByFloor.get(rLvl)! : globalCadBox;
+
     const imgNorm = normalize(
       { x: imgRoom.imageX, y: imgRoom.imageY, width: imgRoom.imageWidth, height: imgRoom.imageHeight },
-      imageBox,
+      refImgBox,
     );
-    const cadNorm = normalize({ x: cad.x, y: cad.y, width: cad.width, height: cad.height }, cadBox);
+    const cadNorm = normalize({ x: cad.x, y: cad.y, width: cad.width, height: cad.height }, refCadBox);
     const ic = centre(imgNorm);
     const cc = centre(cadNorm);
     placementErrors.push(Math.hypot(ic.x - cc.x, ic.y - cc.y));
@@ -252,8 +299,12 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
     for (let j = i + 1; j < plan.rooms.length; j++) {
       const a = plan.rooms[i]!;
       const b = plan.rooms[j]!;
-      const an = normalize({ x: a.imageX, y: a.imageY, width: a.imageWidth, height: a.imageHeight }, imageBox);
-      const bn = normalize({ x: b.imageX, y: b.imageY, width: b.imageWidth, height: b.imageHeight }, imageBox);
+      const lvlA = a.floorLevel ?? 0;
+      const lvlB = b.floorLevel ?? 0;
+      if (lvlA !== lvlB) continue; // Rooms on different levels do not touch in 2D
+      const refBox = (isMultiFloor && imageBoxByFloor.get(lvlA)) ? imageBoxByFloor.get(lvlA)! : globalImageBox;
+      const an = normalize({ x: a.imageX, y: a.imageY, width: a.imageWidth, height: a.imageHeight }, refBox);
+      const bn = normalize({ x: b.imageX, y: b.imageY, width: b.imageWidth, height: b.imageHeight }, refBox);
       if (touching(an, bn, 0.02)) imageAdjacency.add(pairKey(a.id, b.id));
     }
   }
@@ -264,8 +315,11 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
     const ra = cadBySourceId.get(idA);
     const rb = cadBySourceId.get(idB);
     if (!ra || !rb) continue;
-    const an = normalize({ x: ra.x, y: ra.y, width: ra.width, height: ra.height }, cadBox);
-    const bn = normalize({ x: rb.x, y: rb.y, width: rb.width, height: rb.height }, cadBox);
+    const aImg = plan.rooms.find(r => r.id === idA);
+    const lvl = aImg?.floorLevel ?? 0;
+    const refCadBox = (isMultiFloor && cadBoxByFloor.get(lvl)) ? cadBoxByFloor.get(lvl)! : globalCadBox;
+    const an = normalize({ x: ra.x, y: ra.y, width: ra.width, height: ra.height }, refCadBox);
+    const bn = normalize({ x: rb.x, y: rb.y, width: rb.width, height: rb.height }, refCadBox);
     if (touching(an, bn, 0.02)) adjacencyPreserved++;
     else adjacencyLost.push(`"${ra.name}" and "${rb.name}" adjoin in the image but not in the CAD model.`);
   }

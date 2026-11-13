@@ -69,6 +69,70 @@ describe('Phase 3 — Gemini vision image interpretation (PRD 20)', () => {
       plotWidthMm: 1, plotDepthMm: 1, orientationDegrees: 0, roadFacing: 'north', imageBase64: 'QQ==', imageMimeType: 'image/png',
     })).rejects.toThrow(/no parsed interpretation/i);
   });
+
+  it('rejects malformed interpretation output that violates schema (missing rooms)', async () => {
+    const invalidPayload = {
+      boundary: { points: [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 100 }] },
+      rooms: [], // Empty rooms array violates schema
+    };
+    const provider = new FakeProvider(invalidPayload);
+    await expect(
+      interpretPlanImageWithGemini(provider, {
+        plotWidthMm: 10000,
+        plotDepthMm: 15000,
+        orientationDegrees: 0,
+        roadFacing: 'north',
+        imageBase64: 'QUJD',
+        imageMimeType: 'image/png',
+      }),
+    ).rejects.toThrow(/failed schema validation/i);
+  });
+
+  it('rejects malformed interpretation output that lacks boundary points', async () => {
+    const invalidPayload = {
+      boundary: { points: [{ x: 0, y: 0 }] }, // Less than 3 points
+      rooms: [{ id: 'r1', name: 'Living', type: 'living', x: 0, y: 0, width: 10, height: 10 }],
+    };
+    const provider = new FakeProvider(invalidPayload);
+    await expect(
+      interpretPlanImageWithGemini(provider, {
+        plotWidthMm: 10000,
+        plotDepthMm: 15000,
+        orientationDegrees: 0,
+        roadFacing: 'north',
+        imageBase64: 'QUJD',
+        imageMimeType: 'image/png',
+      }),
+    ).rejects.toThrow(/failed schema validation/i);
+  });
+
+  it('rejects empty image data before calling provider', async () => {
+    const provider = new FakeProvider(interpretation);
+    await expect(
+      interpretPlanImageWithGemini(provider, {
+        plotWidthMm: 10000,
+        plotDepthMm: 15000,
+        orientationDegrees: 0,
+        roadFacing: 'north',
+        imageBase64: '',
+        imageMimeType: 'image/png',
+      }),
+    ).rejects.toThrow(/Image data is empty or missing/i);
+  });
+
+  it('rejects unsupported image MIME type before calling provider', async () => {
+    const provider = new FakeProvider(interpretation);
+    await expect(
+      interpretPlanImageWithGemini(provider, {
+        plotWidthMm: 10000,
+        plotDepthMm: 15000,
+        orientationDegrees: 0,
+        roadFacing: 'north',
+        imageBase64: 'QUJD',
+        imageMimeType: 'application/pdf',
+      }),
+    ).rejects.toThrow(/Image MIME type "application\/pdf" is unsupported/i);
+  });
 });
 
 describe('Phase 3 — Gemini architectural evaluation (PRD 25/26)', () => {

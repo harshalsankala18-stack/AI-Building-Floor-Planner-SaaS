@@ -68,6 +68,7 @@ export { SiteAnalyzer } from './site/site-analyzer';
 export type { SiteAnalysisResult } from './site/site-analyzer';
 export {
   type ExtractedRoom,
+  type ExtractedFloorRegion,
   type ExtractedDoor,
   type ExtractedWindow,
   type ExtractedStair,

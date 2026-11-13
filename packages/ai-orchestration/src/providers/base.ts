@@ -18,3 +18,10 @@ export class AISafetyError extends Error {
     this.name = 'AISafetyError';
   }
 }
+
+export class AIRequestValidationError extends Error {
+  constructor(message: string) {
+    super(`[AIRequestValidationError] ${message}`);
+    this.name = 'AIRequestValidationError';
+  }
+}

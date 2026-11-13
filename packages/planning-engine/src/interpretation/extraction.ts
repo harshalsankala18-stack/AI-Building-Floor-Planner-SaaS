@@ -24,6 +24,25 @@ export interface ExtractedRoom {
   readonly orientationHint?: number;
   /** Apartment grouping: owning flat id, or "COMMON" for shared space (Phase 4). */
   readonly flatId?: string;
+  /** Phase 2B multi-floor assignment: 0 for Ground Floor, 1 for First Floor, etc. */
+  readonly floorLevel?: number;
+  readonly floorRegionId?: string;
+  readonly floorAssignmentReason?: string;
+}
+
+export interface ExtractedFloorRegion {
+  readonly id: string;
+  readonly level: number;
+  readonly name: string;
+  readonly region: {
+    readonly x: number;
+    readonly y: number;
+    readonly width: number;
+    readonly height: number;
+  };
+  readonly boundary?: {
+    readonly points: readonly ExtractedPoint[];
+  };
 }
 
 /** A self-contained apartment unit read from the image (recovery Phase 4). */
@@ -60,6 +79,7 @@ export interface ExtractedDoor {
   readonly swingDirection: 'inward' | 'outward' | 'left' | 'right' | 'unknown';
   readonly connectsRooms: readonly string[];
   readonly adjacentRoomId: string;
+  readonly floorLevel?: number;
 }
 
 export interface ExtractedWindow {
@@ -69,6 +89,7 @@ export interface ExtractedWindow {
   readonly imageWidth: number;
   readonly imageHeight: number;
   readonly adjacentRoomId: string;
+  readonly floorLevel?: number;
 }
 
 export interface ExtractedStair {
@@ -80,6 +101,8 @@ export interface ExtractedStair {
   readonly imageHeight: number;
   /** Apartment grouping (Phase 4): "COMMON" for core stairs. */
   readonly flatId?: string;
+  readonly floorLevel?: number;
+  readonly connectsToLevel?: number;
 }
 
 export interface ExtractedParking {
@@ -138,6 +161,8 @@ export interface ExtractedPlan {
   readonly windows: readonly ExtractedWindow[];
   readonly stairs: readonly ExtractedStair[];
   readonly parking: readonly ExtractedParking[];
+  /** Phase 2B multi-floor drawing regions segmented from the image. */
+  readonly floors?: readonly ExtractedFloorRegion[];
   /** Apartment structure (Phase 4). Absent for single-family interpretations. */
   readonly flats?: readonly ExtractedFlat[];
   readonly lifts?: readonly ExtractedCoreElement[];

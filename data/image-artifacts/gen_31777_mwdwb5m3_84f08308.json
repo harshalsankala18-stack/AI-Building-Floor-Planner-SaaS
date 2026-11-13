@@ -1,0 +1,34 @@
+{
+  "generationId": "gen_31777_mwdwb5m3_84f08308",
+  "projectId": "proj_v23m7y0",
+  "seed": 31777,
+  "model": "gemini-3.1-flash-lite-image",
+  "provider": "gemini",
+  "promptVersion": 3,
+  "originalPrompt": "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).\n\nPROJECT: Vasant Vihar Residence, 2-storey.\nPLOT PROPORTIONS: 12.19m (width) x 18.29m (depth), road facing North.\nSETBACKS: front 2134mm, rear 1219mm, left 1219mm, right 1219mm.\nROOM PROGRAM: 3 bedroom(s), 2 bathroom(s), living room, kitchen, dining room, staircase.\nPARKING: dedicated parking for 1 car(s).\nADDITIONAL BRIEF: 3 bedrooms, 2 bathrooms, living room, dining room, kitchen, balcony, parking, vastu compliant orientation. Footprint shape: l shape. Plot size 40x60 ft, road facing north.\n\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #5, Previous Score: 63/100):\n- RESOLVE HARD VIOLATIONS: Requested 2 bathrooms; plan contains 5 bathrooms total (1 on ground, 4 on first floor).; Vastu compliance not met (Kitchen in NE, Master in N).\n- FIX SPATIAL DEFECTS: The first floor layout is redundant, showing three separate bathroom enclosures for two bedrooms.; The staircase landing and foyer area are disjointed.; The dining area lacks a direct, clean path from the kitchen.\n- ARCHITECTURAL CORRECTIONS: Reconfigure the kitchen to the South-East corner.; Move the master bedroom to the South-West corner of the first floor.; Consolidate the first floor bathrooms into one shared master ensuite and one common bathroom to meet the 2-bathroom total requirement.; Redesign the L-shaped footprint to be more prominent at the street-facing elevation.; Streamline the staircase circulation to provide a more functional hallway.\nEnsure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.\n\nMANDATORY DIRECTIVES:\n- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.\n- Clear room separation, proper wall thicknesses, door swings, and window openings.\n- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).\n- Use the supplied reference images for visual drafting style. Current project requirements always override references.\n\nSTRICT PROHIBITIONS:\nDo not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.",
+  "negativePrompt": "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo",
+  "width": 896,
+  "height": 1200,
+  "requestedWidth": 832,
+  "requestedHeight": 1280,
+  "mimeType": "image/jpeg",
+  "generatedAt": "2026-11-12T18:42:53.352Z",
+  "latencyMs": 5356,
+  "providerRequest": {
+    "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-lite-image:generateContent",
+    "size": "1K",
+    "seedSent": false,
+    "referenceIdsSent": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "referenceHashes": [
+      "ref_apartment_01_multi_unit_typical",
+      "ref_apartment_02_multi_unit_first",
+      "ref_apartment_03_residential_floors"
+    ],
+    "aspectRatio": "3:4",
+    "promptHash": "3410f671b22b643d4cdff0d2cab5735b348acf74bc138aae5547c20ba57a3192"
+  }
+}

@@ -988,6 +988,27 @@ async function route(request: IncomingMessage, response: ServerResponse, deps: S
       send(200, result);
       return;
     }
+    if (method === 'POST' && (url.pathname === '/api/v1/generation/reinterpret-artifact' || url.pathname === '/api/generation/reinterpret-artifact')) {
+      const raw = await readBody(request);
+      let body: unknown = null;
+      try {
+        body = raw.length > 0 ? JSON.parse(raw) : null;
+      } catch {
+        send(400, { error: { code: 'INVALID_JSON', message: 'Request body must be valid JSON.' } });
+        return;
+      }
+      const { GenerationOrchestrator } = await import('./services/generation-orchestrator.js');
+      const orchestrator = new GenerationOrchestrator({
+        provider: deps.provider,
+        store: deps.store,
+        gemini: deps.gemini,
+        interpreterKind: deps.interpreterKind,
+        deterministicCadFirst: deps.config?.deterministicCadFirst ?? true,
+      });
+      const result = await orchestrator.reinterpretArtifact(body as any);
+      send(result.success ? 200 : 422, result);
+      return;
+    }
     if (method === 'POST' && url.pathname === '/api/v1/image/floor-plan') {
       const raw = await readBody(request);
       let body: unknown = null;

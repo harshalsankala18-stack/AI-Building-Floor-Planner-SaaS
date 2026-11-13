@@ -114,11 +114,9 @@ function positiveInt(value: string | undefined, fallback: number): number {
 
 export function resolveImageServiceConfig(env: NodeJS.ProcessEnv = process.env): ImageServiceConfig {
   const interpreterKind = (env.IMAGE_INTERPRETER ?? 'gemini').trim().toLowerCase();
-  // Phase 1 recovery (P5): Pin real, currently-available Gemini model IDs.
-  // "gemini-2.5-flash" and "gemini-2.0-flash" are verified available via Generative Language API.
-  // Fictional "gemini-3.x" IDs removed.
-  const primaryModel = (env.GEMINI_MODEL ?? '').trim() || 'gemini-2.5-flash';
-  const defaultFallback = primaryModel === 'gemini-2.0-flash' ? 'gemini-2.5-flash' : 'gemini-2.0-flash';
+  // Phase 2A: Expected vision configuration is gemini-3.1-flash-lite with gemini-3.8-flash (or gemini-2.5-flash) as fallback
+  const primaryModel = (env.GEMINI_MODEL ?? '').trim() || 'gemini-3.1-flash-lite';
+  const defaultFallback = primaryModel === 'gemini-3.8-flash' ? 'gemini-2.5-flash' : 'gemini-3.8-flash';
   const fallbackModel = (env.GEMINI_FALLBACK_MODEL ?? '').trim() || defaultFallback;
 
   return {

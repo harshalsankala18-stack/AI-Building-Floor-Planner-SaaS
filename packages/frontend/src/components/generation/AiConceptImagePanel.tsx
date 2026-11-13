@@ -47,6 +47,7 @@ import {
   type FloorPlanImageSession,
   type ProjectEnvelope,
 } from '../../services/storage';
+import { isCandidateAppliable } from '../../services/two-ai-candidates';
 
 export interface AiConceptImagePanelProps {
   projectId: string;
@@ -209,17 +210,23 @@ export const AiConceptImagePanel: React.FC<AiConceptImagePanelProps> = ({
           setConversionDiagnostics(
             (candidate?.diagnostics ?? []).filter(d => d.severity === 'error' || d.severity === 'warning'),
           );
-          if (accepted?.building) {
+          if (accepted?.building && isCandidateAppliable(accepted)) {
             setCurrentStage(6);
             synchronizedBuilding = accepted.building;
             setCurrentStage(7);
-          } else if (candidate?.conversionError) {
-            // The image was generated but could not be reconstructed. Say so
-            // here rather than leaving the CAD silently unchanged.
-            setError({
-              code: candidate.conversionError.code,
-              message: candidate.conversionError.message,
-            });
+          } else {
+            const evalScore = masterEval?.overallScore;
+            if (evalScore !== undefined && evalScore < 80) {
+              setError({
+                code: 'QUALITY_GATE_FAILED',
+                message: `Concept image scored ${evalScore}/100 (< 80) — rejected by architectural quality gate. Not applied to 2D/3D CAD.`,
+              });
+            } else if (candidate?.conversionError) {
+              setError({
+                code: candidate.conversionError.code,
+                message: candidate.conversionError.message,
+              });
+            }
           }
         } catch (syncErr) {
           console.warn('Vision CAD sync after image generation encountered an issue:', syncErr);
@@ -365,7 +372,14 @@ export const AiConceptImagePanel: React.FC<AiConceptImagePanelProps> = ({
   const handleConvertToCad = useCallback(async () => {
     if (!session || busy) return;
     if (isRequirementsOutdated) return;
-    if (session.evaluation && !session.evaluation.passed) return;
+    const evalObj = session.evaluation;
+    const passedQuality = Boolean(
+      evalObj &&
+      evalObj.passed &&
+      evalObj.overallScore >= 80 &&
+      (evalObj.hardConstraintViolations?.length ?? 0) === 0
+    );
+    if (!passedQuality) return;
 
     const currentBuilding = projectStorage.load(projectId)?.building ?? envelope.building;
     const hasRooms = currentBuilding.floors.some(f => f.rooms.length > 0);
@@ -455,11 +469,16 @@ export const AiConceptImagePanel: React.FC<AiConceptImagePanelProps> = ({
   const activeModel = healthInfo?.model ?? session?.model ?? 'gemini-3.1-flash-lite-image';
 
   const evaluation = session?.evaluation;
-  const isScorePassed = Boolean(evaluation && evaluation.passed);
+  const isScorePassed = Boolean(
+    evaluation &&
+    evaluation.passed &&
+    evaluation.overallScore >= 80 &&
+    (evaluation.hardConstraintViolations?.length ?? 0) === 0
+  );
   const evaluationScore = evaluation?.overallScore ?? 0;
   const canConvertCad = Boolean(
     session &&
-    (!evaluation || isScorePassed) &&
+    isScorePassed &&
     !isRequirementsOutdated &&
     !busy
   );

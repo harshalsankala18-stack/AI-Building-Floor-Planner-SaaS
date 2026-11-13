@@ -410,46 +410,57 @@ export const ResidentialPlanningWizard: React.FC<ResidentialPlanningWizardProps>
     };
 
     try {
-      // Execute authoritative architectural plan generation
+      // Execute brief space program derivation (preserves deterministic algorithms for manual request)
       const genResult = generateResidentialPlanFromBrief(wizardBriefData, {
         seed: 101,
         existingBuilding,
       });
 
-      const {
-        building: generatedBuilding,
-        candidates,
-        spaceProgram,
-        footprintIntent,
-      } = genResult;
+      // Prepare clean site building for AI generation workspace without synthetic placeholder rooms
+      const cleanBuilding: Building = {
+        ...genResult.building,
+        floors: genResult.building.floors.map(floor => ({
+          ...floor,
+          rooms: [],
+          walls: [],
+          doors: [],
+          windows: [],
+          structuralColumns: [],
+          loadBearingWalls: [],
+          slabs: [],
+          stairs: [],
+        })),
+        createdAt: genResult.building.createdAt || new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-      // Persist full generated envelope into projectStorage
+      // Persist full initial envelope into projectStorage with pendingAiGeneration and zero placeholder candidates
       projectStorage.save({
         schemaVersion: CURRENT_PROJECT_SCHEMA_VERSION,
-        projectId: generatedBuilding.projectId,
+        projectId: cleanBuilding.projectId,
         name: safeName,
-        createdAt: generatedBuilding.createdAt,
+        createdAt: cleanBuilding.createdAt,
         updatedAt: new Date().toISOString(),
-        building: generatedBuilding,
+        building: cleanBuilding,
         category: 'residential',
-        spaceProgram,
-        footprintIntent,
+        spaceProgram: genResult.spaceProgram,
+        footprintIntent: genResult.footprintIntent,
         wizardBrief: wizardBriefData as unknown as Record<string, unknown>,
         generationSession: {
           schemaVersion: 1,
           generatedAt: new Date().toISOString(),
           requestSeed: 101,
-          selectedCandidateId: genResult.selectedCandidateId,
-          candidates,
+          selectedCandidateId: '',
+          candidates: [], // No pre-generated placeholder candidates (Phase 1 & 1B)
         },
         pendingAiGeneration: true,
-        status: 'GENERATED',
+        status: 'CONCEPT',
       });
 
       // Set active project id
-      projectStorage.setActiveProjectId(generatedBuilding.projectId);
+      projectStorage.setActiveProjectId(cleanBuilding.projectId);
 
-      onComplete(generatedBuilding, safeName, 'residential');
+      onComplete(cleanBuilding, safeName, 'residential');
       onClose();
     } catch (genErr) {
       console.error('Plan generation failed:', genErr);

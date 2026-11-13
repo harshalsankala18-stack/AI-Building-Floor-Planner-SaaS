@@ -5,7 +5,7 @@
  * Requirement Parsing Layer.
  */
 
-export { BaseAIProvider, AISafetyError } from './providers/base';
+export { BaseAIProvider, AISafetyError, AIRequestValidationError } from './providers/base';
 export { OpenAIProvider, type OpenAIProviderOptions } from './providers/openai';
 export {
   GeminiProvider,
@@ -15,6 +15,8 @@ export {
   extractHttpStatus,
   isTransientHttpError,
   isAuthHttpError,
+  isNetworkTransientError,
+  isModelNotFoundError,
   calculateDelayWithJitter,
 } from './providers/gemini';
 export { HttpProviderError } from './providers/http';
@@ -174,10 +176,13 @@ export {
 } from './types/apartment';
 export {
   interpretPlanImageWithGemini,
+  validateVisionInterpretationPayload,
+  detectFloorRegionsFromPayload,
   IMAGE_INTERPRETATION_SCHEMA,
   APARTMENT_IMAGE_INTERPRETATION_SCHEMA,
   APARTMENT_INTERPRETATION_FRAME,
   COMMON_AREA_FLAT_ID,
+  type FloorDrawingRegion,
   type ApartmentInterpretationContext,
   type InterpretPlanImageOptions,
   type InterpretationCoordinateFrame,

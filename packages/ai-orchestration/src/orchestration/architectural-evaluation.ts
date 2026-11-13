@@ -281,8 +281,8 @@ export async function evaluateMasterImageWithGemini(
   const computedSum = rawCompliance + rawSpatial + rawFootprint + rawCirculation + rawDrafting + rawVastu + rawCoherence;
   let overallScore = Math.min(100, Math.max(0, Number(rec.overallScore ?? computedSum)));
 
-  // If there's an arithmetic discrepancy, prefer the computed sum
-  if (Math.abs(overallScore - computedSum) > 10) {
+  // If there's an arithmetic discrepancy, prefer the computed sum when subscores were provided
+  if (computedSum > 0 && Math.abs(overallScore - computedSum) > 10) {
     overallScore = computedSum;
   }
 
