@@ -56,6 +56,85 @@ function createLevels(floors: readonly Floor[], settings: Building3DProjectionSe
   });
 }
 
+function polyAreaAbs(poly: Polygon): number {
+  const pts = poly.points;
+  if (pts.length < 3) return 0;
+  let sum = 0;
+  for (let i = 0; i < pts.length; i += 1) {
+    const a = pts[i]!;
+    const b = pts[(i + 1) % pts.length]!;
+    sum += a.x * b.y - b.x * a.y;
+  }
+  return Math.abs(sum) / 2;
+}
+
+function tightRoomFootprintBoundary(floor: Floor): Polygon {
+  if (floor.rooms.length === 0) return floor.boundary;
+  const ys = Array.from(new Set(floor.rooms.flatMap(r => [r.y, r.y + r.height]))).sort((a, b) => a - b);
+  const bands: { y0: number; y1: number; minX: number; maxX: number }[] = [];
+  for (let i = 0; i < ys.length - 1; i += 1) {
+    const y0 = ys[i]!;
+    const y1 = ys[i + 1]!;
+    const midY = (y0 + y1) / 2;
+    const active = floor.rooms.filter(r => r.y < midY && r.y + r.height > midY);
+    if (active.length === 0) continue;
+    const minX = Math.min(...active.map(r => r.x));
+    const maxX = Math.max(...active.map(r => r.x + r.width));
+    const prev = bands[bands.length - 1];
+    if (prev && Math.abs(prev.minX - minX) <= 10 && Math.abs(prev.maxX - maxX) <= 10 && Math.abs(prev.y1 - y0) <= 10) {
+      prev.y1 = y1;
+    } else {
+      bands.push({ y0, y1, minX, maxX });
+    }
+  }
+  if (bands.length === 0) return floor.boundary;
+  const rightChain: Point[] = [];
+  for (const band of bands) {
+    rightChain.push({ x: band.maxX, y: band.y0 });
+    rightChain.push({ x: band.maxX, y: band.y1 });
+  }
+  const leftChain: Point[] = [];
+  for (let i = bands.length - 1; i >= 0; i -= 1) {
+    const band = bands[i]!;
+    leftChain.push({ x: band.minX, y: band.y1 });
+    leftChain.push({ x: band.minX, y: band.y0 });
+  }
+  const raw = [...rightChain, ...leftChain];
+  const deduped: Point[] = [];
+  for (const p of raw) {
+    const last = deduped[deduped.length - 1];
+    if (!last || Math.hypot(p.x - last.x, p.y - last.y) > 1) deduped.push(p);
+  }
+  const simplified: Point[] = [];
+  const n = deduped.length;
+  for (let i = 0; i < n; i += 1) {
+    const prev = deduped[(i - 1 + n) % n]!;
+    const curr = deduped[i]!;
+    const next = deduped[(i + 1) % n]!;
+    const collinearX = Math.abs(prev.x - curr.x) <= 1 && Math.abs(curr.x - next.x) <= 1;
+    const collinearY = Math.abs(prev.y - curr.y) <= 1 && Math.abs(curr.y - next.y) <= 1;
+    if (!collinearX && !collinearY) simplified.push(curr);
+  }
+  return simplified.length >= 4 ? { points: simplified } : floor.boundary;
+}
+
+function effectiveFloorSlabBoundary(floor: Floor, building: Building): Polygon {
+  if (floor.level > 0 && floor.rooms.length === 0 && floor.walls.length === 0 && floor.stairs.length === 0) {
+    const lower = [...building.floors]
+      .filter(f => f.level < floor.level && (f.rooms.length > 0 || f.walls.length > 0))
+      .sort((a, b) => b.level - a.level)[0];
+    if (lower) return effectiveFloorSlabBoundary(lower, building);
+  }
+  if (floor.boundary.points.length === 4 && floor.rooms.length >= 3) {
+    const slabArea = polyAreaAbs(floor.boundary);
+    const roomAreaSum = floor.rooms.reduce((acc, r) => acc + Math.max(0, r.area || r.width * r.height), 0);
+    if (roomAreaSum > 0 && slabArea > roomAreaSum * 1.35) {
+      return tightRoomFootprintBoundary(floor);
+    }
+  }
+  return floor.boundary;
+}
+
 function createBuildableEnvelope(building: Building): Polygon | null {
   const { site } = building;
   if (site.plotBoundary.points.length !== 4 || site.plotShape !== 'rectangular') return null;
@@ -114,6 +193,8 @@ function projectOpenings(floor: Floor, elevation: number, settings: Building3DPr
       sourceEntityId: door.id,
       sourceEntityType: 'door',
       doorType: door.type,
+      swingDirection: door.swingDirection,
+      hingeSide: door.hingeSide,
       floorId: floor.id,
       hostWallId: wall.id,
       position: door.position,
@@ -142,6 +223,7 @@ function projectOpenings(floor: Floor, elevation: number, settings: Building3DPr
     return [{
       sourceEntityId: window.id,
       sourceEntityType: 'window',
+      windowType: window.type,
       floorId: floor.id,
       hostWallId: wall.id,
       position: window.position,
@@ -179,7 +261,7 @@ export function projectBuildingTo3D(
       sourceEntityId: floor.id,
       sourceEntityType: 'floor',
       floorId: floor.id,
-      boundary: floor.boundary,
+      boundary: effectiveFloorSlabBoundary(floor, building),
       cutouts: [
         ...floor.rooms.filter(room => room.type === RoomType.ServiceShaft).map(room => room.boundary),
         // Cut the arrival slab from the actual lower-floor stair footprint,
@@ -222,6 +304,8 @@ export function projectBuildingTo3D(
           length: wallLength,
           thickness: wall.thickness,
           height: wallHeight,
+          wallType: wall.type,
+          loadBearing: wall.loadBearing,
           solidSegments: wallSolidSegments(wallLength, wallHeight, openingsByWall.get(wall.id) ?? []),
         };
       });
@@ -243,6 +327,7 @@ export function projectBuildingTo3D(
         elevation: (level?.elevation ?? 0) + settings.slabThickness.value,
         height: Math.min(settings.defaultWallHeight.value, Math.max(1, (level?.floorToFloorHeight ?? settings.defaultFloorToFloorHeight.value) - settings.slabThickness.value)),
         name: room.name,
+        roomType: room.type,
       }));
     }),
     stairs: building.floors.flatMap(floor => {

@@ -3,7 +3,7 @@ import { getModelBounds, isModelClick, modelFitDistance } from '../../services/m
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import type { EditorSelection, Polygon } from '@ai-floor-planner/core';
-import { DoorType } from '@ai-floor-planner/core';
+import { DoorType, RoomType, WallType } from '@ai-floor-planner/core';
 import { computeStairSolids } from '@ai-floor-planner/geometry-engine';
 import { makeProjectionShape as makeShape } from './projection-shape';
 import { millimetersToSceneUnits, computeIndianSunVector, type Building3DProjection, type ProjectionSource } from '@ai-floor-planner/projection-3d';
@@ -62,6 +62,39 @@ function disposeObject(object: THREE.Object3D): void {
 
 function selected(source: ProjectionSource, selection: EditorSelection | null): boolean {
   return Boolean(selection && source.sourceEntityId === selection.entityId && source.floorId === selection.floorId);
+}
+
+function roomFloorColor(roomType?: RoomType): number {
+  switch (roomType) {
+    case RoomType.Living:
+    case RoomType.Dining:
+    case RoomType.Drawing:
+    case RoomType.FamilyLiving:
+      return 0xd6c7b2;
+    case RoomType.Bedroom:
+    case RoomType.Study:
+    case RoomType.Dressing:
+      return 0xc9b49a;
+    case RoomType.Kitchen:
+    case RoomType.Utility:
+    case RoomType.Storage:
+      return 0xc2b8a3;
+    case RoomType.Bathroom:
+      return 0x93b5c6;
+    case RoomType.Balcony:
+    case RoomType.Terrace:
+    case RoomType.Porch:
+    case RoomType.Garden:
+      return 0xa8b5a2;
+    case RoomType.Parking:
+      return 0x64748b;
+    case RoomType.Staircase:
+    case RoomType.Foyer:
+    case RoomType.Corridor:
+      return 0xcbd5e1;
+    default:
+      return 0xb8c4d0;
+  }
 }
 
 export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
@@ -219,7 +252,8 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
     });
 
     projection.rooms.forEach(room => {
-      if (!shouldRenderRoomProjection(room.sourceEntityId, layers.rooms, viewMode, selection)) return;
+      const renderVolume = shouldRenderRoomProjection(room.sourceEntityId, layers.rooms, viewMode, selection);
+      if (!layers.floorPlates && !renderVolume) return;
       if (!shouldShowFloor(room.floorId, activeFloorId, floorMode)) return;
       const geometry = viewMode === 'rooms'
         ? new THREE.ExtrudeGeometry(makeShape(room.boundary, room.cutouts), { depth: room.height * MM_TO_M * 0.88, bevelEnabled: false })
@@ -228,11 +262,51 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
       const roomSelected = selected(room, selection);
       const roomMaterial = roomSelected
         ? new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: 0.68, side: THREE.DoubleSide, depthTest: false })
-        : material(0x38bdf8, (viewMode === 'rooms' ? 0.16 : 0.46) * floorContextOpacity(room.floorId, activeFloorId, floorMode));
+        : material(
+            viewMode === 'rooms' || layers.rooms ? 0x38bdf8 : roomFloorColor(room.roomType),
+            (viewMode === 'rooms' ? 0.16 : layers.rooms ? 0.46 : 0.92) * floorContextOpacity(room.floorId, activeFloorId, floorMode),
+          );
       const mesh = new THREE.Mesh(geometry, roomMaterial);
       mesh.position.y = room.elevation * MM_TO_M + 0.012 + floorOffset(projection, room.floorId, exploded);
       mesh.renderOrder = roomSelected ? 20 : 0;
       addSelectable(mesh, room);
+      if (layers.walls && (room.roomType === RoomType.Balcony || room.roomType === RoomType.Terrace || room.roomType === RoomType.Porch)) {
+        const pts = room.boundary.points;
+        const floorWalls = projection.walls.filter(w => w.floorId === room.floorId);
+        for (let i = 0; i < pts.length; i += 1) {
+          const p1 = pts[i]!;
+          const p2 = pts[(i + 1) % pts.length]!;
+          const edgeLen = Math.hypot(p2.x - p1.x, p2.y - p1.y);
+          if (edgeLen < 400) continue;
+          const midX = (p1.x + p2.x) / 2;
+          const midY = (p1.y + p2.y) / 2;
+          const hasWallOnEdge = floorWalls.some(w => {
+            const wLen = Math.max(1, w.length);
+            const ux = (w.endPoint.x - w.startPoint.x) / wLen;
+            const uy = (w.endPoint.y - w.startPoint.y) / wLen;
+            const proj = Math.max(0, Math.min(wLen, (midX - w.startPoint.x) * ux + (midY - w.startPoint.y) * uy));
+            const cx = w.startPoint.x + ux * proj;
+            const cy = w.startPoint.y + uy * proj;
+            return Math.hypot(midX - cx, midY - cy) <= 260;
+          });
+          if (hasWallOnEdge) continue;
+          const railHeightM = 1.05;
+          const edgeLenM = edgeLen * MM_TO_M;
+          const angle = -Math.atan2(p2.y - p1.y, p2.x - p1.x);
+          const glassGeo = new THREE.BoxGeometry(edgeLenM, railHeightM, 0.04);
+          const glassMesh = new THREE.Mesh(glassGeo, material(0x7dd3fc, 0.42 * floorContextOpacity(room.floorId, activeFloorId, floorMode)));
+          const baseY = room.elevation * MM_TO_M + floorOffset(projection, room.floorId, exploded);
+          glassMesh.position.set(midX * MM_TO_M, baseY + railHeightM / 2, midY * MM_TO_M);
+          glassMesh.rotation.y = angle;
+          addEdges(glassMesh, 0x94a3b8);
+          group.add(glassMesh);
+          const topRailGeo = new THREE.BoxGeometry(edgeLenM, 0.05, 0.07);
+          const topRailMesh = new THREE.Mesh(topRailGeo, material(0x334155, 0.95 * floorContextOpacity(room.floorId, activeFloorId, floorMode)));
+          topRailMesh.position.set(midX * MM_TO_M, baseY + railHeightM + 0.025, midY * MM_TO_M);
+          topRailMesh.rotation.y = angle;
+          group.add(topRailMesh);
+        }
+      }
     });
 
     if (layers.walls) projection.walls.forEach(wall => {
@@ -247,7 +321,8 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
         const segmentHeight = (segment.top - segment.bottom) * MM_TO_M;
         const alongMid = (segment.alongStart + segment.alongEnd) / 2;
         const geometry = new THREE.BoxGeometry(segmentLength, segmentHeight, wall.thickness * MM_TO_M);
-        const mesh = new THREE.Mesh(geometry, material(selected(wall, selection) ? 0x22d3ee : 0xe2e8f0, 0.96 * floorContextOpacity(wall.floorId, activeFloorId, floorMode)));
+        const wallColor = selected(wall, selection) ? 0x22d3ee : wall.wallType === WallType.External ? 0xf1f5f9 : 0xdbe4ee;
+        const mesh = new THREE.Mesh(geometry, material(wallColor, 0.96 * floorContextOpacity(wall.floorId, activeFloorId, floorMode)));
         mesh.position.set((wall.startPoint.x + ux * alongMid) * MM_TO_M, (wall.elevation + segment.bottom) * MM_TO_M + segmentHeight / 2 + floorOffset(projection, wall.floorId, exploded), (wall.startPoint.y + uy * alongMid) * MM_TO_M);
         mesh.rotation.y = angle;
         mesh.castShadow = true;
@@ -286,6 +361,19 @@ export const ThreeBuildingScene: React.FC<ThreeBuildingSceneProps> = ({
       addEdges(mesh);
       addSelectable(mesh, stair);
       });
+    });
+
+    if (layers.walls || layers.floorPlates) projection.columns.forEach(column => {
+      if (!shouldShowFloor(column.floorId, activeFloorId, floorMode)) return;
+      const colHeightM = column.height * MM_TO_M;
+      const geometry = column.shape === 'circular'
+        ? new THREE.CylinderGeometry((column.width / 2) * MM_TO_M, (column.width / 2) * MM_TO_M, colHeightM, 16)
+        : new THREE.BoxGeometry(column.width * MM_TO_M, colHeightM, column.depth * MM_TO_M);
+      const mesh = new THREE.Mesh(geometry, material(selected(column, selection) ? 0x22d3ee : 0xcbd5e1, 0.96 * floorContextOpacity(column.floorId, activeFloorId, floorMode)));
+      mesh.position.set(column.position.x * MM_TO_M, column.elevation * MM_TO_M + colHeightM / 2 + floorOffset(projection, column.floorId, exploded), column.position.y * MM_TO_M);
+      mesh.castShadow = true;
+      addEdges(mesh, 0x475569);
+      addSelectable(mesh, column);
     });
 
     scene.add(group);

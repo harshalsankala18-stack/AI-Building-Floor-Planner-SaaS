@@ -1,4 +1,4 @@
-import type { Direction, DoorType, Point, Polygon, Stair } from '@ai-floor-planner/core';
+import type { Direction, DoorType, Point, Polygon, RoomType, Stair, SwingDirection, WallType, WindowType } from '@ai-floor-planner/core';
 
 export type ProjectionSourceEntityType =
   | 'site'
@@ -73,6 +73,8 @@ export interface Wall3D extends ProjectionSource {
   readonly length: number;
   readonly thickness: number;
   readonly height: number;
+  readonly wallType?: WallType;
+  readonly loadBearing?: boolean;
   readonly solidSegments: readonly WallSolidSegment3D[];
 }
 
@@ -83,6 +85,9 @@ export interface Opening3D extends ProjectionSource {
   /** Start offset along the directed host wall, matching canonical 2D openings. */
   readonly alongWall: number;
   readonly doorType?: DoorType;
+  readonly windowType?: WindowType;
+  readonly swingDirection?: SwingDirection;
+  readonly hingeSide?: 'left' | 'right';
   readonly width: number;
   readonly bottom: number;
   readonly height: number;
@@ -96,6 +101,7 @@ export interface RoomSurface3D extends ProjectionSource {
   readonly elevation: number;
   readonly height: number;
   readonly name: string;
+  readonly roomType?: RoomType;
 }
 
 export interface Stair3D extends ProjectionSource {
