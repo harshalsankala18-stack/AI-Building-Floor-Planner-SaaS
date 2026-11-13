@@ -28,6 +28,12 @@ export interface ExtractedRoom {
   readonly floorLevel?: number;
   readonly floorRegionId?: string;
   readonly floorAssignmentReason?: string;
+  /** Optional explicit polygon boundary in image coordinates for L-shaped/polygonal rooms. */
+  readonly polygon?: readonly ExtractedPoint[];
+  /** Optional compass zone / quadrant extracted from the image (e.g. NE, SE, SW, NW). */
+  readonly compassZone?: string;
+  /** Optional list of connected room IDs or names extracted from the image. */
+  readonly connectedTo?: readonly string[];
 }
 
 export interface ExtractedFloorRegion {

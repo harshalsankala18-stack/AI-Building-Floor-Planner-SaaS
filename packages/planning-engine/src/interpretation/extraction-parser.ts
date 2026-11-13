@@ -37,14 +37,29 @@ function str(value: unknown): string | null {
 
 function pointList(value: unknown): ExtractedBoundary | null {
   if (!Array.isArray(value) || value.length < 3) return null;
-  const points: { x: number; y: number }[] = [];
+  const rawPoints: { x: number; y: number }[] = [];
   for (const entry of value) {
     const record = asRecord(entry);
     const x = record ? num(record.x) : null;
     const y = record ? num(record.y) : null;
     if (x === null || y === null) return null;
-    points.push({ x, y });
+    rawPoints.push({ x, y });
   }
+  const points: { x: number; y: number }[] = [];
+  for (const pt of rawPoints) {
+    const prev = points[points.length - 1];
+    if (!prev || Math.abs(prev.x - pt.x) > 1e-4 || Math.abs(prev.y - pt.y) > 1e-4) {
+      points.push(pt);
+    }
+  }
+  while (
+    points.length > 1 &&
+    Math.abs(points[0]!.x - points[points.length - 1]!.x) <= 1e-4 &&
+    Math.abs(points[0]!.y - points[points.length - 1]!.y) <= 1e-4
+  ) {
+    points.pop();
+  }
+  if (points.length < 3) return null;
   return { points };
 }
 
@@ -161,6 +176,11 @@ export function parseExtractionPayload(
     }
 
     const flatId = str(record.flatId);
+    const roomPoly = pointList(record.polygon ?? asRecord(record.boundary)?.points);
+    const compassZone = str(record.compassZone);
+    const connectedTo = Array.isArray(record.connectedTo)
+      ? record.connectedTo.map(str).filter((v): v is string => v !== null)
+      : [];
     rooms.push({
       id, name, type, imageX: x, imageY: y, imageWidth: width, imageHeight: height,
       imageArea: width * height, imageMinWidth: width, imageMinHeight: height,
@@ -168,6 +188,9 @@ export function parseExtractionPayload(
       floorRegionId,
       floorAssignmentReason,
       ...(flatId ? { flatId } : {}),
+      ...(roomPoly ? { polygon: roomPoly.points } : {}),
+      ...(compassZone ? { compassZone } : {}),
+      ...(connectedTo.length > 0 ? { connectedTo } : {}),
     });
   }
 

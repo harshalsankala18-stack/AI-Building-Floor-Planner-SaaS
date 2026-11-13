@@ -113,6 +113,18 @@ export const IMAGE_INTERPRETATION_SCHEMA = {
             items: { type: 'string' },
             description: 'IDs or names of directly connected adjacent rooms.',
           },
+          polygon: {
+            type: 'array',
+            description: 'Optional ordered polygon vertices when the room is L-shaped, stepped, or non-rectangular.',
+            items: {
+              type: 'object',
+              required: ['x', 'y'],
+              properties: {
+                x: { type: 'number' },
+                y: { type: 'number' },
+              },
+            },
+          },
         },
       },
     },

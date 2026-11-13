@@ -32,6 +32,17 @@ export interface EntityImageProvenance {
   readonly sourceEntityId?: string;
 }
 
+/** Per-floor coordinate frame and footprint provenance. */
+export interface FloorImageProvenance {
+  readonly level: number;
+  readonly floorName: string;
+  readonly sourceImageRegion?: SourceImageRegion;
+  readonly scaleMmPerUnitX: number;
+  readonly scaleMmPerUnitY: number;
+  readonly footprintVertexCount: number;
+  readonly footprintSource: 'stated_floor_boundary' | 'stated_plan_boundary' | 'polygonal_room_contour';
+}
+
 /** Building-level record of the image→CAD conversion that produced the geometry. */
 export interface BuildingImageProvenance {
   readonly sourceImageArtifactId: string;
@@ -49,6 +60,8 @@ export interface BuildingImageProvenance {
   /** Actual decoded pixel size of the source raster. */
   readonly imageWidePixels: number;
   readonly imageTallPixels: number;
+  /** Per-floor independent coordinate frame and footprint provenance. */
+  readonly floors?: readonly FloorImageProvenance[];
   /**
    * Geometric adjustments the solver applied to the image-read geometry, each
    * traceable and explainable. An empty list means nothing was moved.
@@ -67,7 +80,8 @@ export interface GeometryAdjustment {
     | 'clamp_to_envelope'
     | 'resolve_overlap'
     | 'enlarge_to_minimum'
-    | 'floor_assignment';
+    | 'floor_assignment'
+    | 'calibrate_footprint';
   readonly description: string;
   /** True when the change is large enough to alter the original design intent. */
   readonly material: boolean;

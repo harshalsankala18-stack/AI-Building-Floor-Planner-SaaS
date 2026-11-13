@@ -30,6 +30,7 @@ import {
   type Door,
   type EntityImageProvenance,
   type Floor,
+  type FloorImageProvenance,
   type GeometryAdjustment,
   type Point,
   type Polygon,
@@ -54,9 +55,18 @@ import {
   createStair,
   IMAGE_DERIVED_TAG,
 } from '@ai-floor-planner/core';
-import { StructuralCoordinationEngine } from '@ai-floor-planner/planning-engine';
+import {
+  StructuralCoordinationEngine,
+  containsPolygon,
+  containsPolygonWithTolerance,
+  extractedRoomType,
+  isValidPolygon,
+  pointInPolygonWithTolerance,
+  polygonArea,
+  polygonIntersectionArea,
+  polygonIntersectionAreaConcave,
+} from '@ai-floor-planner/planning-engine';
 import type { ExtractedPlan } from '@ai-floor-planner/planning-engine';
-import { extractedRoomType } from '@ai-floor-planner/planning-engine';
 
 export interface ExtractionSite {
   readonly plotWidth: number;
@@ -117,6 +127,7 @@ export type ImageToCadErrorCode =
   | 'IMAGE_CAD_DEGENERATE_FRAME'
   | 'IMAGE_CAD_BUILDABLE_ENVELOPE_TOO_SMALL'
   | 'IMAGE_CAD_GEOMETRY_COLLAPSED'
+  | 'IMAGE_CAD_FOOTPRINT_UNRECOVERABLE'
   | 'IMAGE_CAD_INTERNAL_ERROR';
 
 /** Architectural grid the reconstruction snaps to. */
@@ -171,10 +182,18 @@ interface ReadEntity {
   readonly floorLevel: number;
   /** Frame-space rectangle exactly as read from the image. */
   readonly frame: { x: number; y: number; width: number; height: number };
+  /** Optional explicit polygon boundary in frame coordinates. */
+  readonly polygon?: readonly Point[];
   readonly compassZone?: string;
   readonly connectedTo: readonly string[];
   readonly confidence: number;
   readonly kind: 'room' | 'stair' | 'parking';
+}
+
+interface PlacedSpace {
+  readonly read: ReadEntity;
+  rect: Rect;
+  polygon?: Polygon;
 }
 
 interface PlacedRoom {
@@ -190,41 +209,437 @@ interface Rect {
   height: number;
 }
 
+function rectToPoly(r: Rect): Polygon {
+  return {
+    points: [
+      { x: r.x, y: r.y },
+      { x: r.x + r.width, y: r.y },
+      { x: r.x + r.width, y: r.y + r.height },
+      { x: r.x, y: r.y + r.height },
+    ],
+  };
+}
+
 function overlapArea(a: Rect, b: Rect): number {
   const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
   const h = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
   return w > 0 && h > 0 ? w * h : 0;
 }
 
-/** Even-odd point-in-polygon test. */
-function pointInPolygon(point: Point, polygon: Polygon): boolean {
-  const pts = polygon.points;
-  let inside = false;
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const a = pts[i]!;
-    const b = pts[j]!;
-    const intersects =
-      a.y > point.y !== b.y > point.y &&
-      point.x < ((b.x - a.x) * (point.y - a.y)) / (b.y - a.y) + a.x;
-    if (intersects) inside = !inside;
-  }
-  return inside;
+function spaceOverlapArea(a: PlacedSpace, b: PlacedSpace): number {
+  const boxArea = overlapArea(a.rect, b.rect);
+  if (boxArea <= 0) return 0;
+  if (!a.polygon && !b.polygon) return boxArea;
+  return polygonIntersectionAreaConcave(a.polygon ?? rectToPoly(a.rect), b.polygon ?? rectToPoly(b.rect));
 }
 
 /**
- * Whether a rectangle sits inside a polygon, with a small tolerance so a room
- * whose edge coincides with the outline still counts as contained.
+ * Clean a polygon's vertex ring: remove consecutive duplicate points, remove a
+ * duplicate closing vertex if it repeats `points[0]`, and strip collinear
+ * intermediate vertices along straight edges.
  */
-function rectInsidePolygon(rect: Rect, polygon: Polygon, tolerance = GRID_MM * 2): boolean {
-  const inset = Math.min(tolerance, rect.width / 4, rect.height / 4);
-  const corners: Point[] = [
-    { x: rect.x + inset, y: rect.y + inset },
-    { x: rect.x + rect.width - inset, y: rect.y + inset },
-    { x: rect.x + rect.width - inset, y: rect.y + rect.height - inset },
-    { x: rect.x + inset, y: rect.y + rect.height - inset },
-    { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 },
-  ];
-  return corners.every(c => pointInPolygon(c, polygon));
+export function cleanPolygonPoints(rawPoints: readonly Point[], snapToleranceMm = 1): Point[] {
+  const deduped: Point[] = [];
+  for (const pt of rawPoints) {
+    const prev = deduped[deduped.length - 1];
+    if (!prev || Math.hypot(pt.x - prev.x, pt.y - prev.y) > snapToleranceMm) {
+      deduped.push({ x: pt.x, y: pt.y });
+    }
+  }
+  while (
+    deduped.length > 1 &&
+    Math.hypot(deduped[0]!.x - deduped[deduped.length - 1]!.x, deduped[0]!.y - deduped[deduped.length - 1]!.y) <= snapToleranceMm
+  ) {
+    deduped.pop();
+  }
+  if (deduped.length < 3) return deduped;
+
+  const simplified: Point[] = [];
+  const n = deduped.length;
+  for (let i = 0; i < n; i++) {
+    const prev = deduped[(i - 1 + n) % n]!;
+    const curr = deduped[i]!;
+    const next = deduped[(i + 1) % n]!;
+    const v1x = curr.x - prev.x;
+    const v1y = curr.y - prev.y;
+    const v2x = next.x - curr.x;
+    const v2y = next.y - curr.y;
+    const len1 = Math.hypot(v1x, v1y);
+    const len2 = Math.hypot(v2x, v2y);
+    if (len1 <= snapToleranceMm || len2 <= snapToleranceMm) continue;
+    const cross = Math.abs(v1x * v2y - v1y * v2x) / (len1 * len2);
+    const dot = (v1x * v2x + v1y * v2y) / (len1 * len2);
+    // Collinear continuing in the same direction
+    if (cross <= 1e-3 && dot > 0) continue;
+    simplified.push(curr);
+  }
+  return simplified.length >= 3 ? simplified : deduped;
+}
+
+/**
+ * Synthesize a closed orthogonal polygon footprint around a set of placed spaces
+ * on a floor. Preserves L-shaped, U-shaped, T-shaped, H-shaped, cross-shaped,
+ * and stepped layouts without collapsing them into a 4-point bounding box,
+ * while guaranteeing 100% containment of every space on the floor.
+ */
+export function computePolygonalFootprintForSpaces(
+  spaces: readonly { rect: Rect; polygon?: Polygon }[],
+  envelope: Rect,
+): Polygon {
+  const fallbackBox = (): Polygon => {
+    const rects = spaces.map(s => s.rect);
+    const box = rects.length > 0 ? boundingBox(rects) : envelope;
+    const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
+    const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
+    const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
+    const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
+    return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
+  };
+
+  if (spaces.length === 0) return fallbackBox();
+
+  const pad = snapGrid(EXTERNAL_WALL_THICKNESS);
+  const minEnvX = envelope.x;
+  const minEnvY = envelope.y;
+  const maxEnvX = envelope.x + envelope.width;
+  const maxEnvY = envelope.y + envelope.height;
+
+  const xSet = new Set<number>();
+  const ySet = new Set<number>();
+  const spacePolys: Polygon[] = [];
+
+  for (const sp of spaces) {
+    const poly = sp.polygon && sp.polygon.points.length >= 3 ? sp.polygon : rectToPoly(sp.rect);
+    spacePolys.push(poly);
+    for (const pt of poly.points) {
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt.x - pad))));
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt.x))));
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt.x + pad))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt.y - pad))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt.y))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt.y + pad))));
+    }
+  }
+
+  const xs = [...xSet].sort((a, b) => a - b);
+  const ys = [...ySet].sort((a, b) => a - b);
+  const W = xs.length - 1;
+  const H = ys.length - 1;
+  if (W <= 0 || H <= 0) return fallbackBox();
+
+  const filled: boolean[][] = Array.from({ length: H }, () => Array.from({ length: W }, () => false));
+  for (let iy = 0; iy < H; iy++) {
+    const cy = (ys[iy]! + ys[iy + 1]!) / 2;
+    for (let ix = 0; ix < W; ix++) {
+      const cx = (xs[ix]! + xs[ix + 1]!) / 2;
+      for (const poly of spacePolys) {
+        if (pointInPolygonWithTolerance({ x: cx, y: cy }, poly.points, pad - 1)) {
+          filled[iy]![ix] = true;
+          break;
+        }
+      }
+    }
+  }
+
+  // Bridge narrow inter-room vision gaps (<= 600mm after wall padding, ~1100mm raw)
+  const MAX_BRIDGE_GAP_MM = 600;
+  for (let iy = 0; iy < H; iy++) {
+    let lastFilled = -1;
+    for (let ix = 0; ix < W; ix++) {
+      if (filled[iy]![ix]) {
+        if (lastFilled >= 0 && ix > lastFilled + 1) {
+          const gapMm = xs[ix]! - xs[lastFilled + 1]!;
+          if (gapMm <= MAX_BRIDGE_GAP_MM) {
+            for (let k = lastFilled + 1; k < ix; k++) filled[iy]![k] = true;
+          }
+        }
+        lastFilled = ix;
+      }
+    }
+  }
+  for (let ix = 0; ix < W; ix++) {
+    let lastFilled = -1;
+    for (let iy = 0; iy < H; iy++) {
+      if (filled[iy]![ix]) {
+        if (lastFilled >= 0 && iy > lastFilled + 1) {
+          const gapMm = ys[iy]! - ys[lastFilled + 1]!;
+          if (gapMm <= MAX_BRIDGE_GAP_MM) {
+            for (let k = lastFilled + 1; k < iy; k++) filled[k]![ix] = true;
+          }
+        }
+        lastFilled = iy;
+      }
+    }
+  }
+
+  // Connect any remaining disconnected 4-connected components via shortest Manhattan bridge
+  const findComponents = (): Array<Array<[number, number]>> => {
+    const seen = Array.from({ length: H }, () => Array.from({ length: W }, () => false));
+    const comps: Array<Array<[number, number]>> = [];
+    const dirs: ReadonlyArray<readonly [number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W; ix++) {
+        if (!filled[iy]![ix] || seen[iy]![ix]) continue;
+        const comp: Array<[number, number]> = [];
+        const queue: Array<[number, number]> = [[ix, iy]];
+        seen[iy]![ix] = true;
+        while (queue.length > 0) {
+          const [cx, cy] = queue.pop()!;
+          comp.push([cx, cy]);
+          for (const [dx, dy] of dirs) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx >= 0 && nx < W && ny >= 0 && ny < H && filled[ny]![nx] && !seen[ny]![nx]) {
+              seen[ny]![nx] = true;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+        comps.push(comp);
+      }
+    }
+    return comps;
+  };
+
+  let comps = findComponents();
+  while (comps.length > 1) {
+    const baseComp = comps[0]!;
+    let bestA: [number, number] = baseComp[0]!;
+    let bestB: [number, number] = comps[1]![0]!;
+    let bestDist = Infinity;
+    for (let cIdx = 1; cIdx < comps.length; cIdx++) {
+      for (const a of baseComp) {
+        for (const b of comps[cIdx]!) {
+          const d = Math.abs(xs[a[0]]! - xs[b[0]]!) + Math.abs(ys[a[1]]! - ys[b[1]]!);
+          if (d < bestDist) {
+            bestDist = d;
+            bestA = a;
+            bestB = b;
+          }
+        }
+      }
+    }
+    const minIx = Math.min(bestA[0], bestB[0]);
+    const maxIx = Math.max(bestA[0], bestB[0]);
+    for (let ix = minIx; ix <= maxIx; ix++) filled[bestA[1]]![ix] = true;
+    const minIy = Math.min(bestA[1], bestB[1]);
+    const maxIy = Math.max(bestA[1], bestB[1]);
+    for (let iy = minIy; iy <= maxIy; iy++) filled[iy]![bestB[0]] = true;
+    comps = findComponents();
+  }
+
+  // Fill interior holes and eliminate 2x2 diagonal checkerboard pinch points
+  const fillInteriorHoles = () => {
+    const outside = Array.from({ length: H }, () => Array.from({ length: W }, () => false));
+    const q: Array<[number, number]> = [];
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W; ix++) {
+        if ((ix === 0 || ix === W - 1 || iy === 0 || iy === H - 1) && !filled[iy]![ix]) {
+          outside[iy]![ix] = true;
+          q.push([ix, iy]);
+        }
+      }
+    }
+    const dirs: ReadonlyArray<readonly [number, number]> = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    while (q.length > 0) {
+      const [cx, cy] = q.pop()!;
+      for (const [dx, dy] of dirs) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx >= 0 && nx < W && ny >= 0 && ny < H && !filled[ny]![nx] && !outside[ny]![nx]) {
+          outside[ny]![nx] = true;
+          q.push([nx, ny]);
+        }
+      }
+    }
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W; ix++) {
+        if (!filled[iy]![ix] && !outside[iy]![ix]) {
+          filled[iy]![ix] = true;
+        }
+      }
+    }
+  };
+
+  let changed = true;
+  let guard = 0;
+  while (changed && guard++ < 16) {
+    changed = false;
+    fillInteriorHoles();
+    for (let iy = 0; iy < H - 1; iy++) {
+      for (let ix = 0; ix < W - 1; ix++) {
+        const a = filled[iy]![ix]!;
+        const b = filled[iy]![ix + 1]!;
+        const c = filled[iy + 1]![ix]!;
+        const d = filled[iy + 1]![ix + 1]!;
+        if (a === d && b === c && a !== b) {
+          filled[iy]![ix] = true;
+          filled[iy]![ix + 1] = true;
+          filled[iy + 1]![ix] = true;
+          filled[iy + 1]![ix + 1] = true;
+          changed = true;
+        }
+      }
+    }
+  }
+  fillInteriorHoles();
+
+  // Collect directed outer boundary edges
+  const ptKey = (p: Point) => `${Math.round(p.x)},${Math.round(p.y)}`;
+  const nextEdge = new Map<string, { start: Point; end: Point }>();
+  for (let iy = 0; iy < H; iy++) {
+    for (let ix = 0; ix < W; ix++) {
+      if (!filled[iy]![ix]) continue;
+      const x1 = xs[ix]!;
+      const x2 = xs[ix + 1]!;
+      const y1 = ys[iy]!;
+      const y2 = ys[iy + 1]!;
+      if (iy === 0 || !filled[iy - 1]![ix]) {
+        const start = { x: x1, y: y1 };
+        nextEdge.set(ptKey(start), { start, end: { x: x2, y: y1 } });
+      }
+      if (ix === W - 1 || !filled[iy]![ix + 1]) {
+        const start = { x: x2, y: y1 };
+        nextEdge.set(ptKey(start), { start, end: { x: x2, y: y2 } });
+      }
+      if (iy === H - 1 || !filled[iy + 1]![ix]) {
+        const start = { x: x2, y: y2 };
+        nextEdge.set(ptKey(start), { start, end: { x: x1, y: y2 } });
+      }
+      if (ix === 0 || !filled[iy]![ix - 1]) {
+        const start = { x: x1, y: y2 };
+        nextEdge.set(ptKey(start), { start, end: { x: x1, y: y1 } });
+      }
+    }
+  }
+
+  if (nextEdge.size < 4) return fallbackBox();
+
+  // Start at the top-leftmost boundary vertex
+  let startEdge = [...nextEdge.values()][0]!;
+  for (const edge of nextEdge.values()) {
+    if (edge.start.y < startEdge.start.y || (edge.start.y === startEdge.start.y && edge.start.x < startEdge.start.x)) {
+      startEdge = edge;
+    }
+  }
+
+  const loop: Point[] = [];
+  const visited = new Set<string>();
+  let curr = startEdge.start;
+  while (!visited.has(ptKey(curr))) {
+    visited.add(ptKey(curr));
+    loop.push(curr);
+    const e = nextEdge.get(ptKey(curr));
+    if (!e) break;
+    curr = e.end;
+  }
+
+  const cleaned = cleanPolygonPoints(loop);
+  if (cleaned.length < 4) return fallbackBox();
+  const candidate: Polygon = { points: cleaned };
+  if (!isValidPolygon(candidate)) return fallbackBox();
+  const containsAll = spacePolys.every(sp => containsPolygonWithTolerance(candidate.points, sp.points, 25));
+  return containsAll ? candidate : fallbackBox();
+}
+
+/**
+ * Measure the maximum protrusion (in mm) of any space polygon outside a
+ * candidate footprint polygon. Returns 0 when every space is strictly inside
+ * (within 1mm), or Infinity when any space protrudes by more than 600mm.
+ */
+function measureFootprintProtrusionMm(footprint: Polygon, spacePolys: readonly Polygon[]): number {
+  if (spacePolys.every(sp => containsPolygon(footprint, sp) && containsPolygonWithTolerance(footprint.points, sp.points, 1))) {
+    return 0;
+  }
+  const probeSteps = [10, 25, 50, 100, 150, 200, 300, 400, 500, 600];
+  for (const tol of probeSteps) {
+    if (spacePolys.every(sp => containsPolygonWithTolerance(footprint.points, sp.points, tol))) {
+      return tol;
+    }
+  }
+  return Number.POSITIVE_INFINITY;
+}
+
+/**
+ * Calibrate a stated footprint polygon so that rooms sitting within minor
+ * drafting tolerance (<= 600mm) of its edges are strictly contained (within 1mm),
+ * preventing false RECONSTRUCTION_ROOM_OUT_OF_BOUNDS failures.
+ */
+function calibrateFootprintToSpaces(
+  stated: Polygon,
+  spacePolys: readonly Polygon[],
+  envelope: Rect,
+): Polygon | null {
+  const initialProtrusion = measureFootprintProtrusionMm(stated, spacePolys);
+  if (initialProtrusion === 0) return stated;
+  if (initialProtrusion > 600) return null;
+
+  // Snap vertices of `stated` that lie near protruding room vertices outward
+  const minEnvX = envelope.x;
+  const minEnvY = envelope.y;
+  const maxEnvX = envelope.x + envelope.width;
+  const maxEnvY = envelope.y + envelope.height;
+  const pts = stated.points.map(p => ({ x: p.x, y: p.y }));
+  const n = pts.length;
+
+  // Adjust axis-aligned boundary segments outward to cover protruding room vertices
+  for (let i = 0; i < n; i++) {
+    const a = pts[i]!;
+    const b = pts[(i + 1) % n]!;
+    if (Math.abs(a.y - b.y) <= GRID_MM) {
+      // Horizontal edge
+      const segMinX = Math.min(a.x, b.x) - 600;
+      const segMaxX = Math.max(a.x, b.x) + 600;
+      const yEdge = a.y;
+      // Determine whether interior is below (y > yEdge) or above (y < yEdge)
+      const midX = (a.x + b.x) / 2;
+      const interiorBelow = pointInPolygonWithTolerance({ x: midX, y: yEdge + GRID_MM * 2 }, pts, 1);
+      for (const sp of spacePolys) {
+        for (const rp of sp.points) {
+          if (rp.x < segMinX || rp.x > segMaxX) continue;
+          if (interiorBelow && rp.y < yEdge && yEdge - rp.y <= 600) {
+            const newY = snapGrid(Math.max(minEnvY, rp.y));
+            a.y = newY;
+            b.y = newY;
+          } else if (!interiorBelow && rp.y > yEdge && rp.y - yEdge <= 600) {
+            const newY = snapGrid(Math.min(maxEnvY, rp.y));
+            a.y = newY;
+            b.y = newY;
+          }
+        }
+      }
+    } else if (Math.abs(a.x - b.x) <= GRID_MM) {
+      // Vertical edge
+      const segMinY = Math.min(a.y, b.y) - 600;
+      const segMaxY = Math.max(a.y, b.y) + 600;
+      const xEdge = a.x;
+      const midY = (a.y + b.y) / 2;
+      const interiorRight = pointInPolygonWithTolerance({ x: xEdge + GRID_MM * 2, y: midY }, pts, 1);
+      for (const sp of spacePolys) {
+        for (const rp of sp.points) {
+          if (rp.y < segMinY || rp.y > segMaxY) continue;
+          if (interiorRight && rp.x < xEdge && xEdge - rp.x <= 600) {
+            const newX = snapGrid(Math.max(minEnvX, rp.x));
+            a.x = newX;
+            b.x = newX;
+          } else if (!interiorRight && rp.x > xEdge && rp.x - xEdge <= 600) {
+            const newX = snapGrid(Math.min(maxEnvX, rp.x));
+            a.x = newX;
+            b.x = newX;
+          }
+        }
+      }
+    }
+  }
+
+  const cleaned = cleanPolygonPoints(pts);
+  if (cleaned.length < 3) return null;
+  const candidate: Polygon = { points: cleaned };
+  if (!isValidPolygon(candidate)) return null;
+  if (measureFootprintProtrusionMm(candidate, spacePolys) <= 25) {
+    return candidate;
+  }
+  return null;
 }
 
 /**
@@ -255,18 +670,25 @@ function readEntities(
     const parsedLevel = room.floorLevel ?? Number(raw?.floorLevel ?? 0);
     const level = Number.isFinite(parsedLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(parsedLevel))) : 0;
     const confidence = plan.confidence?.[room.id];
+    const compassZone = room.compassZone ?? (typeof raw?.compassZone === 'string' ? raw.compassZone : undefined);
+    const connectedTo =
+      room.connectedTo && room.connectedTo.length > 0
+        ? [...room.connectedTo]
+        : Array.isArray(raw?.connectedTo)
+          ? (raw!.connectedTo as unknown[]).map(String)
+          : [];
     entities.push({
       id: room.id,
       name: room.name,
       type: resolveRoomType(room.type, room.name),
       floorLevel: level,
       frame: { x: room.imageX, y: room.imageY, width: room.imageWidth, height: room.imageHeight },
-      ...(typeof raw?.compassZone === 'string' ? { compassZone: raw.compassZone } : {}),
-      connectedTo: Array.isArray(raw?.connectedTo) ? (raw!.connectedTo as unknown[]).map(String) : [],
-      extractionConfidenceHolder: undefined,
+      ...(room.polygon && room.polygon.length >= 3 ? { polygon: room.polygon.map(p => ({ x: p.x, y: p.y })) } : {}),
+      ...(compassZone ? { compassZone } : {}),
+      connectedTo,
       confidence: confidence === 'confirmed' ? 1 : confidence === 'ambiguous' ? 0.4 : 0.75,
       kind: 'room',
-    } as ReadEntity);
+    });
   }
 
   for (const stair of plan.stairs) {
@@ -374,8 +796,22 @@ const NESTED_COVERAGE = 0.85;
  * third. Corrections are kept on the drafting grid so this does not fight the
  * snapping step.
  */
+function clampPolygonToRect(polygon: Polygon | undefined, rect: Rect): Polygon | undefined {
+  if (!polygon || polygon.points.length < 3) return undefined;
+  const clamped = cleanPolygonPoints(
+    polygon.points.map(p => ({
+      x: snapGrid(Math.min(Math.max(p.x, rect.x), rect.x + rect.width)),
+      y: snapGrid(Math.min(Math.max(p.y, rect.y), rect.y + rect.height)),
+    })),
+  );
+  if (clamped.length >= 3 && isValidPolygon({ points: clamped })) {
+    return { points: clamped };
+  }
+  return undefined;
+}
+
 function resolveOverlaps(
-  placed: { read: ReadEntity; rect: Rect }[],
+  placed: PlacedSpace[],
   adjustments: GeometryAdjustment[],
 ): { resolved: boolean; remaining: number } {
   // Accumulate per-entity movement so one adjustment is reported per room,
@@ -403,10 +839,10 @@ function resolveOverlaps(
       for (let j = i + 1; j < order.length; j++) {
         const bigger = order[i]!;
         const smaller = order[j]!;
-        const area = overlapArea(smaller.rect, bigger.rect);
+        const area = spaceOverlapArea(smaller, bigger);
         if (area <= MIN_SIGNIFICANT_OVERLAP_MM2) continue;
 
-        const smallerArea = smaller.rect.width * smaller.rect.height;
+        const smallerArea = smaller.polygon ? polygonArea(smaller.polygon) : smaller.rect.width * smaller.rect.height;
         const nested = smallerArea > 0 && area / smallerArea >= NESTED_COVERAGE;
 
         if (nested) {
@@ -427,6 +863,7 @@ function resolveOverlaps(
           if (wouldLeaveWidth < MIN_CARVED_REMAINDER_MM || wouldLeaveHeight < MIN_CARVED_REMAINDER_MM) {
             // Container too small to host the carve-out: the nested space yields.
             smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut);
+            smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
             note(smaller.read, bigger.read.name, cut, false);
             dirty = true;
             continue;
@@ -443,6 +880,7 @@ function resolveOverlaps(
           } else {
             bigger.rect.height -= cut;
           }
+          bigger.polygon = clampPolygonToRect(bigger.polygon, bigger.rect);
           note(bigger.read, smaller.read.name, cut, true);
           dirty = true;
           continue;
@@ -469,6 +907,7 @@ function resolveOverlaps(
         } else {
           smaller.rect.height = Math.max(GRID_MM, smaller.rect.height - cut);
         }
+        smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
         note(smaller.read, bigger.read.name, cut, false);
         dirty = true;
       }
@@ -493,7 +932,7 @@ function resolveOverlaps(
   let remaining = 0;
   for (let i = 0; i < placed.length; i++) {
     for (let j = i + 1; j < placed.length; j++) {
-      if (overlapArea(placed[i]!.rect, placed[j]!.rect) > MIN_SIGNIFICANT_OVERLAP_MM2) remaining++;
+      if (spaceOverlapArea(placed[i]!, placed[j]!) > MIN_SIGNIFICANT_OVERLAP_MM2) remaining++;
     }
   }
   return { resolved: remaining === 0, remaining };
@@ -643,7 +1082,7 @@ export function reconstructBuildingFromImage(
     // ── Place every entity where the image drew it, then clamp, de-overlap and
     //    snap. This happens BEFORE the footprint is fixed, so the outline can
     //    be checked against the geometry it has to contain.
-    const placedByLevel = new Map<number, { read: ReadEntity; rect: Rect }[]>();
+    const placedByLevel = new Map<number, PlacedSpace[]>();
     for (let level = 0; level < targetFloorCount; level++) {
       const levelEntities = entities.filter(e => e.floorLevel === level);
       if (levelEntities.length === 0) {
@@ -653,9 +1092,15 @@ export function reconstructBuildingFromImage(
       }
 
       const levelEntityBox = boundingBox(levelEntities.map(e => e.frame));
+      const floorRegion = plan.floors?.find(f => f.level === level);
       let levelContentBox = levelEntityBox;
       if (!isMultiFloorDrawing) {
         levelContentBox = contentBox;
+      } else if (floorRegion?.boundary?.points && floorRegion.boundary.points.length >= 3) {
+        const fbBox = boundingBox(floorRegion.boundary.points.map(p => ({ x: p.x, y: p.y, width: 0.0001, height: 0.0001 })));
+        if (fbBox.height <= levelEntityBox.height * 1.4 && fbBox.width <= levelEntityBox.width * 1.4) {
+          levelContentBox = boundingBox([levelEntityBox, fbBox]);
+        }
       } else if (level === 0 && boundaryPoints.length >= 3) {
         const bBox = boundingBox(boundaryPoints.map(p => ({ x: p.x, y: p.y, width: 0.0001, height: 0.0001 })));
         if (bBox.height <= levelEntityBox.height * 1.4 && bBox.width <= levelEntityBox.width * 1.4) {
@@ -665,7 +1110,22 @@ export function reconstructBuildingFromImage(
       const levelTransform = computeFrameTransform(levelContentBox, envelope);
       transformByLevel.set(level, levelTransform);
 
-      const placed = levelEntities.map(read => ({ read, rect: applyTransform(read.frame, levelTransform) }));
+      const placed: PlacedSpace[] = levelEntities.map(read => {
+        const rect = applyTransform(read.frame, levelTransform);
+        let polygon: Polygon | undefined;
+        if (read.polygon && read.polygon.length >= 3) {
+          const transformedPts = cleanPolygonPoints(
+            read.polygon.map(p => ({
+              x: snapGrid(Math.min(Math.max(p.x * levelTransform.scale + levelTransform.offsetX, envelope.x), envelope.x + envelope.width)),
+              y: snapGrid(Math.min(Math.max(p.y * levelTransform.scale + levelTransform.offsetY, envelope.y), envelope.y + envelope.height)),
+            })),
+          );
+          if (transformedPts.length >= 3 && isValidPolygon({ points: transformedPts })) {
+            polygon = { points: transformedPts };
+          }
+        }
+        return { read, rect, ...(polygon ? { polygon } : {}) };
+      });
 
       // Clamp into the envelope, recording any movement.
       for (const item of placed) {
@@ -674,6 +1134,7 @@ export function reconstructBuildingFromImage(
         item.rect.height = Math.min(item.rect.height, envelope.height);
         item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
         item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        item.polygon = clampPolygonToRect(item.polygon, item.rect);
         const moved = Math.hypot(item.rect.x - before.x, item.rect.y - before.y);
         const resized = Math.abs(item.rect.width - before.width) + Math.abs(item.rect.height - before.height);
         if (moved > GRID_MM || resized > GRID_MM) {
@@ -700,6 +1161,7 @@ export function reconstructBuildingFromImage(
         // Keep the snapped rectangle inside the envelope.
         item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
         item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        item.polygon = clampPolygonToRect(item.polygon, item.rect);
         const delta = Math.max(
           Math.abs(item.rect.x - before.x),
           Math.abs(item.rect.y - before.y),
@@ -731,72 +1193,152 @@ export function reconstructBuildingFromImage(
       placedByLevel.set(level, placed);
     }
 
-    // ── Footprint: the image's own outline when it genuinely encloses the
-    //    reconstructed spaces, so an L-shape, U-shape or stepped plan keeps its
-    //    shape. Evaluated per floor (`footprintByLevel`) so multi-floor plans
-    //    validate each floor's footprint against that floor's rooms.
-    const groundTransform = transformByLevel.get(0) ?? transform;
-    const allPlacedRects = [...placedByLevel.values()].flat().map(p => p.rect);
-    const groundPlacedRects = (placedByLevel.get(0) ?? []).map(p => p.rect);
-    const statedFootprint: Polygon | null =
-      boundaryPoints.length >= 3
-        ? {
-            points: boundaryPoints.map(p => ({
-              x: snapGrid(p.x * groundTransform.scale + groundTransform.offsetX),
-              y: snapGrid(p.y * groundTransform.scale + groundTransform.offsetY),
-            })),
-          }
-        : null;
-
-    const extentFootprintForRects = (rects: readonly Rect[]): Polygon => {
-      const box = rects.length > 0 ? boundingBox(rects) : envelope;
-      const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
-      const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
-      const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
-      const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
-      return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
-    };
-    const extentFootprint = (): Polygon => extentFootprintForRects(allPlacedRects);
-
-    let footprint: Polygon;
-    const referenceRectsForStatedFootprint = groundPlacedRects.length > 0 ? groundPlacedRects : allPlacedRects;
-    if (!statedFootprint) {
-      footprint = extentFootprintForRects(referenceRectsForStatedFootprint);
-      unplacedFeatures.push(
-        'The image interpretation returned no building outline, so the extent of the drawn spaces was used as the footprint. Non-rectangular footprint steps could not be reconstructed.',
-      );
-    } else {
-      const outside = referenceRectsForStatedFootprint.filter(r => !rectInsidePolygon(r, statedFootprint));
-      if (outside.length === 0) {
-        footprint = statedFootprint;
-      } else {
-        footprint = extentFootprintForRects(referenceRectsForStatedFootprint);
-        unplacedFeatures.push(
-          `The outline read from the image excludes ${outside.length} space(s) the same image also drew, so it could not be used as the building footprint; the extent of the drawn spaces was used instead. The footprint's steps may differ from the drawing — compare against the reference image.`,
-        );
-        adjustments.push({
-          entityId: 'footprint',
-          entityName: 'Building footprint',
-          kind: 'clamp_to_envelope',
-          description: `The interpreted outline (${statedFootprint.points.length} points) did not contain every drawn space, so the footprint was taken from the spaces' own extent.`,
-          material: true,
-        });
-      }
-    }
-
+    // ── Footprint: preserve non-rectangular shapes (L, U, T, H, Cross, V, Stepped)
+    //    per floor (`footprintByLevel`) and record per-floor provenance (`floorProvenanceList`).
+    //    Never silently collapse an explicit irregular footprint into a 4-point rectangle.
+    const allPlacedSpaces = [...placedByLevel.values()].flat();
     const footprintByLevel = new Map<number, Polygon>();
+    const floorProvenanceList: FloorImageProvenance[] = [];
+
     for (let level = 0; level < targetFloorCount; level++) {
-      const levelRects = (placedByLevel.get(level) ?? []).map(p => p.rect);
-      if (level === 0 || levelRects.length === 0) {
-        footprintByLevel.set(level, footprint);
-      } else {
-        const outsideGround = levelRects.filter(r => !rectInsidePolygon(r, footprint));
-        footprintByLevel.set(
-          level,
-          outsideGround.length === 0 ? footprint : extentFootprintForRects(levelRects),
-        );
+      const levelSpaces = placedByLevel.get(level) ?? [];
+      const levelTransform = transformByLevel.get(level) ?? transform;
+      const floorName = level === 0 ? 'Ground Floor' : level === 1 ? 'First Floor' : `Floor ${level}`;
+      const floorRegion = plan.floors?.find(f => f.level === level);
+      const referenceSpaces = levelSpaces.length > 0 ? levelSpaces : allPlacedSpaces;
+      const contourFootprint = computePolygonalFootprintForSpaces(referenceSpaces, envelope);
+
+      let rawLevelBoundary: readonly Point[] | null = null;
+      let statedSourceKind: 'stated_floor_boundary' | 'stated_plan_boundary' = 'stated_plan_boundary';
+      if (floorRegion?.boundary?.points && floorRegion.boundary.points.length >= 3) {
+        rawLevelBoundary = floorRegion.boundary.points;
+        statedSourceKind = 'stated_floor_boundary';
+      } else if ((level === 0 || !isMultiFloorDrawing) && boundaryPoints.length >= 3) {
+        rawLevelBoundary = boundaryPoints;
+        statedSourceKind = 'stated_plan_boundary';
       }
+
+      let chosenFootprint: Polygon = contourFootprint;
+      let chosenSource: FloorImageProvenance['footprintSource'] = 'polygonal_room_contour';
+
+      if (levelSpaces.length === 0 && level > 0) {
+        chosenFootprint = footprintByLevel.get(0) ?? contourFootprint;
+        chosenSource = 'polygonal_room_contour';
+      } else if (!rawLevelBoundary) {
+        chosenFootprint = contourFootprint;
+        chosenSource = 'polygonal_room_contour';
+        if (level === 0) {
+          unplacedFeatures.push(
+            'The image interpretation returned no building outline, so a polygonal contour was synthesized from the drawn spaces.',
+          );
+        }
+      } else {
+        const cleanedStatedPts = cleanPolygonPoints(
+          rawLevelBoundary.map(p => ({
+            x: snapGrid(Math.min(Math.max(p.x * levelTransform.scale + levelTransform.offsetX, envelope.x), envelope.x + envelope.width)),
+            y: snapGrid(Math.min(Math.max(p.y * levelTransform.scale + levelTransform.offsetY, envelope.y), envelope.y + envelope.height)),
+          })),
+        );
+        const statedPoly: Polygon | null =
+          cleanedStatedPts.length >= 3 && isValidPolygon({ points: cleanedStatedPts })
+            ? { points: cleanedStatedPts }
+            : null;
+        const spacePolys = referenceSpaces.map(s => s.polygon ?? rectToPoly(s.rect));
+        const protrusion = statedPoly ? measureFootprintProtrusionMm(statedPoly, spacePolys) : Number.POSITIVE_INFINITY;
+        const calibrated = statedPoly ? calibrateFootprintToSpaces(statedPoly, spacePolys, envelope) : null;
+
+        if (calibrated) {
+          // If the stated boundary was a generic 4-point bounding box while the
+          // rooms genuinely form an irregular (>= 6 vertices) polygon occupying
+          // < 92% of that box, upgrade to the polygonal room contour.
+          const isGenericBoxOverIrregularRooms =
+            calibrated.points.length === 4 &&
+            contourFootprint.points.length >= 6 &&
+            polygonArea(contourFootprint) < polygonArea(calibrated) * 0.92;
+
+          if (isGenericBoxOverIrregularRooms) {
+            chosenFootprint = contourFootprint;
+            chosenSource = 'polygonal_room_contour';
+            adjustments.push({
+              entityId: `footprint_L${level}`,
+              entityName: `${floorName} footprint`,
+              kind: 'calibrate_footprint',
+              description: `Upgraded generic 4-point bounding box on ${floorName} to a ${contourFootprint.points.length}-vertex polygonal contour matching the irregular room arrangement.`,
+              material: false,
+            });
+          } else {
+            chosenFootprint = calibrated;
+            chosenSource = statedSourceKind;
+            if (protrusion > 0) {
+              adjustments.push({
+                entityId: `footprint_L${level}`,
+                entityName: `${floorName} footprint`,
+                kind: 'calibrate_footprint',
+                description: `Calibrated ${floorName} footprint edges by up to ${Math.round(protrusion)} mm so every reconstructed room sits strictly inside the floor boundary.`,
+                material: protrusion > MATERIAL_SNAP_MM,
+                deltaMm: Math.round(protrusion),
+              });
+            }
+          }
+        } else {
+          // Stated boundary is invalid or excludes rooms by > 600mm.
+          // If the stated boundary declared an explicit irregular shape (>= 5 vertices)
+          // and the room contour collapses to a 4-point rectangle, fail explicitly
+          // rather than silently replacing an irregular footprint with a rectangular box.
+          const declaredIrregular = rawLevelBoundary.length >= 5;
+          if (declaredIrregular && contourFootprint.points.length <= 4) {
+            return {
+              ok: false,
+              errorCode: 'IMAGE_CAD_FOOTPRINT_UNRECOVERABLE',
+              message: `The image declared a ${rawLevelBoundary.length}-vertex irregular footprint on ${floorName}, but the polygon is invalid or contradicts the extracted spaces and cannot be recovered without collapsing to a rectangle.`,
+              detail: {
+                level,
+                floorName,
+                declaredVertexCount: rawLevelBoundary.length,
+                contourVertexCount: contourFootprint.points.length,
+              },
+            };
+          }
+
+          chosenFootprint = contourFootprint;
+          chosenSource = 'polygonal_room_contour';
+          unplacedFeatures.push(
+            `The outline read for ${floorName} excluded drawn spaces or was self-intersecting, so a ${contourFootprint.points.length}-vertex polygonal footprint was synthesized from the spaces on ${floorName}.`,
+          );
+          adjustments.push({
+            entityId: `footprint_L${level}`,
+            entityName: `${floorName} footprint`,
+            kind: 'calibrate_footprint',
+            description: `Synthesized a ${contourFootprint.points.length}-vertex footprint from the spaces on ${floorName} because the interpreted outline did not enclose all drawn spaces.`,
+            material: true,
+          });
+        }
+      }
+
+      footprintByLevel.set(level, chosenFootprint);
+      floorProvenanceList.push({
+        level,
+        floorName,
+        ...(floorRegion
+          ? {
+              sourceImageRegion: {
+                x: floorRegion.region.x,
+                y: floorRegion.region.y,
+                width: floorRegion.region.width,
+                height: floorRegion.region.height,
+                frameWidth,
+                frameHeight,
+              },
+            }
+          : {}),
+        scaleMmPerUnitX: levelTransform.scale,
+        scaleMmPerUnitY: levelTransform.scale,
+        footprintVertexCount: chosenFootprint.points.length,
+        footprintSource: chosenSource,
+      });
     }
+
+    const footprint: Polygon = footprintByLevel.get(0) ?? computePolygonalFootprintForSpaces(allPlacedSpaces, envelope);
 
     const canonicalBuildingId = `bldg_${projectId}`;
     const base = createBuilding({
@@ -858,6 +1400,16 @@ export function reconstructBuildingFromImage(
         continue;
       }
 
+      const floorBox = boundingBox(placed.map(p => p.rect));
+      const inferCompassZone = (r: Rect, explicit?: string): string => {
+        if (explicit && explicit.trim().length > 0) return explicit.trim().toUpperCase();
+        const cx = (r.x + r.width / 2 - floorBox.x) / Math.max(1, floorBox.width);
+        const cy = (r.y + r.height / 2 - floorBox.y) / Math.max(1, floorBox.height);
+        const ew = cx < 0.36 ? 'W' : cx > 0.64 ? 'E' : '';
+        const ns = cy < 0.36 ? 'N' : cy > 0.64 ? 'S' : '';
+        return `${ns}${ew}` || 'CENTER';
+      };
+
       const rooms: Room[] = [];
       const placedRooms: PlacedRoom[] = [];
       for (const item of placed) {
@@ -868,6 +1420,7 @@ export function reconstructBuildingFromImage(
           continue;
         }
         const prov = entityProvenance(item.read);
+        const compassZone = inferCompassZone(item.rect, item.read.compassZone);
         const room = createRoom({
           floorId,
           name: item.read.name,
@@ -876,6 +1429,8 @@ export function reconstructBuildingFromImage(
           y: item.rect.y,
           width: item.rect.width,
           height: item.rect.height,
+          ...(item.polygon ? { boundary: item.polygon } : {}),
+          compassZone,
           ventilationRequired: !OPEN_SPACE_TYPES.has(item.read.type),
           isFixed: item.read.kind === 'stair',
           tags: [
@@ -884,7 +1439,7 @@ export function reconstructBuildingFromImage(
             `artifact:${source.artifactId}`,
             `geomrev:${geometryRevisionId}`,
             `confidence:${item.read.confidence.toFixed(2)}`,
-            ...(item.read.compassZone ? [`compass:${item.read.compassZone}`] : []),
+            `compass:${compassZone}`,
           ],
         });
         // Provenance rides on the room so an edit cannot erase its origin.
@@ -904,25 +1459,32 @@ export function reconstructBuildingFromImage(
 
       placedByFloor.set(level, placedRooms);
 
-      // ── Walls from room boundary edges. A shared edge becomes one internal
-      //    partition; an unshared edge of an enclosed room becomes external
-      //    envelope. Open spaces (balcony, verandah, parking, OTS) do not get
-      //    their own perimeter, but the edge where they meet an enclosed room
-      //    IS a real wall, so their edges are offered for pairing and only the
-      //    unshared ones are dropped.
+      // ── Walls from room boundary edges. Supports both rectangular (4-edge)
+      //    and polygonal (L-shaped, stepped, angled) room boundaries.
       const candidates: WallCandidate[] = [];
       for (const room of rooms) {
         const open = OPEN_SPACE_TYPES.has(room.type);
-        const p1 = { x: room.x, y: room.y };
-        const p2 = { x: room.x + room.width, y: room.y };
-        const p3 = { x: room.x + room.width, y: room.y + room.height };
-        const p4 = { x: room.x, y: room.y + room.height };
-        candidates.push(
-          { start: p1, end: p2, roomIds: [room.id], isExternal: true, openOnly: open },
-          { start: p2, end: p3, roomIds: [room.id], isExternal: true, openOnly: open },
-          { start: p4, end: p3, roomIds: [room.id], isExternal: true, openOnly: open },
-          { start: p1, end: p4, roomIds: [room.id], isExternal: true, openOnly: open },
-        );
+        const pts = room.boundary.points;
+        for (let idx = 0; idx < pts.length; idx++) {
+          const pA = pts[idx]!;
+          const pB = pts[(idx + 1) % pts.length]!;
+          if (Math.hypot(pB.x - pA.x, pB.y - pA.y) < GRID_MM) continue;
+          const start =
+            pA.x < pB.x || (pA.x === pB.x && pA.y <= pB.y)
+              ? { x: pA.x, y: pA.y }
+              : { x: pB.x, y: pB.y };
+          const end =
+            start.x === pA.x && start.y === pA.y
+              ? { x: pB.x, y: pB.y }
+              : { x: pA.x, y: pA.y };
+          candidates.push({
+            start,
+            end,
+            roomIds: [room.id],
+            isExternal: true,
+            openOnly: open,
+          });
+        }
       }
 
       const merged: WallCandidate[] = [];
@@ -959,6 +1521,39 @@ export function reconstructBuildingFromImage(
           loadBearing: candidate.isExternal,
         }),
       );
+
+      // Populate explicit room adjacency (`adjacentRoomIds`) from shared walls and vision connections
+      const adjByRoomId = new Map<string, Set<string>>();
+      for (const r of rooms) adjByRoomId.set(r.id, new Set<string>());
+      for (const w of walls) {
+        if (w.roomIds.length >= 2) {
+          for (let i = 0; i < w.roomIds.length; i++) {
+            for (let j = i + 1; j < w.roomIds.length; j++) {
+              adjByRoomId.get(w.roomIds[i]!)?.add(w.roomIds[j]!);
+              adjByRoomId.get(w.roomIds[j]!)?.add(w.roomIds[i]!);
+            }
+          }
+        }
+      }
+      for (const pr of placedRooms) {
+        for (const token of pr.read.connectedTo) {
+          const match = placedRooms.find(
+            other =>
+              other.room.id !== pr.room.id &&
+              (other.read.id.toLowerCase() === token.toLowerCase() ||
+                other.room.name.toLowerCase() === token.toLowerCase()),
+          );
+          if (match) {
+            adjByRoomId.get(pr.room.id)?.add(match.room.id);
+            adjByRoomId.get(match.room.id)?.add(pr.room.id);
+          }
+        }
+      }
+      for (let idx = 0; idx < rooms.length; idx++) {
+        const r = rooms[idx]!;
+        const adj = [...(adjByRoomId.get(r.id) ?? [])];
+        rooms[idx] = { ...r, adjacentRoomIds: adj };
+      }
 
       // ── Openings at the positions the image drew them, hosted on real walls.
       const doors: Door[] = [];
@@ -1128,6 +1723,7 @@ export function reconstructBuildingFromImage(
       frameHeight,
       imageWidePixels: source.imageWidePixels,
       imageTallPixels: source.imageTallPixels,
+      floors: floorProvenanceList,
       adjustments,
       unplacedFeatures,
     };

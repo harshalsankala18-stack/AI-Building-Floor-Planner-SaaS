@@ -133,13 +133,16 @@ export function isConvex(polygon: Polygon): boolean {
   return true;
 }
 
-/** Check if a polygon is valid (≥3 points, non-self-intersecting, positive area). */
+/** Check if a polygon is valid (≥3 points, non-self-intersecting, no consecutive duplicate vertices, positive area). */
 export function isValidPolygon(polygon: Polygon): boolean {
   const pts = polygon.points;
   if (pts.length < 3) return false;
 
   const n = pts.length;
   for (let i = 0; i < n; i++) {
+    if (pointsEqual(pts[i]!, pts[(i + 1) % n]!, TOLERANCES.LINEAR)) {
+      return false;
+    }
     const a: LineSegment = { start: pts[i]!, end: pts[(i + 1) % n]! };
     for (let j = i + 2; j < n; j++) {
       if (i === 0 && j === n - 1) continue;
@@ -386,14 +389,196 @@ export function segmentCrossesOutsidePolygon(
   return false;
 }
 
+function ensurePositiveOrientation(polygon: Polygon): Polygon {
+  const signed = polygonSignedArea(polygon);
+  if (signed >= 0) {
+    return polygon;
+  }
+  return { points: [...polygon.points].reverse() };
+}
+
+function cross2D(a: Point, b: Point, c: Point): number {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+
+function pointStrictlyOrOnInteriorOfTriangle(p: Point, a: Point, b: Point, c: Point): boolean {
+  const c1 = cross2D(a, b, p);
+  const c2 = cross2D(b, c, p);
+  const c3 = cross2D(c, a, p);
+  return c1 >= -1e-6 && c2 >= -1e-6 && c3 >= -1e-6;
+}
+
 /**
- * Compute intersection area of two convex polygons.
- * Uses Sutherland-Hodgman polygon clipping.
+ * Decompose a simple (convex or concave) polygon into triangles via ear clipping.
+ * Each returned triangle is positively oriented (`polygonSignedArea > 0`).
+ */
+export function triangulateSimplePolygon(polygon: Polygon): Polygon[] {
+  const cleaned: Point[] = [];
+  for (const pt of polygon.points) {
+    if (cleaned.length === 0 || !pointsEqual(cleaned[cleaned.length - 1]!, pt, TOLERANCES.LINEAR)) {
+      cleaned.push(pt);
+    }
+  }
+  if (cleaned.length > 1 && pointsEqual(cleaned[0]!, cleaned[cleaned.length - 1]!, TOLERANCES.LINEAR)) {
+    cleaned.pop();
+  }
+  if (cleaned.length < 3) return [];
+
+  const oriented = ensurePositiveOrientation({ points: cleaned }).points.slice();
+  // Remove collinear vertices
+  const verts: Point[] = [];
+  for (let i = 0; i < oriented.length; i++) {
+    const prev = oriented[(i - 1 + oriented.length) % oriented.length]!;
+    const curr = oriented[i]!;
+    const next = oriented[(i + 1) % oriented.length]!;
+    if (Math.abs(cross2D(prev, curr, next)) > 1e-6) {
+      verts.push(curr);
+    }
+  }
+  if (verts.length < 3) return [];
+
+  const triangles: Polygon[] = [];
+  let maxGuards = verts.length * verts.length + 16;
+
+  while (verts.length > 3 && maxGuards-- > 0) {
+    let earFound = false;
+    const n = verts.length;
+
+    for (let i = 0; i < n; i++) {
+      const prev = verts[(i - 1 + n) % n]!;
+      const curr = verts[i]!;
+      const next = verts[(i + 1) % n]!;
+
+      if (cross2D(prev, curr, next) <= 1e-6) {
+        continue;
+      }
+
+      let hasPointInside = false;
+      for (let j = 0; j < n; j++) {
+        if (j === (i - 1 + n) % n || j === i || j === (i + 1) % n) continue;
+        const candidate = verts[j]!;
+        if (
+          pointsEqual(candidate, prev, TOLERANCES.LINEAR) ||
+          pointsEqual(candidate, curr, TOLERANCES.LINEAR) ||
+          pointsEqual(candidate, next, TOLERANCES.LINEAR)
+        ) {
+          continue;
+        }
+        if (pointStrictlyOrOnInteriorOfTriangle(candidate, prev, curr, next)) {
+          hasPointInside = true;
+          break;
+        }
+      }
+
+      if (!hasPointInside) {
+        const tri: Polygon = { points: [prev, curr, next] };
+        if (polygonArea(tri) > TOLERANCES.AREA) {
+          triangles.push(tri);
+        }
+        verts.splice(i, 1);
+        earFound = true;
+        break;
+      }
+    }
+
+    if (!earFound) {
+      // Fallback for near-degenerate geometry: clip sharpest convex corner
+      let bestIdx = -1;
+      let bestCross = -Infinity;
+      for (let i = 0; i < verts.length; i++) {
+        const prev = verts[(i - 1 + verts.length) % verts.length]!;
+        const curr = verts[i]!;
+        const next = verts[(i + 1) % verts.length]!;
+        const c = cross2D(prev, curr, next);
+        if (c > bestCross) {
+          bestCross = c;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx >= 0 && bestCross > 0) {
+        const n2 = verts.length;
+        const tri: Polygon = {
+          points: [
+            verts[(bestIdx - 1 + n2) % n2]!,
+            verts[bestIdx]!,
+            verts[(bestIdx + 1) % n2]!,
+          ],
+        };
+        if (polygonArea(tri) > TOLERANCES.AREA) {
+          triangles.push(tri);
+        }
+        verts.splice(bestIdx, 1);
+      } else {
+        break;
+      }
+    }
+  }
+
+  if (verts.length === 3) {
+    const finalTri = ensurePositiveOrientation({ points: [verts[0]!, verts[1]!, verts[2]!] });
+    if (polygonArea(finalTri) > TOLERANCES.AREA) {
+      triangles.push(finalTri);
+    }
+  }
+
+  return triangles;
+}
+
+/**
+ * Compute intersection area of two polygons using Sutherland-Hodgman clipping.
+ * Works for convex polygons (and concave subjects against convex clips).
  */
 export function polygonIntersectionArea(a: Polygon, b: Polygon): number {
+  if (a.points.length < 3 || b.points.length < 3) return 0;
+
   const clipped = sutherlandHodgmanClip(a.points.slice(), b.points.slice());
   if (clipped.length < 3) return 0;
+
   return polygonArea({ points: clipped });
+}
+
+/**
+ * Compute exact intersection area of two simple polygons (convex or concave)
+ * via ear-clipping triangulation and Sutherland-Hodgman triangle clipping.
+ */
+export function polygonIntersectionAreaConcave(a: Polygon, b: Polygon): number {
+  if (a.points.length < 3 || b.points.length < 3) return 0;
+
+  const boxA = polygonBoundingBox(a);
+  const boxB = polygonBoundingBox(b);
+  if (
+    boxA.x + boxA.width <= boxB.x ||
+    boxB.x + boxB.width <= boxA.x ||
+    boxA.y + boxA.height <= boxB.y ||
+    boxB.y + boxB.height <= boxA.y
+  ) {
+    return 0;
+  }
+
+  const convexA = isConvex(a);
+  const convexB = isConvex(b);
+
+  if (convexA && convexB) {
+    const normA = ensurePositiveOrientation(a);
+    const normB = ensurePositiveOrientation(b);
+    const clipped = sutherlandHodgmanClip(normA.points.slice(), normB.points.slice());
+    if (clipped.length < 3) return 0;
+    return polygonArea({ points: clipped });
+  }
+
+  const partsA = convexA ? [ensurePositiveOrientation(a)] : triangulateSimplePolygon(a);
+  const partsB = convexB ? [ensurePositiveOrientation(b)] : triangulateSimplePolygon(b);
+
+  let totalArea = 0;
+  for (const partA of partsA) {
+    for (const partB of partsB) {
+      const clipped = sutherlandHodgmanClip(partA.points.slice(), partB.points.slice());
+      if (clipped.length >= 3) {
+        totalArea += polygonArea({ points: clipped });
+      }
+    }
+  }
+  return totalArea;
 }
 
 /** Sutherland-Hodgman polygon clipping algorithm. */

@@ -149,6 +149,7 @@ export interface CreateRoomParams {
   y: number;
   width: number;
   height: number;
+  boundary?: Polygon;
   rotation?: number;
   priority?: number;
   tags?: string[];
@@ -157,6 +158,8 @@ export interface CreateRoomParams {
   privacyRequirement?: PrivacyLevel;
   ventilationRequired?: boolean;
   isFixed?: boolean;
+  adjacentRoomIds?: string[];
+  compassZone?: string;
 }
 
 export interface CreateWallParams {
@@ -178,6 +181,7 @@ export interface CreateDoorParams {
   height?: number;
   type?: DoorType;
   swingDirection?: SwingDirection;
+  hingeSide?: 'left' | 'right';
   connectsRooms: [string, string];
 }
 
@@ -303,6 +307,16 @@ export function createFloor(params: CreateFloorParams): Floor {
   };
 }
 
+function computePolygonArea(polygon: Polygon): number {
+  const pts = polygon.points;
+  if (pts.length < 3) return 0;
+  let sum = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    sum += pts[j]!.x * pts[i]!.y - pts[i]!.x * pts[j]!.y;
+  }
+  return Math.abs(sum) / 2;
+}
+
 /** Create a new Room within a floor. Area and boundary are computed. */
 export function createRoom(params: CreateRoomParams): Room {
   assertFinite('x', params.x);
@@ -310,8 +324,13 @@ export function createRoom(params: CreateRoomParams): Room {
   assertPositive('width', params.width);
   assertPositive('height', params.height);
 
-  const area = params.width * params.height;
-  const boundary = rectToPolygon(params.x, params.y, params.width, params.height);
+  const hasCustomBoundary = Boolean(params.boundary && params.boundary.points.length >= 3);
+  const boundary: Polygon = hasCustomBoundary
+    ? { points: params.boundary!.points.map(p => ({ x: p.x, y: p.y })) }
+    : rectToPolygon(params.x, params.y, params.width, params.height);
+  const area = hasCustomBoundary
+    ? Math.max(1, Math.round(computePolygonArea(boundary)))
+    : params.width * params.height;
 
   return {
     id: generateId(),
@@ -332,6 +351,8 @@ export function createRoom(params: CreateRoomParams): Room {
     privacyRequirement: params.privacyRequirement ?? PrivacyLevel.None,
     ventilationRequired: params.ventilationRequired ?? false,
     isFixed: params.isFixed ?? false,
+    ...(params.adjacentRoomIds ? { adjacentRoomIds: [...params.adjacentRoomIds] } : {}),
+    ...(params.compassZone ? { compassZone: params.compassZone } : {}),
   };
 }
 
@@ -377,6 +398,7 @@ export function createDoor(params: CreateDoorParams): Door {
     height: params.height ?? DEFAULTS.DOOR_HEIGHT,
     type: params.type ?? DoorType.Single,
     swingDirection: params.swingDirection ?? SwingDirection.Inward,
+    ...(params.hingeSide ? { hingeSide: params.hingeSide } : {}),
     connectsRooms: params.connectsRooms,
   };
 }

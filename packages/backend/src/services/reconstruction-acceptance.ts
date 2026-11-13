@@ -24,7 +24,12 @@
 import type { Building, DesignRequirementSpecification } from '@ai-floor-planner/core';
 import { MINIMUM_ROOM_AREAS, MINIMUM_DIMENSIONS, RoomType } from '@ai-floor-planner/core';
 import type { DiagnosticFragment, ExtractedPlan } from '@ai-floor-planner/planning-engine';
-import { containsPolygon, detectRoomCollisions, extractedRoomType } from '@ai-floor-planner/planning-engine';
+import {
+  containsPolygonWithTolerance,
+  detectRoomCollisions,
+  extractedRoomType,
+  isValidPolygon,
+} from '@ai-floor-planner/planning-engine';
 
 export interface ReconstructionAcceptance {
   /** True when the reconstruction may be installed as the editable CAD plan. */
@@ -69,7 +74,14 @@ export function assessReconstruction(
   const allRooms = building.floors.flatMap(f => f.rooms);
 
   for (const floor of building.floors) {
-    const hasBoundary = floor.boundary && floor.boundary.points.length >= 3;
+    const hasBoundary = Boolean(floor.boundary && floor.boundary.points.length >= 3);
+    if (hasBoundary && !isValidPolygon(floor.boundary)) {
+      integrityIssues.push({
+        code: 'RECONSTRUCTION_INVALID_FLOOR_BOUNDARY',
+        severity: 'error',
+        message: `Floor "${floor.name}" has an invalid or self-intersecting boundary polygon.`,
+      });
+    }
     for (const room of floor.rooms) {
       // ── Integrity: dimensions must be real.
       if (
@@ -85,8 +97,17 @@ export function assessReconstruction(
         continue;
       }
 
-      // ── Integrity: a room must sit inside its own floor plate.
-      if (hasBoundary && !containsPolygon(floor.boundary, room.boundary)) {
+      if (!room.boundary || room.boundary.points.length < 3 || !isValidPolygon(room.boundary)) {
+        integrityIssues.push({
+          code: 'RECONSTRUCTION_INVALID_ROOM_POLYGON',
+          severity: 'error',
+          message: `Room "${room.name}" has an invalid or self-intersecting boundary polygon on ${floor.name}.`,
+        });
+        continue;
+      }
+
+      // ── Integrity: a room must sit inside its own floor plate (vertex + edge containment).
+      if (hasBoundary && !containsPolygonWithTolerance(floor.boundary.points, room.boundary.points, 50)) {
         integrityIssues.push({
           code: 'RECONSTRUCTION_ROOM_OUT_OF_BOUNDS',
           severity: 'error',

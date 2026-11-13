@@ -152,6 +152,7 @@ export type {
 export type {
   SourceImageRegion,
   EntityImageProvenance,
+  FloorImageProvenance,
   BuildingImageProvenance,
   GeometryAdjustment,
 } from './image-provenance';

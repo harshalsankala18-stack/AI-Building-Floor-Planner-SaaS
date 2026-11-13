@@ -138,10 +138,15 @@ export {
 } from './interpretation/apartment-plan';
 export {
   containsPolygon,
+  containsPolygonConcave,
   containsPolygonWithTolerance,
   detectRoomCollisions,
   pointInPolygonWithTolerance,
   isValidPolygon,
+  polygonArea,
+  polygonIntersectionArea,
+  polygonIntersectionAreaConcave,
+  triangulateSimplePolygon,
   segmentCrossesOutsidePolygon,
 } from '@ai-floor-planner/geometry-engine';
 export { MassingGenerator } from './generator/massing-generator';

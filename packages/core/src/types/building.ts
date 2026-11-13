@@ -131,6 +131,10 @@ export interface Room {
   readonly privacyRequirement: PrivacyLevel;
   readonly ventilationRequired: boolean;
   readonly isFixed: boolean;
+  /** Adjacent room IDs sharing a wall or doorway with this room. */
+  readonly adjacentRoomIds?: readonly string[];
+  /** Vastu / compass zone this room occupies on the floor plate (e.g. 'NE', 'SE', 'SW', 'NW'). */
+  readonly compassZone?: string;
   /**
    * Traceability back to the master image this room was reconstructed from.
    * Present only on image-derived geometry; preserved across edits so an edited
@@ -167,6 +171,8 @@ export interface Door {
   readonly height: number;
   readonly type: DoorType;
   readonly swingDirection: SwingDirection;
+  /** Hinge side along the host wall direction ('left' | 'right'). */
+  readonly hingeSide?: 'left' | 'right';
   readonly connectsRooms: readonly [string, string];
   /** Traceability back to the master image this door was read from. */
   readonly imageProvenance?: EntityImageProvenance;

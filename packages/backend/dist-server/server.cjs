@@ -30,10 +30,10 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 ));
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-// packages/ai-orchestration/dist/providers/base.js
+// ../ai-orchestration/dist/providers/base.js
 var BaseAIProvider, AISafetyError, AIRequestValidationError;
 var init_base = __esm({
-  "packages/ai-orchestration/dist/providers/base.js"() {
+  "../ai-orchestration/dist/providers/base.js"() {
     "use strict";
     BaseAIProvider = class {
     };
@@ -54,10 +54,10 @@ var init_base = __esm({
   }
 });
 
-// packages/core/dist/types/enums.js
+// ../core/dist/types/enums.js
 var RoomType, Direction, DaylightLevel, PrivacyLevel, PreferenceLevel, AdjacencyStrength, WallType, DoorType, SwingDirection, WindowType, StairType, ColumnShape, ProjectStatus, ChangeSource, PlotShape, AITaskType;
 var init_enums = __esm({
-  "packages/core/dist/types/enums.js"() {
+  "../core/dist/types/enums.js"() {
     "use strict";
     (function(RoomType2) {
       RoomType2["ServiceShaft"] = "service_shaft";
@@ -178,10 +178,10 @@ var init_enums = __esm({
   }
 });
 
-// packages/core/dist/types/rendering.js
+// ../core/dist/types/rendering.js
 var RenderLayer;
 var init_rendering = __esm({
-  "packages/core/dist/types/rendering.js"() {
+  "../core/dist/types/rendering.js"() {
     "use strict";
     (function(RenderLayer2) {
       RenderLayer2["Grid"] = "grid";
@@ -201,10 +201,10 @@ var init_rendering = __esm({
   }
 });
 
-// packages/core/dist/types/design-intelligence.js
+// ../core/dist/types/design-intelligence.js
 var FunctionalZone, AdjacencyRelationType, HumanVerificationStatus;
 var init_design_intelligence = __esm({
-  "packages/core/dist/types/design-intelligence.js"() {
+  "../core/dist/types/design-intelligence.js"() {
     "use strict";
     (function(FunctionalZone2) {
       FunctionalZone2["Public"] = "public";
@@ -231,18 +231,18 @@ var init_design_intelligence = __esm({
   }
 });
 
-// packages/core/dist/types/image-provenance.js
+// ../core/dist/types/image-provenance.js
 var IMAGE_DERIVED_TAG;
 var init_image_provenance = __esm({
-  "packages/core/dist/types/image-provenance.js"() {
+  "../core/dist/types/image-provenance.js"() {
     "use strict";
     IMAGE_DERIVED_TAG = "source:image_reconstruction";
   }
 });
 
-// packages/core/dist/types/index.js
+// ../core/dist/types/index.js
 var init_types = __esm({
-  "packages/core/dist/types/index.js"() {
+  "../core/dist/types/index.js"() {
     "use strict";
     init_enums();
     init_rendering();
@@ -251,7 +251,7 @@ var init_types = __esm({
   }
 });
 
-// packages/core/dist/models/id.js
+// ../core/dist/models/id.js
 function generateId() {
   if (seed !== null) {
     counter++;
@@ -262,17 +262,17 @@ function generateId() {
 }
 var seed, counter;
 var init_id = __esm({
-  "packages/core/dist/models/id.js"() {
+  "../core/dist/models/id.js"() {
     "use strict";
     seed = null;
     counter = 0;
   }
 });
 
-// packages/core/dist/models/errors.js
+// ../core/dist/models/errors.js
 var DomainError, InvalidDimensionError, InvalidCoordinateError;
 var init_errors = __esm({
-  "packages/core/dist/models/errors.js"() {
+  "../core/dist/models/errors.js"() {
     "use strict";
     DomainError = class extends Error {
       code;
@@ -297,10 +297,10 @@ var init_errors = __esm({
   }
 });
 
-// packages/core/dist/constants.js
+// ../core/dist/constants.js
 var DEFAULTS, TOLERANCES, MINIMUM_ROOM_AREAS, MINIMUM_DIMENSIONS;
 var init_constants = __esm({
-  "packages/core/dist/constants.js"() {
+  "../core/dist/constants.js"() {
     "use strict";
     DEFAULTS = {
       WALL_THICKNESS_EXTERNAL: 230,
@@ -386,7 +386,7 @@ var init_constants = __esm({
   }
 });
 
-// packages/core/dist/models/factory.js
+// ../core/dist/models/factory.js
 function assertFinite(field, value) {
   if (!Number.isFinite(value)) {
     throw new InvalidCoordinateError(field, value);
@@ -509,13 +509,24 @@ function createFloor(params) {
     columns: []
   };
 }
+function computePolygonArea(polygon) {
+  const pts = polygon.points;
+  if (pts.length < 3)
+    return 0;
+  let sum2 = 0;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    sum2 += pts[j].x * pts[i].y - pts[i].x * pts[j].y;
+  }
+  return Math.abs(sum2) / 2;
+}
 function createRoom(params) {
   assertFinite("x", params.x);
   assertFinite("y", params.y);
   assertPositive("width", params.width);
   assertPositive("height", params.height);
-  const area3 = params.width * params.height;
-  const boundary = rectToPolygon(params.x, params.y, params.width, params.height);
+  const hasCustomBoundary = Boolean(params.boundary && params.boundary.points.length >= 3);
+  const boundary = hasCustomBoundary ? { points: params.boundary.points.map((p) => ({ x: p.x, y: p.y })) } : rectToPolygon(params.x, params.y, params.width, params.height);
+  const area3 = hasCustomBoundary ? Math.max(1, Math.round(computePolygonArea(boundary))) : params.width * params.height;
   return {
     id: generateId(),
     floorId: params.floorId,
@@ -534,7 +545,9 @@ function createRoom(params) {
     daylightRequirement: params.daylightRequirement ?? DaylightLevel.Medium,
     privacyRequirement: params.privacyRequirement ?? PrivacyLevel.None,
     ventilationRequired: params.ventilationRequired ?? false,
-    isFixed: params.isFixed ?? false
+    isFixed: params.isFixed ?? false,
+    ...params.adjacentRoomIds ? { adjacentRoomIds: [...params.adjacentRoomIds] } : {},
+    ...params.compassZone ? { compassZone: params.compassZone } : {}
   };
 }
 function createWall(params) {
@@ -569,6 +582,7 @@ function createDoor(params) {
     height: params.height ?? DEFAULTS.DOOR_HEIGHT,
     type: params.type ?? DoorType.Single,
     swingDirection: params.swingDirection ?? SwingDirection.Inward,
+    ...params.hingeSide ? { hingeSide: params.hingeSide } : {},
     connectsRooms: params.connectsRooms
   };
 }
@@ -613,7 +627,7 @@ function createStair(params) {
   };
 }
 var init_factory = __esm({
-  "packages/core/dist/models/factory.js"() {
+  "../core/dist/models/factory.js"() {
     "use strict";
     init_types();
     init_constants();
@@ -622,44 +636,44 @@ var init_factory = __esm({
   }
 });
 
-// packages/core/dist/models/updaters.js
+// ../core/dist/models/updaters.js
 var init_updaters = __esm({
-  "packages/core/dist/models/updaters.js"() {
+  "../core/dist/models/updaters.js"() {
     "use strict";
     init_errors();
     init_factory();
   }
 });
 
-// packages/core/dist/models/validation.js
+// ../core/dist/models/validation.js
 var VALID_ROOM_TYPES;
 var init_validation = __esm({
-  "packages/core/dist/models/validation.js"() {
+  "../core/dist/models/validation.js"() {
     "use strict";
     init_types();
     VALID_ROOM_TYPES = new Set(Object.values(RoomType));
   }
 });
 
-// packages/core/dist/models/serialization.js
+// ../core/dist/models/serialization.js
 var init_serialization = __esm({
-  "packages/core/dist/models/serialization.js"() {
+  "../core/dist/models/serialization.js"() {
     "use strict";
     init_validation();
     init_errors();
   }
 });
 
-// packages/core/dist/models/versioning.js
+// ../core/dist/models/versioning.js
 var init_versioning = __esm({
-  "packages/core/dist/models/versioning.js"() {
+  "../core/dist/models/versioning.js"() {
     "use strict";
     init_id();
     init_serialization();
   }
 });
 
-// packages/core/dist/models/requirements-normalization.js
+// ../core/dist/models/requirements-normalization.js
 function asRecord(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -776,7 +790,7 @@ function normalizeDesignRequirementSpecification(input) {
 }
 var ROOM_TYPES, DIRECTIONS, PLOT_SHAPES, PREFERENCE_LEVELS;
 var init_requirements_normalization = __esm({
-  "packages/core/dist/models/requirements-normalization.js"() {
+  "../core/dist/models/requirements-normalization.js"() {
     "use strict";
     init_enums();
     ROOM_TYPES = new Set(Object.values(RoomType));
@@ -786,10 +800,10 @@ var init_requirements_normalization = __esm({
   }
 });
 
-// packages/core/dist/capabilities.js
+// ../core/dist/capabilities.js
 var BUILDING_CAPABILITIES, SUPPORTED_FLOOR_COUNTS;
 var init_capabilities = __esm({
-  "packages/core/dist/capabilities.js"() {
+  "../core/dist/capabilities.js"() {
     "use strict";
     BUILDING_CAPABILITIES = Object.freeze({
       minimumFloorCount: 1,
@@ -799,16 +813,16 @@ var init_capabilities = __esm({
   }
 });
 
-// packages/core/dist/models/site-intelligence.js
+// ../core/dist/models/site-intelligence.js
 var init_site_intelligence = __esm({
-  "packages/core/dist/models/site-intelligence.js"() {
+  "../core/dist/models/site-intelligence.js"() {
     "use strict";
     init_capabilities();
     init_types();
   }
 });
 
-// packages/core/dist/models/space-catalog.js
+// ../core/dist/models/space-catalog.js
 function definition(id, displayName, categories, group2, zone, minimumM2, preferredM2, options = {}) {
   const occupancy = options.occupancy ?? (categories[0] === "educational" ? "educational" : categories[0] === "commercial" ? "commercial" : "residential");
   return {
@@ -833,7 +847,7 @@ function definition(id, displayName, categories, group2, zone, minimumM2, prefer
 }
 var M2, R, C, E, residential, commercial, educational, SPACE_CATALOG, SPACE_PROGRAM_PRESETS;
 var init_space_catalog = __esm({
-  "packages/core/dist/models/space-catalog.js"() {
+  "../core/dist/models/space-catalog.js"() {
     "use strict";
     init_types();
     M2 = 1e6;
@@ -991,10 +1005,10 @@ var init_space_catalog = __esm({
   }
 });
 
-// packages/core/dist/models/space-program.js
+// ../core/dist/models/space-program.js
 var CIRCULATION_RESERVE_RATIO, VERTICAL_CORE_RESERVE_RATIO, WALL_SERVICE_RESERVE_RATIO, TOTAL_RESERVE_RATIO, DERIVATION_MAP;
 var init_space_program = __esm({
-  "packages/core/dist/models/space-program.js"() {
+  "../core/dist/models/space-program.js"() {
     "use strict";
     init_types();
     init_site_intelligence();
@@ -1025,10 +1039,10 @@ var init_space_program = __esm({
   }
 });
 
-// packages/core/dist/models/footprint.js
+// ../core/dist/models/footprint.js
 var CIRCULATION_RATIO, CORE_RATIO, WALL_SERVICE_RATIO, USABLE_RATIO, FOOTPRINT_SHAPES;
 var init_footprint = __esm({
-  "packages/core/dist/models/footprint.js"() {
+  "../core/dist/models/footprint.js"() {
     "use strict";
     init_factory();
     init_site_intelligence();
@@ -1054,16 +1068,16 @@ var init_footprint = __esm({
   }
 });
 
-// packages/core/dist/models/generation-control.js
+// ../core/dist/models/generation-control.js
 var init_generation_control = __esm({
-  "packages/core/dist/models/generation-control.js"() {
+  "../core/dist/models/generation-control.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/models/index.js
+// ../core/dist/models/index.js
 var init_models = __esm({
-  "packages/core/dist/models/index.js"() {
+  "../core/dist/models/index.js"() {
     "use strict";
     init_id();
     init_errors();
@@ -1081,110 +1095,110 @@ var init_models = __esm({
   }
 });
 
-// packages/core/dist/editor/types.js
+// ../core/dist/editor/types.js
 var init_types2 = __esm({
-  "packages/core/dist/editor/types.js"() {
+  "../core/dist/editor/types.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/editor/history.js
+// ../core/dist/editor/history.js
 var init_history = __esm({
-  "packages/core/dist/editor/history.js"() {
+  "../core/dist/editor/history.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/editor/commands/selection-commands.js
+// ../core/dist/editor/commands/selection-commands.js
 var init_selection_commands = __esm({
-  "packages/core/dist/editor/commands/selection-commands.js"() {
+  "../core/dist/editor/commands/selection-commands.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/room-commands.js
+// ../core/dist/editor/commands/room-commands.js
 var init_room_commands = __esm({
-  "packages/core/dist/editor/commands/room-commands.js"() {
+  "../core/dist/editor/commands/room-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/door-commands.js
+// ../core/dist/editor/commands/door-commands.js
 var init_door_commands = __esm({
-  "packages/core/dist/editor/commands/door-commands.js"() {
+  "../core/dist/editor/commands/door-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/window-commands.js
+// ../core/dist/editor/commands/window-commands.js
 var init_window_commands = __esm({
-  "packages/core/dist/editor/commands/window-commands.js"() {
+  "../core/dist/editor/commands/window-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/wall-commands.js
+// ../core/dist/editor/commands/wall-commands.js
 var init_wall_commands = __esm({
-  "packages/core/dist/editor/commands/wall-commands.js"() {
+  "../core/dist/editor/commands/wall-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/delete-commands.js
+// ../core/dist/editor/commands/delete-commands.js
 var init_delete_commands = __esm({
-  "packages/core/dist/editor/commands/delete-commands.js"() {
+  "../core/dist/editor/commands/delete-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/batch-command.js
+// ../core/dist/editor/commands/batch-command.js
 var init_batch_command = __esm({
-  "packages/core/dist/editor/commands/batch-command.js"() {
+  "../core/dist/editor/commands/batch-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/replace-building-command.js
+// ../core/dist/editor/commands/replace-building-command.js
 var init_replace_building_command = __esm({
-  "packages/core/dist/editor/commands/replace-building-command.js"() {
+  "../core/dist/editor/commands/replace-building-command.js"() {
     "use strict";
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/update-site-command.js
+// ../core/dist/editor/commands/update-site-command.js
 var init_update_site_command = __esm({
-  "packages/core/dist/editor/commands/update-site-command.js"() {
+  "../core/dist/editor/commands/update-site-command.js"() {
     "use strict";
     init_factory();
     init_id();
   }
 });
 
-// packages/core/dist/editor/commands/floor-commands.js
+// ../core/dist/editor/commands/floor-commands.js
 var init_floor_commands = __esm({
-  "packages/core/dist/editor/commands/floor-commands.js"() {
+  "../core/dist/editor/commands/floor-commands.js"() {
     "use strict";
     init_id();
     init_updaters();
   }
 });
 
-// packages/core/dist/editor/commands/index.js
+// ../core/dist/editor/commands/index.js
 var init_commands = __esm({
-  "packages/core/dist/editor/commands/index.js"() {
+  "../core/dist/editor/commands/index.js"() {
     "use strict";
     init_selection_commands();
     init_room_commands();
@@ -1199,9 +1213,9 @@ var init_commands = __esm({
   }
 });
 
-// packages/core/dist/editor/engine.js
+// ../core/dist/editor/engine.js
 var init_engine = __esm({
-  "packages/core/dist/editor/engine.js"() {
+  "../core/dist/editor/engine.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1209,9 +1223,9 @@ var init_engine = __esm({
   }
 });
 
-// packages/core/dist/editor/index.js
+// ../core/dist/editor/index.js
 var init_editor = __esm({
-  "packages/core/dist/editor/index.js"() {
+  "../core/dist/editor/index.js"() {
     "use strict";
     init_types2();
     init_history();
@@ -1220,32 +1234,32 @@ var init_editor = __esm({
   }
 });
 
-// packages/core/dist/architectural-review.js
+// ../core/dist/architectural-review.js
 var init_architectural_review = __esm({
-  "packages/core/dist/architectural-review.js"() {
+  "../core/dist/architectural-review.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/types/building-budget.js
+// ../core/dist/types/building-budget.js
 var init_building_budget = __esm({
-  "packages/core/dist/types/building-budget.js"() {
+  "../core/dist/types/building-budget.js"() {
     "use strict";
   }
 });
 
-// packages/core/dist/models/building-budget.js
+// ../core/dist/models/building-budget.js
 var init_building_budget2 = __esm({
-  "packages/core/dist/models/building-budget.js"() {
+  "../core/dist/models/building-budget.js"() {
     "use strict";
     init_space_program();
     init_site_intelligence();
   }
 });
 
-// packages/core/dist/models/reviewed-generation.js
+// ../core/dist/models/reviewed-generation.js
 var init_reviewed_generation = __esm({
-  "packages/core/dist/models/reviewed-generation.js"() {
+  "../core/dist/models/reviewed-generation.js"() {
     "use strict";
     init_building_budget2();
     init_space_program();
@@ -1253,9 +1267,9 @@ var init_reviewed_generation = __esm({
   }
 });
 
-// packages/core/dist/index.js
+// ../core/dist/index.js
 var init_dist = __esm({
-  "packages/core/dist/index.js"() {
+  "../core/dist/index.js"() {
     "use strict";
     init_types();
     init_models();
@@ -1269,10 +1283,10 @@ var init_dist = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/requirements/schema.js
+// ../ai-orchestration/dist/requirements/schema.js
 var REQUIREMENT_RESPONSE_SCHEMA, REQUIREMENT_EXTRACTION_PROMPT;
 var init_schema = __esm({
-  "packages/ai-orchestration/dist/requirements/schema.js"() {
+  "../ai-orchestration/dist/requirements/schema.js"() {
     "use strict";
     init_dist();
     REQUIREMENT_RESPONSE_SCHEMA = {
@@ -1378,7 +1392,7 @@ Never invent a site location, regulation, approval, or structural claim.`;
   }
 });
 
-// packages/ai-orchestration/dist/providers/http.js
+// ../ai-orchestration/dist/providers/http.js
 function asRecord2(value) {
   return value !== null && typeof value === "object" ? value : {};
 }
@@ -1518,7 +1532,7 @@ function response(content, parsed, responseUsage, model, latencyMs) {
 }
 var HttpProviderError;
 var init_http = __esm({
-  "packages/ai-orchestration/dist/providers/http.js"() {
+  "../ai-orchestration/dist/providers/http.js"() {
     "use strict";
     init_base();
     HttpProviderError = class extends Error {
@@ -1538,9 +1552,9 @@ var init_http = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/openai.js
+// ../ai-orchestration/dist/providers/openai.js
 var init_openai = __esm({
-  "packages/ai-orchestration/dist/providers/openai.js"() {
+  "../ai-orchestration/dist/providers/openai.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1549,7 +1563,7 @@ var init_openai = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/gemini.js
+// ../ai-orchestration/dist/providers/gemini.js
 function extractHttpStatus(error) {
   if (error instanceof HttpProviderError)
     return error.status;
@@ -1685,7 +1699,7 @@ function buildGeminiParts(request) {
 }
 var DEFAULT_GEMINI_RETRY_POLICY, GeminiProvider, GEMINI_SUPPORTED_IMAGE_MIME_TYPES;
 var init_gemini = __esm({
-  "packages/ai-orchestration/dist/providers/gemini.js"() {
+  "../ai-orchestration/dist/providers/gemini.js"() {
     "use strict";
     init_dist();
     init_base();
@@ -1851,10 +1865,10 @@ var init_gemini = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/rule-based.js
+// ../ai-orchestration/dist/providers/rule-based.js
 var RuleBasedRequirementParser;
 var init_rule_based = __esm({
-  "packages/ai-orchestration/dist/providers/rule-based.js"() {
+  "../ai-orchestration/dist/providers/rule-based.js"() {
     "use strict";
     init_dist();
     RuleBasedRequirementParser = class {
@@ -1983,7 +1997,7 @@ var init_rule_based = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/requirements/validation.js
+// ../ai-orchestration/dist/requirements/validation.js
 function record(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -2083,13 +2097,13 @@ function validateRequirementPayload(payload, rawPrompt) {
   };
 }
 var init_validation2 = __esm({
-  "packages/ai-orchestration/dist/requirements/validation.js"() {
+  "../ai-orchestration/dist/requirements/validation.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/ai-orchestration/dist/editing/context.js
+// ../ai-orchestration/dist/editing/context.js
 function extractAIEditContext(building, activeFloorId, selectedRoomId) {
   const resolvedFloorId = activeFloorId && building.floors.some((floor) => floor.id === activeFloorId) ? activeFloorId : building.floors[0]?.id ?? "";
   const rooms = building.floors.flatMap((floor) => floor.rooms.map((room2) => ({
@@ -2120,12 +2134,12 @@ ${compact}`
   };
 }
 var init_context = __esm({
-  "packages/ai-orchestration/dist/editing/context.js"() {
+  "../ai-orchestration/dist/editing/context.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/editing/target-resolver.js
+// ../ai-orchestration/dist/editing/target-resolver.js
 function normalize(value) {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -2188,7 +2202,7 @@ function resolveRoomTarget(building, query, activeFloorId, selectedRoomId) {
 }
 var TYPE_ALIASES;
 var init_target_resolver = __esm({
-  "packages/ai-orchestration/dist/editing/target-resolver.js"() {
+  "../ai-orchestration/dist/editing/target-resolver.js"() {
     "use strict";
     init_dist();
     TYPE_ALIASES = [
@@ -2211,7 +2225,7 @@ var init_target_resolver = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/parser.js
+// ../ai-orchestration/dist/editing/parser.js
 function unitToMm(value, unit3) {
   if (unit3?.startsWith("m") && unit3 !== "mm")
     return Math.round(value * 1e3);
@@ -2259,7 +2273,7 @@ function targetQueryFrom(command, building, options) {
 }
 var RuleBasedEditParser;
 var init_parser = __esm({
-  "packages/ai-orchestration/dist/editing/parser.js"() {
+  "../ai-orchestration/dist/editing/parser.js"() {
     "use strict";
     init_target_resolver();
     RuleBasedEditParser = class {
@@ -2336,10 +2350,10 @@ var init_parser = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/schema.js
+// ../ai-orchestration/dist/editing/schema.js
 var AI_EDIT_RESPONSE_SCHEMA, AI_EDIT_SYSTEM_PROMPT;
 var init_schema2 = __esm({
-  "packages/ai-orchestration/dist/editing/schema.js"() {
+  "../ai-orchestration/dist/editing/schema.js"() {
     "use strict";
     AI_EDIT_RESPONSE_SCHEMA = {
       type: "object",
@@ -2378,7 +2392,7 @@ Never claim that the edit is valid; deterministic geometry and constraint engine
   }
 });
 
-// packages/ai-orchestration/dist/editing/validation.js
+// ../ai-orchestration/dist/editing/validation.js
 function record2(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -2422,17 +2436,17 @@ function validateAIEditPayload(payload) {
 }
 var ACTIONS, DIRECTIONS2;
 var init_validation3 = __esm({
-  "packages/ai-orchestration/dist/editing/validation.js"() {
+  "../ai-orchestration/dist/editing/validation.js"() {
     "use strict";
     ACTIONS = /* @__PURE__ */ new Set(["resize_room", "move_room", "rename_room"]);
     DIRECTIONS2 = /* @__PURE__ */ new Set(["north", "south", "east", "west", "auto"]);
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/service.js
+// ../ai-orchestration/dist/orchestration/service.js
 var AIOrchestrationService;
 var init_service = __esm({
-  "packages/ai-orchestration/dist/orchestration/service.js"() {
+  "../ai-orchestration/dist/orchestration/service.js"() {
     "use strict";
     init_dist();
     init_rule_based();
@@ -2623,15 +2637,15 @@ ${context.promptSummary}`,
   }
 });
 
-// packages/ai-orchestration/dist/editing/command.js
+// ../ai-orchestration/dist/editing/command.js
 var init_command = __esm({
-  "packages/ai-orchestration/dist/editing/command.js"() {
+  "../ai-orchestration/dist/editing/command.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/planning-engine/dist/requirements/validator.js
+// ../planning-engine/dist/requirements/validator.js
 function areaFor(type) {
   return MIN_ROOM_AREAS_MM2[type] ?? MIN_ROOM_AREAS_MM2[RoomType.Custom];
 }
@@ -2640,7 +2654,7 @@ function isNonNegativeInteger(value) {
 }
 var MIN_ROOM_AREAS_MM2, CIRCULATION_AND_WALL_RATIO, RequirementValidator;
 var init_validator = __esm({
-  "packages/planning-engine/dist/requirements/validator.js"() {
+  "../planning-engine/dist/requirements/validator.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -2898,48 +2912,48 @@ var init_validator = __esm({
   }
 });
 
-// packages/planning-engine/dist/program/generator.js
+// ../planning-engine/dist/program/generator.js
 var init_generator = __esm({
-  "packages/planning-engine/dist/program/generator.js"() {
+  "../planning-engine/dist/program/generator.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/planning-engine/dist/graph/builder.js
+// ../planning-engine/dist/graph/builder.js
 var init_builder = __esm({
-  "packages/planning-engine/dist/graph/builder.js"() {
+  "../planning-engine/dist/graph/builder.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/geometry-engine/dist/errors.js
+// ../geometry-engine/dist/errors.js
 var init_errors2 = __esm({
-  "packages/geometry-engine/dist/errors.js"() {
+  "../geometry-engine/dist/errors.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/vector.js
+// ../geometry-engine/dist/vector.js
 var init_vector = __esm({
-  "packages/geometry-engine/dist/vector.js"() {
+  "../geometry-engine/dist/vector.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/line.js
+// ../geometry-engine/dist/line.js
 var init_line = __esm({
-  "packages/geometry-engine/dist/line.js"() {
+  "../geometry-engine/dist/line.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/point.js
+// ../geometry-engine/dist/point.js
 function distance(a, b) {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
@@ -2988,14 +3002,14 @@ function pointsEqual(a, b, tolerance = TOLERANCES.LINEAR) {
   return Math.abs(a.x - b.x) <= tolerance && Math.abs(a.y - b.y) <= tolerance;
 }
 var init_point = __esm({
-  "packages/geometry-engine/dist/point.js"() {
+  "../geometry-engine/dist/point.js"() {
     "use strict";
     init_dist();
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/segment.js
+// ../geometry-engine/dist/segment.js
 function segmentLength(segment) {
   const dx = segment.end.x - segment.start.x;
   const dy = segment.end.y - segment.start.y;
@@ -3054,7 +3068,7 @@ function pointToSegmentDistance(point, segment) {
   return distance(point, closest2);
 }
 var init_segment = __esm({
-  "packages/geometry-engine/dist/segment.js"() {
+  "../geometry-engine/dist/segment.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3062,9 +3076,9 @@ var init_segment = __esm({
   }
 });
 
-// packages/geometry-engine/dist/rectangle.js
+// ../geometry-engine/dist/rectangle.js
 var init_rectangle = __esm({
-  "packages/geometry-engine/dist/rectangle.js"() {
+  "../geometry-engine/dist/rectangle.js"() {
     "use strict";
     init_dist();
     init_errors2();
@@ -3072,7 +3086,7 @@ var init_rectangle = __esm({
   }
 });
 
-// packages/geometry-engine/dist/polygon.js
+// ../geometry-engine/dist/polygon.js
 function polygonSignedArea(polygon) {
   const pts = polygon.points;
   const n2 = pts.length;
@@ -3110,12 +3124,36 @@ function polygonBoundingBox(polygon) {
     height: maxY - minY
   };
 }
+function isConvex(polygon) {
+  const pts = polygon.points;
+  const n2 = pts.length;
+  if (n2 < 3)
+    return false;
+  let sign = 0;
+  for (let i = 0; i < n2; i++) {
+    const p1 = pts[i];
+    const p2 = pts[(i + 1) % n2];
+    const p3 = pts[(i + 2) % n2];
+    const cross6 = (p2.x - p1.x) * (p3.y - p2.y) - (p2.y - p1.y) * (p3.x - p2.x);
+    if (Math.abs(cross6) > 1e-10) {
+      if (sign === 0) {
+        sign = cross6 > 0 ? 1 : -1;
+      } else if ((cross6 > 0 ? 1 : -1) !== sign) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 function isValidPolygon(polygon) {
   const pts = polygon.points;
   if (pts.length < 3)
     return false;
   const n2 = pts.length;
   for (let i = 0; i < n2; i++) {
+    if (pointsEqual(pts[i], pts[(i + 1) % n2], TOLERANCES.LINEAR)) {
+      return false;
+    }
     const a = { start: pts[i], end: pts[(i + 1) % n2] };
     for (let j = i + 2; j < n2; j++) {
       if (i === 0 && j === n2 - 1)
@@ -3241,11 +3279,158 @@ function segmentCrossesOutsidePolygon(segment, polygon, toleranceMm = 50) {
   }
   return false;
 }
+function ensurePositiveOrientation(polygon) {
+  const signed = polygonSignedArea(polygon);
+  if (signed >= 0) {
+    return polygon;
+  }
+  return { points: [...polygon.points].reverse() };
+}
+function cross2D(a, b, c) {
+  return (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
+}
+function pointStrictlyOrOnInteriorOfTriangle(p, a, b, c) {
+  const c1 = cross2D(a, b, p);
+  const c2 = cross2D(b, c, p);
+  const c3 = cross2D(c, a, p);
+  return c1 >= -1e-6 && c2 >= -1e-6 && c3 >= -1e-6;
+}
+function triangulateSimplePolygon(polygon) {
+  const cleaned = [];
+  for (const pt4 of polygon.points) {
+    if (cleaned.length === 0 || !pointsEqual(cleaned[cleaned.length - 1], pt4, TOLERANCES.LINEAR)) {
+      cleaned.push(pt4);
+    }
+  }
+  if (cleaned.length > 1 && pointsEqual(cleaned[0], cleaned[cleaned.length - 1], TOLERANCES.LINEAR)) {
+    cleaned.pop();
+  }
+  if (cleaned.length < 3)
+    return [];
+  const oriented = ensurePositiveOrientation({ points: cleaned }).points.slice();
+  const verts = [];
+  for (let i = 0; i < oriented.length; i++) {
+    const prev = oriented[(i - 1 + oriented.length) % oriented.length];
+    const curr = oriented[i];
+    const next2 = oriented[(i + 1) % oriented.length];
+    if (Math.abs(cross2D(prev, curr, next2)) > 1e-6) {
+      verts.push(curr);
+    }
+  }
+  if (verts.length < 3)
+    return [];
+  const triangles = [];
+  let maxGuards = verts.length * verts.length + 16;
+  while (verts.length > 3 && maxGuards-- > 0) {
+    let earFound = false;
+    const n2 = verts.length;
+    for (let i = 0; i < n2; i++) {
+      const prev = verts[(i - 1 + n2) % n2];
+      const curr = verts[i];
+      const next2 = verts[(i + 1) % n2];
+      if (cross2D(prev, curr, next2) <= 1e-6) {
+        continue;
+      }
+      let hasPointInside = false;
+      for (let j = 0; j < n2; j++) {
+        if (j === (i - 1 + n2) % n2 || j === i || j === (i + 1) % n2)
+          continue;
+        const candidate = verts[j];
+        if (pointsEqual(candidate, prev, TOLERANCES.LINEAR) || pointsEqual(candidate, curr, TOLERANCES.LINEAR) || pointsEqual(candidate, next2, TOLERANCES.LINEAR)) {
+          continue;
+        }
+        if (pointStrictlyOrOnInteriorOfTriangle(candidate, prev, curr, next2)) {
+          hasPointInside = true;
+          break;
+        }
+      }
+      if (!hasPointInside) {
+        const tri = { points: [prev, curr, next2] };
+        if (polygonArea2(tri) > TOLERANCES.AREA) {
+          triangles.push(tri);
+        }
+        verts.splice(i, 1);
+        earFound = true;
+        break;
+      }
+    }
+    if (!earFound) {
+      let bestIdx = -1;
+      let bestCross = -Infinity;
+      for (let i = 0; i < verts.length; i++) {
+        const prev = verts[(i - 1 + verts.length) % verts.length];
+        const curr = verts[i];
+        const next2 = verts[(i + 1) % verts.length];
+        const c = cross2D(prev, curr, next2);
+        if (c > bestCross) {
+          bestCross = c;
+          bestIdx = i;
+        }
+      }
+      if (bestIdx >= 0 && bestCross > 0) {
+        const n22 = verts.length;
+        const tri = {
+          points: [
+            verts[(bestIdx - 1 + n22) % n22],
+            verts[bestIdx],
+            verts[(bestIdx + 1) % n22]
+          ]
+        };
+        if (polygonArea2(tri) > TOLERANCES.AREA) {
+          triangles.push(tri);
+        }
+        verts.splice(bestIdx, 1);
+      } else {
+        break;
+      }
+    }
+  }
+  if (verts.length === 3) {
+    const finalTri = ensurePositiveOrientation({ points: [verts[0], verts[1], verts[2]] });
+    if (polygonArea2(finalTri) > TOLERANCES.AREA) {
+      triangles.push(finalTri);
+    }
+  }
+  return triangles;
+}
 function polygonIntersectionArea(a, b) {
+  if (a.points.length < 3 || b.points.length < 3)
+    return 0;
   const clipped = sutherlandHodgmanClip(a.points.slice(), b.points.slice());
   if (clipped.length < 3)
     return 0;
   return polygonArea2({ points: clipped });
+}
+function polygonIntersectionAreaConcave(a, b) {
+  if (a.points.length < 3 || b.points.length < 3)
+    return 0;
+  const boxA = polygonBoundingBox(a);
+  const boxB = polygonBoundingBox(b);
+  if (boxA.x + boxA.width <= boxB.x || boxB.x + boxB.width <= boxA.x || boxA.y + boxA.height <= boxB.y || boxB.y + boxB.height <= boxA.y) {
+    return 0;
+  }
+  const convexA = isConvex(a);
+  const convexB = isConvex(b);
+  if (convexA && convexB) {
+    const normA = ensurePositiveOrientation(a);
+    const normB = ensurePositiveOrientation(b);
+    const clipped = sutherlandHodgmanClip(normA.points.slice(), normB.points.slice());
+    if (clipped.length < 3)
+      return 0;
+    return polygonArea2({ points: clipped });
+  }
+  const partsA = convexA ? [ensurePositiveOrientation(a)] : triangulateSimplePolygon(a);
+  const partsB = convexB ? [ensurePositiveOrientation(b)] : triangulateSimplePolygon(b);
+  let totalArea = 0;
+  for (const partA of partsA) {
+    for (const partB of partsB) {
+      const clipped = sutherlandHodgmanClip(partA.points.slice(), partB.points.slice());
+      if (clipped.length >= 3) {
+        totalArea += polygonArea2({ points: clipped });
+      }
+    }
+  }
+  return totalArea;
 }
 function sutherlandHodgmanClip(subject2, clip2) {
   let output = subject2;
@@ -3339,7 +3524,7 @@ function edgesOverlap(a, b, tolerance) {
   return pointsEqual(a.start, b.start, tolerance) && pointsEqual(a.end, b.end, tolerance) || pointsEqual(a.start, b.end, tolerance) && pointsEqual(a.end, b.start, tolerance);
 }
 var init_polygon = __esm({
-  "packages/geometry-engine/dist/polygon.js"() {
+  "../geometry-engine/dist/polygon.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3348,9 +3533,9 @@ var init_polygon = __esm({
   }
 });
 
-// packages/geometry-engine/dist/curves.js
+// ../geometry-engine/dist/curves.js
 var init_curves = __esm({
-  "packages/geometry-engine/dist/curves.js"() {
+  "../geometry-engine/dist/curves.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3358,9 +3543,9 @@ var init_curves = __esm({
   }
 });
 
-// packages/geometry-engine/dist/room.js
+// ../geometry-engine/dist/room.js
 var init_room = __esm({
-  "packages/geometry-engine/dist/room.js"() {
+  "../geometry-engine/dist/room.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3368,9 +3553,9 @@ var init_room = __esm({
   }
 });
 
-// packages/geometry-engine/dist/plot.js
+// ../geometry-engine/dist/plot.js
 var init_plot = __esm({
-  "packages/geometry-engine/dist/plot.js"() {
+  "../geometry-engine/dist/plot.js"() {
     "use strict";
     init_dist();
     init_rectangle();
@@ -3379,10 +3564,10 @@ var init_plot = __esm({
   }
 });
 
-// packages/geometry-engine/dist/walls.js
+// ../geometry-engine/dist/walls.js
 var DEFAULT_WALL_CONFIG;
 var init_walls = __esm({
-  "packages/geometry-engine/dist/walls.js"() {
+  "../geometry-engine/dist/walls.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3396,7 +3581,7 @@ var init_walls = __esm({
   }
 });
 
-// packages/geometry-engine/dist/doors.js
+// ../geometry-engine/dist/doors.js
 function validateDoorPlacement(door2, hostWall, minEdgeDistance = 100) {
   const wallSeg = { start: hostWall.startPoint, end: hostWall.endPoint };
   const wallLen = segmentLength(wallSeg);
@@ -3432,7 +3617,7 @@ function validateDoorPlacement(door2, hostWall, minEdgeDistance = 100) {
   return { valid: true };
 }
 var init_doors = __esm({
-  "packages/geometry-engine/dist/doors.js"() {
+  "../geometry-engine/dist/doors.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3442,7 +3627,7 @@ var init_doors = __esm({
   }
 });
 
-// packages/geometry-engine/dist/windows.js
+// ../geometry-engine/dist/windows.js
 function validateWindowPlacement(window, hostWall, minEdgeDistance = 200, allowInternal = false) {
   const wallSeg = { start: hostWall.startPoint, end: hostWall.endPoint };
   const wallLen = segmentLength(wallSeg);
@@ -3484,7 +3669,7 @@ function validateWindowPlacement(window, hostWall, minEdgeDistance = 200, allowI
   return { valid: true };
 }
 var init_windows = __esm({
-  "packages/geometry-engine/dist/windows.js"() {
+  "../geometry-engine/dist/windows.js"() {
     "use strict";
     init_dist();
     init_point();
@@ -3493,9 +3678,9 @@ var init_windows = __esm({
   }
 });
 
-// packages/geometry-engine/dist/stairs.js
+// ../geometry-engine/dist/stairs.js
 var init_stairs = __esm({
-  "packages/geometry-engine/dist/stairs.js"() {
+  "../geometry-engine/dist/stairs.js"() {
     "use strict";
     init_rectangle();
     init_polygon();
@@ -3503,7 +3688,7 @@ var init_stairs = __esm({
   }
 });
 
-// packages/geometry-engine/dist/collision.js
+// ../geometry-engine/dist/collision.js
 function detectEntityCollision(polyA, idA, polyB, idB) {
   const overlapArea5 = polygonIntersectionArea(polyA, polyB);
   if (overlapArea5 > TOLERANCES.OVERLAP) {
@@ -3530,7 +3715,7 @@ function detectRoomCollisions(room2, otherRooms) {
   return results;
 }
 var init_collision = __esm({
-  "packages/geometry-engine/dist/collision.js"() {
+  "../geometry-engine/dist/collision.js"() {
     "use strict";
     init_dist();
     init_polygon();
@@ -3539,55 +3724,55 @@ var init_collision = __esm({
   }
 });
 
-// packages/geometry-engine/dist/snapping.js
+// ../geometry-engine/dist/snapping.js
 var init_snapping = __esm({
-  "packages/geometry-engine/dist/snapping.js"() {
+  "../geometry-engine/dist/snapping.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/area.js
+// ../geometry-engine/dist/area.js
 var init_area = __esm({
-  "packages/geometry-engine/dist/area.js"() {
+  "../geometry-engine/dist/area.js"() {
     "use strict";
     init_polygon();
   }
 });
 
-// packages/geometry-engine/dist/spatial-index/index.js
+// ../geometry-engine/dist/spatial-index/index.js
 var init_spatial_index = __esm({
-  "packages/geometry-engine/dist/spatial-index/index.js"() {
+  "../geometry-engine/dist/spatial-index/index.js"() {
     "use strict";
     init_rectangle();
   }
 });
 
-// packages/geometry-engine/dist/coordinates.js
+// ../geometry-engine/dist/coordinates.js
 var init_coordinates = __esm({
-  "packages/geometry-engine/dist/coordinates.js"() {
+  "../geometry-engine/dist/coordinates.js"() {
     "use strict";
     init_errors2();
   }
 });
 
-// packages/geometry-engine/dist/floor-bounds.js
+// ../geometry-engine/dist/floor-bounds.js
 var init_floor_bounds = __esm({
-  "packages/geometry-engine/dist/floor-bounds.js"() {
+  "../geometry-engine/dist/floor-bounds.js"() {
     "use strict";
   }
 });
 
-// packages/geometry-engine/dist/units.js
+// ../geometry-engine/dist/units.js
 var init_units = __esm({
-  "packages/geometry-engine/dist/units.js"() {
+  "../geometry-engine/dist/units.js"() {
     "use strict";
     init_dist();
   }
 });
 
-// packages/geometry-engine/dist/debug.js
+// ../geometry-engine/dist/debug.js
 var init_debug = __esm({
-  "packages/geometry-engine/dist/debug.js"() {
+  "../geometry-engine/dist/debug.js"() {
     "use strict";
     init_walls();
     init_doors();
@@ -3595,9 +3780,9 @@ var init_debug = __esm({
   }
 });
 
-// packages/geometry-engine/dist/index.js
+// ../geometry-engine/dist/index.js
 var init_dist2 = __esm({
-  "packages/geometry-engine/dist/index.js"() {
+  "../geometry-engine/dist/index.js"() {
     "use strict";
     init_errors2();
     init_vector();
@@ -3624,7 +3809,7 @@ var init_dist2 = __esm({
   }
 });
 
-// packages/planning-engine/dist/graph/scorer.js
+// ../planning-engine/dist/graph/scorer.js
 function sourceProgramItemId(itemId) {
   return itemId.replace(/_floor_\d+$/, "");
 }
@@ -3705,17 +3890,17 @@ function evaluateInstanceGraph(building, graph) {
   };
 }
 var init_scorer = __esm({
-  "packages/planning-engine/dist/graph/scorer.js"() {
+  "../planning-engine/dist/graph/scorer.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/evidence/architectural-closeout.js
+// ../planning-engine/dist/evidence/architectural-closeout.js
 var COMMON, TRANSITION, EXPOSURE;
 var init_architectural_closeout = __esm({
-  "packages/planning-engine/dist/evidence/architectural-closeout.js"() {
+  "../planning-engine/dist/evidence/architectural-closeout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3744,10 +3929,10 @@ var init_architectural_closeout = __esm({
   }
 });
 
-// packages/planning-engine/dist/evidence/architectural-evidence.js
+// ../planning-engine/dist/evidence/architectural-evidence.js
 var WET_TYPES, OUTDOOR_TYPES, ACCESS_TYPES, COMMON_TYPES;
 var init_architectural_evidence = __esm({
-  "packages/planning-engine/dist/evidence/architectural-evidence.js"() {
+  "../planning-engine/dist/evidence/architectural-evidence.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3770,7 +3955,7 @@ var init_architectural_evidence = __esm({
   }
 });
 
-// packages/planning-engine/dist/multi-floor/planner.js
+// ../planning-engine/dist/multi-floor/planner.js
 function roomProgramId(room2) {
   const tag = room2.tags.find((value) => value.startsWith("program:"));
   return tag ? sourceProgramItemId(tag.slice("program:".length)) : void 0;
@@ -3872,7 +4057,7 @@ function evaluateMultiFloorPlanning(building) {
 }
 var CORE_TYPES, GROUND_ANCHOR_TYPES;
 var init_planner = __esm({
-  "packages/planning-engine/dist/multi-floor/planner.js"() {
+  "../planning-engine/dist/multi-floor/planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -3889,7 +4074,7 @@ var init_planner = __esm({
   }
 });
 
-// packages/planning-engine/dist/diagnostics/design-evaluator.js
+// ../planning-engine/dist/diagnostics/design-evaluator.js
 function evaluateDesign(building, options = {}) {
   const warnings = [];
   const observations = [];
@@ -4426,7 +4611,7 @@ function isInWest(point, bounds, orientation) {
   return rx < 0;
 }
 var init_design_evaluator = __esm({
-  "packages/planning-engine/dist/diagnostics/design-evaluator.js"() {
+  "../planning-engine/dist/diagnostics/design-evaluator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4435,10 +4620,10 @@ var init_design_evaluator = __esm({
   }
 });
 
-// packages/planning-engine/dist/repair/engine.js
+// ../planning-engine/dist/repair/engine.js
 var NON_REASSIGNABLE_TYPES;
 var init_engine2 = __esm({
-  "packages/planning-engine/dist/repair/engine.js"() {
+  "../planning-engine/dist/repair/engine.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4455,10 +4640,10 @@ var init_engine2 = __esm({
   }
 });
 
-// packages/planning-engine/dist/vastu/optimizer.js
+// ../planning-engine/dist/vastu/optimizer.js
 var EXCLUDED_TYPES;
 var init_optimizer = __esm({
-  "packages/planning-engine/dist/vastu/optimizer.js"() {
+  "../planning-engine/dist/vastu/optimizer.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4473,10 +4658,10 @@ var init_optimizer = __esm({
   }
 });
 
-// packages/planning-engine/dist/generator/structured-layout.js
+// ../planning-engine/dist/generator/structured-layout.js
 var LAYOUT_STRATEGIES;
 var init_structured_layout = __esm({
-  "packages/planning-engine/dist/generator/structured-layout.js"() {
+  "../planning-engine/dist/generator/structured-layout.js"() {
     "use strict";
     init_scorer();
     init_planner();
@@ -4526,18 +4711,18 @@ var init_structured_layout = __esm({
   }
 });
 
-// packages/planning-engine/dist/regions/orthogonal-decomposition.js
+// ../planning-engine/dist/regions/orthogonal-decomposition.js
 var init_orthogonal_decomposition = __esm({
-  "packages/planning-engine/dist/regions/orthogonal-decomposition.js"() {
+  "../planning-engine/dist/regions/orthogonal-decomposition.js"() {
     "use strict";
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/generator/polygon-layout.js
+// ../planning-engine/dist/generator/polygon-layout.js
 var CORE_TYPES2;
 var init_polygon_layout = __esm({
-  "packages/planning-engine/dist/generator/polygon-layout.js"() {
+  "../planning-engine/dist/generator/polygon-layout.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4547,10 +4732,10 @@ var init_polygon_layout = __esm({
   }
 });
 
-// packages/planning-engine/dist/evidence/candidate-diversity.js
+// ../planning-engine/dist/evidence/candidate-diversity.js
 var FUNCTIONAL, DISTRIBUTION;
 var init_candidate_diversity = __esm({
-  "packages/planning-engine/dist/evidence/candidate-diversity.js"() {
+  "../planning-engine/dist/evidence/candidate-diversity.js"() {
     "use strict";
     init_dist();
     init_scorer();
@@ -4569,48 +4754,48 @@ var init_candidate_diversity = __esm({
   }
 });
 
-// packages/planning-engine/dist/site/site-planner.js
+// ../planning-engine/dist/site/site-planner.js
 var init_site_planner = __esm({
-  "packages/planning-engine/dist/site/site-planner.js"() {
+  "../planning-engine/dist/site/site-planner.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/site/site-analyzer.js
+// ../planning-engine/dist/site/site-analyzer.js
 var init_site_analyzer = __esm({
-  "packages/planning-engine/dist/site/site-analyzer.js"() {
+  "../planning-engine/dist/site/site-analyzer.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/massing-generator.js
+// ../planning-engine/dist/generator/massing-generator.js
 var init_massing_generator = __esm({
-  "packages/planning-engine/dist/generator/massing-generator.js"() {
+  "../planning-engine/dist/generator/massing-generator.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/architectural-layout-engine.js
+// ../planning-engine/dist/generator/architectural-layout-engine.js
 var init_architectural_layout_engine = __esm({
-  "packages/planning-engine/dist/generator/architectural-layout-engine.js"() {
+  "../planning-engine/dist/generator/architectural-layout-engine.js"() {
     "use strict";
     init_dist();
     init_planner();
   }
 });
 
-// packages/planning-engine/dist/strategy/design-strategy.js
+// ../planning-engine/dist/strategy/design-strategy.js
 var init_design_strategy = __esm({
-  "packages/planning-engine/dist/strategy/design-strategy.js"() {
+  "../planning-engine/dist/strategy/design-strategy.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/generator/candidate-generator.js
+// ../planning-engine/dist/generator/candidate-generator.js
 var init_candidate_generator = __esm({
-  "packages/planning-engine/dist/generator/candidate-generator.js"() {
+  "../planning-engine/dist/generator/candidate-generator.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4632,10 +4817,10 @@ var init_candidate_generator = __esm({
   }
 });
 
-// packages/planning-engine/dist/generation/workflow.js
+// ../planning-engine/dist/generation/workflow.js
 var GENERATION_STAGES;
 var init_workflow = __esm({
-  "packages/planning-engine/dist/generation/workflow.js"() {
+  "../planning-engine/dist/generation/workflow.js"() {
     "use strict";
     init_dist();
     init_design_evaluator();
@@ -4655,18 +4840,18 @@ var init_workflow = __esm({
   }
 });
 
-// packages/planning-engine/dist/generation/reviewed-workflow.js
+// ../planning-engine/dist/generation/reviewed-workflow.js
 var init_reviewed_workflow = __esm({
-  "packages/planning-engine/dist/generation/reviewed-workflow.js"() {
+  "../planning-engine/dist/generation/reviewed-workflow.js"() {
     "use strict";
     init_dist();
     init_workflow();
   }
 });
 
-// packages/planning-engine/dist/refinement/targeted-regeneration.js
+// ../planning-engine/dist/refinement/targeted-regeneration.js
 var init_targeted_regeneration = __esm({
-  "packages/planning-engine/dist/refinement/targeted-regeneration.js"() {
+  "../planning-engine/dist/refinement/targeted-regeneration.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -4675,16 +4860,16 @@ var init_targeted_regeneration = __esm({
   }
 });
 
-// packages/planning-engine/dist/generator/stair-coordination.js
+// ../planning-engine/dist/generator/stair-coordination.js
 var init_stair_coordination = __esm({
-  "packages/planning-engine/dist/generator/stair-coordination.js"() {
+  "../planning-engine/dist/generator/stair-coordination.js"() {
     "use strict";
     init_dist();
     init_dist2();
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-analysis.js
+// ../planning-engine/dist/interpretation/extraction-analysis.js
 function normalizationScales(metadata, site) {
   const frameWidth = metadata.frameWidth > 0 ? metadata.frameWidth : metadata.imageWidePixels;
   const frameHeight = metadata.frameHeight > 0 ? metadata.frameHeight : metadata.imageTallPixels;
@@ -4797,12 +4982,12 @@ function inspectExtractionStructure(plan) {
   return issues;
 }
 var init_extraction_analysis = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-analysis.js"() {
+  "../planning-engine/dist/interpretation/extraction-analysis.js"() {
     "use strict";
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-building.js
+// ../planning-engine/dist/interpretation/extraction-building.js
 function extractPlanToBuilding(extracted, site, projectId, name) {
   const diagnostics = [];
   const siteRect = { plotWidth: site.plotWidth, plotDepth: site.plotDepth };
@@ -4955,7 +5140,7 @@ function attachExtractedOpenings(building, extracted, site) {
 }
 var DOOR_TYPE;
 var init_extraction_building = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-building.js"() {
+  "../planning-engine/dist/interpretation/extraction-building.js"() {
     "use strict";
     init_dist();
     init_dist();
@@ -4970,7 +5155,7 @@ var init_extraction_building = __esm({
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-validation.js
+// ../planning-engine/dist/interpretation/extraction-validation.js
 function validateExtractedPlan(building, extracted, requirements) {
   const diagnostics = evaluateDesign(building, { requiredRoomTypes: ["living", "bedroom"] });
   const issues = [];
@@ -5056,7 +5241,7 @@ function validateExtractedPlan(building, extracted, requirements) {
   };
 }
 var init_extraction_validation = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-validation.js"() {
+  "../planning-engine/dist/interpretation/extraction-validation.js"() {
     "use strict";
     init_dist2();
     init_design_evaluator();
@@ -5065,7 +5250,7 @@ var init_extraction_validation = __esm({
   }
 });
 
-// packages/planning-engine/dist/interpretation/extraction-parser.js
+// ../planning-engine/dist/interpretation/extraction-parser.js
 function asRecord3(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value) ? value : null;
 }
@@ -5078,15 +5263,27 @@ function str(value) {
 function pointList(value) {
   if (!Array.isArray(value) || value.length < 3)
     return null;
-  const points = [];
+  const rawPoints = [];
   for (const entry of value) {
     const record3 = asRecord3(entry);
     const x = record3 ? num(record3.x) : null;
     const y = record3 ? num(record3.y) : null;
     if (x === null || y === null)
       return null;
-    points.push({ x, y });
+    rawPoints.push({ x, y });
   }
+  const points = [];
+  for (const pt4 of rawPoints) {
+    const prev = points[points.length - 1];
+    if (!prev || Math.abs(prev.x - pt4.x) > 1e-4 || Math.abs(prev.y - pt4.y) > 1e-4) {
+      points.push(pt4);
+    }
+  }
+  while (points.length > 1 && Math.abs(points[0].x - points[points.length - 1].x) <= 1e-4 && Math.abs(points[0].y - points[points.length - 1].y) <= 1e-4) {
+    points.pop();
+  }
+  if (points.length < 3)
+    return null;
   return { points };
 }
 function createExtractionMetadata(params) {
@@ -5171,6 +5368,9 @@ function parseExtractionPayload(payload, metadata, planId) {
       }
     }
     const flatId = str(record3.flatId);
+    const roomPoly = pointList(record3.polygon ?? asRecord3(record3.boundary)?.points);
+    const compassZone = str(record3.compassZone);
+    const connectedTo = Array.isArray(record3.connectedTo) ? record3.connectedTo.map(str).filter((v) => v !== null) : [];
     rooms.push({
       id,
       name,
@@ -5185,7 +5385,10 @@ function parseExtractionPayload(payload, metadata, planId) {
       floorLevel: Math.max(0, Math.trunc(floorLevel)),
       floorRegionId,
       floorAssignmentReason,
-      ...flatId ? { flatId } : {}
+      ...flatId ? { flatId } : {},
+      ...roomPoly ? { polygon: roomPoly.points } : {},
+      ...compassZone ? { compassZone } : {},
+      ...connectedTo.length > 0 ? { connectedTo } : {}
     });
   }
   if (rooms.length === 0) {
@@ -5456,14 +5659,14 @@ function parseFloorRegions(source, rawRooms, _diagnostics) {
 }
 var DOOR_TYPES, SWINGS;
 var init_extraction_parser = __esm({
-  "packages/planning-engine/dist/interpretation/extraction-parser.js"() {
+  "../planning-engine/dist/interpretation/extraction-parser.js"() {
     "use strict";
     DOOR_TYPES = /* @__PURE__ */ new Set(["single", "double", "sliding", "open_passage", "unknown"]);
     SWINGS = /* @__PURE__ */ new Set(["inward", "outward", "left", "right", "unknown"]);
   }
 });
 
-// packages/planning-engine/dist/interpretation/apartment-plan.js
+// ../planning-engine/dist/interpretation/apartment-plan.js
 function normalizeFlatIdentifier(id) {
   return id.trim().toLowerCase().replace(/[\s_-]+/g, "");
 }
@@ -7028,7 +7231,7 @@ function runApartmentPlanValidation(input) {
 }
 var APARTMENT_COMMON_FLAT_ID, CANONICAL_FLAT_BOUNDARY_TOLERANCE_MM, CORE_ROLES, ROLE_ROOM_TYPE, FLAT_OVERLAP_TOLERANCE, ROOM_CONTAINMENT_MIN, CORE_INSIDE_FLAT_TOLERANCE, DAY_ROLES, DOOR_TYPE2;
 var init_apartment_plan = __esm({
-  "packages/planning-engine/dist/interpretation/apartment-plan.js"() {
+  "../planning-engine/dist/interpretation/apartment-plan.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -7070,7 +7273,7 @@ var init_apartment_plan = __esm({
   }
 });
 
-// packages/planning-engine/dist/structural/structural-coordination-engine.js
+// ../planning-engine/dist/structural/structural-coordination-engine.js
 function clusterCoordinates(coords, tolerance) {
   if (coords.length === 0)
     return [];
@@ -7106,7 +7309,7 @@ function distToSegment(p, v, w) {
 }
 var STRUCTURAL_COORDINATION_DISCLAIMER, CLUSTER_TOLERANCE_MM, MAX_RECOMMENDED_SPAN_MM, STANDARD_COLUMN_WIDTH_MM, STANDARD_COLUMN_DEPTH_MM, StructuralCoordinationEngine;
 var init_structural_coordination_engine = __esm({
-  "packages/planning-engine/dist/structural/structural-coordination-engine.js"() {
+  "../planning-engine/dist/structural/structural-coordination-engine.js"() {
     "use strict";
     init_dist();
     init_dist2();
@@ -7424,9 +7627,9 @@ var init_structural_coordination_engine = __esm({
   }
 });
 
-// packages/planning-engine/dist/index.js
+// ../planning-engine/dist/index.js
 var init_dist3 = __esm({
-  "packages/planning-engine/dist/index.js"() {
+  "../planning-engine/dist/index.js"() {
     "use strict";
     init_validator();
     init_generator();
@@ -7458,9 +7661,9 @@ var init_dist3 = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/editing/planner.js
+// ../ai-orchestration/dist/editing/planner.js
 var init_planner2 = __esm({
-  "packages/ai-orchestration/dist/editing/planner.js"() {
+  "../ai-orchestration/dist/editing/planner.js"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -7469,16 +7672,16 @@ var init_planner2 = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/research/architectural-research-agent.js
+// ../ai-orchestration/dist/research/architectural-research-agent.js
 var init_architectural_research_agent = __esm({
-  "packages/ai-orchestration/dist/research/architectural-research-agent.js"() {
+  "../ai-orchestration/dist/research/architectural-research-agent.js"() {
     "use strict";
     init_dist();
     init_dist();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/typologies.js
+// ../ai-orchestration/dist/apartment/typologies.js
 function normalizeUnitType(raw) {
   const trimmed = String(raw ?? "").trim();
   const lower = trimmed.toLowerCase();
@@ -7680,7 +7883,7 @@ function allocateApartmentUnitSpaces(options) {
 }
 var UnsupportedUnitTypeError, InvalidCarpetAreaError, InsufficientCarpetAreaError, TYPOLOGY_STUDIO_TEMPLATE, TYPOLOGY_1BHK_TEMPLATE, TYPOLOGY_2BHK_TEMPLATE, TYPOLOGY_3BHK_TEMPLATE, TYPOLOGY_4BHK_TEMPLATE, TYPOLOGY_TEMPLATES, CANONICAL_ROOM_PROGRAMMES;
 var init_typologies = __esm({
-  "packages/ai-orchestration/dist/apartment/typologies.js"() {
+  "../ai-orchestration/dist/apartment/typologies.js"() {
     "use strict";
     UnsupportedUnitTypeError = class extends Error {
       rawUnitType;
@@ -7921,10 +8124,10 @@ var init_typologies = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/site-defaults.js
+// ../ai-orchestration/dist/apartment/site-defaults.js
 var DEFAULT_APARTMENT_SETBACKS_MM, DEFAULT_APARTMENT_SETBACKS_M;
 var init_site_defaults = __esm({
-  "packages/ai-orchestration/dist/apartment/site-defaults.js"() {
+  "../ai-orchestration/dist/apartment/site-defaults.js"() {
     "use strict";
     DEFAULT_APARTMENT_SETBACKS_MM = {
       front: 3e3,
@@ -7941,7 +8144,7 @@ var init_site_defaults = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/manifest.js
+// ../ai-orchestration/dist/apartment/manifest.js
 function buildApartmentGenerationManifest(input) {
   const { site, apartmentConfig } = input;
   const setbacks = site.setbacksMm ?? DEFAULT_APARTMENT_SETBACKS_MM;
@@ -8211,7 +8414,7 @@ function validateSchematicMatchesManifest(schematic, manifest) {
 }
 var SQM_TO_SQFT, M_TO_FT;
 var init_manifest = __esm({
-  "packages/ai-orchestration/dist/apartment/manifest.js"() {
+  "../ai-orchestration/dist/apartment/manifest.js"() {
     "use strict";
     init_typologies();
     init_site_defaults();
@@ -8220,7 +8423,7 @@ var init_manifest = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/aspect-ratio.js
+// ../ai-orchestration/dist/orchestration/aspect-ratio.js
 function roundToStep(value, step) {
   return Math.round(value / step) * step;
 }
@@ -8242,7 +8445,7 @@ function computeAspectAdaptedDimensions(plotWidthM, plotDepthM) {
 }
 var MIN_OUTPUT_DIMENSION_PX, MAX_OUTPUT_DIMENSION_PX, OUTPUT_DIMENSION_STEP_PX, TARGET_PIXEL_BUDGET, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO;
 var init_aspect_ratio = __esm({
-  "packages/ai-orchestration/dist/orchestration/aspect-ratio.js"() {
+  "../ai-orchestration/dist/orchestration/aspect-ratio.js"() {
     "use strict";
     MIN_OUTPUT_DIMENSION_PX = 512;
     MAX_OUTPUT_DIMENSION_PX = 1536;
@@ -8253,7 +8456,17 @@ var init_aspect_ratio = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js
+// ../ai-orchestration/dist/orchestration/image-prompt-compiler.js
+function computeDeterministicHashHex(input) {
+  const seeds = [2166136261, 2654435769, 2246822507, 3266489909, 668265263, 374761393, 3550635116, 4251993797];
+  for (let i = 0; i < input.length; i++) {
+    const code = input.charCodeAt(i);
+    for (let s = 0; s < seeds.length; s++) {
+      seeds[s] = Math.imul(seeds[s] ^ code + s * 31, 16777619) >>> 0;
+    }
+  }
+  return seeds.map((v) => v.toString(16).padStart(8, "0")).join("");
+}
 function titleCase(value) {
   return value.charAt(0).toUpperCase() + value.slice(1);
 }
@@ -8272,32 +8485,58 @@ function buildRoomSchedule(input) {
   const parts = [];
   if (hard.bedroomCount > 0)
     parts.push(`${hard.bedroomCount} bedroom(s)`);
-  if (hard.bathroomCount > 0)
-    parts.push(`${hard.bathroomCount} bathroom(s)`);
+  if (hard.bathroomCount > 0) {
+    const attached = soft.attachedBathroomsCount > 0 ? ` (${soft.attachedBathroomsCount} attached en-suite)` : "";
+    parts.push(`${hard.bathroomCount} bathroom(s)${attached}`);
+  }
   if (hard.livingRoomRequired)
     parts.push("living room");
   if (hard.kitchenRequired)
     parts.push(soft.openKitchen ? "open kitchen" : "kitchen");
   if (hard.diningRoomRequired)
     parts.push("dining room");
-  if (hard.staircaseRequired)
-    parts.push("staircase");
+  if (hard.serviceYardRequired)
+    parts.push("utility / wash area");
+  if (hard.staircaseRequired || hard.floorsCount > 1)
+    parts.push("internal staircase");
   if (hard.liftRequired)
-    parts.push("lift");
+    parts.push("residential lift");
   if (soft.poojaRoom)
     parts.push("pooja room");
   if (soft.studyRoom)
-    parts.push("study");
+    parts.push("study room");
   if (soft.servantQuarter)
     parts.push("servant quarter");
+  if (soft.balconyPreferred)
+    parts.push("balcony / verandah");
   for (const custom of hard.customRooms ?? []) {
     parts.push(`${custom.count} x ${custom.name ?? String(custom.type)}`);
   }
   return parts.join(", ");
 }
+function inferFootprintShape(input, brief) {
+  const explicit = input.footprintShape ?? input.requirements.footprintShape;
+  if (typeof explicit === "string" && explicit.trim().length > 0) {
+    return explicit.trim();
+  }
+  const lower = brief.toLowerCase();
+  if (/\bl[-\s]?shape/i.test(lower))
+    return "L-shaped";
+  if (/\bu[-\s]?shape/i.test(lower))
+    return "U-shaped";
+  if (/\bcourtyard\b/i.test(lower))
+    return "Courtyard-centered";
+  if (/\bstepped\b/i.test(lower))
+    return "Stepped / articulated";
+  if (/\bt[-\s]?shape/i.test(lower))
+    return "T-shaped";
+  if (/\bh[-\s]?shape/i.test(lower))
+    return "H-shaped";
+  return String(input.site.plotShape || input.requirements.plotShape || "rectangular");
+}
 function compileFloorPlanImagePrompt(input) {
   const { requirements, site } = input;
-  const { hard } = requirements;
+  const { hard, soft } = requirements;
   const { setbacks } = site;
   const aspect = computeAspectAdaptedDimensions(site.plotWidth / 1e3, site.plotDepth / 1e3);
   const width = input.width ?? aspect.width;
@@ -8306,29 +8545,79 @@ function compileFloorPlanImagePrompt(input) {
   const plotWidthM = (site.plotWidth / 1e3).toFixed(2);
   const plotDepthM = (site.plotDepth / 1e3).toFixed(2);
   const floors = Math.max(1, hard.floorsCount);
-  const floorLabel = floors === 1 ? "single-storey ground floor" : `${floors}-storey`;
+  const floorLabel = floors === 1 ? "single-storey ground floor" : floors === 2 ? "2-storey (G+1: Ground Floor + First Floor)" : `${floors}-storey`;
   const brief = (input.additionalPrompt ?? requirements.rawUserPrompt ?? "").trim();
   const roomSchedule2 = buildRoomSchedule(input);
+  const footprintShape = inferFootprintShape(input, brief);
+  const siteShape = String(site.plotShape || requirements.plotShape || "rectangular");
+  const northDeg = site.orientation ?? requirements.orientationDegrees ?? 0;
+  const entranceSpec = input.entranceLocation?.trim() || `${titleCase(site.roadFacing)}-facing main arrival foyer${soft.vastuCompliance ? " (Vastu auspicious entry)" : ""}`;
+  const relationshipDirectives = [
+    "Public arrival sequence: Road -> Entrance Porch/Foyer -> Living Room -> Dining Room -> Kitchen.",
+    "Private zone: Bedrooms grouped with direct access to en-suite/common bathrooms, buffered from main public entry."
+  ];
+  if (hard.kitchenRequired && hard.diningRoomRequired) {
+    relationshipDirectives.push("Kitchen directly adjacent to Dining Room" + (hard.serviceYardRequired ? " with attached Utility/Wash area." : "."));
+  }
+  if (floors > 1 || hard.staircaseRequired) {
+    relationshipDirectives.push("Staircase accessible from Foyer/Living circulation lobby with aligned vertical core across Ground Floor and First Floor.");
+  }
+  const environmentalAndZoningLines = [];
+  if (soft.vastuCompliance) {
+    environmentalAndZoningLines.push("VASTU PREFERENCES: Vastu Shastra compliant zoning (Kitchen in SE/NW, Master Bedroom in SW, Living/Entrance in N/NE/E, Pooja in NE, Staircase in S/SW/W).");
+  }
+  if (soft.naturalLightPreference) {
+    environmentalAndZoningLines.push(`DAYLIGHT & VENTILATION: ${titleCase(String(soft.naturalLightPreference))} natural daylighting and cross-ventilation via exterior windows${/\bots\b|courtyard/i.test(brief) ? " and OTS ventilation shaft" : ""}.`);
+  }
+  if (input.architecturalStyle?.trim()) {
+    environmentalAndZoningLines.push(`ARCHITECTURAL STYLE: ${input.architecturalStyle.trim()}.`);
+  }
+  const validVillaRefs = (input.referenceImages ?? []).filter((r) => !/apartment|multi_unit|flats_\d/i.test(r.id) && !/apartment|multi_unit|flats_\d/i.test(r.name));
   const directiveLines = [
     "Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).",
     "",
     `PROJECT: ${requirements.projectName}, ${floorLabel}.`,
-    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), road facing ${titleCase(site.roadFacing)}.`,
+    `BUILDING TYPE: Single-family independent residential villa (${hard.bedroomCount} BHK, ${hard.bathroomCount} Bath, ${floors} floor(s)).`,
+    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), site shape ${siteShape}, road facing ${titleCase(site.roadFacing)}, North direction ${northDeg} deg.`,
     `SETBACKS: front ${setbacks.front}mm, rear ${setbacks.rear}mm, left ${setbacks.left}mm, right ${setbacks.right}mm.`,
+    `FOOTPRINT SHAPE: ${footprintShape} building footprint within the buildable setback envelope.`,
+    `ENTRANCE LOCATION: ${entranceSpec}.`,
     `ROOM PROGRAM: ${roomSchedule2 || "standard residential layout"}.`,
-    ...hard.parkingRequired && hard.parkingSpacesCount > 0 ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s).`] : [],
+    ...hard.parkingRequired && hard.parkingSpacesCount > 0 ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s) at front/roadside setback bay.`] : [],
+    `ROOM RELATIONSHIPS: ${relationshipDirectives.join(" ")}`,
+    ...environmentalAndZoningLines,
     ...brief.length > 0 ? [`ADDITIONAL BRIEF: ${brief}`] : [],
+    ...input.correctionFeedback?.trim() ? [`RETRY CORRECTION FEEDBACK (Attempt #${input.generationAttempt ?? 2}): ${input.correctionFeedback.trim()}`] : [],
     "",
     "MANDATORY DIRECTIVES:",
     "- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.",
-    "- Clear room separation, proper wall thicknesses, door swings, and window openings.",
-    "- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).",
-    ...input.referenceImages && input.referenceImages.length > 0 ? ["- Use the supplied reference images for visual drafting style. Current project requirements always override references."] : [],
+    "- Consistent wall thickness representation (thicker external walls, thinner internal partitions) and distinct room boundaries.",
+    "- Recognizable doors with clear door swing arcs, and clear window positions on exterior walls.",
+    "- Proper staircase representation with tread lines and UP/DN directional arrows.",
+    "- Logical circulation, appropriate space proportions, and distinct outdoor/semi-open spaces (parking, balcony, verandah, OTS).",
+    ...floors > 1 ? [
+      `- MULTI-FLOOR PRESENTATION: Render ONE master architectural sheet containing independently identifiable, clearly separated GROUND FLOOR PLAN and FIRST FLOOR PLAN drawings (${floors} levels total). Never omit the upper floor.`
+    ] : [],
+    "- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING, BALCONY, STAIR, UTILITY, POOJA).",
+    "- Do not invent exact technical dimensions, certifications, or building-code approvals; exact dimensions are generated from validated CAD geometry.",
+    ...validVillaRefs.length > 0 ? ["- Use the supplied reference images for visual drafting style only. Current project requirements always override references."] : [],
     "",
     "STRICT PROHIBITIONS:",
-    "Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text."
+    "Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, multi-unit apartment layouts, or non-Latin text."
   ];
   const prompt = directiveLines.join("\n");
+  const promptHash = computeDeterministicHashHex(prompt);
+  const projectRequirementsFingerprint = input.projectRequirementsFingerprint ?? `fp_${computeDeterministicHashHex(JSON.stringify({
+    hard: requirements.hard,
+    soft: requirements.soft,
+    plotWidth: site.plotWidth,
+    plotDepth: site.plotDepth,
+    roadFacing: site.roadFacing,
+    setbacks: site.setbacks,
+    footprintShape,
+    brief
+  })).slice(0, 16)}`;
+  const selectedReferenceImageIds = validVillaRefs.map((r) => r.id);
   return {
     schemaVersion: 1,
     promptVersion: FLOOR_PLAN_PROMPT_VERSION,
@@ -8337,7 +8626,7 @@ function compileFloorPlanImagePrompt(input) {
     seed: seed2,
     width,
     height,
-    referenceImages: input.referenceImages,
+    referenceImages: validVillaRefs.length > 0 ? validVillaRefs : void 0,
     referenceDiagnostics: input.referenceDiagnostics,
     metadata: {
       ...requirements.projectId ? { projectId: requirements.projectId } : {},
@@ -8347,7 +8636,15 @@ function compileFloorPlanImagePrompt(input) {
       floorsCount: floors,
       roadFacing: site.roadFacing,
       projectType: "residential_independent",
-      referenceDiagnostics: input.referenceDiagnostics
+      referenceDiagnostics: input.referenceDiagnostics,
+      promptVersion: FLOOR_PLAN_PROMPT_VERSION,
+      promptHash,
+      projectRequirementsFingerprint,
+      selectedReferenceImageIds,
+      ...input.imageModel ? { imageModel: input.imageModel } : {},
+      generationAttempt: input.generationAttempt ?? 1,
+      ...input.correctionFeedback ? { correctionFeedback: input.correctionFeedback } : {},
+      promptPreview: prompt
     }
   };
 }
@@ -8458,22 +8755,22 @@ function compileApartmentFloorPlanImagePrompt(input) {
 }
 var FLOOR_PLAN_PROMPT_VERSION, NEGATIVE_PROMPT, APARTMENT_NEGATIVE_PROMPT, APARTMENT_CONCEPT_ROOM_WORDS, APARTMENT_CONCEPT_CORE_WORDS;
 var init_image_prompt_compiler = __esm({
-  "packages/ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
+  "../ai-orchestration/dist/orchestration/image-prompt-compiler.js"() {
     "use strict";
     init_manifest();
     init_aspect_ratio();
     FLOOR_PLAN_PROMPT_VERSION = 3;
-    NEGATIVE_PROMPT = "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo";
+    NEGATIVE_PROMPT = "perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo, multi-unit apartment block, elevator core lobby, commercial office";
     APARTMENT_NEGATIVE_PROMPT = "NO VILLA, NO SINGLE FAMILY HOUSE, NO EXTRA FLATS, NO MISSING FLATS, NO MERGED FLATS, NO WRONG UNIT MIX, NO EXTRA BEDROOMS, NO MISSING BEDROOMS, NO EXTRA LIFTS, NO MISSING LIFTS, NO EXTRA STAIRS, NO MISSING STAIRS, NO RANDOM CORE, NO RANDOM AMENITIES, NO RANDOM ROOMS, NO CYRILLIC, NO RUSSIAN, NO NON-LATIN SCRIPT, NO GIBBERISH, NO PSEUDO-TEXT, NO RANDOM NUMBERS, NO WATERMARK, NO LOGO, NO 3D, NO PERSPECTIVE, NO PHOTOREALISTIC INTERIOR, NO HAND DRAWING, NO ARTISTIC RENDERING, NO DISTORTED WALLS, NO OVERLAPPING FLATS, NO FLOATING WALLS";
     APARTMENT_CONCEPT_ROOM_WORDS = ["LIVING", "DINING", "KITCHEN", "BEDROOM", "BATH", "UTILITY", "FOYER"];
     APARTMENT_CONCEPT_CORE_WORDS = ["LIFT", "STAIR", "LOBBY"];
   }
 });
 
-// packages/ai-orchestration/dist/providers/image-generation.js
+// ../ai-orchestration/dist/providers/image-generation.js
 var ImageProviderError, DEFAULT_FLUX_MODEL, CloudflareImageProvider;
 var init_image_generation = __esm({
-  "packages/ai-orchestration/dist/providers/image-generation.js"() {
+  "../ai-orchestration/dist/providers/image-generation.js"() {
     "use strict";
     ImageProviderError = class _ImageProviderError extends Error {
       code;
@@ -8509,10 +8806,10 @@ var init_image_generation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/pollinations-image.js
+// ../ai-orchestration/dist/providers/pollinations-image.js
 var POLLINATIONS_PROVIDER_NAME, POLLINATIONS_BASE_URL, DEFAULT_POLLINATIONS_IMAGE_MODEL, PollinationsImageProvider;
 var init_pollinations_image = __esm({
-  "packages/ai-orchestration/dist/providers/pollinations-image.js"() {
+  "../ai-orchestration/dist/providers/pollinations-image.js"() {
     "use strict";
     init_image_generation();
     POLLINATIONS_PROVIDER_NAME = "pollinations";
@@ -8548,7 +8845,7 @@ var init_pollinations_image = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/providers/gemini-image.js
+// ../ai-orchestration/dist/providers/gemini-image.js
 function mapDimensionsToGeminiAspectRatio(width, height) {
   if (!width || !height || width <= 0 || height <= 0) {
     return "4:3";
@@ -8579,7 +8876,11 @@ function buildGeminiImagePrompt(request, options) {
   parts.push(request.prompt);
   parts.push("Do NOT generate 3D perspective views.");
   parts.push("Do NOT generate exterior building renderings.");
-  parts.push("Do NOT render authoritative room labels.");
+  if (options.hasStructuralPlan) {
+    parts.push("Do NOT render authoritative room labels.");
+  } else {
+    parts.push("Use clear English room labels where supported. Do NOT invent exact technical dimensions, certifications, or building-code approvals.");
+  }
   parts.push("Top-down orthographic 2D floor plan view only.");
   return parts.join("\n");
 }
@@ -8675,7 +8976,7 @@ function extractGeminiImageBytes(response2) {
 }
 var import_node_crypto, DEFAULT_GEMINI_IMAGE_MODEL, DEFAULT_GEMINI_IMAGE_SIZE, GEMINI_IMAGE_PROVIDER_NAME, GEMINI_API_BASE_URL, GeminiImageProvider;
 var init_gemini_image = __esm({
-  "packages/ai-orchestration/dist/providers/gemini-image.js"() {
+  "../ai-orchestration/dist/providers/gemini-image.js"() {
     "use strict";
     import_node_crypto = __toESM(require("node:crypto"));
     init_image_generation();
@@ -8936,7 +9237,7 @@ var init_gemini_image = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/image-quality-gate.js
+// ../ai-orchestration/dist/orchestration/image-quality-gate.js
 function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight = 1024) {
   const byteSize = imageBuffer.length;
   if (byteSize < 5e3) {
@@ -8998,12 +9299,12 @@ function verifyImageQuality(imageBuffer, _expectedWidth = 1024, _expectedHeight 
   };
 }
 var init_image_quality_gate = __esm({
-  "packages/ai-orchestration/dist/orchestration/image-quality-gate.js"() {
+  "../ai-orchestration/dist/orchestration/image-quality-gate.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/jurisdiction.js
+// ../ai-orchestration/dist/apartment/jurisdiction.js
 function calculateMaharashtraParking(units, visitorPercent = 0.1) {
   let residentCars = 0;
   let twoWheelers = 0;
@@ -9357,19 +9658,19 @@ function getApartmentRulesProfile(jurisdiction, options = {}) {
   }
 }
 var init_jurisdiction = __esm({
-  "packages/ai-orchestration/dist/apartment/jurisdiction.js"() {
+  "../ai-orchestration/dist/apartment/jurisdiction.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/floor-configuration.js
+// ../ai-orchestration/dist/apartment/floor-configuration.js
 var init_floor_configuration = __esm({
-  "packages/ai-orchestration/dist/apartment/floor-configuration.js"() {
+  "../ai-orchestration/dist/apartment/floor-configuration.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/layout-planner.js
+// ../ai-orchestration/dist/apartment/layout-planner.js
 function rectFromEdges(x0, y0, x1, y1) {
   const ax = r3(Math.min(x0, x1));
   const ay = r3(Math.min(y0, y1));
@@ -10234,7 +10535,7 @@ function buildAreaReport(units, lobby, lifts, stairs, shafts, footprint2, builda
 }
 var APARTMENT_CONCEPT_STRATEGIES, STRATEGY_PARAMS, COMMON_LOBBY_ID, r3, areaOf, sum, clamp2, LOBBY_NODE;
 var init_layout_planner = __esm({
-  "packages/ai-orchestration/dist/apartment/layout-planner.js"() {
+  "../ai-orchestration/dist/apartment/layout-planner.js"() {
     "use strict";
     init_dist();
     APARTMENT_CONCEPT_STRATEGIES = [
@@ -10367,7 +10668,7 @@ var init_layout_planner = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/polygon-layout.js
+// ../ai-orchestration/dist/apartment/polygon-layout.js
 function shoelaceAreaSqM(vertices) {
   let s = 0;
   const n2 = vertices.length;
@@ -10554,12 +10855,12 @@ function projectSitOutBalcony(params) {
   };
 }
 var init_polygon_layout2 = __esm({
-  "packages/ai-orchestration/dist/apartment/polygon-layout.js"() {
+  "../ai-orchestration/dist/apartment/polygon-layout.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/vastu.js
+// ../ai-orchestration/dist/apartment/vastu.js
 function computePolygonCentroid(vertices) {
   const n2 = vertices.length;
   if (n2 === 0)
@@ -11042,7 +11343,7 @@ function renderVastuChakraSvgOverlay(report, options = {}) {
 }
 var VASTU_16_ZONES;
 var init_vastu = __esm({
-  "packages/ai-orchestration/dist/apartment/vastu.js"() {
+  "../ai-orchestration/dist/apartment/vastu.js"() {
     "use strict";
     VASTU_16_ZONES = [
       { code: "N", traditionalName: "Kuber", label: "N", centerDeg: 0, startDeg: 348.75, endDeg: 11.25 },
@@ -11065,7 +11366,7 @@ var init_vastu = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/schematic.js
+// ../ai-orchestration/dist/apartment/schematic.js
 function selectBestVastuRoomPermutation(unitId, unitLabel, rooms, vertices, entrancePoint, northAngleDeg = 0) {
   const evalVastu = (candRooms) => {
     return evaluateUnitVastu({
@@ -11462,7 +11763,7 @@ function generateSchematicSvg(data) {
 }
 var esc;
 var init_schematic = __esm({
-  "packages/ai-orchestration/dist/apartment/schematic.js"() {
+  "../ai-orchestration/dist/apartment/schematic.js"() {
     "use strict";
     init_typologies();
     init_site_defaults();
@@ -11473,7 +11774,7 @@ var init_schematic = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/feasibility.js
+// ../ai-orchestration/dist/apartment/feasibility.js
 function validateIndianApartmentFeasibility(options) {
   const { site, floorCount, flatsPerFloor, unitMix, commonCore = {}, jurisdiction = "pune_pmc", floorStrategy = "typical" } = options;
   const conflicts = [];
@@ -11635,14 +11936,14 @@ function validateIndianApartmentFeasibility(options) {
   };
 }
 var init_feasibility = __esm({
-  "packages/ai-orchestration/dist/apartment/feasibility.js"() {
+  "../ai-orchestration/dist/apartment/feasibility.js"() {
     "use strict";
     init_jurisdiction();
     init_site_defaults();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/questionnaire.js
+// ../ai-orchestration/dist/apartment/questionnaire.js
 function checkApartmentCompleteness(config) {
   const missingFields = [];
   const questions = [];
@@ -11708,12 +12009,12 @@ function checkApartmentCompleteness(config) {
   };
 }
 var init_questionnaire = __esm({
-  "packages/ai-orchestration/dist/apartment/questionnaire.js"() {
+  "../ai-orchestration/dist/apartment/questionnaire.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/types/apartment.js
+// ../ai-orchestration/dist/types/apartment.js
 function validateApartmentFeasibility(site, config) {
   const detailed = validateIndianApartmentFeasibility({
     site,
@@ -11741,7 +12042,7 @@ function validateApartmentFeasibility(site, config) {
   };
 }
 var init_apartment = __esm({
-  "packages/ai-orchestration/dist/types/apartment.js"() {
+  "../ai-orchestration/dist/types/apartment.js"() {
     "use strict";
     init_jurisdiction();
     init_typologies();
@@ -11752,7 +12053,7 @@ var init_apartment = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/vision-interpretation.js
+// ../ai-orchestration/dist/orchestration/vision-interpretation.js
 function validateVisionInterpretationPayload(payload, isApartment) {
   const errors = [];
   if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
@@ -11928,7 +12229,7 @@ async function interpretPlanImageWithGemini(provider, options) {
 }
 var IMAGE_INTERPRETATION_SCHEMA, COMMON_AREA_FLAT_ID, INTERPRETATION_FRAME, coreBoxItem, APARTMENT_IMAGE_INTERPRETATION_SCHEMA;
 var init_vision_interpretation = __esm({
-  "packages/ai-orchestration/dist/orchestration/vision-interpretation.js"() {
+  "../ai-orchestration/dist/orchestration/vision-interpretation.js"() {
     "use strict";
     init_base();
     IMAGE_INTERPRETATION_SCHEMA = {
@@ -12029,6 +12330,18 @@ var init_vision_interpretation = __esm({
                 type: "array",
                 items: { type: "string" },
                 description: "IDs or names of directly connected adjacent rooms."
+              },
+              polygon: {
+                type: "array",
+                description: "Optional ordered polygon vertices when the room is L-shaped, stepped, or non-rectangular.",
+                items: {
+                  type: "object",
+                  required: ["x", "y"],
+                  properties: {
+                    x: { type: "number" },
+                    y: { type: "number" }
+                  }
+                }
               }
             }
           }
@@ -12173,7 +12486,7 @@ var init_vision_interpretation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/architectural-evaluation.js
+// ../ai-orchestration/dist/orchestration/architectural-evaluation.js
 async function evaluatePlanArchitecturally(provider, options) {
   const systemPrompt = [
     "You are a senior residential architect reviewing a validated floor plan.",
@@ -12312,7 +12625,7 @@ async function evaluateMasterImageWithGemini(provider, options) {
 }
 var ARCHITECTURAL_EVALUATION_SCHEMA, MASTER_IMAGE_EVALUATION_SCHEMA, MASTER_QUALITY_GATE_THRESHOLD;
 var init_architectural_evaluation = __esm({
-  "packages/ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
+  "../ai-orchestration/dist/orchestration/architectural-evaluation.js"() {
     "use strict";
     init_base();
     ARCHITECTURAL_EVALUATION_SCHEMA = {
@@ -12381,7 +12694,7 @@ var init_architectural_evaluation = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/orchestration/apartment-preflight.js
+// ../ai-orchestration/dist/orchestration/apartment-preflight.js
 async function runGeminiApartmentPreflight(aiProvider, imageBase64, expected, imageMimeType = "image/png") {
   const unitMixDesc = expected.unitMix && expected.unitMix.length > 0 ? ` (${expected.unitMix.map((u) => `${u.count} x ${u.unitType}`).join(", ")})` : "";
   const userPrompt = `Analyze the attached generated floor-plan image. The brief requires: ${expected.flatsPerFloor} flats per floor${unitMixDesc}, ${expected.liftCount} lift(s), ${expected.stairCount} staircase(s). Return structured JSON according to the schema.`;
@@ -12487,7 +12800,7 @@ function evaluateApartmentPreflight(detected, expected) {
 }
 var APARTMENT_PREFLIGHT_SCHEMA, APARTMENT_PREFLIGHT_PROMPT;
 var init_apartment_preflight = __esm({
-  "packages/ai-orchestration/dist/orchestration/apartment-preflight.js"() {
+  "../ai-orchestration/dist/orchestration/apartment-preflight.js"() {
     "use strict";
     APARTMENT_PREFLIGHT_SCHEMA = {
       type: "object",
@@ -12592,7 +12905,7 @@ Return your exact structured findings following the JSON schema.
   }
 });
 
-// packages/ai-orchestration/dist/apartment/schematic-renderer.js
+// ../ai-orchestration/dist/apartment/schematic-renderer.js
 function crc32(buf) {
   let crc = -1;
   for (let i = 0; i < buf.length; i++) {
@@ -13184,7 +13497,7 @@ function renderSchematicPng512(schematic, options = {}) {
 }
 var import_node_zlib, table, FONT_5X7;
 var init_schematic_renderer = __esm({
-  "packages/ai-orchestration/dist/apartment/schematic-renderer.js"() {
+  "../ai-orchestration/dist/apartment/schematic-renderer.js"() {
     "use strict";
     import_node_zlib = __toESM(require("node:zlib"));
     table = new Int32Array(256);
@@ -13248,7 +13561,7 @@ var init_schematic_renderer = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/reference-library.js
+// ../ai-orchestration/dist/apartment/reference-library.js
 function resolveApartmentReferenceBucket(projectType, flatsPerFloor) {
   if (projectType === "residential_independent") {
     return "villa";
@@ -13268,8 +13581,12 @@ function resolveApartmentReferenceBucket(projectType, flatsPerFloor) {
       return null;
   }
 }
-function selectReferenceCandidates(_bucket, availableFiles, maxCount) {
-  const sorted3 = [...availableFiles].sort((a, b) => a.id.localeCompare(b.id));
+function isApartmentReferencePlateName(idOrName) {
+  return /apartment|multi_unit|flats_\d/i.test(idOrName);
+}
+function selectReferenceCandidates(bucket, availableFiles, maxCount) {
+  const filtered = bucket === "villa" ? availableFiles.filter((f) => !isApartmentReferencePlateName(f.id) && !isApartmentReferencePlateName(f.name)) : availableFiles;
+  const sorted3 = [...filtered].sort((a, b) => a.id.localeCompare(b.id));
   const requestedIds = sorted3.map((f) => f.id);
   const selected = sorted3.slice(0, Math.max(0, maxCount));
   return { selected, requestedIds };
@@ -13296,12 +13613,12 @@ function finalizeReferenceSelection(bucket, requestedIds, selectedIds, attachedI
   };
 }
 var init_reference_library = __esm({
-  "packages/ai-orchestration/dist/apartment/reference-library.js"() {
+  "../ai-orchestration/dist/apartment/reference-library.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/adapter.js
+// ../ai-orchestration/dist/apartment/adapter.js
 function apartmentExpectationFromManifest(manifest) {
   return {
     flats: manifest.units.exactCount,
@@ -13788,7 +14105,7 @@ function adaptSchematicToBuilding(schematic, options) {
 }
 var mm, common;
 var init_adapter = __esm({
-  "packages/ai-orchestration/dist/apartment/adapter.js"() {
+  "../ai-orchestration/dist/apartment/adapter.js"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -13807,16 +14124,16 @@ var init_adapter = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/structural-representation.js
+// ../ai-orchestration/dist/apartment/structural-representation.js
 var init_structural_representation = __esm({
-  "packages/ai-orchestration/dist/apartment/structural-representation.js"() {
+  "../ai-orchestration/dist/apartment/structural-representation.js"() {
     "use strict";
   }
 });
 
-// packages/ai-orchestration/dist/apartment/deterministic-planner.js
+// ../ai-orchestration/dist/apartment/deterministic-planner.js
 var init_deterministic_planner = __esm({
-  "packages/ai-orchestration/dist/apartment/deterministic-planner.js"() {
+  "../ai-orchestration/dist/apartment/deterministic-planner.js"() {
     "use strict";
     init_dist3();
     init_schematic();
@@ -13828,7 +14145,7 @@ var init_deterministic_planner = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/structural-renderer.js
+// ../ai-orchestration/dist/apartment/structural-renderer.js
 function validateStructuralPlanRepresentation(rep) {
   const errors = [];
   if (!rep) {
@@ -14177,7 +14494,7 @@ function renderStructuralPlan(rep, options = {}) {
 }
 var import_node_crypto2, import_node_zlib2, STRUCTURAL_RENDERER_VERSION, InvalidStructuralPlanError, CRC_TABLE, StructuralRasterizer;
 var init_structural_renderer = __esm({
-  "packages/ai-orchestration/dist/apartment/structural-renderer.js"() {
+  "../ai-orchestration/dist/apartment/structural-renderer.js"() {
     "use strict";
     import_node_crypto2 = __toESM(require("node:crypto"));
     import_node_zlib2 = __toESM(require("node:zlib"));
@@ -14328,7 +14645,7 @@ var init_structural_renderer = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/archlang-adapter.js
+// ../ai-orchestration/dist/apartment/archlang-adapter.js
 function computeSourceHash(text2) {
   try {
     const nodeCrypto = typeof require === "function" ? require("node:crypto") : globalThis.crypto;
@@ -14800,7 +15117,7 @@ function buildingModelToArchLangSource(building, options) {
 }
 var ARCHLANG_ADAPTER_VERSION, ARCHLANG_PACKAGE_VERSION;
 var init_archlang_adapter = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-adapter.js"() {
+  "../ai-orchestration/dist/apartment/archlang-adapter.js"() {
     "use strict";
     init_dist();
     ARCHLANG_ADAPTER_VERSION = "1.0.0";
@@ -14808,7 +15125,7 @@ var init_archlang_adapter = __esm({
   }
 });
 
-// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
+// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js
 function fnv1a(s) {
   let h = 2166136261;
   for (let i = 0; i < s.length; i++) {
@@ -45575,7 +45892,7 @@ function compile(source, opts = {}) {
 }
 var import_meta, MODEL_RANGE_MM, MAX_ANGLE_DEG, drawnDecimal, plainDecimal, fmt0, fmt2, fmt3, fmt4, IMPERIAL_MESSAGE, isDigit, isIdentStart, isIdentPart, lexCache, LEX_CACHE_MAX, NORTH_DIRS, AUTO_DIMS_MODES, ARC_DIRS, REL_DIRS, AXIS_ALIGNS, REL_DIR_AXIS, REL_ALIGN_CENTERS, REL_ALIGNS, USE_KINDS, FURNITURE_ANCHORS, DIM_REFS, VERTICAL_DIRS, OUTDOOR_KINDS, RAIL_EDGES, RAIL_SIDES, FENCE_STYLES, STRIP_DIRS, LEVEL_SHARED_KINDS, TITLE_FIELD_KEY, SCHEDULE_SUBJECTS, COMPASS_DIRECTIONS, HEMISPHERES, fallbacks, BUDGET_SUBSTITUTE, BIN_PREC, BIN_OP, RANGE_PREC, MAX_NEST_DEPTH, exprDepth, heights, tooDeep, NUM0, MAX_RANGE, MAX_CALL_DEPTH, EVAL_UNITS, EXPAND_UNITS, MAX_STACK_UNITS, EXPAND_RESERVE, stackUse, reported, MAX_EVAL_STEPS, DIAGNOSTIC_STEPS, meter, StepLimitSignal, datumReader, bodyReader, builtinDispatch, XML_ILLEGAL, PLAIN_UNSAFE, REPLACEMENT, DEFAULT_THEME, ALIASES, THEMES, STYLE_KEYS, STYLE_KINDS, STYLE_KEYS_INVERSE, BAD_VALUE, ids, next, STOREY_HEIGHT, DOOR_HEAD, WINDOW_SILL, WINDOW_HEAD, MAX_HEIGHT, ARC_STEP_DEG, ARC_MIN_STEPS, ARC_PIECE_DEG, TAU, deg, ARC_QUANTUM, radiusText, diameterText, MAX_CELLS_PER_BOX, MAX_SAFE_CELL, GridIndex, VERTEX_EPS, MAX_Y_BANDS, LABEL_GRID, LABEL_REFINE_ROUNDS, LABEL_REFINE_STEPS, RING_READS_PER_STEP, sub, add, mul, length, normal, emptyBounds, dimSwapped, DIM_INSIDE_EPS, segBox, WallGrid, RENDER_PASSES, EXTRA_THIN_RATIO, MITER_LIMIT, DIM_TICK, PARALLEL_SIN, cross2, dot2, perp, sub2, TAU2, Y_MONOTONE_MEMO, edgeStart, edgeEnd, reverseLoop, KEY_SCALE, SNAP_MM, PointInterner, tessellateLoops, asWallLike, faceStart, faceEnd, faceToEdge, mapArcFace, along, positive, KNOWN_MATERIALS, DEFAULT_MATERIAL, GROUND_MATERIALS, FLOOR_MATERIALS, GRAVEL_STONES, GRAVEL_GRIT, GRASS_TUFTS, MULCH_CHIPS, DECK_JOINTS, TARMAC_SPECKS, hairline, META, GROUND_SWATCH_FRAME, REACH_FACTOR, MIN_LOOP_AREA, MERGE_SIN, byTag, edgeBBox, inGrownBox, boxesOverlap, byOwnership, edgeLength, edgeDist, outDir, inDir, turn, bandBBox, loopsToPolygons, boxesOverlap2, key, lineOfRun, numbered, rectilinear, runRect, RING_DUST_MM, HINTS, TITLE_FIELDS, KEYWORDS, WALL_STATUSES, DOOR_ENUMS, DOOR_HINGE_NEAR, DOOR_SWING_BUILDING, DOOR_KINDS, DOOR_KIND_CLAUSES, WINDOW_KINDS, WINDOW_KIND_HINGED, enumList, NUM_LITERAL, RULES, STATEMENT_STARTS, KEEP_WORDS, KEEP_GRADES, wall, dashedPattern, MAX_RAIL_POSTS, SYMBOL_INK_MIX, isLoopList, OVAL_MAX_ASPECT, shortSide, centerOf, CABINET_PITCH_MM, MAX_DIVISIONS, PILLOW_TWO_ASPECT, WARDROBE_FRONT, WARDROBE_DOOR_PITCH, WARDROBE_MAX_BAYS, WARDROBE_HANGER_PITCH, WARDROBE_HANGER_BAY, WARDROBE_RAIL_INSET, short, UPHOLSTERY_RADIUS, SEAT_BACK_BAND, DINING_BAND, CHAIR_PITCH, CHAIR_TUCK, SQ5, COS72, COS36, SIN72, SIN36, STAR_SPOKES, MEETING_BAND, CHAIR_PITCH2, CHAIR_TUCK2, POD_BAND, POD_TUCK, pill, HEDGE_MAX_LOBES, GRILL_BARS, PATIO_BAND, PATIO_PITCH, PATIO_TUCK, TRAMPOLINE_SPRINGS, PALM_FRONDS, PALM_LEAFLETS, FIXTURE_FAMILIES, FIXTURE_CATEGORIES, CANONICAL_FIXTURES, FAMILY_OF, M, FIXTURE_FAMILY_MATERIALS, PROBE_RECT, PROBE_SIZES, SHEET_WORDS, SHEET_DECIMAL_KEY, MAX_SHEET_WORD, SHORT_WORDS, MAX_SHORT_WORD, vocabularyKeys, sheetTextKeys, keySet, isSheetTextKey, ENGLISH, PLAIN_SHEET_TEXT, concat, group, indent, line, hardline, DATUM_WORDS, COMPASS_DATUM_ALIASES, EDGE_WORDS, NUM02, SEGMENT_COMPASS_WORDS, SEGMENT_SELECT_RE, fail, listOf, BIN_PREC2, RANGE_PREC2, ptStr, atStr, clamp22, EM_PER_CHAR, ROBOTO_ASCII, ROBOTO_LATIN1, HELVETICA_BOLD_ASCII, HELVETICA_BOLD_LATIN1, UNITS_PER_EM, wider, DIM_TEXT_GAP, LABEL_LINE_PITCH, LABEL_NAME_RISE, LABEL_AREA_DROP, SEPARATOR, REL_DIRS2, REL_ALIGN_SET, USE_SET, axisHint, room, pt, openingLead2, STATEMENT_EXPRS, PARALLEL_SIN2, MEET_TOL_MM, FLUSH_MM, JUNCTION_EPS, JUNCTION_NIB_DEFAULTS, dot, cross, sub3, unitOf, sameSeg, atFreeEnd, datumDiag, rectOf, tileOf, edgesOf, standsOn, lineText, alongText, extent, cornerDiag, CORNER_HINT, ONE_WALL_HINT, DEMOLISHED_HINT, spanText, OFFSET_NOT_AXIS, GLAZING_GAP, SILL_PROJECTION, SILL_HORN, HINGE_MARK_REACH, HINGE_MARK_SPREAD, TILT_MARK_RADIUS, SLIDE_MARK_REACH, SLIDE_MARK_SHARE, SLIDE_HEAD_LENGTH, SLIDE_HEAD_SPREAD, windowEl, PANEL_PROJECTION_DEPTH, PANEL_PROJECTION_MAX_MM, SLIDE_MARK_REACH2, SLIDE_HEAD_LENGTH2, DEFAULT_OPEN, LEAF_SLAB_MM, LEAF_SLAB_MAX_FRACTION, clamp01, door, opening, TIE_NUDGE, keyNum, pt2, CATALOG, CATALOG_CATEGORIES, el, D4_ELEMENTS, at, D4_IDENTITY, D4_HALF_TURN, MATRICES, SIDES_CW, SIDE_NORMAL, OPPOSITE_SIDE, LETTERS_CW, LETTER_SIDE, SIDE_LETTER, BACK_EDGE_DEG, TURNS, OPPOSITE, standoff, TAU3, corners, inBox, DOORWAY_WIDTH_MM, RECT_EDGES, FIXTURE_WALL_TOL_MM, ANCHOR_BACK_EDGES, COUNT_SIZES, ANCHOR_SET, furniture, dim, column, VERTICAL_KINDS, KIND_SET, inkOf, TREAD_GOING_MM, MIN_TREADS, STAIR_LAYER, ELEVATOR_LAYER, MAX_RUN_TREADS, overlapsArea, stair, elevator, escalator, ROOF_LAYER, PARALLEL_SIN3, roof, PLANTING_LAYER, SITE_LAYER, BALCONY_LAYER, OUTDOOR_LAYERS, GROUND, outdoor, RAIL_NEIGHBOURS, VOID_LAYER, VOID_RAIL_LAYER, railCount, voidEl, POST_PITCH, MITRE_MIN, MIN_POSTS, MAX_POSTS, fence, BODY_CLAUSES, wallsFromRooms, BUILTIN_DEFS, BUILTIN_REGISTRY, BUILTIN_RUNTIME, PKG_SPEC, bindingsByDef, SIDE_OF, AXIS_LETTERS, BUBBLE_DIA, BUBBLE_LABEL, AXIS_LEAD, BUBBLE_GAP, NULL_WORLD, num2, BUILTINS, BUILTIN_NAMES, USE_NOUN, PLACE, capFirst, tokensOf, USE_VOCABULARY, FALLBACK_USE_VOCABULARY, PREPARED_USE, PREPARED_DAY_NURSERY, PREPARED_FALLBACK, PREPARED_OPEN_AIR, NON_RESIDENTIAL_VOCABULARY, PREPARED_NON_RESIDENTIAL, MAX_KEEPS, MAX_KEEP_TARGETS, halfOf, keepHalfOf, halfOfCentre, mmText, mmNumber, MESSAGE_TAIL, keepRefsOf, FORM_WORDS, EDGE_ORDER, codeList, axisWord, signWord, wallNoun, isRefusal, NOTHING_MOVED, RunIndex, STACKED_KINDS, KIND_NOUN, MAX_DEPTH, MAX_ITERATIONS, MAX_ELEMENTS, rootZoneFrame, zoneOf, Scope, resolveCache, RESOLVE_CACHE_MAX, levelPlanCache, levelsCache, datumTablesOfIr, instanceBodiesOfIr, stepsSpent, keepStateOfIr, stackedResultsOfIr, stackedStepsOfIr, DERIVED_ELEMENTS_PER_ROOM, DRAWN_LIMIT, gridOverlapHint, MAX_OVERLAP_PAIRS_LISTED, BITS, BITS16, numCompare, BOOLEAN, MIN_PLUS, MAX_MIN, MAX_NET_CURVES, TAU4, boxesMeet, ON_MM, T_EPS, ends, PROBE_MM, MAX_NET_PROBE_WORK, DEFAULT_TOL, roomRing, ROOM_CONTAINMENT_SLACK_MM, isOpenAir, isBedroom, isWetRoom, isKitchen, isGarage, isCirculation, EXTERIOR_NODE, DEFAULT_CLEAR_ALLOWANCE_MM, JAMB_PROBE_INSET_MM, leavesOf, joins, BANDS_MAX, bandsMemo, roomMemo, exact, wallKey, roomKey, CLEARANCE, COLLIDE_MIN, FRACTIONS, W_OUTSIDE, W_OBSTACLE, W_PLACED, W_DISTANCE, BoxSums, DIRECT_TAIL, GRID_SAFE, runLength, centredIn, WRAP_TRIES, tagOf, TAG_PRIMITIVES, tagFont, MAX_CELLS, MAX_PROBE, ObstacleGrid, r2, ROW_H, FONT, COL_NO, COL_NAME, COL_AREA, COL_NET, PAD_AREA_W, AREA_COL, LEGEND_SWATCH, LEGEND_NAME, COL_TAG, COL_ROOMS, COL_WIDTH, COL_TYPE, COL_TYPE_CHARS, COL_HAND, NOTES_NO, NOTES_TEXT, charsIn, wordsColumn, legendKey, NOTE_LINE_CHARS, ROOMS_CELL_CHARS, MAX_NOTE_LINES, isMark, isHigh, isLow, CUT_LOOKBACK, cutAt2, clip, TABLE_GAP, scheduleRowCount, legendRowCount, openingRowCount, noteLines, notesRowCount, tableRowsHeight, BOLD, cellOf, colLeft, GAP_F, SCALEBAR_HGT_F, SCALEBAR_FS_F, SCALEBAR_LABEL_F, SCALEBAR_TARGET_F, TITLE_W_F, TITLE_ROW_F, TITLE_FS_F, NICE_LENGTHS, scaleBarLabel, REACH_LAYERS, PAPER_SIZES, PAPER_ORIENTATIONS, PAPER_MM, SHEET_MM, CHAIN_BASE, CHAIN_STEP, CHAIN_SLOTS, DIM_BAND_FONTS, DIM_BAND_MM, AUTO_SCALE_DENOMINATORS, FIXED_STATEMENT_STARTS, ParseError, parseCache, PARSE_CACHE_MAX, ID_SPANS, Parser, USE_SET2, SIDES, SIDE_AXIS, SIDE_OUT, spanGap, TICK_TOL, FACINGS, SYMBOLIC_FACINGS, PROPERTY_LAYER, ARC_STEPS, HEIGHT_STEPS, MAX_FIT_WORK, fitWork, W_BURIED, BURIED_STEPS, W_TIER, isSymbolElement, boxOf2, centred, shifted, moved, offCentre, LAST_RANK, text, DEFAULT_BODY_RADIUS_MM, MIN_CELL_MM, MAX_CELLS2, MAX_GRID_CELLS, isLivingOrDining, r22, clamp32, LANDING_PROBE_MM, inBox2, FRAME_QUANTUM_MM, snapToFrame, snapPoint, NO_ELEMENTS, D4_MATS, bboxCentre, MAX_FACE_WALL_SEGMENTS, MAX_ENCLOSURE_FACES, MAX_WALL_CONTACTS, MAX_LOOPS_PER_CELL, FACE_BUDGET_CAPS, segmentCount, inBox3, piecesBound, roomCurveCount, roomBoxOf, MAX_GROSS_AREA_TESTS, segmentCount2, TREES, DOUBLE_BED_MIN_WIDTH_MM, DEFAULT_RULESET, LINT_PROFILES, DEFERRED_PROFILE_NUMBERS, ADVISORY_CODE_PROFILES, LINT_PROFILE_NAMES, hasOwn, EPS, WALL_BODY_SLACK_MM, isStraightRun, END_ALONG, END_ACROSS, END_STATIONS, NONE, DIAGONAL_TOL, hinged, ENTRY_USES, PRIVATE_USES, PUBLIC_USES, SERVICE_USES, pk, act, unitMm, mm2, MAX_SYMMETRY_COORD, AXIS_OF_K, gcd, usesLabel, tidy, boxRing, HAND_SIZES, lessYX, r4, MAX_CONTACTS_LISTED, MAX_CONTACT_PROBES, EDGES, cmp, lineKey, key2, BUILTINS2, datumRoom, sorted, MAX_KEEP_PATHS, sorted2, GRADE_RANK, SOURCE_RANK, onLattice, onGrid, EDGE_AXIS, Potentials, namesIn, spanKey, ROOM_TYPES2, USE_TO_ROOM_TYPE, USE_PRIORITY, ROOM_TYPE_TO_USE, USE_SET3, ROOM_TYPE_SET, POINT_SCHEMA, WALL_POINT_SCHEMA, INSTANCE_MARKER, PLAN_JSON_SCHEMA, mm22, WALL_COLLISION_SLACK_MM, shortfall, isWc, isServiceCounter, isCookingSurface, CUT, isShort, isFloorLength, isLowUnit, lowUnitCover, NO_BUILDING, DROP_SKIP, wallPhrase2, openBoundaryPhrase, KIND_WORD, CLI_NAME, swingObstructed, doorwayBlocked, pocketRun, POCKET_RUN_RATIO, doorClearance, doorNearCorner, COLLINEAR_TURN_RAD, angleBetween, leafAcrossDoorway, leafTooWide, exitApproachBlocked, stairUnmatched, SHAFT_MIN_OVERLAP_SHARE, sameBlock, shaftFootprintMismatch, word, pct, FOOT_DOOR_CLEAR_MM, NON_DWELLING_LANDING_MM, MAX_STAIR_WORK, rectOf3, runLength2, inset, STAIR_HEADROOM_MM, landingDepth, FACTS, pieceCount2, ownPieces, swingOverStair, stairNoLanding, stairSideEntry, stairHeadVoid, goingFor, MAX_RISER_TRIES, goingsIn, stairTooSteep, landingCount, landingWords, furnitureOnStair, capitalise, modelCache, nearestCache, gridCache, walkView, fullView, narrowHints, narrowRemedies, MAX_ATTRIBUTION_MEASURES, setKey, widenedClear, edgeLeaves, pairOf, hopsCache, pathTooNarrow, circuitousPath, len, have, want, obstacle, roomKey2, MAX_FACE_CURVES, r24, mm3, byText, MAX_WASTE_PCT, DESCRIBE_FACTS, r25, CAPTION_ROOM_CAP, netField, isUnderlayPiece, mkDim, sidePt, witnessPt, chainOffset, EMPTY_LABELS, DEFAULT_DRAW_COST, MAX_DRAW_UNITS, AXIS_PRIMITIVES, SQRT2, SQRT3, SQRT6, ISO, COS_PSI, SIN_PSI, AXON, lift, ringOf, GLAZING_FRACTION, VIEW_LAYERS, VIEW_LAYER_NAMES, pt3, cap, dashAttr, sheetMm, MAX_IMPORT_LEVELS, E2, W, ERROR_CATALOG, ERROR_CODES, PAD_X, PAD_Y, TITLE_FS, SUB_FS, CODE_FS, MSG_FS, FIX_FS, MSG_LH, FIX_LH, CHIP_LINE_H, ROW_PAD, ROW_GAP, ACCENT_W, ROW_INNER_X, ERROR_ACCENT, WARN_ACCENT, SKIP_WHY, ENCLOSURE_CAP_WHY, dimInside, dimOverlap, openingNotDimensioned, UNIT_UM, dimTextMismatch, pointWords, ONCE_PER_PLACEMENT_CODES, dot3, overlaps, USE_PHRASE, aliasMatch, MAX_ANNOTATION_WORK, annotationOverlap, titleOverflow, symbolWithId, idAuthored, roomRef, doorWithId, pointInRoomFloor, orList, emptyBox, boxesMeet2, MIN_CELL_MM2, MAX_CELLS_ROOM, MAX_GRID_CELLS_ROOM, TIE_MM, roomNoClearPath, EDGE_ANCHORS, wcName, wcSideClearance, ACCESSIBLE_RE, NEGATED_RE, SIDE_WALL_REACH_MM, accessibleWcSideWall, furnitureOverWindow, hobUnderWindow, hobFridgeGap, pieceName, furnClearDeclared, SEATS, TABLES, seatFacingAway, oblong, footprintTransposed, ADULT_BEDS, bedUndersized, ADD_DOOR, NO_WAY_IN, kindWord, landsOnNoRoom, noEntrance, furnitureOverlap, furnClearance, fixtureFloating, fixtureBackToRoom, fixtureWrongRoom, furnitureWallCollision, OPEN_PLAN, BOUNDARY_FIXTURES, RUN_PROBE_MM, MIN_INSIDE_SHARE, DEFAULT_PARTITION_MM, EPS2, SAME_LINE_MM, boxesNear, boundaryNoWall, CAP_OF, FACES, facesOf2, floorUnassigned, roomOutsideShell, levelWords, END_SCAN_STEP_MM, MAX_WALL_GAP_SCAN_MM, SHORT_ENDS, wallEndShort, gapsLength, NO_SHELL, exteriorRingOpen, WHAT, furnitureOnVoid, EPS3, dot4, cross5, sub4, unitOf3, NO_OPEN_BOUNDARIES, cornerReported, junctionsFor, nibNeed, reached, cap2, ratioWords, distinct, hits, towards, idHint, openingAtJunction, openingOverlap, connectorAmbiguous, wet, kitchen, zoned, FURNISH_TABLE, familyOf, servedBy, DEFINING, WASH_WITH, NOUN, useNoun, itemWords, MAX_HINT_VERIFICATIONS, MAX_HINT_WALK_ROOMS, said, BASELINE, SPENT, VERIFYING, WET_FIX, KITCHEN_FIX, areaM2, GROSS_AREA_HINT, CAR_BAY_WIDTH_MM, GARAGE_DOOR_SINGLE_MM, GARAGE_DOOR_DOUBLE_MM, GARAGE_DOOR_SOURCE, PARKED_CATEGORIES, noun, USE_FLOOR_NOUN, USE_WIDTH_NOUN, BED_CATEGORIES, GARAGE_DEPTH_SOURCE, asksWidths, readsBeds, USE_FLOOR_SOURCE, perRoomRules, ENTRY_HINT, DOUBLE_HINT, PUBLIC_USES2, HABITABLE_USES, SUITE_USES, CIRCULATION_USES, NOUN2, NIBS_MM, FRONT_DOOR_MM, CORRIDOR_MM, ENTRY_LOBBY_MM, mm4, hasAny, joins2, KITCHEN_FAMILIES, quoted, saysNoun, hq, quotedStart, roomViaPrivate, wetRoomDoor, entranceIntoPrivate, reachability, HABITABLE, OUTSIDE_PROBE_MM, habitableNoWindow, spoken, roomMissingDefining, outdoorOverlapsRoom, balconyNoDoor, stopsAboveFloor, shutToWalking, windowRef, roomNotEquatorFacing, LINT_RULES, LINT_CODE_LAYERS, LINT_CODE_STAGES, statementKey, APPLY_RANK, RESERVED, CONCEPTS, INF, FACING_VALUES, FACINGS2, INTENT_JSON_SCHEMA, AUTHORING_STAGES, RANK, COMPILE_WARNING_STAGES, INTENT_CODE_STAGES, ELEMENT_KIND_STAGES, TASTE_ADVICE, ONE, clampP, cross7, log2Ceil, MAX_EVIDENCE, HABITABLE_USES2, isHabitable2, EvidenceList, TASTE_SKIP_WHY, irRoomsOf, ringSize, plural2, levelOf2, BED_WORDS, r9Judges, r18Judges, r9Ramp, minRectCriterionCost, R9, R18, R16_CORNER, R17_GAP, IRC_R303_1, TASTE_PROFILES, TASTE_PROFILE_SOURCES, TASTE_PROFILE_NAMES, STAIR_SAFETY_CODES, MAX_PIECE_CHECKS_PER_ROOM, MAX_SET_CHECKS_PER_ROOM, MAX_CHECKS_PER_ROOM, RULESETS, LANDING_MM, EXIT_PUSH, EXIT_MM, SWING_MM, WC_SIDE_MM, NOT_GATED_DRAFTING, FINISH_STAGES, FINISH_STAGES_AVAILABLE, FINISH_STAGE_ORDER, USUAL_SIZES, STRICTER_PROFILES, PNG_PREVIEW_WIDTH, CONTEXT_BUNDLE_KB, STARTER_MAX_UNITS, CONTEXT_LEVELS, EXPORT_FORMATS, JSON_FLAG, QUIET_FLAG, EXPECTED_HASH_FLAG, OUT_FLAG, FMT_FLAG, SCALE_FLAG, COLS_FLAG, CHARSET_FLAG, WIDTH_FLAG, OVERLAY_FLAG, ERROR_SVG_FLAG, ERROR_SVG_FLAG_COMPILE, ACCESSIBLE_FLAG, ACC_ID_PREFIX_FLAG, FROM_JSON_FLAG, GRAPH_FLAG, AT_FLAG, INTENT_FLAG, FEEDBACK_FLAG, BRIEF_FLAG, TASTE_FLAG, LEVEL_FLAG, INSTALL_FLAG, ROOM_FLAG, ZONE_FLAG, FACTS_FLAG, WASTE_FLAG, SELECT_FLAG, CODE_FLAG, SEVERITY_FLAG, SECTION_FLAG, CONTEXT_LEVEL_FLAG, VIEW_FLAG, COMPILE_FLAGS, COMPILE_ONLY_FLAGS, COMMANDS, MANIFEST_COMMAND_NAMES, SETTING_KW, CAP_HEIGHT, intoFrame, DxfBuilder, AIA_LAYERS, VIEW_LAYER_COLORS, LTYPES, PLAIN_WALL_LAYER, WALL_CLASS_LAYERS, wallLayerOf, NEW_WALL_LAYER, DEMO_WALL_LAYER, standingLayerOf, DIM_STYLE, blockName, BlockTable, BUNDLED_FONT_FAMILY, CJK_FONT_PACKAGE, fontPathCache, cjkCache, cjkOverride, coverageCache, NAMED_LIMIT, PT_PER_MM, PDF_EPOCH_MS, ROBOTO_ONLY, cache, CACHE_MAX;
 var init_chunk_5DBZH6KB = __esm({
-  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
+  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/chunk-5DBZH6KB.js"() {
     import_meta = {};
     MODEL_RANGE_MM = 33554432;
     MAX_ANGLE_DEG = MODEL_RANGE_MM;
@@ -63168,14 +63485,14 @@ ${body}`;
   }
 });
 
-// node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
+// ../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js
 var init_dist4 = __esm({
-  "node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
+  "../../node_modules/.pnpm/@chanmeng666+archlang@1.57.0/node_modules/@chanmeng666/archlang/dist/index.js"() {
     init_chunk_5DBZH6KB();
   }
 });
 
-// packages/ai-orchestration/dist/apartment/archlang-parity-validator.js
+// ../ai-orchestration/dist/apartment/archlang-parity-validator.js
 function roundCoord(val) {
   return Math.round(val);
 }
@@ -63964,7 +64281,7 @@ function validateGeometryParity(canonical, summary, serialization, compileContex
 }
 var TOLERANCE_MM;
 var init_archlang_parity_validator = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
+  "../ai-orchestration/dist/apartment/archlang-parity-validator.js"() {
     "use strict";
     init_dist();
     init_dist4();
@@ -63972,7 +64289,7 @@ var init_archlang_parity_validator = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/apartment/archlang-compiler.js
+// ../ai-orchestration/dist/apartment/archlang-compiler.js
 function computeSha256(content) {
   return import_node_crypto3.default.createHash("sha256").update(content).digest("hex");
 }
@@ -64239,7 +64556,7 @@ async function compileBuildingWithArchLang(building, options) {
 }
 var import_node_crypto3;
 var init_archlang_compiler = __esm({
-  "packages/ai-orchestration/dist/apartment/archlang-compiler.js"() {
+  "../ai-orchestration/dist/apartment/archlang-compiler.js"() {
     "use strict";
     import_node_crypto3 = __toESM(require("node:crypto"));
     init_dist4();
@@ -64248,9 +64565,9 @@ var init_archlang_compiler = __esm({
   }
 });
 
-// packages/ai-orchestration/dist/index.js
+// ../ai-orchestration/dist/index.js
 var init_dist5 = __esm({
-  "packages/ai-orchestration/dist/index.js"() {
+  "../ai-orchestration/dist/index.js"() {
     "use strict";
     init_base();
     init_openai();
@@ -64293,15 +64610,15 @@ var init_dist5 = __esm({
   }
 });
 
-// packages/backend/src/services/apartment-structure.ts
+// src/services/apartment-structure.ts
 var init_apartment_structure = __esm({
-  "packages/backend/src/services/apartment-structure.ts"() {
+  "src/services/apartment-structure.ts"() {
     "use strict";
     init_dist5();
   }
 });
 
-// packages/backend/src/services/image-to-cad-reconstruction.ts
+// src/services/image-to-cad-reconstruction.ts
 function snapGrid(value) {
   return Math.round(value / GRID_MM) * GRID_MM;
 }
@@ -64316,32 +64633,369 @@ function resolveRoomType(rawType, rawName) {
   if (token.includes("terrace")) return RoomType.Terrace;
   return extractedRoomType(rawType || rawName);
 }
+function rectToPoly(r) {
+  return {
+    points: [
+      { x: r.x, y: r.y },
+      { x: r.x + r.width, y: r.y },
+      { x: r.x + r.width, y: r.y + r.height },
+      { x: r.x, y: r.y + r.height }
+    ]
+  };
+}
 function overlapArea4(a, b) {
   const w = Math.min(a.x + a.width, b.x + b.width) - Math.max(a.x, b.x);
   const h = Math.min(a.y + a.height, b.y + b.height) - Math.max(a.y, b.y);
   return w > 0 && h > 0 ? w * h : 0;
 }
-function pointInPolygon3(point, polygon) {
-  const pts = polygon.points;
-  let inside = false;
-  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
-    const a = pts[i];
-    const b = pts[j];
-    const intersects = a.y > point.y !== b.y > point.y && point.x < (b.x - a.x) * (point.y - a.y) / (b.y - a.y) + a.x;
-    if (intersects) inside = !inside;
-  }
-  return inside;
+function spaceOverlapArea(a, b) {
+  const boxArea = overlapArea4(a.rect, b.rect);
+  if (boxArea <= 0) return 0;
+  if (!a.polygon && !b.polygon) return boxArea;
+  return polygonIntersectionAreaConcave(a.polygon ?? rectToPoly(a.rect), b.polygon ?? rectToPoly(b.rect));
 }
-function rectInsidePolygon2(rect, polygon, tolerance = GRID_MM * 2) {
-  const inset2 = Math.min(tolerance, rect.width / 4, rect.height / 4);
-  const corners2 = [
-    { x: rect.x + inset2, y: rect.y + inset2 },
-    { x: rect.x + rect.width - inset2, y: rect.y + inset2 },
-    { x: rect.x + rect.width - inset2, y: rect.y + rect.height - inset2 },
-    { x: rect.x + inset2, y: rect.y + rect.height - inset2 },
-    { x: rect.x + rect.width / 2, y: rect.y + rect.height / 2 }
-  ];
-  return corners2.every((c) => pointInPolygon3(c, polygon));
+function cleanPolygonPoints(rawPoints, snapToleranceMm = 1) {
+  const deduped = [];
+  for (const pt4 of rawPoints) {
+    const prev = deduped[deduped.length - 1];
+    if (!prev || Math.hypot(pt4.x - prev.x, pt4.y - prev.y) > snapToleranceMm) {
+      deduped.push({ x: pt4.x, y: pt4.y });
+    }
+  }
+  while (deduped.length > 1 && Math.hypot(deduped[0].x - deduped[deduped.length - 1].x, deduped[0].y - deduped[deduped.length - 1].y) <= snapToleranceMm) {
+    deduped.pop();
+  }
+  if (deduped.length < 3) return deduped;
+  const simplified = [];
+  const n2 = deduped.length;
+  for (let i = 0; i < n2; i++) {
+    const prev = deduped[(i - 1 + n2) % n2];
+    const curr = deduped[i];
+    const next2 = deduped[(i + 1) % n2];
+    const v1x = curr.x - prev.x;
+    const v1y = curr.y - prev.y;
+    const v2x = next2.x - curr.x;
+    const v2y = next2.y - curr.y;
+    const len1 = Math.hypot(v1x, v1y);
+    const len2 = Math.hypot(v2x, v2y);
+    if (len1 <= snapToleranceMm || len2 <= snapToleranceMm) continue;
+    const cross6 = Math.abs(v1x * v2y - v1y * v2x) / (len1 * len2);
+    const dot5 = (v1x * v2x + v1y * v2y) / (len1 * len2);
+    if (cross6 <= 1e-3 && dot5 > 0) continue;
+    simplified.push(curr);
+  }
+  return simplified.length >= 3 ? simplified : deduped;
+}
+function computePolygonalFootprintForSpaces(spaces, envelope) {
+  const fallbackBox = () => {
+    const rects = spaces.map((s) => s.rect);
+    const box = rects.length > 0 ? boundingBox(rects) : envelope;
+    const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
+    const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
+    const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
+    const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
+    return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
+  };
+  if (spaces.length === 0) return fallbackBox();
+  const pad = snapGrid(EXTERNAL_WALL_THICKNESS);
+  const minEnvX = envelope.x;
+  const minEnvY = envelope.y;
+  const maxEnvX = envelope.x + envelope.width;
+  const maxEnvY = envelope.y + envelope.height;
+  const xSet = /* @__PURE__ */ new Set();
+  const ySet = /* @__PURE__ */ new Set();
+  const spacePolys = [];
+  for (const sp of spaces) {
+    const poly = sp.polygon && sp.polygon.points.length >= 3 ? sp.polygon : rectToPoly(sp.rect);
+    spacePolys.push(poly);
+    for (const pt4 of poly.points) {
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt4.x - pad))));
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt4.x))));
+      xSet.add(snapGrid(Math.min(maxEnvX, Math.max(minEnvX, pt4.x + pad))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt4.y - pad))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt4.y))));
+      ySet.add(snapGrid(Math.min(maxEnvY, Math.max(minEnvY, pt4.y + pad))));
+    }
+  }
+  const xs = [...xSet].sort((a, b) => a - b);
+  const ys = [...ySet].sort((a, b) => a - b);
+  const W2 = xs.length - 1;
+  const H = ys.length - 1;
+  if (W2 <= 0 || H <= 0) return fallbackBox();
+  const filled = Array.from({ length: H }, () => Array.from({ length: W2 }, () => false));
+  for (let iy = 0; iy < H; iy++) {
+    const cy = (ys[iy] + ys[iy + 1]) / 2;
+    for (let ix = 0; ix < W2; ix++) {
+      const cx = (xs[ix] + xs[ix + 1]) / 2;
+      for (const poly of spacePolys) {
+        if (pointInPolygonWithTolerance({ x: cx, y: cy }, poly.points, pad - 1)) {
+          filled[iy][ix] = true;
+          break;
+        }
+      }
+    }
+  }
+  const MAX_BRIDGE_GAP_MM = 600;
+  for (let iy = 0; iy < H; iy++) {
+    let lastFilled = -1;
+    for (let ix = 0; ix < W2; ix++) {
+      if (filled[iy][ix]) {
+        if (lastFilled >= 0 && ix > lastFilled + 1) {
+          const gapMm2 = xs[ix] - xs[lastFilled + 1];
+          if (gapMm2 <= MAX_BRIDGE_GAP_MM) {
+            for (let k = lastFilled + 1; k < ix; k++) filled[iy][k] = true;
+          }
+        }
+        lastFilled = ix;
+      }
+    }
+  }
+  for (let ix = 0; ix < W2; ix++) {
+    let lastFilled = -1;
+    for (let iy = 0; iy < H; iy++) {
+      if (filled[iy][ix]) {
+        if (lastFilled >= 0 && iy > lastFilled + 1) {
+          const gapMm2 = ys[iy] - ys[lastFilled + 1];
+          if (gapMm2 <= MAX_BRIDGE_GAP_MM) {
+            for (let k = lastFilled + 1; k < iy; k++) filled[k][ix] = true;
+          }
+        }
+        lastFilled = iy;
+      }
+    }
+  }
+  const findComponents = () => {
+    const seen = Array.from({ length: H }, () => Array.from({ length: W2 }, () => false));
+    const comps2 = [];
+    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W2; ix++) {
+        if (!filled[iy][ix] || seen[iy][ix]) continue;
+        const comp = [];
+        const queue = [[ix, iy]];
+        seen[iy][ix] = true;
+        while (queue.length > 0) {
+          const [cx, cy] = queue.pop();
+          comp.push([cx, cy]);
+          for (const [dx, dy] of dirs) {
+            const nx = cx + dx;
+            const ny = cy + dy;
+            if (nx >= 0 && nx < W2 && ny >= 0 && ny < H && filled[ny][nx] && !seen[ny][nx]) {
+              seen[ny][nx] = true;
+              queue.push([nx, ny]);
+            }
+          }
+        }
+        comps2.push(comp);
+      }
+    }
+    return comps2;
+  };
+  let comps = findComponents();
+  while (comps.length > 1) {
+    const baseComp = comps[0];
+    let bestA = baseComp[0];
+    let bestB = comps[1][0];
+    let bestDist = Infinity;
+    for (let cIdx = 1; cIdx < comps.length; cIdx++) {
+      for (const a of baseComp) {
+        for (const b of comps[cIdx]) {
+          const d = Math.abs(xs[a[0]] - xs[b[0]]) + Math.abs(ys[a[1]] - ys[b[1]]);
+          if (d < bestDist) {
+            bestDist = d;
+            bestA = a;
+            bestB = b;
+          }
+        }
+      }
+    }
+    const minIx = Math.min(bestA[0], bestB[0]);
+    const maxIx = Math.max(bestA[0], bestB[0]);
+    for (let ix = minIx; ix <= maxIx; ix++) filled[bestA[1]][ix] = true;
+    const minIy = Math.min(bestA[1], bestB[1]);
+    const maxIy = Math.max(bestA[1], bestB[1]);
+    for (let iy = minIy; iy <= maxIy; iy++) filled[iy][bestB[0]] = true;
+    comps = findComponents();
+  }
+  const fillInteriorHoles = () => {
+    const outside = Array.from({ length: H }, () => Array.from({ length: W2 }, () => false));
+    const q = [];
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W2; ix++) {
+        if ((ix === 0 || ix === W2 - 1 || iy === 0 || iy === H - 1) && !filled[iy][ix]) {
+          outside[iy][ix] = true;
+          q.push([ix, iy]);
+        }
+      }
+    }
+    const dirs = [[1, 0], [-1, 0], [0, 1], [0, -1]];
+    while (q.length > 0) {
+      const [cx, cy] = q.pop();
+      for (const [dx, dy] of dirs) {
+        const nx = cx + dx;
+        const ny = cy + dy;
+        if (nx >= 0 && nx < W2 && ny >= 0 && ny < H && !filled[ny][nx] && !outside[ny][nx]) {
+          outside[ny][nx] = true;
+          q.push([nx, ny]);
+        }
+      }
+    }
+    for (let iy = 0; iy < H; iy++) {
+      for (let ix = 0; ix < W2; ix++) {
+        if (!filled[iy][ix] && !outside[iy][ix]) {
+          filled[iy][ix] = true;
+        }
+      }
+    }
+  };
+  let changed = true;
+  let guard = 0;
+  while (changed && guard++ < 16) {
+    changed = false;
+    fillInteriorHoles();
+    for (let iy = 0; iy < H - 1; iy++) {
+      for (let ix = 0; ix < W2 - 1; ix++) {
+        const a = filled[iy][ix];
+        const b = filled[iy][ix + 1];
+        const c = filled[iy + 1][ix];
+        const d = filled[iy + 1][ix + 1];
+        if (a === d && b === c && a !== b) {
+          filled[iy][ix] = true;
+          filled[iy][ix + 1] = true;
+          filled[iy + 1][ix] = true;
+          filled[iy + 1][ix + 1] = true;
+          changed = true;
+        }
+      }
+    }
+  }
+  fillInteriorHoles();
+  const ptKey = (p) => `${Math.round(p.x)},${Math.round(p.y)}`;
+  const nextEdge = /* @__PURE__ */ new Map();
+  for (let iy = 0; iy < H; iy++) {
+    for (let ix = 0; ix < W2; ix++) {
+      if (!filled[iy][ix]) continue;
+      const x1 = xs[ix];
+      const x2 = xs[ix + 1];
+      const y1 = ys[iy];
+      const y2 = ys[iy + 1];
+      if (iy === 0 || !filled[iy - 1][ix]) {
+        const start = { x: x1, y: y1 };
+        nextEdge.set(ptKey(start), { start, end: { x: x2, y: y1 } });
+      }
+      if (ix === W2 - 1 || !filled[iy][ix + 1]) {
+        const start = { x: x2, y: y1 };
+        nextEdge.set(ptKey(start), { start, end: { x: x2, y: y2 } });
+      }
+      if (iy === H - 1 || !filled[iy + 1][ix]) {
+        const start = { x: x2, y: y2 };
+        nextEdge.set(ptKey(start), { start, end: { x: x1, y: y2 } });
+      }
+      if (ix === 0 || !filled[iy][ix - 1]) {
+        const start = { x: x1, y: y2 };
+        nextEdge.set(ptKey(start), { start, end: { x: x1, y: y1 } });
+      }
+    }
+  }
+  if (nextEdge.size < 4) return fallbackBox();
+  let startEdge = [...nextEdge.values()][0];
+  for (const edge of nextEdge.values()) {
+    if (edge.start.y < startEdge.start.y || edge.start.y === startEdge.start.y && edge.start.x < startEdge.start.x) {
+      startEdge = edge;
+    }
+  }
+  const loop = [];
+  const visited = /* @__PURE__ */ new Set();
+  let curr = startEdge.start;
+  while (!visited.has(ptKey(curr))) {
+    visited.add(ptKey(curr));
+    loop.push(curr);
+    const e = nextEdge.get(ptKey(curr));
+    if (!e) break;
+    curr = e.end;
+  }
+  const cleaned = cleanPolygonPoints(loop);
+  if (cleaned.length < 4) return fallbackBox();
+  const candidate = { points: cleaned };
+  if (!isValidPolygon(candidate)) return fallbackBox();
+  const containsAll = spacePolys.every((sp) => containsPolygonWithTolerance(candidate.points, sp.points, 25));
+  return containsAll ? candidate : fallbackBox();
+}
+function measureFootprintProtrusionMm(footprint2, spacePolys) {
+  if (spacePolys.every((sp) => containsPolygon(footprint2, sp) && containsPolygonWithTolerance(footprint2.points, sp.points, 1))) {
+    return 0;
+  }
+  const probeSteps = [10, 25, 50, 100, 150, 200, 300, 400, 500, 600];
+  for (const tol of probeSteps) {
+    if (spacePolys.every((sp) => containsPolygonWithTolerance(footprint2.points, sp.points, tol))) {
+      return tol;
+    }
+  }
+  return Number.POSITIVE_INFINITY;
+}
+function calibrateFootprintToSpaces(stated, spacePolys, envelope) {
+  const initialProtrusion = measureFootprintProtrusionMm(stated, spacePolys);
+  if (initialProtrusion === 0) return stated;
+  if (initialProtrusion > 600) return null;
+  const minEnvX = envelope.x;
+  const minEnvY = envelope.y;
+  const maxEnvX = envelope.x + envelope.width;
+  const maxEnvY = envelope.y + envelope.height;
+  const pts = stated.points.map((p) => ({ x: p.x, y: p.y }));
+  const n2 = pts.length;
+  for (let i = 0; i < n2; i++) {
+    const a = pts[i];
+    const b = pts[(i + 1) % n2];
+    if (Math.abs(a.y - b.y) <= GRID_MM) {
+      const segMinX = Math.min(a.x, b.x) - 600;
+      const segMaxX = Math.max(a.x, b.x) + 600;
+      const yEdge = a.y;
+      const midX = (a.x + b.x) / 2;
+      const interiorBelow = pointInPolygonWithTolerance({ x: midX, y: yEdge + GRID_MM * 2 }, pts, 1);
+      for (const sp of spacePolys) {
+        for (const rp of sp.points) {
+          if (rp.x < segMinX || rp.x > segMaxX) continue;
+          if (interiorBelow && rp.y < yEdge && yEdge - rp.y <= 600) {
+            const newY = snapGrid(Math.max(minEnvY, rp.y));
+            a.y = newY;
+            b.y = newY;
+          } else if (!interiorBelow && rp.y > yEdge && rp.y - yEdge <= 600) {
+            const newY = snapGrid(Math.min(maxEnvY, rp.y));
+            a.y = newY;
+            b.y = newY;
+          }
+        }
+      }
+    } else if (Math.abs(a.x - b.x) <= GRID_MM) {
+      const segMinY = Math.min(a.y, b.y) - 600;
+      const segMaxY = Math.max(a.y, b.y) + 600;
+      const xEdge = a.x;
+      const midY = (a.y + b.y) / 2;
+      const interiorRight = pointInPolygonWithTolerance({ x: xEdge + GRID_MM * 2, y: midY }, pts, 1);
+      for (const sp of spacePolys) {
+        for (const rp of sp.points) {
+          if (rp.y < segMinY || rp.y > segMaxY) continue;
+          if (interiorRight && rp.x < xEdge && xEdge - rp.x <= 600) {
+            const newX = snapGrid(Math.max(minEnvX, rp.x));
+            a.x = newX;
+            b.x = newX;
+          } else if (!interiorRight && rp.x > xEdge && rp.x - xEdge <= 600) {
+            const newX = snapGrid(Math.min(maxEnvX, rp.x));
+            a.x = newX;
+            b.x = newX;
+          }
+        }
+      }
+    }
+  }
+  const cleaned = cleanPolygonPoints(pts);
+  if (cleaned.length < 3) return null;
+  const candidate = { points: cleaned };
+  if (!isValidPolygon(candidate)) return null;
+  if (measureFootprintProtrusionMm(candidate, spacePolys) <= 25) {
+    return candidate;
+  }
+  return null;
 }
 function readEntities(plan, rawPayload, targetFloorCount) {
   const notes = [];
@@ -64358,15 +65012,17 @@ function readEntities(plan, rawPayload, targetFloorCount) {
     const parsedLevel = room2.floorLevel ?? Number(raw?.floorLevel ?? 0);
     const level = Number.isFinite(parsedLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(parsedLevel))) : 0;
     const confidence = plan.confidence?.[room2.id];
+    const compassZone = room2.compassZone ?? (typeof raw?.compassZone === "string" ? raw.compassZone : void 0);
+    const connectedTo = room2.connectedTo && room2.connectedTo.length > 0 ? [...room2.connectedTo] : Array.isArray(raw?.connectedTo) ? raw.connectedTo.map(String) : [];
     entities.push({
       id: room2.id,
       name: room2.name,
       type: resolveRoomType(room2.type, room2.name),
       floorLevel: level,
       frame: { x: room2.imageX, y: room2.imageY, width: room2.imageWidth, height: room2.imageHeight },
-      ...typeof raw?.compassZone === "string" ? { compassZone: raw.compassZone } : {},
-      connectedTo: Array.isArray(raw?.connectedTo) ? raw.connectedTo.map(String) : [],
-      extractionConfidenceHolder: void 0,
+      ...room2.polygon && room2.polygon.length >= 3 ? { polygon: room2.polygon.map((p) => ({ x: p.x, y: p.y })) } : {},
+      ...compassZone ? { compassZone } : {},
+      connectedTo,
       confidence: confidence === "confirmed" ? 1 : confidence === "ambiguous" ? 0.4 : 0.75,
       kind: "room"
     });
@@ -64429,6 +65085,19 @@ function boundingBox(rects) {
   const maxY = Math.max(...rects.map((r) => r.y + r.height));
   return { x: minX, y: minY, width: Math.max(1, maxX - minX), height: Math.max(1, maxY - minY) };
 }
+function clampPolygonToRect(polygon, rect) {
+  if (!polygon || polygon.points.length < 3) return void 0;
+  const clamped = cleanPolygonPoints(
+    polygon.points.map((p) => ({
+      x: snapGrid(Math.min(Math.max(p.x, rect.x), rect.x + rect.width)),
+      y: snapGrid(Math.min(Math.max(p.y, rect.y), rect.y + rect.height))
+    }))
+  );
+  if (clamped.length >= 3 && isValidPolygon({ points: clamped })) {
+    return { points: clamped };
+  }
+  return void 0;
+}
 function resolveOverlaps(placed, adjustments) {
   const moved2 = /* @__PURE__ */ new Map();
   const note = (entity, againstName, delta, carved) => {
@@ -64449,9 +65118,9 @@ function resolveOverlaps(placed, adjustments) {
       for (let j = i + 1; j < order.length; j++) {
         const bigger = order[i];
         const smaller = order[j];
-        const area3 = overlapArea4(smaller.rect, bigger.rect);
+        const area3 = spaceOverlapArea(smaller, bigger);
         if (area3 <= MIN_SIGNIFICANT_OVERLAP_MM2) continue;
-        const smallerArea = smaller.rect.width * smaller.rect.height;
+        const smallerArea = smaller.polygon ? polygonArea2(smaller.polygon) : smaller.rect.width * smaller.rect.height;
         const nested = smallerArea > 0 && area3 / smallerArea >= NESTED_COVERAGE;
         if (nested) {
           const cutLeft = smaller.rect.x + smaller.rect.width - bigger.rect.x;
@@ -64465,6 +65134,7 @@ function resolveOverlaps(placed, adjustments) {
           const wouldLeaveHeight = best === cutTop || best === cutBottom ? bigger.rect.height - cut3 : bigger.rect.height;
           if (wouldLeaveWidth < MIN_CARVED_REMAINDER_MM || wouldLeaveHeight < MIN_CARVED_REMAINDER_MM) {
             smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut3);
+            smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
             note(smaller.read, bigger.read.name, cut3, false);
             dirty = true;
             continue;
@@ -64480,6 +65150,7 @@ function resolveOverlaps(placed, adjustments) {
           } else {
             bigger.rect.height -= cut3;
           }
+          bigger.polygon = clampPolygonToRect(bigger.polygon, bigger.rect);
           note(bigger.read, smaller.read.name, cut3, true);
           dirty = true;
           continue;
@@ -64502,6 +65173,7 @@ function resolveOverlaps(placed, adjustments) {
         } else {
           smaller.rect.height = Math.max(GRID_MM, smaller.rect.height - cut2);
         }
+        smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
         note(smaller.read, bigger.read.name, cut2, false);
         dirty = true;
       }
@@ -64521,7 +65193,7 @@ function resolveOverlaps(placed, adjustments) {
   let remaining = 0;
   for (let i = 0; i < placed.length; i++) {
     for (let j = i + 1; j < placed.length; j++) {
-      if (overlapArea4(placed[i].rect, placed[j].rect) > MIN_SIGNIFICANT_OVERLAP_MM2) remaining++;
+      if (spaceOverlapArea(placed[i], placed[j]) > MIN_SIGNIFICANT_OVERLAP_MM2) remaining++;
     }
   }
   return { resolved: remaining === 0, remaining };
@@ -64638,9 +65310,15 @@ function reconstructBuildingFromImage(options) {
         continue;
       }
       const levelEntityBox = boundingBox(levelEntities.map((e) => e.frame));
+      const floorRegion = plan.floors?.find((f) => f.level === level);
       let levelContentBox = levelEntityBox;
       if (!isMultiFloorDrawing) {
         levelContentBox = contentBox;
+      } else if (floorRegion?.boundary?.points && floorRegion.boundary.points.length >= 3) {
+        const fbBox = boundingBox(floorRegion.boundary.points.map((p) => ({ x: p.x, y: p.y, width: 1e-4, height: 1e-4 })));
+        if (fbBox.height <= levelEntityBox.height * 1.4 && fbBox.width <= levelEntityBox.width * 1.4) {
+          levelContentBox = boundingBox([levelEntityBox, fbBox]);
+        }
       } else if (level === 0 && boundaryPoints.length >= 3) {
         const bBox = boundingBox(boundaryPoints.map((p) => ({ x: p.x, y: p.y, width: 1e-4, height: 1e-4 })));
         if (bBox.height <= levelEntityBox.height * 1.4 && bBox.width <= levelEntityBox.width * 1.4) {
@@ -64649,13 +65327,29 @@ function reconstructBuildingFromImage(options) {
       }
       const levelTransform = computeFrameTransform(levelContentBox, envelope);
       transformByLevel.set(level, levelTransform);
-      const placed = levelEntities.map((read) => ({ read, rect: applyTransform(read.frame, levelTransform) }));
+      const placed = levelEntities.map((read) => {
+        const rect = applyTransform(read.frame, levelTransform);
+        let polygon;
+        if (read.polygon && read.polygon.length >= 3) {
+          const transformedPts = cleanPolygonPoints(
+            read.polygon.map((p) => ({
+              x: snapGrid(Math.min(Math.max(p.x * levelTransform.scale + levelTransform.offsetX, envelope.x), envelope.x + envelope.width)),
+              y: snapGrid(Math.min(Math.max(p.y * levelTransform.scale + levelTransform.offsetY, envelope.y), envelope.y + envelope.height))
+            }))
+          );
+          if (transformedPts.length >= 3 && isValidPolygon({ points: transformedPts })) {
+            polygon = { points: transformedPts };
+          }
+        }
+        return { read, rect, ...polygon ? { polygon } : {} };
+      });
       for (const item of placed) {
         const before = { ...item.rect };
         item.rect.width = Math.min(item.rect.width, envelope.width);
         item.rect.height = Math.min(item.rect.height, envelope.height);
         item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
         item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        item.polygon = clampPolygonToRect(item.polygon, item.rect);
         const moved2 = Math.hypot(item.rect.x - before.x, item.rect.y - before.y);
         const resized = Math.abs(item.rect.width - before.width) + Math.abs(item.rect.height - before.height);
         if (moved2 > GRID_MM || resized > GRID_MM) {
@@ -64678,6 +65372,7 @@ function reconstructBuildingFromImage(options) {
         item.rect.height = Math.max(GRID_MM, snapGrid(item.rect.height));
         item.rect.x = Math.min(Math.max(item.rect.x, envelope.x), envelope.x + envelope.width - item.rect.width);
         item.rect.y = Math.min(Math.max(item.rect.y, envelope.y), envelope.y + envelope.height - item.rect.height);
+        item.polygon = clampPolygonToRect(item.polygon, item.rect);
         const delta = Math.max(
           Math.abs(item.rect.x - before.x),
           Math.abs(item.rect.y - before.y),
@@ -64703,62 +65398,125 @@ function reconstructBuildingFromImage(options) {
       }
       placedByLevel.set(level, placed);
     }
-    const groundTransform = transformByLevel.get(0) ?? transform;
-    const allPlacedRects = [...placedByLevel.values()].flat().map((p) => p.rect);
-    const groundPlacedRects = (placedByLevel.get(0) ?? []).map((p) => p.rect);
-    const statedFootprint = boundaryPoints.length >= 3 ? {
-      points: boundaryPoints.map((p) => ({
-        x: snapGrid(p.x * groundTransform.scale + groundTransform.offsetX),
-        y: snapGrid(p.y * groundTransform.scale + groundTransform.offsetY)
-      }))
-    } : null;
-    const extentFootprintForRects = (rects) => {
-      const box = rects.length > 0 ? boundingBox(rects) : envelope;
-      const x1 = snapGrid(Math.max(envelope.x, box.x - EXTERNAL_WALL_THICKNESS));
-      const y1 = snapGrid(Math.max(envelope.y, box.y - EXTERNAL_WALL_THICKNESS));
-      const x2 = snapGrid(Math.min(envelope.x + envelope.width, box.x + box.width + EXTERNAL_WALL_THICKNESS));
-      const y2 = snapGrid(Math.min(envelope.y + envelope.height, box.y + box.height + EXTERNAL_WALL_THICKNESS));
-      return { points: [{ x: x1, y: y1 }, { x: x2, y: y1 }, { x: x2, y: y2 }, { x: x1, y: y2 }] };
-    };
-    const extentFootprint = () => extentFootprintForRects(allPlacedRects);
-    let footprint2;
-    const referenceRectsForStatedFootprint = groundPlacedRects.length > 0 ? groundPlacedRects : allPlacedRects;
-    if (!statedFootprint) {
-      footprint2 = extentFootprintForRects(referenceRectsForStatedFootprint);
-      unplacedFeatures.push(
-        "The image interpretation returned no building outline, so the extent of the drawn spaces was used as the footprint. Non-rectangular footprint steps could not be reconstructed."
-      );
-    } else {
-      const outside = referenceRectsForStatedFootprint.filter((r) => !rectInsidePolygon2(r, statedFootprint));
-      if (outside.length === 0) {
-        footprint2 = statedFootprint;
-      } else {
-        footprint2 = extentFootprintForRects(referenceRectsForStatedFootprint);
-        unplacedFeatures.push(
-          `The outline read from the image excludes ${outside.length} space(s) the same image also drew, so it could not be used as the building footprint; the extent of the drawn spaces was used instead. The footprint's steps may differ from the drawing \u2014 compare against the reference image.`
-        );
-        adjustments.push({
-          entityId: "footprint",
-          entityName: "Building footprint",
-          kind: "clamp_to_envelope",
-          description: `The interpreted outline (${statedFootprint.points.length} points) did not contain every drawn space, so the footprint was taken from the spaces' own extent.`,
-          material: true
-        });
-      }
-    }
+    const allPlacedSpaces = [...placedByLevel.values()].flat();
     const footprintByLevel = /* @__PURE__ */ new Map();
+    const floorProvenanceList = [];
     for (let level = 0; level < targetFloorCount; level++) {
-      const levelRects = (placedByLevel.get(level) ?? []).map((p) => p.rect);
-      if (level === 0 || levelRects.length === 0) {
-        footprintByLevel.set(level, footprint2);
-      } else {
-        const outsideGround = levelRects.filter((r) => !rectInsidePolygon2(r, footprint2));
-        footprintByLevel.set(
-          level,
-          outsideGround.length === 0 ? footprint2 : extentFootprintForRects(levelRects)
-        );
+      const levelSpaces = placedByLevel.get(level) ?? [];
+      const levelTransform = transformByLevel.get(level) ?? transform;
+      const floorName = level === 0 ? "Ground Floor" : level === 1 ? "First Floor" : `Floor ${level}`;
+      const floorRegion = plan.floors?.find((f) => f.level === level);
+      const referenceSpaces = levelSpaces.length > 0 ? levelSpaces : allPlacedSpaces;
+      const contourFootprint = computePolygonalFootprintForSpaces(referenceSpaces, envelope);
+      let rawLevelBoundary = null;
+      let statedSourceKind = "stated_plan_boundary";
+      if (floorRegion?.boundary?.points && floorRegion.boundary.points.length >= 3) {
+        rawLevelBoundary = floorRegion.boundary.points;
+        statedSourceKind = "stated_floor_boundary";
+      } else if ((level === 0 || !isMultiFloorDrawing) && boundaryPoints.length >= 3) {
+        rawLevelBoundary = boundaryPoints;
+        statedSourceKind = "stated_plan_boundary";
       }
+      let chosenFootprint = contourFootprint;
+      let chosenSource = "polygonal_room_contour";
+      if (levelSpaces.length === 0 && level > 0) {
+        chosenFootprint = footprintByLevel.get(0) ?? contourFootprint;
+        chosenSource = "polygonal_room_contour";
+      } else if (!rawLevelBoundary) {
+        chosenFootprint = contourFootprint;
+        chosenSource = "polygonal_room_contour";
+        if (level === 0) {
+          unplacedFeatures.push(
+            "The image interpretation returned no building outline, so a polygonal contour was synthesized from the drawn spaces."
+          );
+        }
+      } else {
+        const cleanedStatedPts = cleanPolygonPoints(
+          rawLevelBoundary.map((p) => ({
+            x: snapGrid(Math.min(Math.max(p.x * levelTransform.scale + levelTransform.offsetX, envelope.x), envelope.x + envelope.width)),
+            y: snapGrid(Math.min(Math.max(p.y * levelTransform.scale + levelTransform.offsetY, envelope.y), envelope.y + envelope.height))
+          }))
+        );
+        const statedPoly = cleanedStatedPts.length >= 3 && isValidPolygon({ points: cleanedStatedPts }) ? { points: cleanedStatedPts } : null;
+        const spacePolys = referenceSpaces.map((s) => s.polygon ?? rectToPoly(s.rect));
+        const protrusion = statedPoly ? measureFootprintProtrusionMm(statedPoly, spacePolys) : Number.POSITIVE_INFINITY;
+        const calibrated = statedPoly ? calibrateFootprintToSpaces(statedPoly, spacePolys, envelope) : null;
+        if (calibrated) {
+          const isGenericBoxOverIrregularRooms = calibrated.points.length === 4 && contourFootprint.points.length >= 6 && polygonArea2(contourFootprint) < polygonArea2(calibrated) * 0.92;
+          if (isGenericBoxOverIrregularRooms) {
+            chosenFootprint = contourFootprint;
+            chosenSource = "polygonal_room_contour";
+            adjustments.push({
+              entityId: `footprint_L${level}`,
+              entityName: `${floorName} footprint`,
+              kind: "calibrate_footprint",
+              description: `Upgraded generic 4-point bounding box on ${floorName} to a ${contourFootprint.points.length}-vertex polygonal contour matching the irregular room arrangement.`,
+              material: false
+            });
+          } else {
+            chosenFootprint = calibrated;
+            chosenSource = statedSourceKind;
+            if (protrusion > 0) {
+              adjustments.push({
+                entityId: `footprint_L${level}`,
+                entityName: `${floorName} footprint`,
+                kind: "calibrate_footprint",
+                description: `Calibrated ${floorName} footprint edges by up to ${Math.round(protrusion)} mm so every reconstructed room sits strictly inside the floor boundary.`,
+                material: protrusion > MATERIAL_SNAP_MM,
+                deltaMm: Math.round(protrusion)
+              });
+            }
+          }
+        } else {
+          const declaredIrregular = rawLevelBoundary.length >= 5;
+          if (declaredIrregular && contourFootprint.points.length <= 4) {
+            return {
+              ok: false,
+              errorCode: "IMAGE_CAD_FOOTPRINT_UNRECOVERABLE",
+              message: `The image declared a ${rawLevelBoundary.length}-vertex irregular footprint on ${floorName}, but the polygon is invalid or contradicts the extracted spaces and cannot be recovered without collapsing to a rectangle.`,
+              detail: {
+                level,
+                floorName,
+                declaredVertexCount: rawLevelBoundary.length,
+                contourVertexCount: contourFootprint.points.length
+              }
+            };
+          }
+          chosenFootprint = contourFootprint;
+          chosenSource = "polygonal_room_contour";
+          unplacedFeatures.push(
+            `The outline read for ${floorName} excluded drawn spaces or was self-intersecting, so a ${contourFootprint.points.length}-vertex polygonal footprint was synthesized from the spaces on ${floorName}.`
+          );
+          adjustments.push({
+            entityId: `footprint_L${level}`,
+            entityName: `${floorName} footprint`,
+            kind: "calibrate_footprint",
+            description: `Synthesized a ${contourFootprint.points.length}-vertex footprint from the spaces on ${floorName} because the interpreted outline did not enclose all drawn spaces.`,
+            material: true
+          });
+        }
+      }
+      footprintByLevel.set(level, chosenFootprint);
+      floorProvenanceList.push({
+        level,
+        floorName,
+        ...floorRegion ? {
+          sourceImageRegion: {
+            x: floorRegion.region.x,
+            y: floorRegion.region.y,
+            width: floorRegion.region.width,
+            height: floorRegion.region.height,
+            frameWidth,
+            frameHeight
+          }
+        } : {},
+        scaleMmPerUnitX: levelTransform.scale,
+        scaleMmPerUnitY: levelTransform.scale,
+        footprintVertexCount: chosenFootprint.points.length,
+        footprintSource: chosenSource
+      });
     }
+    const footprint2 = footprintByLevel.get(0) ?? computePolygonalFootprintForSpaces(allPlacedSpaces, envelope);
     const canonicalBuildingId = `bldg_${projectId}`;
     const base = createBuilding({
       projectId,
@@ -64813,6 +65571,15 @@ function reconstructBuildingFromImage(options) {
         placedByFloor.set(level, []);
         continue;
       }
+      const floorBox = boundingBox(placed.map((p) => p.rect));
+      const inferCompassZone = (r, explicit) => {
+        if (explicit && explicit.trim().length > 0) return explicit.trim().toUpperCase();
+        const cx = (r.x + r.width / 2 - floorBox.x) / Math.max(1, floorBox.width);
+        const cy = (r.y + r.height / 2 - floorBox.y) / Math.max(1, floorBox.height);
+        const ew = cx < 0.36 ? "W" : cx > 0.64 ? "E" : "";
+        const ns = cy < 0.36 ? "N" : cy > 0.64 ? "S" : "";
+        return `${ns}${ew}` || "CENTER";
+      };
       const rooms = [];
       const placedRooms = [];
       for (const item of placed) {
@@ -64823,6 +65590,7 @@ function reconstructBuildingFromImage(options) {
           continue;
         }
         const prov = entityProvenance(item.read);
+        const compassZone = inferCompassZone(item.rect, item.read.compassZone);
         const room2 = createRoom({
           floorId,
           name: item.read.name,
@@ -64831,6 +65599,8 @@ function reconstructBuildingFromImage(options) {
           y: item.rect.y,
           width: item.rect.width,
           height: item.rect.height,
+          ...item.polygon ? { boundary: item.polygon } : {},
+          compassZone,
           ventilationRequired: !OPEN_SPACE_TYPES.has(item.read.type),
           isFixed: item.read.kind === "stair",
           tags: [
@@ -64839,7 +65609,7 @@ function reconstructBuildingFromImage(options) {
             `artifact:${source.artifactId}`,
             `geomrev:${geometryRevisionId}`,
             `confidence:${item.read.confidence.toFixed(2)}`,
-            ...item.read.compassZone ? [`compass:${item.read.compassZone}`] : []
+            `compass:${compassZone}`
           ]
         });
         const traced = { ...room2, imageProvenance: prov };
@@ -64858,16 +65628,21 @@ function reconstructBuildingFromImage(options) {
       const candidates = [];
       for (const room2 of rooms) {
         const open = OPEN_SPACE_TYPES.has(room2.type);
-        const p1 = { x: room2.x, y: room2.y };
-        const p2 = { x: room2.x + room2.width, y: room2.y };
-        const p3 = { x: room2.x + room2.width, y: room2.y + room2.height };
-        const p4 = { x: room2.x, y: room2.y + room2.height };
-        candidates.push(
-          { start: p1, end: p2, roomIds: [room2.id], isExternal: true, openOnly: open },
-          { start: p2, end: p3, roomIds: [room2.id], isExternal: true, openOnly: open },
-          { start: p4, end: p3, roomIds: [room2.id], isExternal: true, openOnly: open },
-          { start: p1, end: p4, roomIds: [room2.id], isExternal: true, openOnly: open }
-        );
+        const pts = room2.boundary.points;
+        for (let idx = 0; idx < pts.length; idx++) {
+          const pA = pts[idx];
+          const pB = pts[(idx + 1) % pts.length];
+          if (Math.hypot(pB.x - pA.x, pB.y - pA.y) < GRID_MM) continue;
+          const start = pA.x < pB.x || pA.x === pB.x && pA.y <= pB.y ? { x: pA.x, y: pA.y } : { x: pB.x, y: pB.y };
+          const end = start.x === pA.x && start.y === pA.y ? { x: pB.x, y: pB.y } : { x: pA.x, y: pA.y };
+          candidates.push({
+            start,
+            end,
+            roomIds: [room2.id],
+            isExternal: true,
+            openOnly: open
+          });
+        }
       }
       const merged = [];
       const consumed = /* @__PURE__ */ new Set();
@@ -64899,6 +65674,34 @@ function reconstructBuildingFromImage(options) {
           loadBearing: candidate.isExternal
         })
       );
+      const adjByRoomId = /* @__PURE__ */ new Map();
+      for (const r of rooms) adjByRoomId.set(r.id, /* @__PURE__ */ new Set());
+      for (const w of walls) {
+        if (w.roomIds.length >= 2) {
+          for (let i = 0; i < w.roomIds.length; i++) {
+            for (let j = i + 1; j < w.roomIds.length; j++) {
+              adjByRoomId.get(w.roomIds[i])?.add(w.roomIds[j]);
+              adjByRoomId.get(w.roomIds[j])?.add(w.roomIds[i]);
+            }
+          }
+        }
+      }
+      for (const pr of placedRooms) {
+        for (const token of pr.read.connectedTo) {
+          const match = placedRooms.find(
+            (other) => other.room.id !== pr.room.id && (other.read.id.toLowerCase() === token.toLowerCase() || other.room.name.toLowerCase() === token.toLowerCase())
+          );
+          if (match) {
+            adjByRoomId.get(pr.room.id)?.add(match.room.id);
+            adjByRoomId.get(match.room.id)?.add(pr.room.id);
+          }
+        }
+      }
+      for (let idx = 0; idx < rooms.length; idx++) {
+        const r = rooms[idx];
+        const adj = [...adjByRoomId.get(r.id) ?? []];
+        rooms[idx] = { ...r, adjacentRoomIds: adj };
+      }
       const doors = [];
       const windows = [];
       const roomByVisionId = new Map(placedRooms.map((p) => [p.read.id, p.room]));
@@ -65042,6 +65845,7 @@ function reconstructBuildingFromImage(options) {
       frameHeight,
       imageWidePixels: source.imageWidePixels,
       imageTallPixels: source.imageTallPixels,
+      floors: floorProvenanceList,
       adjustments,
       unplacedFeatures
     };
@@ -65083,10 +65887,9 @@ function reconstructBuildingFromImage(options) {
 }
 var GRID_MM, MATERIAL_SNAP_MM, EXTERNAL_WALL_THICKNESS, INTERNAL_WALL_THICKNESS, WALL_PAIR_TOLERANCE_MM, MIN_SIGNIFICANT_OVERLAP_MM2, MIN_CARVED_REMAINDER_MM, OPEN_SPACE_TYPES, NESTED_COVERAGE;
 var init_image_to_cad_reconstruction = __esm({
-  "packages/backend/src/services/image-to-cad-reconstruction.ts"() {
+  "src/services/image-to-cad-reconstruction.ts"() {
     "use strict";
     init_dist();
-    init_dist3();
     init_dist3();
     GRID_MM = 50;
     MATERIAL_SNAP_MM = 300;
@@ -65108,7 +65911,7 @@ var init_image_to_cad_reconstruction = __esm({
   }
 });
 
-// packages/backend/src/services/cad-fidelity.ts
+// src/services/cad-fidelity.ts
 function normalize2(rect, box) {
   return {
     x: (rect.x - box.x) / box.width,
@@ -65375,16 +66178,34 @@ function evaluateCadFidelity(input) {
     missing: stairMissing
   });
   const imageLevels = new Set(
-    plan.rooms.map(() => 0)
+    plan.rooms.map((r) => r.floorLevel ?? 0)
   );
+  if (plan.floors) {
+    for (const fl of plan.floors) {
+      imageLevels.add(fl.level);
+    }
+  }
+  const expectedLevels = Math.max(building.floors.length, imageLevels.size);
   const cadLevels = building.floors.filter((f) => f.rooms.length > 0).length;
+  const floorMissing = [];
+  for (let lvl = 0; lvl < expectedLevels; lvl++) {
+    const floor = building.floors.find((f) => f.level === lvl);
+    const floorName = floor?.name ?? (lvl === 0 ? "Ground Floor" : lvl === 1 ? "First Floor" : `Floor ${lvl}`);
+    if (!floor || floor.rooms.length === 0) {
+      const msg = `${floorName} (level ${lvl}) has 0 reconstructed rooms in the CAD model.`;
+      floorMissing.push(msg);
+      if (imageLevels.has(lvl) || building.floors.length > 1) {
+        missingMandatory.push(msg);
+      }
+    }
+  }
   dimensions.push({
     id: "floors",
     label: "Floor separation",
-    score: cadLevels === 0 ? 0 : 100,
+    score: expectedLevels === 0 || cadLevels === 0 ? 0 : clamp100(Math.round(cadLevels / expectedLevels * 100)),
     weight: 1,
-    detail: `${cadLevels} of ${building.floors.length} floor(s) carry reconstructed rooms.`,
-    missing: cadLevels < building.floors.length ? [`${building.floors.length - cadLevels} floor(s) have no rooms; the image may not have shown every level.`] : []
+    detail: `${cadLevels} of ${expectedLevels} floor(s) carry reconstructed rooms.`,
+    missing: floorMissing
   });
   const drawnParking = plan.parking.length;
   const cadParking = cadRooms.filter((r) => r.type === RoomType.Parking).length;
@@ -65422,7 +66243,7 @@ function evaluateCadFidelity(input) {
 }
 var CAD_FIDELITY_THRESHOLD, MANDATORY_WHEN_PRESENT;
 var init_cad_fidelity = __esm({
-  "packages/backend/src/services/cad-fidelity.ts"() {
+  "src/services/cad-fidelity.ts"() {
     "use strict";
     init_dist();
     CAD_FIDELITY_THRESHOLD = 70;
@@ -65437,14 +66258,21 @@ var init_cad_fidelity = __esm({
   }
 });
 
-// packages/backend/src/services/reconstruction-acceptance.ts
+// src/services/reconstruction-acceptance.ts
 function assessReconstruction(building, plan, requirements) {
   const integrityIssues = [];
   const programmeIssues = [];
   const sizeAdvisories = [];
   const allRooms = building.floors.flatMap((f) => f.rooms);
   for (const floor of building.floors) {
-    const hasBoundary = floor.boundary && floor.boundary.points.length >= 3;
+    const hasBoundary = Boolean(floor.boundary && floor.boundary.points.length >= 3);
+    if (hasBoundary && !isValidPolygon(floor.boundary)) {
+      integrityIssues.push({
+        code: "RECONSTRUCTION_INVALID_FLOOR_BOUNDARY",
+        severity: "error",
+        message: `Floor "${floor.name}" has an invalid or self-intersecting boundary polygon.`
+      });
+    }
     for (const room2 of floor.rooms) {
       if (!Number.isFinite(room2.x) || !Number.isFinite(room2.y) || !Number.isFinite(room2.width) || !Number.isFinite(room2.height) || room2.width <= 0 || room2.height <= 0 || room2.area <= 0) {
         integrityIssues.push({
@@ -65454,7 +66282,15 @@ function assessReconstruction(building, plan, requirements) {
         });
         continue;
       }
-      if (hasBoundary && !containsPolygon(floor.boundary, room2.boundary)) {
+      if (!room2.boundary || room2.boundary.points.length < 3 || !isValidPolygon(room2.boundary)) {
+        integrityIssues.push({
+          code: "RECONSTRUCTION_INVALID_ROOM_POLYGON",
+          severity: "error",
+          message: `Room "${room2.name}" has an invalid or self-intersecting boundary polygon on ${floor.name}.`
+        });
+        continue;
+      }
+      if (hasBoundary && !containsPolygonWithTolerance(floor.boundary.points, room2.boundary.points, 50)) {
         integrityIssues.push({
           code: "RECONSTRUCTION_ROOM_OUT_OF_BOUNDS",
           severity: "error",
@@ -65566,7 +66402,7 @@ function assessReconstruction(building, plan, requirements) {
 }
 var SIZE_EXEMPT_TYPES;
 var init_reconstruction_acceptance = __esm({
-  "packages/backend/src/services/reconstruction-acceptance.ts"() {
+  "src/services/reconstruction-acceptance.ts"() {
     "use strict";
     init_dist();
     init_dist3();
@@ -65585,7 +66421,7 @@ var init_reconstruction_acceptance = __esm({
   }
 });
 
-// packages/backend/src/services/extraction-pipeline.ts
+// src/services/extraction-pipeline.ts
 function siteContext(requirements) {
   const hard = requirements.hard;
   return {
@@ -65800,7 +66636,7 @@ function rejected(planId, extractedPlan, diagnostics, input) {
   };
 }
 var init_extraction_pipeline = __esm({
-  "packages/backend/src/services/extraction-pipeline.ts"() {
+  "src/services/extraction-pipeline.ts"() {
     "use strict";
     init_dist3();
     init_apartment_structure();
@@ -65810,7 +66646,7 @@ var init_extraction_pipeline = __esm({
   }
 });
 
-// packages/backend/src/services/local-stub-plan-interpreter.ts
+// src/services/local-stub-plan-interpreter.ts
 function schedule(requirements, program) {
   const cells = [];
   if (program && program.items.length > 0) {
@@ -65911,7 +66747,7 @@ function synthesizeInterpretation(requirements, program) {
 }
 var IMAGE_WIDE, IMAGE_TALL, MARGIN, GUTTER;
 var init_local_stub_plan_interpreter = __esm({
-  "packages/backend/src/services/local-stub-plan-interpreter.ts"() {
+  "src/services/local-stub-plan-interpreter.ts"() {
     "use strict";
     IMAGE_WIDE = 1024;
     IMAGE_TALL = 1024;
@@ -65920,7 +66756,7 @@ var init_local_stub_plan_interpreter = __esm({
   }
 });
 
-// packages/backend/src/services/deterministic-fallback.ts
+// src/services/deterministic-fallback.ts
 function buildDeterministicFallbackPlan(input) {
   const structure = schematicToApartmentStructure(input.schematic);
   const expectation = apartmentExpectationFromManifest(input.manifest);
@@ -65989,7 +66825,7 @@ function buildDeterministicFallbackImage(input) {
 }
 var FALLBACK_DETERMINISTIC_PROVIDER, FALLBACK_DETERMINISTIC_MODEL, FALLBACK_DETERMINISTIC_PROMPT_VERSION, FALLBACK_USER_MESSAGE;
 var init_deterministic_fallback = __esm({
-  "packages/backend/src/services/deterministic-fallback.ts"() {
+  "src/services/deterministic-fallback.ts"() {
     "use strict";
     init_dist5();
     init_dist3();
@@ -66002,7 +66838,7 @@ var init_deterministic_fallback = __esm({
   }
 });
 
-// packages/backend/src/services/generation-orchestrator.ts
+// src/services/generation-orchestrator.ts
 var generation_orchestrator_exports = {};
 __export(generation_orchestrator_exports, {
   CONCEPT_REFERENCE_DIRS: () => CONCEPT_REFERENCE_DIRS,
@@ -66271,7 +67107,7 @@ function resolveDirection(dir) {
 }
 var import_node_crypto5, import_node_fs, import_node_path, FLUX_SCHEMATIC_RENDER_MODE, FLUX_MAX_INPUT_IMAGES, CONCEPT_REFERENCE_DIRS, DEFAULT_MAX_VISUAL_ATTEMPTS, VISUAL_RETRY_SEED_OFFSET, GenerationOrchestrator;
 var init_generation_orchestrator = __esm({
-  "packages/backend/src/services/generation-orchestrator.ts"() {
+  "src/services/generation-orchestrator.ts"() {
     "use strict";
     import_node_crypto5 = __toESM(require("node:crypto"), 1);
     import_node_fs = __toESM(require("node:fs"), 1);
@@ -68035,7 +68871,7 @@ var init_generation_orchestrator = __esm({
   }
 });
 
-// packages/backend/src/server.ts
+// src/server.ts
 var server_exports = {};
 __export(server_exports, {
   DEFAULT_SMOKE_TEST_PROMPT: () => DEFAULT_SMOKE_TEST_PROMPT,
@@ -68055,7 +68891,7 @@ var import_node_fs2 = __toESM(require("node:fs"), 1);
 var import_node_path2 = __toESM(require("node:path"), 1);
 init_dist5();
 
-// packages/backend/src/api/image-routes.ts
+// src/api/image-routes.ts
 init_dist5();
 function isRecord(value) {
   return value !== null && typeof value === "object" && !Array.isArray(value);
@@ -68117,7 +68953,7 @@ async function handleArtifactGet(generationId, store) {
   return { status: 200, json: { artifact } };
 }
 
-// packages/backend/src/api/interpretation-routes.ts
+// src/api/interpretation-routes.ts
 init_dist();
 init_dist5();
 init_extraction_pipeline();
@@ -68256,7 +69092,7 @@ async function handleArchitecturalEvaluation(body, deps) {
   }
 }
 
-// packages/backend/src/env.ts
+// src/env.ts
 var import_path = __toESM(require("path"), 1);
 init_dist5();
 function cloudflareConfigured(config) {
@@ -68327,7 +69163,7 @@ function resolveImageServiceConfig(env = process.env) {
   };
 }
 
-// packages/backend/src/services/image-artifact-store.ts
+// src/services/image-artifact-store.ts
 var import_node_crypto4 = require("node:crypto");
 var import_promises = require("node:fs/promises");
 var import_path2 = __toESM(require("path"), 1);
@@ -68464,7 +69300,7 @@ var ImageArtifactStore = class {
   }
 };
 
-// packages/backend/src/services/local-stub-image-provider.ts
+// src/services/local-stub-image-provider.ts
 var import_node_zlib3 = require("node:zlib");
 var CRC_TABLE2 = (() => {
   const table2 = new Uint32Array(256);
@@ -68587,7 +69423,7 @@ var LocalStubImageProvider = class {
   }
 };
 
-// packages/backend/src/server.ts
+// src/server.ts
 if (typeof process.loadEnvFile === "function") {
   for (const candidate of [
     ".env",

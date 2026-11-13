@@ -396,20 +396,35 @@ export function evaluateCadFidelity(input: EvaluateCadFidelityInput): CadFidelit
 
   // ── 9. Floor separation: levels the image showed must exist separately.
   const imageLevels = new Set<number>(
-    plan.rooms.map(() => 0),
+    plan.rooms.map(r => r.floorLevel ?? 0),
   );
+  if (plan.floors) {
+    for (const fl of plan.floors) {
+      imageLevels.add(fl.level);
+    }
+  }
+  const expectedLevels = Math.max(building.floors.length, imageLevels.size);
   const cadLevels = building.floors.filter(f => f.rooms.length > 0).length;
+  const floorMissing: string[] = [];
+  for (let lvl = 0; lvl < expectedLevels; lvl++) {
+    const floor = building.floors.find(f => f.level === lvl);
+    const floorName = floor?.name ?? (lvl === 0 ? 'Ground Floor' : lvl === 1 ? 'First Floor' : `Floor ${lvl}`);
+    if (!floor || floor.rooms.length === 0) {
+      const msg = `${floorName} (level ${lvl}) has 0 reconstructed rooms in the CAD model.`;
+      floorMissing.push(msg);
+      if (imageLevels.has(lvl) || building.floors.length > 1) {
+        missingMandatory.push(msg);
+      }
+    }
+  }
   dimensions.push({
     id: 'floors',
     label: 'Floor separation',
-    score: cadLevels === 0 ? 0 : 100,
+    score: expectedLevels === 0 || cadLevels === 0 ? 0 : clamp100(Math.round((cadLevels / expectedLevels) * 100)),
     weight: 1,
-    detail: `${cadLevels} of ${building.floors.length} floor(s) carry reconstructed rooms.`,
-    missing: cadLevels < building.floors.length
-      ? [`${building.floors.length - cadLevels} floor(s) have no rooms; the image may not have shown every level.`]
-      : [],
+    detail: `${cadLevels} of ${expectedLevels} floor(s) carry reconstructed rooms.`,
+    missing: floorMissing,
   });
-  void imageLevels;
 
   // ── 10. Entrance and parking arrangement.
   const drawnParking = plan.parking.length;
