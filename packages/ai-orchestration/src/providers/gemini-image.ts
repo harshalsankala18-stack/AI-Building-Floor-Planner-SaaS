@@ -88,7 +88,11 @@ export function buildGeminiImagePrompt(request: FloorPlanImagePromptRequest, opt
   parts.push(request.prompt);
   parts.push('Do NOT generate 3D perspective views.');
   parts.push('Do NOT generate exterior building renderings.');
-  parts.push('Do NOT render authoritative room labels.');
+  if (options.hasStructuralPlan) {
+    parts.push('Do NOT render authoritative room labels.');
+  } else {
+    parts.push('Use clear English room labels where supported. Do NOT invent exact technical dimensions, certifications, or building-code approvals.');
+  }
   parts.push('Top-down orthographic 2D floor plan view only.');
   return parts.join('\n');
 }

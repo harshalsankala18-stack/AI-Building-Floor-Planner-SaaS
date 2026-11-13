@@ -66147,6 +66147,13 @@ async function loadApartmentReferenceImages(optionsOrSchematic, maybeFlatsPerFlo
       const firstIdByHash = /* @__PURE__ */ new Map();
       for (const file of pngFiles) {
         const id = import_node_path.default.basename(file, ".png");
+        if (bucket === "villa" && (/apartment|multi_unit|flats_\d/i.test(id) || /apartment|multi_unit|flats_\d/i.test(file))) {
+          drops.push({
+            id,
+            reason: "APARTMENT_REFERENCE_EXCLUDED_FOR_VILLA: multi-unit apartment reference plate excluded from single-family villa prompt"
+          });
+          continue;
+        }
         let hash = null;
         try {
           hash = import_node_crypto5.default.createHash("sha256").update(import_node_fs.default.readFileSync(import_node_path.default.join(foundDir, file))).digest("hex");
@@ -66955,22 +66962,19 @@ var init_generation_orchestrator = __esm({
                 } catch (refErr) {
                   console.warn("[GenerationOrchestrator] Villa reference loading error:", refErr);
                 }
-                const enrichedAdditional = [
-                  input.additionalPrompt,
-                  previousMasterEval ? `
-CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100):
-` + (previousMasterEval.hardConstraintViolations.length > 0 ? `- RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join("; ")}
-` : "") + (previousMasterEval.identifiedProblems.length > 0 ? `- FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join("; ")}
-` : "") + (previousMasterEval.suggestedCorrections.length > 0 ? `- ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join("; ")}
-` : "") + "Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned." : ""
-                ].filter(Boolean).join("\n");
+                const retryCorrectionText = previousMasterEval ? `CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100): ` + (previousMasterEval.hardConstraintViolations.length > 0 ? `RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join("; ")}. ` : "") + (previousMasterEval.identifiedProblems.length > 0 ? `FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join("; ")}. ` : "") + (previousMasterEval.suggestedCorrections.length > 0 ? `ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join("; ")}. ` : "") + "Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned." : void 0;
+                const configuredImageModel = typeof this.deps.provider?.getModel === "function" ? this.deps.provider.getModel() : this.deps.provider?.name;
                 promptRequest2 = compileFloorPlanImagePrompt({
                   requirements: spec,
                   site: buildingSite,
                   seed: seed3,
-                  additionalPrompt: enrichedAdditional || void 0,
+                  additionalPrompt: input.additionalPrompt || void 0,
                   referenceImages: referenceImages.length > 0 ? referenceImages : void 0,
-                  referenceDiagnostics: refDiagnostics
+                  referenceDiagnostics: refDiagnostics,
+                  footprintShape: spec.footprintShape,
+                  imageModel: configuredImageModel,
+                  generationAttempt: attemptNumber,
+                  correctionFeedback: retryCorrectionText
                 });
               }
               stages.imageGeneration = "RUNNING";
@@ -68410,6 +68414,11 @@ var ImageArtifactStore = class {
       generatedAt: image.generatedAt,
       latencyMs: image.latencyMs,
       ...image.providerRequest ? { providerRequest: image.providerRequest } : {},
+      ...request.metadata?.promptHash ? { promptHash: request.metadata.promptHash } : {},
+      ...request.metadata?.projectRequirementsFingerprint ? { projectRequirementsFingerprint: request.metadata.projectRequirementsFingerprint } : {},
+      ...request.metadata?.selectedReferenceImageIds ? { selectedReferenceImageIds: request.metadata.selectedReferenceImageIds } : {},
+      ...request.metadata?.generationAttempt !== void 0 ? { generationAttempt: request.metadata.generationAttempt } : {},
+      ...request.metadata?.correctionFeedback ? { correctionFeedback: request.metadata.correctionFeedback } : {},
       imageBase64: image.imageBase64
     };
     const { imageBase64, ...metadata } = artifact;

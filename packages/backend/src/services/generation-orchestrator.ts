@@ -344,10 +344,18 @@ export async function loadApartmentReferenceImages(
       }
 
       // Distinct content only (SHA-256): a duplicate file never fills a reference slot.
+      // For independent villas (bucket === 'villa'), exclude multi-unit apartment plates.
       const availableFiles: AvailableReferenceFile[] = [];
       const firstIdByHash = new Map<string, string>();
       for (const file of pngFiles) {
         const id = path.basename(file, '.png');
+        if (bucket === 'villa' && (/apartment|multi_unit|flats_\d/i.test(id) || /apartment|multi_unit|flats_\d/i.test(file))) {
+          drops.push({
+            id,
+            reason: 'APARTMENT_REFERENCE_EXCLUDED_FOR_VILLA: multi-unit apartment reference plate excluded from single-family villa prompt',
+          });
+          continue;
+        }
         let hash: string | null = null;
         try {
           hash = crypto.createHash('sha256').update(fs.readFileSync(path.join(foundDir, file))).digest('hex');
@@ -1575,24 +1583,30 @@ export class GenerationOrchestrator {
           console.warn('[GenerationOrchestrator] Villa reference loading error:', refErr);
         }
 
-        const enrichedAdditional = [
-          input.additionalPrompt,
-          previousMasterEval
-            ? `\nCRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100):\n` +
-              (previousMasterEval.hardConstraintViolations.length > 0 ? `- RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join('; ')}\n` : '') +
-              (previousMasterEval.identifiedProblems.length > 0 ? `- FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join('; ')}\n` : '') +
-              (previousMasterEval.suggestedCorrections.length > 0 ? `- ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join('; ')}\n` : '') +
-              'Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.'
-            : '',
-        ].filter(Boolean).join('\n');
+        const retryCorrectionText = previousMasterEval
+          ? `CRITICAL ARCHITECTURAL REVISIONS (Attempt #${attemptNumber}, Previous Score: ${previousMasterEval.overallScore}/100): ` +
+            (previousMasterEval.hardConstraintViolations.length > 0 ? `RESOLVE HARD VIOLATIONS: ${previousMasterEval.hardConstraintViolations.join('; ')}. ` : '') +
+            (previousMasterEval.identifiedProblems.length > 0 ? `FIX SPATIAL DEFECTS: ${previousMasterEval.identifiedProblems.join('; ')}. ` : '') +
+            (previousMasterEval.suggestedCorrections.length > 0 ? `ARCHITECTURAL CORRECTIONS: ${previousMasterEval.suggestedCorrections.join('; ')}. ` : '') +
+            'Ensure all room labels are legible, proper room proportions are maintained, and all requested spaces are clearly partitioned.'
+          : undefined;
+
+        const configuredImageModel =
+          typeof (this.deps.provider as any)?.getModel === 'function'
+            ? (this.deps.provider as any).getModel()
+            : this.deps.provider?.name;
 
         promptRequest = compileFloorPlanImagePrompt({
           requirements: spec,
           site: buildingSite,
           seed,
-          additionalPrompt: enrichedAdditional || undefined,
+          additionalPrompt: input.additionalPrompt || undefined,
           referenceImages: referenceImages.length > 0 ? referenceImages : undefined,
           referenceDiagnostics: refDiagnostics,
+          footprintShape: (spec as any).footprintShape,
+          imageModel: configuredImageModel,
+          generationAttempt: attemptNumber,
+          correctionFeedback: retryCorrectionText,
         });
       }
 

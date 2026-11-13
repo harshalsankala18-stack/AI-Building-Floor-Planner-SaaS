@@ -40,6 +40,12 @@ export interface StoredImageArtifactMetadata {
   readonly latencyMs: number;
   /** What the provider actually sent (endpoint, size, seed honoured, input images), when reported. */
   readonly providerRequest?: GeneratedPlanImageRequestProvenance;
+  /** Phase 2C.3 prompt versioning and provenance metadata. */
+  readonly promptHash?: string;
+  readonly projectRequirementsFingerprint?: string;
+  readonly selectedReferenceImageIds?: readonly string[];
+  readonly generationAttempt?: number;
+  readonly correctionFeedback?: string;
 }
 
 export interface StoredImageArtifact extends StoredImageArtifactMetadata {
@@ -152,6 +158,19 @@ export class ImageArtifactStore {
       generatedAt: image.generatedAt,
       latencyMs: image.latencyMs,
       ...(image.providerRequest ? { providerRequest: image.providerRequest } : {}),
+      ...(request.metadata?.promptHash ? { promptHash: request.metadata.promptHash } : {}),
+      ...(request.metadata?.projectRequirementsFingerprint
+        ? { projectRequirementsFingerprint: request.metadata.projectRequirementsFingerprint }
+        : {}),
+      ...(request.metadata?.selectedReferenceImageIds
+        ? { selectedReferenceImageIds: request.metadata.selectedReferenceImageIds }
+        : {}),
+      ...(request.metadata?.generationAttempt !== undefined
+        ? { generationAttempt: request.metadata.generationAttempt }
+        : {}),
+      ...(request.metadata?.correctionFeedback
+        ? { correctionFeedback: request.metadata.correctionFeedback }
+        : {}),
       imageBase64: image.imageBase64,
     };
 

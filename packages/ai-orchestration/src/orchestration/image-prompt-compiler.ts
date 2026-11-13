@@ -36,6 +36,18 @@ import type { ReferenceSelectionDiagnostics } from '../apartment/reference-libra
 /** Bump when the prompt template changes so persisted artifacts stay reproducible. */
 export const FLOOR_PLAN_PROMPT_VERSION = 3 as const;
 
+function computeDeterministicHashHex(input: string): string {
+  // Deterministic 64-char hex digest (compatible across Node and browser runtimes)
+  const seeds = [0x811c9dc5, 0x9e3779b9, 0x85ebca6b, 0xc2b2ae35, 0x27d4eb2f, 0x165667b1, 0xd3a2646c, 0xfd7046c5];
+  for (let i = 0; i < input.length; i++) {
+    const code = input.charCodeAt(i);
+    for (let s = 0; s < seeds.length; s++) {
+      seeds[s] = Math.imul(seeds[s]! ^ (code + s * 31), 0x01000193) >>> 0;
+    }
+  }
+  return seeds.map(v => v.toString(16).padStart(8, '0')).join('');
+}
+
 export interface FloorPlanImagePromptInput {
   /** Canonical requirement spec (the PRD's "AiDesignSpec"). */
   readonly requirements: DesignRequirementSpecification;
@@ -51,10 +63,24 @@ export interface FloorPlanImagePromptInput {
   readonly width?: number;
   /** Output image height in px (defaults to plot-derived aspect dimension). */
   readonly height?: number;
-  /** Multi-reference image inputs for FLUX Klein (§3). */
+  /** Multi-reference image inputs (§3). */
   readonly referenceImages?: readonly ReferenceImageInput[];
   /** Structured reference selection and drop diagnostics (Phase 2 recovery). */
   readonly referenceDiagnostics?: ReferenceSelectionDiagnostics;
+  /** Desired building footprint shape (e.g., Rectangular, L-shaped, U-shaped, Courtyard, Stepped). */
+  readonly footprintShape?: string;
+  /** Desired main entrance location / orientation. */
+  readonly entranceLocation?: string;
+  /** Desired architectural style. */
+  readonly architecturalStyle?: string;
+  /** Deterministic fingerprint of the project requirements. */
+  readonly projectRequirementsFingerprint?: string;
+  /** Configured image model name for provenance tracking. */
+  readonly imageModel?: string;
+  /** 1-based generation attempt index within the bounded retry loop. */
+  readonly generationAttempt?: number;
+  /** Structured correction feedback from the preceding attempt's evaluation. */
+  readonly correctionFeedback?: string;
 }
 
 export interface ReferenceImageInput {
@@ -72,11 +98,11 @@ export interface FloorPlanImagePromptRequest {
   readonly seed: number;
   readonly width: number;
   readonly height: number;
-  /** Multi-reference image inputs for FLUX Klein (§3). */
+  /** Multi-reference image inputs (§3). */
   readonly referenceImages?: readonly ReferenceImageInput[];
   /** Structured reference selection and drop diagnostics (Phase 2 recovery). */
   readonly referenceDiagnostics?: ReferenceSelectionDiagnostics;
-  /** Reproducibility + persistence metadata (PRD §17 / §18). */
+  /** Reproducibility + persistence metadata (PRD §17 / §18 & Phase 2C.3). */
   readonly metadata: {
     readonly projectId?: string;
     readonly projectName: string;
@@ -89,13 +115,22 @@ export interface FloorPlanImagePromptRequest {
     readonly manifest?: unknown;
     readonly referenceDiagnostics?: ReferenceSelectionDiagnostics;
     readonly structuralRepresentationHash?: string;
+    readonly promptVersion?: number;
+    readonly promptHash?: string;
+    readonly projectRequirementsFingerprint?: string;
+    readonly selectedReferenceImageIds?: readonly string[];
+    readonly imageModel?: string;
+    readonly generationAttempt?: number;
+    readonly correctionFeedback?: string;
+    readonly promptPreview?: string;
   };
 }
 
-/** Negative prompt guards against non-plan imagery (PRD §17 "Avoid" list). */
+/** Negative prompt guards against non-plan imagery and multi-unit apartment contamination. */
 const NEGATIVE_PROMPT =
   'perspective, 3d render, photorealistic, isometric, furniture, landscaping, people, ' +
-  'cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo';
+  'cars, textures, shadows, artistic, watercolor, decorative, blurry, colored photo, ' +
+  'multi-unit apartment block, elevator core lobby, commercial office';
 
 function titleCase(value: string): string {
   return value.charAt(0).toUpperCase() + value.slice(1);
@@ -122,36 +157,51 @@ function buildRoomSchedule(input: FloorPlanImagePromptInput): string {
   // Derive a deterministic schedule from the hard/soft brief.
   const parts: string[] = [];
   if (hard.bedroomCount > 0) parts.push(`${hard.bedroomCount} bedroom(s)`);
-  if (hard.bathroomCount > 0) parts.push(`${hard.bathroomCount} bathroom(s)`);
+  if (hard.bathroomCount > 0) {
+    const attached = soft.attachedBathroomsCount > 0 ? ` (${soft.attachedBathroomsCount} attached en-suite)` : '';
+    parts.push(`${hard.bathroomCount} bathroom(s)${attached}`);
+  }
   if (hard.livingRoomRequired) parts.push('living room');
   if (hard.kitchenRequired) parts.push(soft.openKitchen ? 'open kitchen' : 'kitchen');
   if (hard.diningRoomRequired) parts.push('dining room');
-  if (hard.staircaseRequired) parts.push('staircase');
-  if (hard.liftRequired) parts.push('lift');
+  if (hard.serviceYardRequired) parts.push('utility / wash area');
+  if (hard.staircaseRequired || hard.floorsCount > 1) parts.push('internal staircase');
+  if (hard.liftRequired) parts.push('residential lift');
   if (soft.poojaRoom) parts.push('pooja room');
-  if (soft.studyRoom) parts.push('study');
+  if (soft.studyRoom) parts.push('study room');
   if (soft.servantQuarter) parts.push('servant quarter');
+  if (soft.balconyPreferred) parts.push('balcony / verandah');
   for (const custom of hard.customRooms ?? []) {
     parts.push(`${custom.count} x ${custom.name ?? String(custom.type)}`);
   }
   return parts.join(', ');
 }
 
+function inferFootprintShape(input: FloorPlanImagePromptInput, brief: string): string {
+  const explicit = input.footprintShape ?? (input.requirements as any).footprintShape;
+  if (typeof explicit === 'string' && explicit.trim().length > 0) {
+    return explicit.trim();
+  }
+  const lower = brief.toLowerCase();
+  if (/\bl[-\s]?shape/i.test(lower)) return 'L-shaped';
+  if (/\bu[-\s]?shape/i.test(lower)) return 'U-shaped';
+  if (/\bcourtyard\b/i.test(lower)) return 'Courtyard-centered';
+  if (/\bstepped\b/i.test(lower)) return 'Stepped / articulated';
+  if (/\bt[-\s]?shape/i.test(lower)) return 'T-shaped';
+  if (/\bh[-\s]?shape/i.test(lower)) return 'H-shaped';
+  return String(input.site.plotShape || input.requirements.plotShape || 'rectangular');
+}
+
 /**
  * Compile the deterministic villa / independent residence floor-plan image-generation request.
- * Applies plot-aspect ratio output dimensions, count-matched references, and compact directive.
- */
-/**
- * Legacy stub – raster generation disabled.
- * Retains the original function signature for compatibility but returns a
- * minimal prompt that omits any reference image handling. Consumers expecting
- * a full FLUX/Gemini prompt will still receive a valid request object.
+ * Incorporates complete structured project data (Phase 2C.1), professional drafting presentation
+ * rules (Phase 2C.2), and full prompt versioning & provenance metadata (Phase 2C.3).
  */
 export function compileFloorPlanImagePrompt(
   input: FloorPlanImagePromptInput,
 ): FloorPlanImagePromptRequest {
   const { requirements, site } = input;
-  const { hard } = requirements;
+  const { hard, soft } = requirements;
   const { setbacks } = site;
 
   // Derive width/height from plot aspect ratio (Phase 2 recovery, P3/P9)
@@ -163,34 +213,111 @@ export function compileFloorPlanImagePrompt(
   const plotWidthM = (site.plotWidth / 1000).toFixed(2);
   const plotDepthM = (site.plotDepth / 1000).toFixed(2);
   const floors = Math.max(1, hard.floorsCount);
-  const floorLabel = floors === 1 ? 'single-storey ground floor' : `${floors}-storey`;
+  const floorLabel =
+    floors === 1
+      ? 'single-storey ground floor'
+      : floors === 2
+        ? '2-storey (G+1: Ground Floor + First Floor)'
+        : `${floors}-storey`;
 
   const brief = (input.additionalPrompt ?? requirements.rawUserPrompt ?? '').trim();
   const roomSchedule = buildRoomSchedule(input);
+  const footprintShape = inferFootprintShape(input, brief);
+  const siteShape = String(site.plotShape || requirements.plotShape || 'rectangular');
+  const northDeg = site.orientation ?? requirements.orientationDegrees ?? 0;
+  const entranceSpec =
+    input.entranceLocation?.trim() ||
+    `${titleCase(site.roadFacing)}-facing main arrival foyer${soft.vastuCompliance ? ' (Vastu auspicious entry)' : ''}`;
+
+  const relationshipDirectives: string[] = [
+    'Public arrival sequence: Road -> Entrance Porch/Foyer -> Living Room -> Dining Room -> Kitchen.',
+    'Private zone: Bedrooms grouped with direct access to en-suite/common bathrooms, buffered from main public entry.',
+  ];
+  if (hard.kitchenRequired && hard.diningRoomRequired) {
+    relationshipDirectives.push('Kitchen directly adjacent to Dining Room' + (hard.serviceYardRequired ? ' with attached Utility/Wash area.' : '.'));
+  }
+  if (floors > 1 || hard.staircaseRequired) {
+    relationshipDirectives.push('Staircase accessible from Foyer/Living circulation lobby with aligned vertical core across Ground Floor and First Floor.');
+  }
+
+  const environmentalAndZoningLines: string[] = [];
+  if (soft.vastuCompliance) {
+    environmentalAndZoningLines.push(
+      'VASTU PREFERENCES: Vastu Shastra compliant zoning (Kitchen in SE/NW, Master Bedroom in SW, Living/Entrance in N/NE/E, Pooja in NE, Staircase in S/SW/W).',
+    );
+  }
+  if (soft.naturalLightPreference) {
+    environmentalAndZoningLines.push(
+      `DAYLIGHT & VENTILATION: ${titleCase(String(soft.naturalLightPreference))} natural daylighting and cross-ventilation via exterior windows${/\bots\b|courtyard/i.test(brief) ? ' and OTS ventilation shaft' : ''}.`,
+    );
+  }
+  if (input.architecturalStyle?.trim()) {
+    environmentalAndZoningLines.push(`ARCHITECTURAL STYLE: ${input.architecturalStyle.trim()}.`);
+  }
+
+  // Filter out any multi-unit apartment reference images if inadvertently passed to villa compiler
+  const validVillaRefs = (input.referenceImages ?? []).filter(
+    r => !/apartment|multi_unit|flats_\d/i.test(r.id) && !/apartment|multi_unit|flats_\d/i.test(r.name),
+  );
 
   const directiveLines = [
     'Generate ONE professional top-down 2D residential floor plan (single-family villa / independent residence).',
     '',
     `PROJECT: ${requirements.projectName}, ${floorLabel}.`,
-    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), road facing ${titleCase(site.roadFacing)}.`,
+    `BUILDING TYPE: Single-family independent residential villa (${hard.bedroomCount} BHK, ${hard.bathroomCount} Bath, ${floors} floor(s)).`,
+    `PLOT PROPORTIONS: ${plotWidthM}m (width) x ${plotDepthM}m (depth), site shape ${siteShape}, road facing ${titleCase(site.roadFacing)}, North direction ${northDeg} deg.`,
     `SETBACKS: front ${setbacks.front}mm, rear ${setbacks.rear}mm, left ${setbacks.left}mm, right ${setbacks.right}mm.`,
+    `FOOTPRINT SHAPE: ${footprintShape} building footprint within the buildable setback envelope.`,
+    `ENTRANCE LOCATION: ${entranceSpec}.`,
     `ROOM PROGRAM: ${roomSchedule || 'standard residential layout'}.`,
-    ...(hard.parkingRequired && hard.parkingSpacesCount > 0 ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s).`] : []),
+    ...(hard.parkingRequired && hard.parkingSpacesCount > 0
+      ? [`PARKING: dedicated parking for ${hard.parkingSpacesCount} car(s) at front/roadside setback bay.`]
+      : []),
+    `ROOM RELATIONSHIPS: ${relationshipDirectives.join(' ')}`,
+    ...environmentalAndZoningLines,
     ...(brief.length > 0 ? [`ADDITIONAL BRIEF: ${brief}`] : []),
+    ...(input.correctionFeedback?.trim()
+      ? [`RETRY CORRECTION FEEDBACK (Attempt #${input.generationAttempt ?? 2}): ${input.correctionFeedback.trim()}`]
+      : []),
     '',
     'MANDATORY DIRECTIVES:',
     '- Top-down orthographic 2D architectural drafting, crisp black linework on pure white background.',
-    '- Clear room separation, proper wall thicknesses, door swings, and window openings.',
-    '- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING).',
-    ...(input.referenceImages && input.referenceImages.length > 0
-      ? ['- Use the supplied reference images for visual drafting style. Current project requirements always override references.']
+    '- Consistent wall thickness representation (thicker external walls, thinner internal partitions) and distinct room boundaries.',
+    '- Recognizable doors with clear door swing arcs, and clear window positions on exterior walls.',
+    '- Proper staircase representation with tread lines and UP/DN directional arrows.',
+    '- Logical circulation, appropriate space proportions, and distinct outdoor/semi-open spaces (parking, balcony, verandah, OTS).',
+    ...(floors > 1
+      ? [
+          `- MULTI-FLOOR PRESENTATION: Render ONE master architectural sheet containing independently identifiable, clearly separated GROUND FLOOR PLAN and FIRST FLOOR PLAN drawings (${floors} levels total). Never omit the upper floor.`,
+        ]
+      : []),
+    '- English architectural labels only (LIVING, DINING, KITCHEN, BEDROOM, BATH, FOYER, PARKING, BALCONY, STAIR, UTILITY, POOJA).',
+    '- Do not invent exact technical dimensions, certifications, or building-code approvals; exact dimensions are generated from validated CAD geometry.',
+    ...(validVillaRefs.length > 0
+      ? ['- Use the supplied reference images for visual drafting style only. Current project requirements always override references.']
       : []),
     '',
     'STRICT PROHIBITIONS:',
-    'Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, or non-Latin text.',
+    'Do not use 3D, perspective, shadows, photorealism, furniture clutter, artistic textures, multi-unit apartment layouts, or non-Latin text.',
   ];
 
   const prompt = directiveLines.join('\n');
+  const promptHash = computeDeterministicHashHex(prompt);
+  const projectRequirementsFingerprint =
+    input.projectRequirementsFingerprint ??
+    `fp_${computeDeterministicHashHex(
+      JSON.stringify({
+        hard: requirements.hard,
+        soft: requirements.soft,
+        plotWidth: site.plotWidth,
+        plotDepth: site.plotDepth,
+        roadFacing: site.roadFacing,
+        setbacks: site.setbacks,
+        footprintShape,
+        brief,
+      }),
+    ).slice(0, 16)}`;
+  const selectedReferenceImageIds = validVillaRefs.map(r => r.id);
 
   return {
     schemaVersion: 1,
@@ -200,7 +327,7 @@ export function compileFloorPlanImagePrompt(
     seed,
     width,
     height,
-    referenceImages: input.referenceImages,
+    referenceImages: validVillaRefs.length > 0 ? validVillaRefs : undefined,
     referenceDiagnostics: input.referenceDiagnostics,
     metadata: {
       ...(requirements.projectId ? { projectId: requirements.projectId } : {}),
@@ -211,6 +338,14 @@ export function compileFloorPlanImagePrompt(
       roadFacing: site.roadFacing,
       projectType: 'residential_independent',
       referenceDiagnostics: input.referenceDiagnostics,
+      promptVersion: FLOOR_PLAN_PROMPT_VERSION,
+      promptHash,
+      projectRequirementsFingerprint,
+      selectedReferenceImageIds,
+      ...(input.imageModel ? { imageModel: input.imageModel } : {}),
+      generationAttempt: input.generationAttempt ?? 1,
+      ...(input.correctionFeedback ? { correctionFeedback: input.correctionFeedback } : {}),
+      promptPreview: prompt,
     },
   };
 }

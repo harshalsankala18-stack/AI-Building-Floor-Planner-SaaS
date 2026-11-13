@@ -262,6 +262,7 @@ export {
   resolveApartmentReferenceBucket,
   selectReferenceCandidates,
   finalizeReferenceSelection,
+  isApartmentReferencePlateName,
   ALL_APARTMENT_REFERENCE_BUCKETS,
   type ApartmentReferenceBucket,
   type ReferenceStatus,

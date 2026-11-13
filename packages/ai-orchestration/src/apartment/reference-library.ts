@@ -98,12 +98,20 @@ export interface AvailableReferenceFile {
  * attempt. The caller reports back any load failures via `reportLoadFailure`
  * style usage (see `finalizeReferenceSelection`).
  */
+export function isApartmentReferencePlateName(idOrName: string): boolean {
+  return /apartment|multi_unit|flats_\d/i.test(idOrName);
+}
+
 export function selectReferenceCandidates(
-  _bucket: ApartmentReferenceBucket | null,
+  bucket: ApartmentReferenceBucket | null,
   availableFiles: readonly AvailableReferenceFile[],
   maxCount: number,
 ): { selected: readonly AvailableReferenceFile[]; requestedIds: readonly string[] } {
-  const sorted = [...availableFiles].sort((a, b) => a.id.localeCompare(b.id));
+  const filtered =
+    bucket === 'villa'
+      ? availableFiles.filter(f => !isApartmentReferencePlateName(f.id) && !isApartmentReferencePlateName(f.name))
+      : availableFiles;
+  const sorted = [...filtered].sort((a, b) => a.id.localeCompare(b.id));
   const requestedIds = sorted.map(f => f.id);
   const selected = sorted.slice(0, Math.max(0, maxCount));
   return { selected, requestedIds };

@@ -137,6 +137,82 @@ describe('Phase 1C — compileFloorPlanImagePrompt', () => {
     expect(req.width).toBe(1024);
     expect(req.height).toBe(1024);
   });
+
+  it('Phase 2C: includes multi-floor G+1 separation, L-shaped footprint, Vastu, relationships, and prompt provenance metadata without contradictions', async () => {
+    const { buildGeminiImagePrompt, selectReferenceCandidates } = await import('../index');
+    const gPlus1Spec = specFixture({
+      hard: {
+        floorsCount: 2,
+        bedroomCount: 3,
+        bathroomCount: 3,
+        livingRoomRequired: true,
+        kitchenRequired: true,
+        diningRoomRequired: true,
+        parkingRequired: true,
+        parkingSpacesCount: 1,
+        staircaseRequired: true,
+        serviceYardRequired: true,
+      },
+      soft: {
+        vastuCompliance: true,
+        poojaRoom: true,
+        balconyPreferred: true,
+        naturalLightPreference: PreferenceLevel.High,
+        attachedBathroomsCount: 2,
+      },
+    });
+    const req = compileFloorPlanImagePrompt({
+      requirements: gPlus1Spec,
+      site: siteFixture({ plotWidth: 15240, plotDepth: 18290, roadFacing: Direction.North }),
+      seed: 101,
+      footprintShape: 'L-shaped',
+      entranceLocation: 'North-East Foyer',
+      architecturalStyle: 'Modern Contemporary Villa',
+      imageModel: 'gemini-3.1-flash-lite-image',
+      generationAttempt: 2,
+      correctionFeedback: 'Ensure L-shaped footprint and populate First Floor bedrooms.',
+      referenceImages: [
+        { id: 'ref_apartment_01_multi_unit_typical', name: 'ref_apartment_01_multi_unit_typical.png', base64Data: 'abc' },
+        { id: 'ref_villa_01_lshape', name: 'ref_villa_01_lshape.png', base64Data: 'def' },
+      ],
+    });
+
+    expect(req.prompt).toContain('L-shaped building footprint');
+    expect(req.prompt).toContain('North-East Foyer');
+    expect(req.prompt).toContain('Modern Contemporary Villa');
+    expect(req.prompt).toContain('MULTI-FLOOR PRESENTATION');
+    expect(req.prompt).toContain('GROUND FLOOR PLAN and FIRST FLOOR PLAN');
+    expect(req.prompt).toContain('VASTU PREFERENCES');
+    expect(req.prompt).toContain('RETRY CORRECTION FEEDBACK (Attempt #2)');
+
+    // Apartment reference plate is stripped from independent villa request
+    expect(req.referenceImages?.map(r => r.id)).toEqual(['ref_villa_01_lshape']);
+    expect(req.metadata.selectedReferenceImageIds).toEqual(['ref_villa_01_lshape']);
+
+    const bucketSelected = selectReferenceCandidates(
+      'villa',
+      [
+        { id: 'ref_apartment_01_multi_unit_typical', name: 'ref_apartment_01_multi_unit_typical.png' },
+        { id: 'ref_villa_custom_01', name: 'ref_villa_custom_01.png' },
+      ],
+      3,
+    );
+    expect(bucketSelected.selected.map(s => s.id)).toEqual(['ref_villa_custom_01']);
+
+    // Verify no contradictory label instructions when building final Gemini prompt for villa
+    const finalGeminiPrompt = buildGeminiImagePrompt(req, { hasStructuralPlan: false, styleReferenceCount: 1 });
+    expect(finalGeminiPrompt).toContain('English architectural labels only');
+    expect(finalGeminiPrompt).not.toContain('Do NOT render authoritative room labels');
+
+    // Verify Phase 2C.3 versioning & provenance metadata
+    expect(req.metadata.promptVersion).toBe(FLOOR_PLAN_PROMPT_VERSION);
+    expect(req.metadata.promptHash).toMatch(/^[a-f0-9]{64}$/);
+    expect(req.metadata.projectRequirementsFingerprint).toMatch(/^fp_[a-f0-9]{16}$/);
+    expect(req.metadata.imageModel).toBe('gemini-3.1-flash-lite-image');
+    expect(req.metadata.generationAttempt).toBe(2);
+    expect(req.metadata.correctionFeedback).toContain('Ensure L-shaped footprint');
+    expect(req.metadata.promptPreview).toBe(req.prompt);
+  });
 });
 
 describe('Phase 2 — compileApartmentFloorPlanImagePrompt (Compact Directive)', () => {
