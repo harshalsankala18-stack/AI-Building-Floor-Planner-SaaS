@@ -207,6 +207,7 @@ export interface CreateStairParams {
   riserCount?: number;
   riserHeight?: number;
   treadDepth?: number;
+  landingWidth?: number;
   connectsFloors: [number, number];
   verticalCoreId?: string;
 }
@@ -444,7 +445,7 @@ export function createStair(params: CreateStairParams): Stair {
     riserCount,
     riserHeight,
     treadDepth: params.treadDepth ?? DEFAULTS.TREAD_DEPTH,
-    landingWidth: params.width,
+    landingWidth: params.landingWidth ?? params.width,
     connectsFloors: params.connectsFloors,
     verticalCoreId: params.verticalCoreId,
   };

@@ -189,7 +189,7 @@ export function clampOpeningPositionOnWall(
 
   // Clamp offset distance between minEdgeDistance and (wallLen - openingWidth - minEdgeDistance)
   const minOffset = minEdgeDistance;
-  const maxOffset = wallLen - minEdgeDistance;
+  const maxOffset = wallLen - openingWidth - minEdgeDistance;
   const clampedOffset = Math.max(minOffset, Math.min(maxOffset, distFromStart));
 
   // Compute final world point along wall direction

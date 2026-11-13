@@ -137,6 +137,8 @@ export {
   type ApartmentPlanValidationResult,
 } from './interpretation/apartment-plan';
 export {
+  clampOpeningPositionOnWall,
+  computeStairSolids,
   containsPolygon,
   containsPolygonConcave,
   containsPolygonWithTolerance,
@@ -148,6 +150,8 @@ export {
   polygonIntersectionAreaConcave,
   triangulateSimplePolygon,
   segmentCrossesOutsidePolygon,
+  validateDoorPlacement,
+  validateWindowPlacement,
 } from '@ai-floor-planner/geometry-engine';
 export { MassingGenerator } from './generator/massing-generator';
 export type { MassingFootprintPlan } from './generator/massing-generator';

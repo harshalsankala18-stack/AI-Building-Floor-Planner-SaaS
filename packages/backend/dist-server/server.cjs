@@ -621,7 +621,7 @@ function createStair(params) {
     riserCount,
     riserHeight,
     treadDepth: params.treadDepth ?? DEFAULTS.TREAD_DEPTH,
-    landingWidth: params.width,
+    landingWidth: params.landingWidth ?? params.width,
     connectsFloors: params.connectsFloors,
     verticalCoreId: params.verticalCoreId
   };
@@ -3616,6 +3616,31 @@ function validateDoorPlacement(door2, hostWall, minEdgeDistance = 100) {
   }
   return { valid: true };
 }
+function clampOpeningPositionOnWall(cursorPoint, hostWall, openingWidth, minEdgeDistance = 100) {
+  const wallSeg = { start: hostWall.startPoint, end: hostWall.endPoint };
+  const wallLen = segmentLength(wallSeg);
+  if (wallLen < openingWidth + 2 * minEdgeDistance) {
+    const midX = (hostWall.startPoint.x + hostWall.endPoint.x) / 2;
+    const midY = (hostWall.startPoint.y + hostWall.endPoint.y) / 2;
+    return { position: { x: midX, y: midY }, valid: false, offsetDistance: wallLen / 2 };
+  }
+  const projected = pointClosestPoint(cursorPoint, wallSeg);
+  const distFromStart = distance(hostWall.startPoint, projected);
+  const minOffset = minEdgeDistance;
+  const maxOffset = wallLen - openingWidth - minEdgeDistance;
+  const clampedOffset = Math.max(minOffset, Math.min(maxOffset, distFromStart));
+  const dx = (hostWall.endPoint.x - hostWall.startPoint.x) / wallLen;
+  const dy = (hostWall.endPoint.y - hostWall.startPoint.y) / wallLen;
+  const clampedPoint = {
+    x: Math.round(hostWall.startPoint.x + dx * clampedOffset),
+    y: Math.round(hostWall.startPoint.y + dy * clampedOffset)
+  };
+  return {
+    position: clampedPoint,
+    valid: true,
+    offsetDistance: clampedOffset
+  };
+}
 var init_doors = __esm({
   "../geometry-engine/dist/doors.js"() {
     "use strict";
@@ -6220,8 +6245,8 @@ function attachOpeningsToHostWalls(floor, options) {
       const minY = Math.min(wall2.startPoint.y, wall2.endPoint.y);
       const maxY = Math.max(wall2.startPoint.y, wall2.endPoint.y);
       const isHorizontal2 = Math.abs(wall2.startPoint.y - wall2.endPoint.y) <= 5;
-      const isVertical2 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
-      if (!isHorizontal2 && !isVertical2)
+      const isVertical3 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
+      if (!isHorizontal2 && !isVertical3)
         continue;
       let dist = Infinity;
       let alignedPos = null;
@@ -6316,8 +6341,8 @@ function attachOpeningsToHostWalls(floor, options) {
       const minY = Math.min(wall2.startPoint.y, wall2.endPoint.y);
       const maxY = Math.max(wall2.startPoint.y, wall2.endPoint.y);
       const isHorizontal2 = Math.abs(wall2.startPoint.y - wall2.endPoint.y) <= 5;
-      const isVertical2 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
-      if (!isHorizontal2 && !isVertical2)
+      const isVertical3 = Math.abs(wall2.startPoint.x - wall2.endPoint.x) <= 5;
+      if (!isHorizontal2 && !isVertical3)
         continue;
       let dist = Infinity;
       let alignedPos = null;
@@ -64627,10 +64652,13 @@ function resolveRoomType(rawType, rawName) {
   if (token.includes("ots") || token.includes("open to sky") || token.includes("open-to-sky")) return RoomType.OTS;
   if (token.includes("shaft") || token.includes("duct")) return RoomType.ServiceShaft;
   if (token.includes("dress") || token.includes("wardrobe") || token.includes("walk-in")) return RoomType.Dressing;
-  if (token.includes("verandah") || token.includes("veranda") || token.includes("porch")) return RoomType.Porch;
+  if (token.includes("verandah") || token.includes("veranda") || token.includes("porch") || token.includes("sit-out") || token.includes("sitout")) return RoomType.Porch;
   if (token.includes("lobby") || token.includes("passage") || token.includes("corridor")) return RoomType.Corridor;
-  if (token.includes("pooja") || token.includes("puja") || token.includes("temple")) return RoomType.Pooja;
-  if (token.includes("terrace")) return RoomType.Terrace;
+  if (token.includes("pooja") || token.includes("puja") || token.includes("temple") || token.includes("mandir")) return RoomType.Pooja;
+  if (token.includes("pantry")) return RoomType.Pantry;
+  if (token.includes("linen") || token.includes("store") || token.includes("storage")) return RoomType.Store;
+  if (token.includes("utility") || token.includes("wash") || token.includes("laundry")) return RoomType.Utility;
+  if (token.includes("terrace") || token.includes("deck")) return RoomType.Terrace;
   return extractedRoomType(rawType || rawName);
 }
 function rectToPoly(r) {
@@ -64999,6 +65027,7 @@ function calibrateFootprintToSpaces(stated, spacePolys, envelope) {
 }
 function readEntities(plan, rawPayload, targetFloorCount) {
   const notes = [];
+  const aliasIdMap = /* @__PURE__ */ new Map();
   const rawObj = rawPayload && typeof rawPayload === "object" ? rawPayload : {};
   const rawRooms = Array.isArray(rawObj.rooms) ? rawObj.rooms : [];
   const rawById = /* @__PURE__ */ new Map();
@@ -65014,39 +65043,42 @@ function readEntities(plan, rawPayload, targetFloorCount) {
     const confidence = plan.confidence?.[room2.id];
     const compassZone = room2.compassZone ?? (typeof raw?.compassZone === "string" ? raw.compassZone : void 0);
     const connectedTo = room2.connectedTo && room2.connectedTo.length > 0 ? [...room2.connectedTo] : Array.isArray(raw?.connectedTo) ? raw.connectedTo.map(String) : [];
+    const resolvedType = resolveRoomType(room2.type, room2.name);
     entities.push({
       id: room2.id,
       name: room2.name,
-      type: resolveRoomType(room2.type, room2.name),
+      type: resolvedType,
       floorLevel: level,
       frame: { x: room2.imageX, y: room2.imageY, width: room2.imageWidth, height: room2.imageHeight },
       ...room2.polygon && room2.polygon.length >= 3 ? { polygon: room2.polygon.map((p) => ({ x: p.x, y: p.y })) } : {},
       ...compassZone ? { compassZone } : {},
       connectedTo,
       confidence: confidence === "confirmed" ? 1 : confidence === "ambiguous" ? 0.4 : 0.75,
-      kind: "room"
+      kind: resolvedType === RoomType.Staircase ? "stair" : resolvedType === RoomType.Parking ? "parking" : "room"
     });
   }
   for (const stair2 of plan.stairs) {
     const stairLevel = Number.isFinite(stair2.floorLevel) ? Math.max(0, Math.min(targetFloorCount - 1, Math.trunc(stair2.floorLevel))) : 0;
+    const stairFrame = { x: stair2.imageX, y: stair2.imageY, width: stair2.imageWidth, height: stair2.imageHeight };
     entities.push({
       id: stair2.id,
       name: stair2.name || "Staircase",
       type: RoomType.Staircase,
       floorLevel: stairLevel,
-      frame: { x: stair2.imageX, y: stair2.imageY, width: stair2.imageWidth, height: stair2.imageHeight },
+      frame: stairFrame,
       connectedTo: [],
       confidence: 0.75,
       kind: "stair"
     });
   }
   for (const park of plan.parking) {
+    const parkFrame = { x: park.imageX, y: park.imageY, width: park.imageWidth, height: park.imageHeight };
     entities.push({
       id: park.id,
       name: park.name || "Parking",
       type: RoomType.Parking,
       floorLevel: 0,
-      frame: { x: park.imageX, y: park.imageY, width: park.imageWidth, height: park.imageHeight },
+      frame: parkFrame,
       connectedTo: [],
       confidence: 0.75,
       kind: "parking"
@@ -65058,7 +65090,7 @@ function readEntities(plan, rawPayload, targetFloorCount) {
       `The brief asks for ${targetFloorCount} floors but the image showed spaces for only ${levelsSeen.size} level. Upper-floor spaces were NOT invented; add them in the editor or regenerate the image showing every floor.`
     );
   }
-  return { entities, notes };
+  return { entities, notes, aliasIdMap };
 }
 function computeFrameTransform(contentBox, envelope) {
   const scale = Math.min(envelope.width / contentBox.width, envelope.height / contentBox.height);
@@ -65127,24 +65159,52 @@ function resolveOverlaps(placed, adjustments) {
           const cutRight = bigger.rect.x + bigger.rect.width - smaller.rect.x;
           const cutTop = smaller.rect.y + smaller.rect.height - bigger.rect.y;
           const cutBottom = bigger.rect.y + bigger.rect.height - smaller.rect.y;
-          const best = Math.min(cutLeft, cutRight, cutTop, cutBottom);
-          if (!Number.isFinite(best) || best <= 0) continue;
-          const cut3 = Math.ceil(best / GRID_MM) * GRID_MM;
-          const wouldLeaveWidth = best === cutLeft || best === cutRight ? bigger.rect.width - cut3 : bigger.rect.width;
-          const wouldLeaveHeight = best === cutTop || best === cutBottom ? bigger.rect.height - cut3 : bigger.rect.height;
-          if (wouldLeaveWidth < MIN_CARVED_REMAINDER_MM || wouldLeaveHeight < MIN_CARVED_REMAINDER_MM) {
-            smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut3);
-            smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
-            note(smaller.read, bigger.read.name, cut3, false);
+          const options = [
+            { dir: "left", raw: cutLeft, cut: Math.ceil(cutLeft / GRID_MM) * GRID_MM, remW: bigger.rect.width - Math.ceil(cutLeft / GRID_MM) * GRID_MM, remH: bigger.rect.height },
+            { dir: "right", raw: cutRight, cut: Math.ceil(cutRight / GRID_MM) * GRID_MM, remW: bigger.rect.width - Math.ceil(cutRight / GRID_MM) * GRID_MM, remH: bigger.rect.height },
+            { dir: "top", raw: cutTop, cut: Math.ceil(cutTop / GRID_MM) * GRID_MM, remW: bigger.rect.width, remH: bigger.rect.height - Math.ceil(cutTop / GRID_MM) * GRID_MM },
+            { dir: "bottom", raw: cutBottom, cut: Math.ceil(cutBottom / GRID_MM) * GRID_MM, remW: bigger.rect.width, remH: bigger.rect.height - Math.ceil(cutBottom / GRID_MM) * GRID_MM }
+          ].filter((o) => Number.isFinite(o.raw) && o.raw > 0);
+          if (options.length === 0) continue;
+          const validFull = options.filter((o) => o.remW >= MIN_CARVED_REMAINDER_MM && o.remH >= MIN_CARVED_REMAINDER_MM);
+          const validRelaxed = options.filter((o) => o.remW >= 900 && o.remH >= 900);
+          const chosenPool = validFull.length > 0 ? validFull : validRelaxed;
+          if (chosenPool.length === 0) {
+            if (bigger.rect.width >= bigger.rect.height) {
+              const splitW = snapGrid(Math.max(800, Math.floor(bigger.rect.width / 2)));
+              const oldX = bigger.rect.x;
+              const totalW = bigger.rect.width;
+              smaller.rect.x = oldX;
+              smaller.rect.width = splitW;
+              bigger.rect.x = oldX + splitW;
+              bigger.rect.width = Math.max(800, totalW - splitW);
+              smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
+              bigger.polygon = clampPolygonToRect(bigger.polygon, bigger.rect);
+              note(bigger.read, smaller.read.name, splitW, true);
+            } else {
+              const splitH = snapGrid(Math.max(800, Math.floor(bigger.rect.height / 2)));
+              const oldY = bigger.rect.y;
+              const totalH = bigger.rect.height;
+              smaller.rect.y = oldY;
+              smaller.rect.height = splitH;
+              bigger.rect.y = oldY + splitH;
+              bigger.rect.height = Math.max(800, totalH - splitH);
+              smaller.polygon = clampPolygonToRect(smaller.polygon, smaller.rect);
+              bigger.polygon = clampPolygonToRect(bigger.polygon, bigger.rect);
+              note(bigger.read, smaller.read.name, splitH, true);
+            }
             dirty = true;
             continue;
           }
-          if (best === cutLeft) {
+          chosenPool.sort((a, b) => a.cut - b.cut);
+          const bestChoice = chosenPool[0];
+          const cut3 = bestChoice.cut;
+          if (bestChoice.dir === "left") {
             bigger.rect.x += cut3;
             bigger.rect.width -= cut3;
-          } else if (best === cutRight) {
+          } else if (bestChoice.dir === "right") {
             bigger.rect.width -= cut3;
-          } else if (best === cutTop) {
+          } else if (bestChoice.dir === "top") {
             bigger.rect.y += cut3;
             bigger.rect.height -= cut3;
           } else {
@@ -65159,15 +65219,24 @@ function resolveOverlaps(placed, adjustments) {
         const penRight = smaller.rect.x + smaller.rect.width - bigger.rect.x;
         const penTop = bigger.rect.y + bigger.rect.height - smaller.rect.y;
         const penBottom = smaller.rect.y + smaller.rect.height - bigger.rect.y;
-        const smallest = Math.min(penLeft, penRight, penTop, penBottom);
-        if (!Number.isFinite(smallest) || smallest <= 0) continue;
-        const cut2 = Math.ceil(smallest / GRID_MM) * GRID_MM;
-        if (smallest === penLeft) {
+        const penOptions = [
+          { dir: "left", pen: penLeft, cut: Math.ceil(penLeft / GRID_MM) * GRID_MM, rem: smaller.rect.width - Math.ceil(penLeft / GRID_MM) * GRID_MM },
+          { dir: "right", pen: penRight, cut: Math.ceil(penRight / GRID_MM) * GRID_MM, rem: smaller.rect.width - Math.ceil(penRight / GRID_MM) * GRID_MM },
+          { dir: "top", pen: penTop, cut: Math.ceil(penTop / GRID_MM) * GRID_MM, rem: smaller.rect.height - Math.ceil(penTop / GRID_MM) * GRID_MM },
+          { dir: "bottom", pen: penBottom, cut: Math.ceil(penBottom / GRID_MM) * GRID_MM, rem: smaller.rect.height - Math.ceil(penBottom / GRID_MM) * GRID_MM }
+        ].filter((o) => Number.isFinite(o.pen) && o.pen > 0);
+        if (penOptions.length === 0) continue;
+        const usablePen = penOptions.filter((o) => o.rem >= 750);
+        const penPool = usablePen.length > 0 ? usablePen : penOptions;
+        penPool.sort((a, b) => a.cut - b.cut);
+        const chosenPen = penPool[0];
+        const cut2 = chosenPen.cut;
+        if (chosenPen.dir === "left") {
           smaller.rect.x += cut2;
           smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut2);
-        } else if (smallest === penRight) {
+        } else if (chosenPen.dir === "right") {
           smaller.rect.width = Math.max(GRID_MM, smaller.rect.width - cut2);
-        } else if (smallest === penTop) {
+        } else if (chosenPen.dir === "top") {
           smaller.rect.y += cut2;
           smaller.rect.height = Math.max(GRID_MM, smaller.rect.height - cut2);
         } else {
@@ -65185,7 +65254,7 @@ function resolveOverlaps(placed, adjustments) {
       entityId,
       entityName: record3.name,
       kind: "resolve_overlap",
-      description: record3.carved ? `${names} is drawn inside "${record3.name}" in the image, so "${record3.name}" was carved back by ${Math.round(record3.delta)} mm to host it as a separate space.` : `"${record3.name}" overlapped ${names} as read from the image; its boundary was pulled back by ${Math.round(record3.delta)} mm in total.`,
+      description: record3.carved ? `${names} overlapped and is drawn inside "${record3.name}" in the image, so "${record3.name}" was carved back by ${Math.round(record3.delta)} mm to host it as a separate space.` : `"${record3.name}" overlapped ${names} as read from the image; its boundary was pulled back by ${Math.round(record3.delta)} mm in total.`,
       material: record3.delta > MATERIAL_SNAP_MM,
       deltaMm: Math.round(record3.delta)
     });
@@ -65198,23 +65267,78 @@ function resolveOverlaps(placed, adjustments) {
   }
   return { resolved: remaining === 0, remaining };
 }
+function closeSmallInterRoomGaps(placed) {
+  const MAX_GAP_MM = 300;
+  const MIN_SHARED_SPAN_MM = 600;
+  for (let i = 0; i < placed.length; i++) {
+    const a = placed[i];
+    if (a.polygon) continue;
+    for (let j = 0; j < placed.length; j++) {
+      if (i === j) continue;
+      const b = placed[j];
+      if (b.polygon) continue;
+      const gapX = b.rect.x - (a.rect.x + a.rect.width);
+      const overlapY = Math.min(a.rect.y + a.rect.height, b.rect.y + b.rect.height) - Math.max(a.rect.y, b.rect.y);
+      if (gapX > 0 && gapX <= MAX_GAP_MM && overlapY >= MIN_SHARED_SPAN_MM) {
+        const candidateRect = { ...a.rect, width: a.rect.width + gapX };
+        const causesOverlap = placed.some((c, k) => k !== i && overlapArea4(candidateRect, c.rect) > 0);
+        if (!causesOverlap) {
+          a.rect.width += gapX;
+        }
+      }
+      const gapY = b.rect.y - (a.rect.y + a.rect.height);
+      const overlapX = Math.min(a.rect.x + a.rect.width, b.rect.x + b.rect.width) - Math.max(a.rect.x, b.rect.x);
+      if (gapY > 0 && gapY <= MAX_GAP_MM && overlapX >= MIN_SHARED_SPAN_MM) {
+        const candidateRect = { ...a.rect, height: a.rect.height + gapY };
+        const causesOverlap = placed.some((c, k) => k !== i && overlapArea4(candidateRect, c.rect) > 0);
+        if (!causesOverlap) {
+          a.rect.height += gapY;
+        }
+      }
+    }
+  }
+}
 function isHorizontal(a, b) {
-  return Math.abs(a.y - b.y) < Math.abs(a.x - b.x);
+  return Math.abs(a.y - b.y) <= GRID_MM && Math.abs(a.x - b.x) > GRID_MM;
+}
+function isVertical2(a, b) {
+  return Math.abs(a.x - b.x) <= GRID_MM && Math.abs(a.y - b.y) > GRID_MM;
 }
 function sharedEdge2(a, b) {
   const aH = isHorizontal(a.start, a.end);
   const bH = isHorizontal(b.start, b.end);
-  if (aH !== bH) return false;
-  if (aH) {
+  const aV = isVertical2(a.start, a.end);
+  const bV = isVertical2(b.start, b.end);
+  if (aH && bH) {
     if (Math.abs(a.start.y - b.start.y) > WALL_PAIR_TOLERANCE_MM) return false;
-    const [a12, a22] = [Math.min(a.start.x, a.end.x), Math.max(a.start.x, a.end.x)];
-    const [b12, b22] = [Math.min(b.start.x, b.end.x), Math.max(b.start.x, b.end.x)];
-    return Math.min(a22, b22) - Math.max(a12, b12) > GRID_MM;
+    const [a1, a2] = [Math.min(a.start.x, a.end.x), Math.max(a.start.x, a.end.x)];
+    const [b1, b2] = [Math.min(b.start.x, b.end.x), Math.max(b.start.x, b.end.x)];
+    return Math.min(a2, b2) - Math.max(a1, b1) > GRID_MM;
   }
-  if (Math.abs(a.start.x - b.start.x) > WALL_PAIR_TOLERANCE_MM) return false;
-  const [a1, a2] = [Math.min(a.start.y, a.end.y), Math.max(a.start.y, a.end.y)];
-  const [b1, b2] = [Math.min(b.start.y, b.end.y), Math.max(b.start.y, b.end.y)];
-  return Math.min(a2, b2) - Math.max(a1, b1) > GRID_MM;
+  if (aV && bV) {
+    if (Math.abs(a.start.x - b.start.x) > WALL_PAIR_TOLERANCE_MM) return false;
+    const [a1, a2] = [Math.min(a.start.y, a.end.y), Math.max(a.start.y, a.end.y)];
+    const [b1, b2] = [Math.min(b.start.y, b.end.y), Math.max(b.start.y, b.end.y)];
+    return Math.min(a2, b2) - Math.max(a1, b1) > GRID_MM;
+  }
+  if (!aH && !aV && !bH && !bV) {
+    const lenA = Math.hypot(a.end.x - a.start.x, a.end.y - a.start.y);
+    const lenB = Math.hypot(b.end.x - b.start.x, b.end.y - b.start.y);
+    if (lenA <= GRID_MM || lenB <= GRID_MM) return false;
+    const uxA = (a.end.x - a.start.x) / lenA;
+    const uyA = (a.end.y - a.start.y) / lenA;
+    const uxB = (b.end.x - b.start.x) / lenB;
+    const uyB = (b.end.y - b.start.y) / lenB;
+    if (Math.abs(uxA * uyB - uyA * uxB) > 0.09) return false;
+    const perpDist = Math.abs((b.start.x - a.start.x) * uyA - (b.start.y - a.start.y) * uxA);
+    if (perpDist > WALL_PAIR_TOLERANCE_MM) return false;
+    const projB1 = (b.start.x - a.start.x) * uxA + (b.start.y - a.start.y) * uyA;
+    const projB2 = (b.end.x - a.start.x) * uxA + (b.end.y - a.start.y) * uyA;
+    const minB = Math.min(projB1, projB2);
+    const maxB = Math.max(projB1, projB2);
+    return Math.min(lenA, maxB) - Math.max(0, minB) > GRID_MM;
+  }
+  return false;
 }
 function distanceToSegment(p, a, b) {
   const dx = b.x - a.x;
@@ -65263,7 +65387,7 @@ function reconstructBuildingFromImage(options) {
       site.plannedFloorCount || 1,
       maxVisionLevel + 1
     );
-    const { entities, notes } = readEntities(plan, rawVisionPayload, targetFloorCount);
+    const { entities, notes, aliasIdMap } = readEntities(plan, rawVisionPayload, targetFloorCount);
     unplacedFeatures.push(...notes);
     if (entities.length === 0) {
       return {
@@ -65395,8 +65519,54 @@ function reconstructBuildingFromImage(options) {
         unplacedFeatures.push(
           `${settled.remaining} pair(s) of spaces on level ${level} still overlap after conversion; the image's own room boundaries could not be separated cleanly. Compare against the reference image and adjust in the editor.`
         );
+      } else {
+        closeSmallInterRoomGaps(placed);
       }
       placedByLevel.set(level, placed);
+    }
+    if (targetFloorCount > 1) {
+      const gfSpaces = placedByLevel.get(0) ?? [];
+      const gfStairs = gfSpaces.filter((s) => s.read.type === RoomType.Staircase);
+      if (gfStairs.length > 0) {
+        for (let level = 1; level < targetFloorCount; level++) {
+          const upperSpaces = placedByLevel.get(level) ?? [];
+          const usedGfStairs = /* @__PURE__ */ new Set();
+          for (const upperStair of upperSpaces.filter((s) => s.read.type === RoomType.Staircase)) {
+            const uCx = upperStair.rect.x + upperStair.rect.width / 2;
+            const uCy = upperStair.rect.y + upperStair.rect.height / 2;
+            let bestGf = null;
+            let bestDist = Number.POSITIVE_INFINITY;
+            for (const gfStair of gfStairs) {
+              if (usedGfStairs.has(gfStair)) continue;
+              const gCx = gfStair.rect.x + gfStair.rect.width / 2;
+              const gCy = gfStair.rect.y + gfStair.rect.height / 2;
+              const d = Math.hypot(uCx - gCx, uCy - gCy);
+              if (d < bestDist) {
+                bestDist = d;
+                bestGf = gfStair;
+              }
+            }
+            if (bestGf && bestDist > 0 && bestDist <= 3500) {
+              usedGfStairs.add(bestGf);
+              const snapshot = upperSpaces.map((s) => ({ rect: { ...s.rect }, polygon: s.polygon ? { points: s.polygon.points.map((p) => ({ ...p })) } : void 0 }));
+              const trialAdjustments = [];
+              upperStair.rect = { ...bestGf.rect };
+              upperStair.polygon = bestGf.polygon ? { points: bestGf.polygon.points.map((p) => ({ ...p })) } : void 0;
+              const reSettled = resolveOverlaps(upperSpaces, trialAdjustments);
+              const allUsable = upperSpaces.every((s) => s.rect.width >= 750 && s.rect.height >= 750);
+              if (reSettled.resolved && allUsable) {
+                closeSmallInterRoomGaps(upperSpaces);
+                adjustments.push(...trialAdjustments);
+              } else {
+                for (let idx = 0; idx < upperSpaces.length; idx++) {
+                  upperSpaces[idx].rect = snapshot[idx].rect;
+                  upperSpaces[idx].polygon = snapshot[idx].polygon;
+                }
+              }
+            }
+          }
+        }
+      }
     }
     const allPlacedSpaces = [...placedByLevel.values()].flat();
     const footprintByLevel = /* @__PURE__ */ new Map();
@@ -65705,17 +65875,65 @@ function reconstructBuildingFromImage(options) {
       const doors = [];
       const windows = [];
       const roomByVisionId = new Map(placedRooms.map((p) => [p.read.id, p.room]));
-      const hostWallFor = (point) => {
-        let best = null;
-        let bestDistance = Number.POSITIVE_INFINITY;
+      for (const [aliasId, canonicalVisionId] of aliasIdMap.entries()) {
+        const mapped = roomByVisionId.get(canonicalVisionId);
+        if (mapped) roomByVisionId.set(aliasId, mapped);
+      }
+      const hostWallForDoor = (point, preferredRoomId) => {
+        let bestAny = null;
+        let bestAnyDist = Number.POSITIVE_INFINITY;
+        let bestRoom = null;
+        let bestRoomDist = Number.POSITIVE_INFINITY;
         for (const wall2 of walls) {
+          const wallLen = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+          if (wallLen < 650) continue;
           const d = distanceToSegment(point, wall2.startPoint, wall2.endPoint);
-          if (d < bestDistance) {
-            bestDistance = d;
-            best = wall2;
+          if (d < bestAnyDist) {
+            bestAnyDist = d;
+            bestAny = wall2;
+          }
+          if (preferredRoomId && wall2.roomIds.includes(preferredRoomId) && d < bestRoomDist) {
+            bestRoomDist = d;
+            bestRoom = wall2;
           }
         }
-        return best && bestDistance <= 1500 ? best : null;
+        if (bestRoom && bestRoomDist <= 1500 && bestRoomDist <= bestAnyDist + 300) {
+          return bestRoom;
+        }
+        return bestAny && bestAnyDist <= 1500 ? bestAny : null;
+      };
+      const hostWallForWindow = (point, preferredRoomId) => {
+        let bestExtRoom = null;
+        let bestExtRoomDist = Number.POSITIVE_INFINITY;
+        let bestExt = null;
+        let bestExtDist = Number.POSITIVE_INFINITY;
+        let bestFallback = null;
+        let bestFallbackDist = Number.POSITIVE_INFINITY;
+        for (const wall2 of walls) {
+          const wallLen = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+          if (wallLen < 600) continue;
+          const d = distanceToSegment(point, wall2.startPoint, wall2.endPoint);
+          const touchesOpenOrShaft = wall2.roomIds.some((rid) => {
+            const r = rooms.find((rm) => rm.id === rid);
+            return r ? OPEN_SPACE_TYPES.has(r.type) : false;
+          });
+          const isFacadeLike = wall2.type === WallType.External || touchesOpenOrShaft;
+          if (d < bestFallbackDist) {
+            bestFallbackDist = d;
+            bestFallback = wall2;
+          }
+          if (isFacadeLike && d < bestExtDist) {
+            bestExtDist = d;
+            bestExt = wall2;
+          }
+          if (isFacadeLike && preferredRoomId && wall2.roomIds.includes(preferredRoomId) && d < bestExtRoomDist) {
+            bestExtRoomDist = d;
+            bestExtRoom = wall2;
+          }
+        }
+        if (bestExtRoom && bestExtRoomDist <= 1500) return bestExtRoom;
+        if (bestExt && bestExtDist <= 1500) return bestExt;
+        return bestFallback && bestFallbackDist <= 1500 ? bestFallback : null;
       };
       const levelTransform = transformByLevel.get(level) ?? transform;
       const levelDoors = plan.doors.filter((d) => (d.floorLevel ?? 0) === level);
@@ -65725,16 +65943,27 @@ function reconstructBuildingFromImage(options) {
           levelTransform
         );
         const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
-        const wall2 = hostWallFor(point);
+        const adjacentRoom = roomByVisionId.get(door2.adjacentRoomId);
+        const wall2 = hostWallForDoor(point, adjacentRoom?.id);
         if (!wall2) {
           unplacedFeatures.push(
             `Door "${door2.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed rather than invented elsewhere.`
           );
           continue;
         }
-        const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
-        const adjacentRoom = roomByVisionId.get(door2.adjacentRoomId);
-        const width = Math.max(600, Math.min(2400, snapGrid(Math.max(centre2.width, centre2.height)) || 900));
+        const wallLen = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+        const targetRoom = adjacentRoom ?? rooms.find((r) => r.id === wall2.roomIds[0]);
+        const isBathOrService = targetRoom?.type === RoomType.Bathroom || targetRoom?.type === RoomType.Utility || targetRoom?.type === RoomType.Store || targetRoom?.type === RoomType.Pooja || targetRoom?.type === RoomType.Pantry;
+        const isMainEntry = wall2.type === WallType.External && (targetRoom?.type === RoomType.Foyer || targetRoom?.type === RoomType.Living || targetRoom?.type === RoomType.Porch);
+        const defaultDoorWidth = door2.type === "double" ? 1500 : isMainEntry ? 1050 : isBathOrService ? 750 : 900;
+        const rawSpan = snapGrid(Math.max(centre2.width, centre2.height)) || defaultDoorWidth;
+        const maxAllowedWidth = Math.max(500, Math.floor((wallLen - 150) / GRID_MM) * GRID_MM);
+        const width = Math.max(500, Math.min(2400, maxAllowedWidth, Math.max(600, rawSpan)));
+        const edgeClearance = wallLen >= width + 200 ? 100 : Math.max(25, Math.floor((wallLen - width) / 2));
+        const clamped = clampOpeningPositionOnWall(point, wall2, width, edgeClearance);
+        const hosted = clamped.valid ? clamped.position : projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
+        const swingDirection = door2.swingDirection === "outward" ? SwingDirection.Outward : door2.swingDirection === "left" ? SwingDirection.Left : door2.swingDirection === "right" ? SwingDirection.Right : SwingDirection.Inward;
+        const hingeSide = door2.swingDirection === "right" ? "right" : "left";
         doors.push({
           ...createDoor({
             floorId,
@@ -65743,10 +65972,11 @@ function reconstructBuildingFromImage(options) {
             width,
             height: 2100,
             type: door2.type === "double" ? DoorType.Double : door2.type === "sliding" ? DoorType.Sliding : door2.type === "open_passage" ? DoorType.OpenPassage : DoorType.Single,
-            swingDirection: door2.swingDirection === "outward" ? SwingDirection.Outward : door2.swingDirection === "left" ? SwingDirection.Left : door2.swingDirection === "right" ? SwingDirection.Right : SwingDirection.Inward,
+            swingDirection,
+            hingeSide,
             connectsRooms: [
               adjacentRoom?.id ?? wall2.roomIds[0] ?? "__outside__",
-              wall2.roomIds.find((id) => id !== adjacentRoom?.id) ?? "__outside__"
+              wall2.roomIds.find((id) => id !== (adjacentRoom?.id ?? wall2.roomIds[0])) ?? "__outside__"
             ]
           }),
           imageProvenance: {
@@ -65769,26 +65999,51 @@ function reconstructBuildingFromImage(options) {
           levelTransform
         );
         const point = { x: snapGrid(centre2.x + centre2.width / 2), y: snapGrid(centre2.y + centre2.height / 2) };
-        const wall2 = hostWallFor(point);
+        const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
+        const wall2 = hostWallForWindow(point, adjacentRoom?.id);
         if (!wall2) {
           unplacedFeatures.push(
             `Window "${win.id}" was read from the image on level ${level} but no reconstructed wall lies near its position, so it was not placed.`
           );
           continue;
         }
-        const hosted = projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
-        const adjacentRoom = roomByVisionId.get(win.adjacentRoomId);
-        const width = Math.max(500, Math.min(4e3, snapGrid(Math.max(centre2.width, centre2.height)) || 1200));
+        const wallLen = Math.hypot(wall2.endPoint.x - wall2.startPoint.x, wall2.endPoint.y - wall2.startPoint.y);
+        const targetRoom = adjacentRoom ?? rooms.find((r) => r.id === wall2.roomIds[0]);
+        const rawSpan = snapGrid(Math.max(centre2.width, centre2.height)) || 1200;
+        let winType = WindowType.Sliding;
+        let winHeight = 1200;
+        let sillHeight = 900;
+        let desiredWidth = rawSpan;
+        if (targetRoom?.type === RoomType.Bathroom) {
+          winType = WindowType.Ventilator;
+          winHeight = 600;
+          sillHeight = 1800;
+          desiredWidth = Math.min(rawSpan, 750) || 600;
+        } else if (targetRoom?.type === RoomType.Living && rawSpan >= 1800) {
+          winType = WindowType.Sliding;
+          winHeight = 1500;
+          sillHeight = 600;
+        } else if (targetRoom?.type === RoomType.Kitchen || targetRoom?.type === RoomType.Utility) {
+          winType = WindowType.Casement;
+          winHeight = 1050;
+          sillHeight = 1050;
+          desiredWidth = Math.max(600, Math.min(1500, rawSpan));
+        }
+        const maxAllowedWidth = Math.max(450, Math.floor((wallLen - 150) / GRID_MM) * GRID_MM);
+        const width = Math.max(450, Math.min(4e3, maxAllowedWidth, desiredWidth));
+        const edgeClearance = wallLen >= width + 200 ? 100 : Math.max(25, Math.floor((wallLen - width) / 2));
+        const clamped = clampOpeningPositionOnWall(point, wall2, width, edgeClearance);
+        const hosted = clamped.valid ? clamped.position : projectOntoSegment(point, wall2.startPoint, wall2.endPoint);
         windows.push({
           ...createWindow({
             floorId,
             wallId: wall2.id,
             position: hosted,
             width,
-            height: 1200,
-            sillHeight: 900,
-            type: WindowType.Sliding,
-            roomId: adjacentRoom?.id ?? wall2.roomIds[0] ?? ""
+            height: winHeight,
+            sillHeight,
+            type: winType,
+            roomId: targetRoom?.id ?? wall2.roomIds[0] ?? ""
           }),
           imageProvenance: {
             sourceImageArtifactId: source.artifactId,
@@ -65803,24 +66058,71 @@ function reconstructBuildingFromImage(options) {
           }
         });
       }
+      const wallsWithOpenings = /* @__PURE__ */ new Set([
+        ...doors.map((d) => d.wallId),
+        ...windows.map((w) => w.wallId)
+      ]);
+      for (let wIdx = 0; wIdx < walls.length; wIdx++) {
+        if (wallsWithOpenings.has(walls[wIdx].id)) {
+          walls[wIdx] = { ...walls[wIdx], hasOpening: true };
+        }
+      }
       const stairs = [];
       const stairRooms = placedRooms.filter((p) => p.read.type === RoomType.Staircase);
+      const stairGroups = [];
+      for (const sr of stairRooms) {
+        const r = sr.room;
+        const touching = stairGroups.find((g) => {
+          const gapX = Math.max(0, Math.max(g.x, r.x) - Math.min(g.x + g.width, r.x + r.width));
+          const gapY = Math.max(0, Math.max(g.y, r.y) - Math.min(g.y + g.height, r.y + r.height));
+          return gapX <= 150 && gapY <= 150;
+        });
+        if (touching) {
+          const minX = Math.min(touching.x, r.x);
+          const minY = Math.min(touching.y, r.y);
+          const maxX = Math.max(touching.x + touching.width, r.x + r.width);
+          const maxY = Math.max(touching.y + touching.height, r.y + r.height);
+          touching.x = minX;
+          touching.y = minY;
+          touching.width = maxX - minX;
+          touching.height = maxY - minY;
+          if (/u[- ]?shape|dog[- ]?leg|turn/i.test(sr.read.name)) {
+            touching.name = sr.read.name;
+          }
+        } else {
+          stairGroups.push({ x: r.x, y: r.y, width: r.width, height: r.height, name: sr.read.name });
+        }
+      }
       const upperLevelExists = level + 1 < targetFloorCount;
       const lowerLevelExists = level > 0;
-      for (const stairRoom of stairRooms) {
+      for (let sIdx = 0; sIdx < stairGroups.length; sIdx++) {
+        const room2 = stairGroups[sIdx];
         if (!upperLevelExists && !lowerLevelExists) continue;
-        const room2 = stairRoom.room;
         const connectsFloors = upperLevelExists ? [level, level + 1] : [level - 1, level];
+        const direction = room2.height >= room2.width ? "north" : "east";
+        const crossWidth = Math.min(room2.width, room2.height);
+        const runLength3 = Math.max(room2.width, room2.height);
+        const isUShaped = crossWidth >= 1600 || /u[- ]?shape|dog[- ]?leg|turn/i.test(room2.name) && crossWidth >= 1200;
+        const stairType = isUShaped ? StairType.UShaped : StairType.Straight;
+        const riserCount = 20;
+        const riserHeight = Math.round((baseFloor.floorHeight || 3e3) / riserCount);
+        const landingWidth = isUShaped ? Math.max(600, Math.min(1200, Math.floor(runLength3 * 0.26))) : Math.min(crossWidth, Math.max(600, Math.floor(runLength3 * 0.2)));
+        const treadDepth = isUShaped ? Math.max(150, Math.min(300, Math.floor((runLength3 - landingWidth) / 9))) : Math.max(120, Math.min(280, Math.floor(runLength3 / 19)));
         stairs.push(
           createStair({
             floorId,
-            type: StairType.Straight,
+            type: stairType,
             x: room2.x,
             y: room2.y,
-            width: Math.min(room2.width, room2.height),
-            length: Math.max(room2.width, room2.height),
-            direction: room2.height >= room2.width ? "north" : "east",
-            connectsFloors
+            width: room2.width,
+            length: room2.height,
+            direction,
+            riserCount,
+            riserHeight,
+            treadDepth,
+            landingWidth,
+            connectsFloors,
+            verticalCoreId: `stair-core-${sIdx + 1}`
           })
         );
       }
@@ -65895,7 +66197,7 @@ var init_image_to_cad_reconstruction = __esm({
     MATERIAL_SNAP_MM = 300;
     EXTERNAL_WALL_THICKNESS = 230;
     INTERNAL_WALL_THICKNESS = 115;
-    WALL_PAIR_TOLERANCE_MM = 260;
+    WALL_PAIR_TOLERANCE_MM = 300;
     MIN_SIGNIFICANT_OVERLAP_MM2 = 5e4;
     MIN_CARVED_REMAINDER_MM = 1500;
     OPEN_SPACE_TYPES = /* @__PURE__ */ new Set([
